@@ -57,7 +57,7 @@
 #define TI_CIRCLE_POINTS	(21)
 
 #ifdef TI_PLATFORM_WIN32
-#ifdef TI_EXPORTS
+#ifdef TIX_EXPORTS
 #	define TI_API __declspec(dllexport)
 #else
 #	define TI_API __declspec(dllimport)
