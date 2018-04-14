@@ -50,7 +50,7 @@
 #endif
 
 
-//#define TI_INTRUSIVE_PTR(T) boost::intrusive_ptr< T >
+#define TI_INTRUSIVE_PTR(T) IInstrusivePtr< T >
 
 #define TI_MAKE_IDENTIFIER(c1, c2, c3, c4) ((c4 << 24) | (c3 << 16) | (c2 << 8) | (c1))
 

@@ -27,11 +27,15 @@
     <ClCompile Include="..\..\Sources\Engine\TDevice.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TStream.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
+    <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Line2d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Line3d.h" />
@@ -52,6 +56,8 @@
     <ClInclude Include="..\..\Sources\Engine\TDevice.h" />
     <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h" />
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\TFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TStream.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
     <ClInclude Include="..\..\Sources\Engine\TInput.h" />
     <ClInclude Include="..\..\Sources\Engine\TInputEventType.h" />

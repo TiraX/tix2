@@ -5,8 +5,11 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Sources\math">
+    <Filter Include="Sources\Math">
       <UniqueIdentifier>{792fa46e-55e2-40af-b511-5e2233b59cbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Common">
+      <UniqueIdentifier>{7be8bd32-5d48-4d9a-b463-25ede946d0fa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -17,19 +20,25 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TDevice.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TFile.cpp">
+      <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TStream.cpp">
+      <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -42,9 +51,6 @@
     <ClInclude Include="..\..\Sources\Engine\TEngine.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypes.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TVersion.h">
       <Filter>Sources</Filter>
     </ClInclude>
@@ -54,83 +60,98 @@
     <ClInclude Include="..\..\Sources\Engine\TDefines.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TDevice.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TInput.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TMath.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Line2d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Line3d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Matrix3.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Matrix4.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Plane3d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Quaternion.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Rect.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\SViewFrustum.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Triangle3d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Vector2d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Vector3d.h">
-      <Filter>Sources\math</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\Vector4d.h">
-      <Filter>Sources\math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TInputEventType.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTimer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypeCull.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypeMesh.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypeNode.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypePixelFormat.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypeRenderer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TLog.h">
-      <Filter>Sources</Filter>
+      <Filter>Sources\Math</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h">
       <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TDevice.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TFile.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TInput.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TInputEventType.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TStream.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TMath.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TLog.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTimer.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeCull.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeMesh.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeNode.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypePixelFormat.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeRenderer.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypes.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
