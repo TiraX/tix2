@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TStream.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h" />
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TStream.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
     <ClInclude Include="..\..\Sources\Engine\TInput.h" />
@@ -158,6 +160,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\Sources\Externals\pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -192,6 +195,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\Sources\Externals\pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

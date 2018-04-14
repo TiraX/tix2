@@ -5,21 +5,27 @@
 
 #pragma once
 
-// including std symbols
+// Include std symbols
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
 #include <algorithm>
 #include <assert.h>
+#include <thread>
 
+using namespace std;
 
-// including ti symbols
+// Disable std container warnings in DLL export
+#pragma warning( disable : 4251 )  
+
+// Include tix symbols
 #include "TConfig.h"
 #include "TDefines.h"
 #include "IInstrusivePtr.hpp"
 #include "IReferenceCounted.h"
 #include "TTypes.h"
+#include "TThread.h"
 #include "TMath.h"
 #include "TInput.h"
 #include "TDevice.h"
