@@ -3,7 +3,6 @@
 	By ZhaoShuai tirax.cn@gmail.com
 */
 
-
 #pragma once
 
 // including std symbols
@@ -19,6 +18,12 @@
 #include "TConfig.h"
 #include "TDefines.h"
 #include "TTypes.h"
+#include "TMath.h"
+#include "TInput.h"
+#include "TDevice.h"
+#include "TLog.h"
+#include "TTimer.h"
+
 #include "TEngine.h"
 
 using namespace tix;

@@ -27,4 +27,15 @@ typedef double	f64;
 #define TString		std::string
 #define TWString	std::wstring
 
-#define tix_find		std::find
+#define tix_find	std::find
+
+#include "TInputEventType.h"
+#include "TTypeCull.h"
+#include "TTypeRenderer.h"
+#include "TTypeMesh.h"
+#include "TTypeNode.h"
+#include "TTypePixelFormat.h"
+
+#include "SColor.h"
+//#include <TiUString.h>
+

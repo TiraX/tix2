@@ -19,6 +19,8 @@ namespace tix
 			   static void	InitGraphics(void* param);
 
 		//TI_API TiDevice*	CreateDevice(int w, int h, void* handle, const char* name);
+
+		TI_API TDevice*	GetDevice();
 	private:
 		TEngine();
 		~TEngine();

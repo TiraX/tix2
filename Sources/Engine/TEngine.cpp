@@ -52,4 +52,9 @@ namespace tix
 	TEngine::~TEngine()
 	{
 	}
+
+	TDevice* TEngine::GetDevice()
+	{
+		return nullptr;
+	}
 }
