@@ -12,14 +12,10 @@ namespace tix
 	public:      
         
 		TI_API static TEngine* Get();
-		TI_API static void	Create(int w, int h, void* handle, const char* windowName, uint32 option);
+		TI_API static void	InitEngine(const TEngineConfiguration& Config);
 		TI_API static void	Destroy();
-				
-			   static void	InitComponent();
-			   static void	InitGraphics(void* param);
 
-		//TI_API TiDevice*	CreateDevice(int w, int h, void* handle, const char* name);
-
+		TI_API void Start();
 		TI_API TDevice*	GetDevice();
 	private:
 		TEngine();
@@ -27,5 +23,10 @@ namespace tix
 		static TEngine* s_engine;
 
 	protected:
+		// Init every thing for engine
+		void Init(const TEngineConfiguration& Config);
+
+	private:
+		TDevice * Device;
 	};
 }

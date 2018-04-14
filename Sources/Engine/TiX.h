@@ -24,6 +24,7 @@
 #include "TLog.h"
 #include "TTimer.h"
 
+#include "TEngineConfig.h"
 #include "TEngine.h"
 
 using namespace tix;

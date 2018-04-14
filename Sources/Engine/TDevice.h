@@ -10,8 +10,8 @@ namespace tix
 	class TDevice
 	{
 	public:
-		TDevice(int w, int h);
-		virtual ~TDevice();
+		static TDevice* CreateDevice(const TString& Name, int Width, int Height);
+		static void DestoryDevice(TDevice* Device);
 
 		virtual bool Run() = 0;
 
@@ -30,6 +30,10 @@ namespace tix
 			return Input;
 		}
 		virtual void	Resize(int w, int h);
+
+	protected:
+		TDevice(int w, int h);
+		virtual ~TDevice();
 
 	protected:
 		int			Width;

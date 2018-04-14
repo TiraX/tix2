@@ -129,5 +129,8 @@
     <ClInclude Include="..\..\Sources\Engine\TLog.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

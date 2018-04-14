@@ -12,26 +12,20 @@ namespace tix
 {
 	TEngine* TEngine::s_engine = nullptr;
 
-	void TEngine::Create(int w, int h, void* handle, const char* windowName, uint32 option)
+	void TEngine::InitEngine(const TEngineConfiguration& Config)
 	{
 		if (s_engine == nullptr)
 		{
 			s_engine = ti_new TEngine;
-
-//			TiDevice* device = s_engine->CreateDevice(w, h, handle, windowName);
+			s_engine->Init(Config);
 		}
 	}
 
-	void TEngine::InitComponent()
+	void TEngine::Init(const TEngineConfiguration& Config)
 	{
-		TEngine* engine = TEngine::Get();
-		//engine->Log = ti_new TiLog;
-		//engine->Log->Log("TiX engine. Ver %d.%d.%d.%d\n", k_major_version, k_mid_version, k_minor_version, k_build_version);
-	}
-
-	void TEngine::InitGraphics(void* param)
-	{
-		TEngine* engine = TEngine::Get();
+		// Create device
+		TI_ASSERT(Device == nullptr);
+		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
 	}
 
 	void TEngine::Destroy()
@@ -46,15 +40,28 @@ namespace tix
 	}
 
 	TEngine::TEngine()
+		: Device(nullptr)
 	{
 	}
 
 	TEngine::~TEngine()
 	{
+		TDevice::DestoryDevice(Device);
 	}
 
 	TDevice* TEngine::GetDevice()
 	{
 		return nullptr;
+	}
+
+	void TEngine::Start()
+	{
+		TI_ASSERT(Device);
+		while (Device->Run())
+		{
+
+		}
+
+		TEngine::Destroy();
 	}
 }
