@@ -16,9 +16,9 @@
 
 
 // including ti symbols
-#include "TiConfig.h"
-#include "TiDefines.h"
-#include "TiTypes.h"
-#include "TiEngine.h"
+#include "TConfig.h"
+#include "TDefines.h"
+#include "TTypes.h"
+#include "TEngine.h"
 
-using namespace ti;
+using namespace tix;

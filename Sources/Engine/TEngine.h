@@ -5,13 +5,13 @@
 
 #pragma once
 
-namespace ti
+namespace tix
 {
-	class TiEngine
+	class TEngine
 	{
 	public:      
         
-		TI_API static TiEngine* Get();
+		TI_API static TEngine* Get();
 		TI_API static void	Create(int w, int h, void* handle, const char* windowName, uint32 option);
 		TI_API static void	Destroy();
 				
@@ -20,9 +20,9 @@ namespace ti
 
 		//TI_API TiDevice*	CreateDevice(int w, int h, void* handle, const char* name);
 	private:
-		TiEngine();
-		~TiEngine();
-		static TiEngine* s_engine;
+		TEngine();
+		~TEngine();
+		static TEngine* s_engine;
 
 	protected:
 	};

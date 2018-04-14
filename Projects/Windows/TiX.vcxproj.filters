@@ -10,7 +10,7 @@
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TiEngine.cpp">
+    <ClCompile Include="..\..\Sources\Engine\TEngine.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -21,19 +21,19 @@
     <ClInclude Include="..\..\Sources\Engine\TiX.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TiConfig.h">
+    <ClInclude Include="..\..\Sources\Engine\TEngine.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TiDefines.h">
+    <ClInclude Include="..\..\Sources\Engine\TTypes.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TiTypes.h">
+    <ClInclude Include="..\..\Sources\Engine\TVersion.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TiEngine.h">
+    <ClInclude Include="..\..\Sources\Engine\TConfig.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TiVersion.h">
+    <ClInclude Include="..\..\Sources\Engine\TDefines.h">
       <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>

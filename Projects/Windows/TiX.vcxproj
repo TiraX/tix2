@@ -24,15 +24,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TiEngine.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h" />
-    <ClInclude Include="..\..\Sources\Engine\TiConfig.h" />
-    <ClInclude Include="..\..\Sources\Engine\TiDefines.h" />
-    <ClInclude Include="..\..\Sources\Engine\TiEngine.h" />
-    <ClInclude Include="..\..\Sources\Engine\TiTypes.h" />
-    <ClInclude Include="..\..\Sources\Engine\TiVersion.h" />
+    <ClInclude Include="..\..\Sources\Engine\TConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\TDefines.h" />
+    <ClInclude Include="..\..\Sources\Engine\TEngine.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTypes.h" />
+    <ClInclude Include="..\..\Sources\Engine\TVersion.h" />
     <ClInclude Include="..\..\Sources\Engine\TiX.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

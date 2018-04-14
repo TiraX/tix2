@@ -20,11 +20,11 @@ typedef long long			int64;
 typedef float	f32;
 typedef double	f64;
 
-#define TiVector	std::vector
-#define TiList		std::list
-#define TiMap		std::map
+#define TVector		std::vector
+#define TList		std::list
+#define TMap		std::map
 
-#define TiString	std::string
-#define TiWString	std::wstring
+#define TString		std::string
+#define TWString	std::wstring
 
-#define ti_find		std::find
+#define tix_find		std::find
