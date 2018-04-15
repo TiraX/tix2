@@ -11,6 +11,9 @@
     <Filter Include="Sources\Common">
       <UniqueIdentifier>{7be8bd32-5d48-4d9a-b463-25ede946d0fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Render">
+      <UniqueIdentifier>{ed6d68ff-e9a4-43b2-8e16-c2b01ac70ef5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
@@ -42,6 +45,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp">
       <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRHI.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp">
+      <Filter>Sources\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +173,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TThread.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRenderThread.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRenderer.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRHI.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

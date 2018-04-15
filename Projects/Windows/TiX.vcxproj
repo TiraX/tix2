@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -28,6 +31,7 @@
     <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TStream.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
@@ -35,6 +39,9 @@
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />
@@ -58,6 +65,7 @@
     <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h" />
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TStream.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />

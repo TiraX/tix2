@@ -7,6 +7,7 @@
 
 #include "TEngine.h"
 #include "TVersion.h"
+#include "FRenderThread.h"
 
 namespace tix
 {
@@ -26,6 +27,11 @@ namespace tix
 		// Create device
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
+
+		// Create Render Thread
+		TI_ASSERT(RenderThread == nullptr);
+		RenderThread = ti_new FRenderThread();
+		RenderThread->Start();
 	}
 
 	void TEngine::Destroy()
@@ -41,11 +47,18 @@ namespace tix
 
 	TEngine::TEngine()
 		: Device(nullptr)
+		, RenderThread(nullptr)
 	{
 	}
 
 	TEngine::~TEngine()
 	{
+		// Shut down render thread
+		RenderThread->Stop();
+		ti_delete RenderThread;
+		RenderThread = nullptr;
+
+		// delete device
 		TDevice::DestoryDevice(Device);
 	}
 

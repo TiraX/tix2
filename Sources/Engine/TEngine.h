@@ -7,6 +7,8 @@
 
 namespace tix
 {
+	class FRenderThread;
+
 	class TEngine
 	{
 	public:      
@@ -28,5 +30,6 @@ namespace tix
 
 	private:
 		TDevice * Device;
+		FRenderThread * RenderThread;
 	};
 }
