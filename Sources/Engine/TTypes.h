@@ -14,8 +14,13 @@ typedef short			int16;
 typedef unsigned int	uint32;
 typedef int				int32;
 
+#if defined (TI_PLATFORM_WIN32)
+typedef __int64				int64;
+typedef unsigned __int64	uint64;
+#else
 typedef unsigned long long	uint64;
 typedef long long			int64;
+#endif
 
 typedef float	f32;
 typedef double	f64;

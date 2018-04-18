@@ -50,7 +50,10 @@ namespace tix
 
 		virtual void Start();
 		virtual void Stop();
+
 		virtual void Run() = 0;
+		virtual void OnThreadStart() {};
+		virtual void OnThreadEnd() {};
 		
 		virtual bool ThreadRunning()
 		{

@@ -15,6 +15,14 @@ namespace tix
 		, Renderer(nullptr)
 		, RHI(nullptr)
 	{
+	}
+
+	FRenderThread::~FRenderThread()
+	{
+	}
+
+	void FRenderThread::CreateRenderComponents()
+	{
 		// Create renderer to execute render pass
 		Renderer = ti_new FRenderer();
 
@@ -22,7 +30,7 @@ namespace tix
 		RHI = FRHI::CreateRHI(ERHI_DX12);
 	}
 
-	FRenderThread::~FRenderThread()
+	void FRenderThread::DestroyRenderComponents()
 	{
 		SAFE_DELETE(Renderer);
 		SAFE_DELETE(RHI);
@@ -31,5 +39,15 @@ namespace tix
 	void FRenderThread::Run()
 	{
 
+	}
+
+	void FRenderThread::OnThreadStart()
+	{
+		CreateRenderComponents();
+	}
+
+	void FRenderThread::OnThreadEnd()
+	{
+		DestroyRenderComponents();
 	}
 }

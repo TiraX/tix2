@@ -72,10 +72,14 @@ namespace tix
 		TThread* t = (TThread*)param;
 		t->SetThreadName();
 
+		t->OnThreadStart();
+
 		while (t->IsRunning)
 		{
 			t->Run();
 		}
+
+		t->OnThreadEnd();
 
 		return 0;
 	}

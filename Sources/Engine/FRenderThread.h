@@ -17,6 +17,12 @@ namespace tix
 		~FRenderThread();
 
 		virtual void Run() override;
+		virtual void OnThreadStart() override;
+		virtual void OnThreadEnd() override;
+
+	protected:
+		void CreateRenderComponents();
+		void DestroyRenderComponents();
 
 	protected:
 		FRenderer * Renderer;
