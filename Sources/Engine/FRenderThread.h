@@ -10,11 +10,11 @@ namespace tix
 	class FRenderer;
 	class FRHI;
 
-	class FRenderThread : public TThread
+	class FRenderThread : public TTaskThread
 	{
 	public: 
 		FRenderThread();
-		~FRenderThread();
+		virtual ~FRenderThread();
 
 		virtual void Run() override;
 		virtual void OnThreadStart() override;
@@ -25,7 +25,8 @@ namespace tix
 		void DestroyRenderComponents();
 
 	protected:
-		FRenderer * Renderer;
 		FRHI * RHI;
+
+		uint64 LastFrameTime;
 	};
 }

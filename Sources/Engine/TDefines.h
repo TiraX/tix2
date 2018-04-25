@@ -35,7 +35,7 @@
 
 #define DO_STRINGIZE(x) #x
 #define STRINGIZE(x) DO_STRINGIZE(x)
-#define TODO_MESSAGE_STRING(msg) __FILE__ "(" STRINGIZE( __LINE__ )") : TODO - " msg " - [ "__FUNCTION__ " ]" 
+#define TODO_MESSAGE_STRING(msg) __FILE__ "(" STRINGIZE( __LINE__ ) ") : TODO - " ##msg " - [ " __FUNCTION__ " ]"
 #if defined TI_PLATFORM_WIN32
 #	define TI_TODO(msg) __pragma( message( TODO_MESSAGE_STRING(msg) ) )
 #else

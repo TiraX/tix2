@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <assert.h>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 
@@ -26,6 +28,8 @@ using namespace std;
 #include "IReferenceCounted.h"
 #include "TTypes.h"
 #include "TThread.h"
+#include "TQueue.h"
+#include "TTaskThread.h"
 #include "TMath.h"
 #include "TInput.h"
 #include "TDevice.h"

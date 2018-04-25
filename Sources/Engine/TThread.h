@@ -17,24 +17,24 @@ namespace tix
 		void		Unlock();
 
 	protected:
+		mutex		Mutex;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 
-	class TI_API TCond
-	{
-	public:
-		TCond();
-		~TCond();
+	//class TI_API TCond
+	//{
+	//public:
+	//	TCond();
+	//	~TCond();
 
-		void		Lock();
-		void		Unlock();
+	//	void		Wait();
+	//	void		Signal();
 
-		void		Wait();
-		void		Signal();
-
-	protected:
-	};
+	//protected:
+	//	mutex		Mutex;
+	//	condition_variable Cond;
+	//};
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -63,9 +63,9 @@ namespace tix
 		void SetThreadName();
 	protected:
 		bool IsRunning;
+		thread * Thread;
 
 	private:
-		thread * Thread;
 		TString	ThreadName;
 	};
 }
