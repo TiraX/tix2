@@ -43,9 +43,11 @@ namespace tix
 	{
 		if (Thread != nullptr)
 		{
-			unique_lock<mutex> CLock(TaskMutex);
-			IsRunning = false;
-			TaskCond.notify_one();
+			{
+				unique_lock<mutex> CLock(TaskMutex);
+				IsRunning = false;
+				TaskCond.notify_one();
+			}
 			Thread->join();
 
 			ti_delete Thread;
