@@ -96,6 +96,8 @@ namespace tix
 			hr = HRESULT_FROM_WIN32(GetLastError());
 			TI_ASSERT(0);
 		}
+
+		_LOG("  RHI DirectX 12 inited.\n");
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
@@ -127,5 +129,8 @@ namespace tix
 		*ppAdapter = adapter.Detach();
 	}
 
+	void FRHIDx12::ClearBuffers()
+	{
+	}
 }
 #endif	// COMPILE_WITH_RHI_DX12

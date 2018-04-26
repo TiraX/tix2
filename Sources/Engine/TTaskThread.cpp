@@ -31,12 +31,7 @@ namespace tix
 		unique_lock<mutex> TaskLock(TaskMutex);
 		TaskCond.wait(TaskLock);
 
-		TTask* Task;
-		while (Tasks.GetSize() > 0)
-		{
-			Tasks.PopFront(Task);
-			DoTask(Task);
-		}
+		DoTasks();
 	}
 
 	void TTaskThread::Stop()
@@ -55,13 +50,19 @@ namespace tix
 		}
 	}
 
-	void TTaskThread::DoTask(TTask* Task)
+	void TTaskThread::DoTasks()
 	{
 		TI_TODO("Check DoTask in correct thread.");
-		Task->Execute();
+		TTask* Task;
+		while (Tasks.GetSize() > 0)
+		{
+			Tasks.PopFront(Task);
+			Task->Execute();
 
-		// release task memory
-		ti_delete Task;
+			// release task memory
+			ti_delete Task;
+			Task = nullptr;
+		}
 	}
 
 	void TTaskThread::AddTask(TTask* Task)

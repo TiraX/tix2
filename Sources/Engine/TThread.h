@@ -7,37 +7,6 @@
 
 namespace tix
 {
-	class TI_API TMutex
-	{
-	public:
-		TMutex();
-		~TMutex();
-
-		void		Lock();
-		void		Unlock();
-
-	protected:
-		mutex		Mutex;
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-
-	//class TI_API TCond
-	//{
-	//public:
-	//	TCond();
-	//	~TCond();
-
-	//	void		Wait();
-	//	void		Signal();
-
-	//protected:
-	//	mutex		Mutex;
-	//	condition_variable Cond;
-	//};
-
-	//////////////////////////////////////////////////////////////////////////
-
 	class TI_API TThread
 	{
 	public:

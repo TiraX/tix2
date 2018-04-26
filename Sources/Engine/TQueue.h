@@ -136,16 +136,16 @@ namespace tix
 	template <class T>
 	void TThreadSafeQueue<T>::PushBack(const T& o)
 	{
-		Mutex.Lock();
+		Mutex.lock();
 		TQueue<T>::PushBack(o);
-		Mutex.Unlock();
+		Mutex.unlock();
 	}
 
 	template <class T>
 	void TThreadSafeQueue<T>::PopFront(T& out)
 	{
-		Mutex.Lock();
+		Mutex.lock();
 		TQueue<T>::PopFront(out);
-		Mutex.Unlock();
+		Mutex.unlock();
 	}
 }

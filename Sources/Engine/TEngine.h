@@ -19,6 +19,8 @@ namespace tix
 
 		TI_API void Start();
 		TI_API TDevice*	GetDevice();
+		TI_API FRenderThread* GetRenderThread();
+		TI_API void AddRenderer(FRenderer* Renderer);
 	private:
 		TEngine();
 		~TEngine();

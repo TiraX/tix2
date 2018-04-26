@@ -17,6 +17,7 @@ namespace tix
 	{
 		if (s_engine == nullptr)
 		{
+			_LOG("TiX Engine v2.0.0\n");
 			s_engine = ti_new TEngine;
 			s_engine->Init(Config);
 		}
@@ -64,7 +65,21 @@ namespace tix
 
 	TDevice* TEngine::GetDevice()
 	{
-		return nullptr;
+		return Device;
+	}
+
+	FRenderThread* TEngine::GetRenderThread()
+	{
+		return RenderThread;
+	}
+
+	void TEngine::AddRenderer(FRenderer* Renderer)
+	{
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddRendererInRenderThread, 
+			FRenderer*, Renderer, Renderer,
+			{
+				RenderThread->AddRenderer(Renderer);
+			});
 	}
 
 	void TEngine::Start()

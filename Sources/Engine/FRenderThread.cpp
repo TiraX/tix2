@@ -20,6 +20,12 @@ namespace tix
 	{
 	}
 
+	void FRenderThread::AddRenderer(FRenderer* Renderer)
+	{
+		TI_TODO("Check is in render thread.");
+		Renderers.push_back(Renderer);
+	}
+
 	void FRenderThread::CreateRenderComponents()
 	{
 		// Create RHI to submit commands to GPU
@@ -28,6 +34,14 @@ namespace tix
 
 	void FRenderThread::DestroyRenderComponents()
 	{
+		// Release all renderers
+		for (auto Renderer : Renderers)
+		{
+			ti_delete Renderer;
+		}
+		Renderers.clear();
+
+		// Release RHI
 		SAFE_DELETE(RHI);
 	}
 
@@ -37,7 +51,14 @@ namespace tix
 		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 
-		TI_TODO("Go through each renderer, Do Render().");
+		// Do render thread tasks
+		DoTasks();
+
+		// Go through each renderer
+		for (auto Renderer : Renderers)
+		{
+			Renderer->Render(RHI);
+		}
 
 		LastFrameTime = CurrentFrameTime;
 		if (Delta < FrameInterval)

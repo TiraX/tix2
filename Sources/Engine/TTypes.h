@@ -32,6 +32,9 @@ typedef double	f64;
 #define TString		std::string
 #define TWString	std::wstring
 
+#define TMutex		std::mutex
+#define TCond		std::condition_variable
+
 #define tix_find	std::find
 
 #include "TInputEventType.h"

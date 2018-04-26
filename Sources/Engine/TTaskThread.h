@@ -29,14 +29,14 @@ namespace tix
 		void AddTask(TTask* Task);
 		
 	protected:
-		virtual void DoTask(TTask* Task);
+		virtual void DoTasks();
 
 	protected:
 		typedef TThreadSafeQueue<TTask*> TTaskQueue;
 		TTaskQueue		Tasks;
 		TTaskQueue		TaskFinished;
 
-		mutex				TaskMutex;
-		condition_variable	TaskCond;
+		TMutex			TaskMutex;
+		TCond			TaskCond;
 	};
 }

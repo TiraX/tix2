@@ -8,46 +8,6 @@
 
 namespace tix
 {
-	TMutex::TMutex()
-	{
-	}
-
-	TMutex::~TMutex()
-	{
-	}
-
-	void TMutex::Lock()
-	{
-		Mutex.lock();
-	}
-
-	void TMutex::Unlock()
-	{
-		Mutex.unlock();
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-
-	//TCond::TCond()
-	//{
-	//}
-
-	//TCond::~TCond()
-	//{
-	//}
-	//
-	//void TCond::Wait()
-	//{
-	//	unique_lock<mutex> CLock(Mutex);
-	//	Cond.wait(CLock);
-	//}
-
-	//void TCond::Signal()
-	//{
-	//	unique_lock<mutex> CLock(Mutex);
-	//	Cond.notify_one();
-	//}
-	//////////////////////////////////////////////////////////////////////////
 	TThread::TThread(const TString& Name)
 		: IsRunning(false)
 		, Thread(nullptr)

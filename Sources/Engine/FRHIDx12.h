@@ -27,6 +27,7 @@ namespace tix
 	public:
 		virtual ~FRHIDx12();
 
+		virtual void ClearBuffers() override;
 	protected: 
 		FRHIDx12();
 

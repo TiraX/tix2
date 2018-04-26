@@ -21,6 +21,7 @@ namespace tix
 		static FRHI* CreateRHI(E_RHI_TYPE RhiType);
 		virtual ~FRHI();
 
+		virtual void ClearBuffers() = 0;
 	protected:
 		FRHI();
 
