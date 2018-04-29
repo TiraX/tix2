@@ -8,6 +8,9 @@
 
 namespace tix
 {
+	TThreadId TThread::GameThreadId;
+	TThreadId TThread::RenderThreadId;
+
 	TThread::TThread(const TString& Name)
 		: IsRunning(false)
 		, Thread(nullptr)
@@ -20,9 +23,34 @@ namespace tix
 		Stop();
 	}
 
+	TThreadId TThread::GetThreadId()
+	{
+		return std::this_thread::get_id();
+	}
+
 	void TThread::ThreadSleep(uint32 milliseconds)
 	{
         std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+	}
+
+	void TThread::IndicateGameThread()
+	{
+		GameThreadId = GetThreadId();
+	}
+
+	void TThread::IndicateRenderThread()
+	{
+		RenderThreadId = GetThreadId();
+	}
+
+	bool TThread::IsGameThread()
+	{
+		return GetThreadId() == GameThreadId;
+	}
+
+	bool TThread::IsRenderThread()
+	{
+		return GetThreadId() == RenderThreadId;
 	}
 
 	void* TThread::ThreadExecute(void* param)
@@ -65,6 +93,11 @@ namespace tix
 			ti_delete Thread;
 			Thread = nullptr;
 		}
+	}
+
+	void TThread::OnThreadStart()
+	{
+		ThreadId = GetThreadId();
 	}
 
 #ifdef TI_PLATFORM_WIN32

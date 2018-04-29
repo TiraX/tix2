@@ -25,6 +25,8 @@ namespace tix
 
 	void TEngine::Init(const TEngineConfiguration& Config)
 	{
+		TThread::IndicateGameThread();
+
 		// Create device
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);

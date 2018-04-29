@@ -22,7 +22,7 @@ namespace tix
 
 	void FRenderThread::AddRenderer(FRenderer* Renderer)
 	{
-		TI_TODO("Check is in render thread.");
+		TI_ASSERT(IsRenderThread());
 		Renderers.push_back(Renderer);
 	}
 
@@ -69,6 +69,9 @@ namespace tix
 
 	void FRenderThread::OnThreadStart()
 	{
+		TTaskThread::OnThreadStart();
+		TThread::IndicateRenderThread();
+
 		CreateRenderComponents();
 
 		LastFrameTime = TTimer::GetCurrentTimeMillis();
@@ -76,6 +79,8 @@ namespace tix
 
 	void FRenderThread::OnThreadEnd()
 	{
+		TTaskThread::OnThreadEnd();
+
 		DestroyRenderComponents();
 	}
 }

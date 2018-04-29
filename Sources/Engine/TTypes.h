@@ -29,11 +29,12 @@ typedef double	f64;
 #define TList		std::list
 #define TMap		std::map
 
-#define TString		std::string
-#define TWString	std::wstring
+typedef std::string	TString;
+typedef std::wstring TWString;
 
-#define TMutex		std::mutex
-#define TCond		std::condition_variable
+typedef std::mutex TMutex;
+typedef std::condition_variable TCond;
+typedef std::thread::id TThreadId;
 
 #define tix_find	std::find
 

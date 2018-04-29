@@ -52,7 +52,7 @@ namespace tix
 
 	void TTaskThread::DoTasks()
 	{
-		TI_TODO("Check DoTask in correct thread.");
+		TI_ASSERT(GetThreadId() == ThreadId);
 		TTask* Task;
 		while (Tasks.GetSize() > 0)
 		{
@@ -67,7 +67,7 @@ namespace tix
 
 	void TTaskThread::AddTask(TTask* Task)
 	{
-		TI_TODO("Check AddTask in correct thread.");
+		TI_ASSERT(IsGameThread());
 
 		unique_lock<mutex> CLock(TaskMutex);
 		Tasks.PushBack(Task);
