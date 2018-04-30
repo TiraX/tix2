@@ -117,18 +117,34 @@ namespace tix
 		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 		float  Dt = Delta * 0.001f;
-		_LOG("Tick %ld - %ld\n", CurrentFrameTime, LastFrameTime);
 
 		for (auto T : Tickers)
 		{
 			T->Tick(Dt);
 		}
 
+		// Remember last frame start time
+		LastFrameTime = CurrentFrameTime;
+
+		// Tick finished, trigger render thread
+		TickFinished();
+
+		// Check if reach max frame interval time
 		uint32 TimePast = (uint32)(TTimer::GetCurrentTimeMillis() - CurrentFrameTime);
 		if (TimePast < FrameInterval)
 		{
 			TThread::ThreadSleep(FrameInterval - TimePast);
 		}
-		LastFrameTime = CurrentFrameTime;
+	}
+
+	void TEngine::TickFinished()
+	{
+		static const int MAX_GAME_THREAD_AHEAD = 2;
+		while (RenderThread->GetTriggerNum() >= MAX_GAME_THREAD_AHEAD)
+		{
+			TThread::ThreadSleep(10);
+		}
+
+		RenderThread->TriggerRender();
 	}
 }

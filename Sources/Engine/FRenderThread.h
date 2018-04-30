@@ -57,11 +57,23 @@ namespace tix
 
 		void AddRenderer(FRenderer* Renderer);
 
+		void TriggerRender();
+		int32 GetTriggerNum()
+		{
+			return TriggerNum;
+		}
+
 	protected:
 		void CreateRenderComponents();
 		void DestroyRenderComponents();
 
+		void WaitForRenderSignal();
+
 	protected:
+		int32 TriggerNum;
+		TMutex RenderMutex;
+		TCond RenderCond;
+
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
 	};

@@ -13,6 +13,7 @@ namespace tix
 	FRenderThread::FRenderThread()
 		: TTaskThread("RenderThread")
 		, RHI(nullptr)
+		, TriggerNum(0)
 	{
 	}
 
@@ -47,6 +48,9 @@ namespace tix
 
 	void FRenderThread::Run()
 	{
+		// Waiting for Game thread tick
+		WaitForRenderSignal();
+
 		// Do render thread tasks
 		DoTasks();
 
@@ -70,5 +74,19 @@ namespace tix
 		TTaskThread::OnThreadEnd();
 
 		DestroyRenderComponents();
+	}
+
+	void FRenderThread::TriggerRender()
+	{
+		unique_lock<TMutex> RenderLock(RenderMutex);
+		++TriggerNum;
+		RenderCond.notify_one();
+	}
+
+	void FRenderThread::WaitForRenderSignal()
+	{
+		unique_lock<TMutex> RenderLock(RenderMutex);
+		--TriggerNum;
+		RenderCond.wait(RenderLock);
 	}
 }

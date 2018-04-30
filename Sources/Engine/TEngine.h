@@ -32,6 +32,7 @@ namespace tix
 		// Init every thing for engine
 		void Init(const TEngineConfiguration& Config);
 		void Tick();
+		void TickFinished();
 
 	private:
 		TDevice * Device;

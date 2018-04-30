@@ -28,7 +28,7 @@ namespace tix
 
 	void TTaskThread::Run()
 	{
-		unique_lock<mutex> TaskLock(TaskMutex);
+		unique_lock<TMutex> TaskLock(TaskMutex);
 		TaskCond.wait(TaskLock);
 
 		DoTasks();
@@ -39,7 +39,7 @@ namespace tix
 		if (Thread != nullptr)
 		{
 			{
-				unique_lock<mutex> CLock(TaskMutex);
+				unique_lock<TMutex> CLock(TaskMutex);
 				IsRunning = false;
 				TaskCond.notify_one();
 			}
@@ -69,7 +69,7 @@ namespace tix
 	{
 		TI_ASSERT(IsGameThread());
 
-		unique_lock<mutex> CLock(TaskMutex);
+		unique_lock<TMutex> CLock(TaskMutex);
 		Tasks.PushBack(Task);
 		TaskCond.notify_one();
 	}
