@@ -139,8 +139,7 @@ namespace tix
 
 	void TEngine::TickFinished()
 	{
-		static const int MAX_GAME_THREAD_AHEAD = 2;
-		while (RenderThread->GetTriggerNum() >= MAX_GAME_THREAD_AHEAD)
+		while (RenderThread->GetTriggerNum() >= FRHI::FrameBufferNum)
 		{
 			TThread::ThreadSleep(10);
 		}

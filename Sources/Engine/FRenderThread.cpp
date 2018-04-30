@@ -11,9 +11,11 @@
 namespace tix
 {
 	FRenderThread::FRenderThread()
-		: TTaskThread("RenderThread")
+		: TThread("RenderThread")
 		, RHI(nullptr)
 		, TriggerNum(0)
+		, PreFrameIndex(0)
+		, RenderFrameIndex(0)
 	{
 	}
 
@@ -52,7 +54,7 @@ namespace tix
 		WaitForRenderSignal();
 
 		// Do render thread tasks
-		DoTasks();
+		DoRenderTasks();
 
 		// Go through each renderer
 		for (auto Renderer : Renderers)
@@ -63,7 +65,7 @@ namespace tix
 
 	void FRenderThread::OnThreadStart()
 	{
-		TTaskThread::OnThreadStart();
+		TThread::OnThreadStart();
 		TThread::IndicateRenderThread();
 
 		CreateRenderComponents();
@@ -71,15 +73,60 @@ namespace tix
 
 	void FRenderThread::OnThreadEnd()
 	{
-		TTaskThread::OnThreadEnd();
+		TThread::OnThreadEnd();
 
 		DestroyRenderComponents();
+	}
+
+	void FRenderThread::Stop()
+	{
+		if (Thread != nullptr)
+		{
+			TriggerRenderAndStop();
+			Thread->join();
+
+			ti_delete Thread;
+			Thread = nullptr;
+		}
+	}
+
+	void FRenderThread::DoRenderTasks()
+	{
+		TI_ASSERT(IsRenderThread());
+		TTask* Task;
+		auto& Tasks = RenderFrames[RenderFrameIndex].FrameTasks;
+		while (Tasks.GetSize() > 0)
+		{
+			Tasks.PopFront(Task);
+			Task->Execute();
+
+			// release task memory
+			ti_delete Task;
+			Task = nullptr;
+		}
+
+		// Move to next
+		RenderFrameIndex = (RenderFrameIndex + 1) % FRHI::FrameBufferNum;
 	}
 
 	void FRenderThread::TriggerRender()
 	{
 		unique_lock<TMutex> RenderLock(RenderMutex);
+		// Add Trigger Number
 		++TriggerNum;
+		// Frame index move to next frame. Close current frame data
+		PreFrameIndex = (PreFrameIndex + 1) % FRHI::FrameBufferNum;
+		RenderCond.notify_one();
+	}
+
+	void FRenderThread::TriggerRenderAndStop()
+	{
+		unique_lock<TMutex> RenderLock(RenderMutex);
+		// Add Trigger Number
+		++TriggerNum;
+		// Frame index move to next frame. Close current frame data
+		PreFrameIndex = (PreFrameIndex + 1) % FRHI::FrameBufferNum;
+		IsRunning = false;
 		RenderCond.notify_one();
 	}
 
@@ -88,5 +135,11 @@ namespace tix
 		unique_lock<TMutex> RenderLock(RenderMutex);
 		--TriggerNum;
 		RenderCond.wait(RenderLock);
+	}
+
+	void FRenderThread::AddTaskToFrame(TTask* Task)
+	{
+		TI_ASSERT(IsGameThread());
+		RenderFrames[PreFrameIndex].FrameTasks.PushBack(Task);
 	}
 }

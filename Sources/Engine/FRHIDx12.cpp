@@ -66,7 +66,7 @@ namespace tix
 
 		// Create descriptor heaps for render target views and depth stencil views.
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors = c_frameCount;
+		rtvHeapDesc.NumDescriptors = FRHI::FrameBufferNum;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		hr = D3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&RtvHeap));
@@ -81,7 +81,7 @@ namespace tix
 		hr = D3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&DsvHeap));
 		DsvHeap->SetName(L"DsvHeap");
 
-		for (uint32 n = 0; n < c_frameCount; n++)
+		for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
 		{
 			hr = D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n]));
 		}

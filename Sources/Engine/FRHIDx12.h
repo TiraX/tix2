@@ -19,8 +19,6 @@ using namespace Microsoft::WRL;
 
 namespace tix
 {
-	static const uint32 c_frameCount = 3;		// Use triple buffering.
-
 	// Render hardware interface use DirectX 12
 	class FRHIDx12 : public FRHI
 	{
@@ -43,11 +41,11 @@ namespace tix
 		ComPtr<ID3D12DescriptorHeap>	RtvHeap;
 		ComPtr<ID3D12DescriptorHeap>	DsvHeap;
 		ComPtr<ID3D12CommandQueue>		CommandQueue;
-		ComPtr<ID3D12CommandAllocator>	CommandAllocators[c_frameCount];
+		ComPtr<ID3D12CommandAllocator>	CommandAllocators[FRHI::FrameBufferNum];
 
 		// CPU/GPU Synchronization.
 		ComPtr<ID3D12Fence>				Fence;
-		uint64							FenceValues[c_frameCount];
+		uint64							FenceValues[FRHI::FrameBufferNum];
 		HANDLE							FenceEvent;
 
 		uint32							CurrentFrame;

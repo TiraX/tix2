@@ -18,6 +18,8 @@ namespace tix
 	class FRHI
 	{
 	public: 
+		static const int32 FrameBufferNum = 3;	// Use triple buffers
+
 		static FRHI* CreateRHI(E_RHI_TYPE RhiType);
 		virtual ~FRHI();
 

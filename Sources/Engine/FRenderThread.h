@@ -30,7 +30,7 @@ namespace tix
 
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1) \
 	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1); \
-	TEngine::Get()->GetRenderThread()->AddTask(Task##TypeName);
+	TEngine::Get()->GetRenderThread()->AddTaskToFrame(Task##TypeName);
 
 /* Add a task to run in Render thread with ONE parameter.
  * RenderThread is built in parameter.
@@ -40,9 +40,15 @@ namespace tix
 	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1)
 
-	class FRenderThread : public TTaskThread
+	struct FRenderFrame
 	{
-	public: 
+		typedef TThreadSafeQueue<TTask*> TTaskQueue;
+		TTaskQueue FrameTasks;
+	};
+
+	class FRenderThread : public TThread
+	{
+	public:
 		FRenderThread();
 		virtual ~FRenderThread();
 
@@ -51,29 +57,43 @@ namespace tix
 			return RHI;
 		}
 
+		// Functions run on game thread.
+		virtual void Stop() override;
+		void TriggerRender();
+		void TriggerRenderAndStop();
+		int32 GetTriggerNum() const
+		{
+			return TriggerNum;
+		}
+		void AddTaskToFrame(TTask* Task);
+
+		// Functions run on render thread
 		virtual void Run() override;
 		virtual void OnThreadStart() override;
 		virtual void OnThreadEnd() override;
 
 		void AddRenderer(FRenderer* Renderer);
 
-		void TriggerRender();
-		int32 GetTriggerNum()
-		{
-			return TriggerNum;
-		}
-
 	protected:
 		void CreateRenderComponents();
 		void DestroyRenderComponents();
 
 		void WaitForRenderSignal();
+		void DoRenderTasks();
 
 	protected:
+		// Variables for synchronize with game thread.
 		int32 TriggerNum;
 		TMutex RenderMutex;
 		TCond RenderCond;
 
+		// Frame Index that is filling by game thread, operate in game thread
+		int32 PreFrameIndex;
+		// Frame Index that is rendering
+		int32 RenderFrameIndex;
+		FRenderFrame RenderFrames[FRHI::FrameBufferNum];
+
+		// Render components
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
 	};
