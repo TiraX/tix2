@@ -37,6 +37,7 @@ using namespace std;
 #include "TTimer.h"
 #include "TFile.h"
 #include "TStream.h"
+#include "TTicker.h"
 #include "FRenderer.h"
 #include "FRHI.h"
 

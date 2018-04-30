@@ -45,12 +45,8 @@ namespace tix
 		SAFE_DELETE(RHI);
 	}
 
-	static const uint64 FrameInterval = 33;
 	void FRenderThread::Run()
 	{
-		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
-		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
-
 		// Do render thread tasks
 		DoTasks();
 
@@ -58,12 +54,6 @@ namespace tix
 		for (auto Renderer : Renderers)
 		{
 			Renderer->Render(RHI);
-		}
-
-		LastFrameTime = CurrentFrameTime;
-		if (Delta < FrameInterval)
-		{
-			TThread::ThreadSleep(FrameInterval - Delta);
 		}
 	}
 
@@ -73,8 +63,6 @@ namespace tix
 		TThread::IndicateRenderThread();
 
 		CreateRenderComponents();
-
-		LastFrameTime = TTimer::GetCurrentTimeMillis();
 	}
 
 	void FRenderThread::OnThreadEnd()

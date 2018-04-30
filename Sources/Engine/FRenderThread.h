@@ -64,6 +64,5 @@ namespace tix
 	protected:
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
-		uint64 LastFrameTime;
 	};
 }

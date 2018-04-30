@@ -74,6 +74,7 @@
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
     <ClInclude Include="..\..\Sources\Engine\TInput.h" />
     <ClInclude Include="..\..\Sources\Engine\TInputEventType.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTicker.h" />
     <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
     <ClInclude Include="..\..\Sources\Engine\TMath.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypeCull.h" />

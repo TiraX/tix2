@@ -20,7 +20,9 @@ namespace tix
 		TI_API void Start();
 		TI_API TDevice*	GetDevice();
 		TI_API FRenderThread* GetRenderThread();
+
 		TI_API void AddRenderer(FRenderer* Renderer);
+		TI_API void AddTicker(TTicker* Ticker);
 	private:
 		TEngine();
 		~TEngine();
@@ -29,9 +31,13 @@ namespace tix
 	protected:
 		// Init every thing for engine
 		void Init(const TEngineConfiguration& Config);
+		void Tick();
 
 	private:
 		TDevice * Device;
 		FRenderThread * RenderThread;
+
+		uint64 LastFrameTime;
+		TVector<TTicker*> Tickers;
 	};
 }

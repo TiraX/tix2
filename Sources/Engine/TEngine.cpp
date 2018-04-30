@@ -56,6 +56,13 @@ namespace tix
 
 	TEngine::~TEngine()
 	{
+		// Remove all tickers
+		for (auto T : Tickers)
+		{
+			ti_delete T;
+		}
+		Tickers.clear();
+
 		// Shut down render thread
 		RenderThread->Stop();
 		ti_delete RenderThread;
@@ -84,14 +91,44 @@ namespace tix
 			});
 	}
 
+	void TEngine::AddTicker(TTicker* Ticker)
+	{
+		Tickers.push_back(Ticker);
+	}
+
+	static const uint64 FrameInterval = 33;
+
 	void TEngine::Start()
 	{
 		TI_ASSERT(Device);
+
+		LastFrameTime = TTimer::GetCurrentTimeMillis();
+
 		while (Device->Run())
 		{
-
+			Tick();
 		}
 
 		TEngine::Destroy();
+	}
+
+	void TEngine::Tick()
+	{
+		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
+		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
+		float  Dt = Delta * 0.001f;
+		_LOG("Tick %ld - %ld\n", CurrentFrameTime, LastFrameTime);
+
+		for (auto T : Tickers)
+		{
+			T->Tick(Dt);
+		}
+
+		uint32 TimePast = (uint32)(TTimer::GetCurrentTimeMillis() - CurrentFrameTime);
+		if (TimePast < FrameInterval)
+		{
+			TThread::ThreadSleep(FrameInterval - TimePast);
+		}
+		LastFrameTime = CurrentFrameTime;
 	}
 }

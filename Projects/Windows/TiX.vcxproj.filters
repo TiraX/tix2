@@ -195,5 +195,8 @@
     <ClInclude Include="..\..\Sources\Engine\TQueue.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTicker.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
