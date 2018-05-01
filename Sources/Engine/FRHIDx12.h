@@ -11,6 +11,7 @@
 #include <dxgi1_4.h>
 #include <d3d12.h>
 #include <pix.h>
+#include "dx12/d3dx12.h"
 #if defined(TIX_DEBUG)
 #include <dxgidebug.h>
 #endif
@@ -33,11 +34,14 @@ namespace tix
 
 	private:
 		void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);
+		void CreateWindowsSizeDependentResources();
 
 	private:
 		ComPtr<ID3D12Device>			D3dDevice;
 		ComPtr<IDXGIFactory4>			DxgiFactory;
 		ComPtr<IDXGISwapChain3>			SwapChain;
+		ComPtr<ID3D12Resource>			BackBufferRTs[FRHI::FrameBufferNum];
+		ComPtr<ID3D12Resource>			DepthStencil;
 		ComPtr<ID3D12DescriptorHeap>	RtvHeap;
 		ComPtr<ID3D12DescriptorHeap>	DsvHeap;
 		ComPtr<ID3D12CommandQueue>		CommandQueue;

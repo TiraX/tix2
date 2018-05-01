@@ -9,11 +9,11 @@
 
 namespace tix
 {
-	class TWin32Device : public TDevice
+	class TDeviceWin32 : public TDevice
 	{
 	public:
-		TWin32Device(int w, int h, void* handle, const char* windowName);
-		virtual ~TWin32Device();
+		TDeviceWin32(int w, int h, void* handle, const char* windowName);
+		virtual ~TDeviceWin32();
 
 		virtual bool Run();
 		virtual void Resize(int w, int h);

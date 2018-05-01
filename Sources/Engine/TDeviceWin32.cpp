@@ -10,7 +10,7 @@
 
 #ifdef TI_PLATFORM_WIN32
 
-static tix::TWin32Device* s_win32device = nullptr;
+static tix::TDeviceWin32* s_win32device = nullptr;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -163,7 +163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 namespace tix
 {
-	TWin32Device::TWin32Device(int w, int h, void* handle, const char* windowName)
+	TDeviceWin32::TDeviceWin32(int w, int h, void* handle, const char* windowName)
 		: TDevice(w, h)
 		, HWnd((HWND)handle)
 	{
@@ -172,12 +172,12 @@ namespace tix
 		ExternalWindow	= (handle != NULL);
 	}
 
-	TWin32Device::~TWin32Device()
+	TDeviceWin32::~TDeviceWin32()
 	{
 		s_win32device = NULL;
 	}
 
-	void TWin32Device::Create(const char* windowName)
+	void TDeviceWin32::Create(const char* windowName)
 	{
 		TString winversion;
 		GetWindowsVersion(winversion);
@@ -256,7 +256,7 @@ namespace tix
 		SetForegroundWindow(HWnd);
 	}
 
-	void TWin32Device::Resize(int w, int h)
+	void TDeviceWin32::Resize(int w, int h)
 	{
 		TDevice::Resize(w, h);
 		if (!ExternalWindow)
@@ -269,7 +269,7 @@ namespace tix
 	}
 
 	//! runs the device. Returns false if device wants to be deleted
-	bool TWin32Device::Run()
+	bool TDeviceWin32::Run()
 	{
 		MSG msg;
 
@@ -291,7 +291,7 @@ namespace tix
 		return !quit;
 	}
 
-	void TWin32Device::GetWindowsVersion(TString& out)
+	void TDeviceWin32::GetWindowsVersion(TString& out)
 	{
 	}
 }

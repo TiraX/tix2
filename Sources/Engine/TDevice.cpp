@@ -15,7 +15,7 @@ namespace tix
 	{
 		TDevice* device = nullptr;
 #ifdef TI_PLATFORM_WIN32
-		device = ti_new TWin32Device(Width, Height, nullptr, Name.c_str());
+		device = ti_new TDeviceWin32(Width, Height, nullptr, Name.c_str());
 #elif defined (TI_PLATFORM_IOS)
 		TiIOSDevice::CheckFeatures();
 		device = ti_new TiIOSDevice(w, h);

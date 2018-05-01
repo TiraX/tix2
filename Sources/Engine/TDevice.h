@@ -15,12 +15,17 @@ namespace tix
 
 		virtual bool Run() = 0;
 
-		int		GetWidth()
+		vector2di GetDeviceSize()
+		{
+			return vector2di(Width, Height);
+		}
+
+		int GetWidth()
 		{
 			return Width;
 		}
 
-		int		GetHeight()
+		int GetHeight()
 		{
 			return Height;
 		}
