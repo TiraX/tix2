@@ -10,7 +10,14 @@
 #ifndef __D3DX12_H__
 #define __D3DX12_H__
 
-#include "d3d12.h"
+#include <wrl.h>
+#include <dxgi1_4.h>
+#include <d3d12.h>
+#include <pix.h>
+#include "dx12/d3dx12.h"
+#if defined(TIX_DEBUG)
+#include <dxgidebug.h>
+#endif
 
 #if defined( __cplusplus )
 

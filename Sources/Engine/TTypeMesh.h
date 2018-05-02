@@ -10,10 +10,9 @@ namespace tix
 	enum E_MB_TYPES
 	{
 		EMBT_UNKNOWN,
-		EMBT_D3D10,
-		EMBT_D3D9,
-		EMBT_GLVBO,
-        EMBT_METALBUFFER,
+		EMBT_Dx12,
+		EMBT_Metal,
+		EMBT_Vulkan
 	};
 
 	enum E_INDEX_TYPE 

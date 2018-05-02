@@ -14,6 +14,9 @@
     <Filter Include="Sources\Render">
       <UniqueIdentifier>{ed6d68ff-e9a4-43b2-8e16-c2b01ac70ef5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Render\dx12">
+      <UniqueIdentifier>{7eb8b042-f59b-49ac-b2ee-2ace38ea7ead}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
@@ -55,11 +58,17 @@
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp">
-      <Filter>Sources\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp">
       <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -186,9 +195,6 @@
     <ClInclude Include="..\..\Sources\Engine\FRHI.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h">
-      <Filter>Sources\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
@@ -197,6 +203,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTicker.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

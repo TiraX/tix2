@@ -273,8 +273,54 @@ namespace tix
 
 	}
 
-	void FRHIDx12::ClearBuffers()
+	void FRHIDx12::BeginFrame()
 	{
+		HRESULT hr;
+		hr = CommandAllocators[CurrentFrame]->Reset();
+		VALIDATE_HRESULT(hr);
+	}
+
+	void FRHIDx12::EndFrame()
+	{
+		// The first argument instructs DXGI to block until VSync, putting the application
+		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
+		// frames that will never be displayed to the screen.
+		HRESULT hr = SwapChain->Present(1, 0);
+
+		// If the device was removed either by a disconnection or a driver upgrade, we 
+		// must recreate all device resources.
+		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+		{
+		}
+		else
+		{
+			VALIDATE_HRESULT(hr);
+
+			MoveToNextFrame();
+		}
+	}
+
+	// Prepare to render the next frame.
+	void FRHIDx12::MoveToNextFrame()
+	{
+		HRESULT hr;
+		// Schedule a Signal command in the queue.
+		const uint64 currentFenceValue = FenceValues[CurrentFrame];
+		hr = CommandQueue->Signal(Fence.Get(), currentFenceValue);
+		VALIDATE_HRESULT(hr);
+
+		// Advance the frame index.
+		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
+
+		// Check to see if the next frame is ready to start.
+		if (Fence->GetCompletedValue() < FenceValues[CurrentFrame])
+		{
+			hr = Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent);
+			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
+		}
+
+		// Set the fence value for the next frame.
+		FenceValues[CurrentFrame] = currentFenceValue + 1;
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12

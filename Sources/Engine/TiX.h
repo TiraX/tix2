@@ -38,6 +38,7 @@ using namespace std;
 #include "TFile.h"
 #include "TStream.h"
 #include "TTicker.h"
+#include "FMeshBuffer.h"
 #include "FRenderer.h"
 #include "FRHI.h"
 

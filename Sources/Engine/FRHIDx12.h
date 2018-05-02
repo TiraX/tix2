@@ -7,14 +7,7 @@
 
 #if COMPILE_WITH_RHI_DX12
 
-#include <wrl.h>
-#include <dxgi1_4.h>
-#include <d3d12.h>
-#include <pix.h>
 #include "dx12/d3dx12.h"
-#if defined(TIX_DEBUG)
-#include <dxgidebug.h>
-#endif
 
 using namespace Microsoft::WRL;
 
@@ -26,7 +19,9 @@ namespace tix
 	public:
 		virtual ~FRHIDx12();
 
-		virtual void ClearBuffers() override;
+		virtual void BeginFrame() override;
+		virtual void EndFrame() override;
+
 	protected: 
 		FRHIDx12();
 
@@ -35,6 +30,7 @@ namespace tix
 	private:
 		void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);
 		void CreateWindowsSizeDependentResources();
+		void MoveToNextFrame();
 
 	private:
 		ComPtr<ID3D12Device>			D3dDevice;
