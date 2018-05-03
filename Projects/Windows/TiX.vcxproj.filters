@@ -70,6 +70,15 @@
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FPipelineState.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FShader.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FTexture.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -212,6 +221,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h">
       <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FPipelineState.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FShader.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FTexture.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

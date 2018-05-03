@@ -21,9 +21,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FPipelineState.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -44,9 +47,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FPipelineState.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FShader.h" />
+    <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />

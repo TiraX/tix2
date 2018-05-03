@@ -39,6 +39,9 @@ using namespace std;
 #include "TStream.h"
 #include "TTicker.h"
 #include "FMeshBuffer.h"
+#include "FShader.h"
+#include "FTexture.h"
+#include "FPipelineState.h"
 #include "FRenderer.h"
 #include "FRHI.h"
 
