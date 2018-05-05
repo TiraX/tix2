@@ -48,7 +48,6 @@ namespace tix
 
 	TEngine::TEngine()
 		: Device(nullptr)
-		, RenderThread(nullptr)
 	{
 	}
 
@@ -130,11 +129,12 @@ namespace tix
 
 	void TEngine::TickFinished()
 	{
-		while (RenderThread->GetTriggerNum() >= FRHI::FrameBufferNum)
+		FRenderThread * RT = FRenderThread::Get();
+		while (RT->GetTriggerNum() >= FRHI::FrameBufferNum)
 		{
 			TThread::ThreadSleep(10);
 		}
 
-		RenderThread->TriggerRender();
+		RT->TriggerRender();
 	}
 }
