@@ -17,7 +17,7 @@ namespace tix
 	{
 		if (s_engine == nullptr)
 		{
-			_LOG("TiX Engine v2.0.0\n");
+			_LOG(Log, "TiX Engine v2.0.0\n");
 			s_engine = ti_new TEngine;
 			s_engine->Init(Config);
 		}

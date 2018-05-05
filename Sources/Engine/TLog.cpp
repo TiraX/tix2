@@ -22,7 +22,7 @@ namespace tix
 	TLog::~TLog()
 	{}
 
-	void TLog::Log(const char* format, ...)
+	void TLog::DoLog(E_LOG_LEVEL LogLevel, const char* Format, ...)
 	{
 #ifndef TI_PLATFORM_ANDROID
 #	ifdef TI_PLATFORM_WIN32
@@ -31,22 +31,21 @@ namespace tix
 		char tmp[1024];
 #	endif
 		va_list marker;
-		va_start(marker, format);
+		va_start(marker, Format);
 #	ifdef TI_PLATFORM_WIN32
-		vsprintf_s(tmp, 65536, format, marker);
+		vsprintf_s(tmp, 65536, Format, marker);
 #	else
-		vsprintf_s(tmp, 1024, format, marker);
+		vsprintf_s(tmp, 1024, Format, marker);
 #	endif
 		va_end(marker);
 
 #	ifdef TI_PLATFORM_WIN32
-		const char* err_str	= strstr(tmp, "Error");
-		if (err_str)
+		if (LogLevel == Error || LogLevel == Fatal)
 		{
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
 				FOREGROUND_INTENSITY | FOREGROUND_RED);
 		}
-		else if (strstr(tmp, "Warning"))
+		else if (LogLevel == Warning)
 		{
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
 				FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
@@ -59,6 +58,7 @@ namespace tix
 #	endif
 
 		printf(tmp);
+
 #	ifdef TI_PLATFORM_WIN32
 		ti_delete[] tmp;
 #	endif
@@ -73,5 +73,9 @@ namespace tix
 
 		__android_log_print(ANDROID_LOG_DEBUG, "tix debug",  "%s", buf);
 #endif
+		if (LogLevel == Fatal)
+		{
+			TI_ASSERT(0);
+		}
 	}
 }

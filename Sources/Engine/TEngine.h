@@ -35,7 +35,6 @@ namespace tix
 
 	private:
 		TDevice * Device;
-		FRenderThread * RenderThread;
 
 		uint64 LastFrameTime;
 		TVector<TTicker*> Tickers;

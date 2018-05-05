@@ -104,7 +104,7 @@ namespace tix
 		}
 
 		CreateWindowsSizeDependentResources();
-		_LOG("  RHI DirectX 12 inited.\n");
+		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
