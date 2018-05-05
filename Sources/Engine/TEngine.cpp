@@ -32,9 +32,7 @@ namespace tix
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
 
 		// Create Render Thread
-		TI_ASSERT(RenderThread == nullptr);
-		RenderThread = ti_new FRenderThread();
-		RenderThread->Start();
+		FRenderThread::CreateRenderThread();
 	}
 
 	void TEngine::Destroy()
@@ -64,9 +62,7 @@ namespace tix
 		Tickers.clear();
 
 		// Shut down render thread
-		RenderThread->Stop();
-		ti_delete RenderThread;
-		RenderThread = nullptr;
+		FRenderThread::DestroyRenderThread();
 
 		// delete device
 		TDevice::DestoryDevice(Device);
@@ -75,11 +71,6 @@ namespace tix
 	TDevice* TEngine::GetDevice()
 	{
 		return Device;
-	}
-
-	FRenderThread* TEngine::GetRenderThread()
-	{
-		return RenderThread;
 	}
 
 	void TEngine::AddRenderer(FRenderer* Renderer)

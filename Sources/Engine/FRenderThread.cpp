@@ -10,6 +10,28 @@
 
 namespace tix
 {
+	FRenderThread* FRenderThread::RenderThread = nullptr;
+
+	void FRenderThread::CreateRenderThread()
+	{
+		TI_ASSERT(RenderThread == nullptr);
+		RenderThread = ti_new FRenderThread;
+		RenderThread->Start();
+	}
+
+	void FRenderThread::DestroyRenderThread()
+	{
+		TI_ASSERT(RenderThread != nullptr);
+		RenderThread->Stop();
+		ti_delete RenderThread;
+		RenderThread = nullptr;
+	}
+
+	FRenderThread* FRenderThread::Get()
+	{
+		return RenderThread;
+	}
+
 	FRenderThread::FRenderThread()
 		: TThread("RenderThread")
 		, RHI(nullptr)
@@ -32,7 +54,8 @@ namespace tix
 	void FRenderThread::CreateRenderComponents()
 	{
 		// Create RHI to submit commands to GPU
-		RHI = FRHI::CreateRHI(ERHI_DX12);
+		FRHI::CreateRHI(ERHI_DX12);
+		RHI = FRHI::Get();
 	}
 
 	void FRenderThread::DestroyRenderComponents()
@@ -45,7 +68,7 @@ namespace tix
 		Renderers.clear();
 
 		// Release RHI
-		SAFE_DELETE(RHI);
+		FRHI::ReleaseRHI();
 	}
 
 	void FRenderThread::Run()

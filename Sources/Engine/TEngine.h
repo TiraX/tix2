@@ -19,7 +19,6 @@ namespace tix
 
 		TI_API void Start();
 		TI_API TDevice*	GetDevice();
-		TI_API FRenderThread* GetRenderThread();
 
 		TI_API void AddRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);

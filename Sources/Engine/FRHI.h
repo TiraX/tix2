@@ -20,14 +20,17 @@ namespace tix
 	public: 
 		static const int32 FrameBufferNum = 3;	// Use triple buffers
 
-		static FRHI* CreateRHI(E_RHI_TYPE RhiType);
-		virtual ~FRHI();
+		static FRHI* Get();
+		static void CreateRHI(E_RHI_TYPE RhiType);
+		static void ReleaseRHI();
 
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
 	protected:
+		static FRHI* RHI;
 		FRHI();
+		virtual ~FRHI();
 
 	private:
 	};

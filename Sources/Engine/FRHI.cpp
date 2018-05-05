@@ -9,14 +9,28 @@
 
 namespace tix
 {
-	FRHI* FRHI::CreateRHI(E_RHI_TYPE RHIType)
+	FRHI* FRHI::RHI = nullptr;
+
+	FRHI* FRHI::Get()
 	{
+		return RHI;
+	}
+
+	void FRHI::CreateRHI(E_RHI_TYPE RHIType)
+	{
+		TI_ASSERT(RHI == nullptr);
 #if defined (TI_PLATFORM_WIN32) && (COMPILE_WITH_RHI_DX12)
-		return ti_new FRHIDx12;
+		RHI = ti_new FRHIDx12;
 #else
 #error("No avaible RHI for this platform.")
 #endif
-		return nullptr;
+	}
+
+	void FRHI::ReleaseRHI()
+	{
+		TI_ASSERT(RHI != nullptr);
+		ti_delete RHI;
+		RHI = nullptr;
 	}
 
 	FRHI::FRHI()

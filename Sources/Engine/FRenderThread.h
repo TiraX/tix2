@@ -13,8 +13,8 @@ namespace tix
 #define RENDERTHREAD_TASK_FUNCTION(Code) \
 	virtual void Execute() override \
 	{ \
-		FRenderThread * RenderThread = TEngine::Get()->GetRenderThread(); \
-		FRHI * RHI = RenderThread->GetRHI(); \
+		FRenderThread * RenderThread = FRenderThread::Get(); \
+		FRHI * RHI = FRHI::Get(); \
 		Code; \
 	}
 
@@ -30,7 +30,7 @@ namespace tix
 
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1) \
 	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1); \
-	TEngine::Get()->GetRenderThread()->AddTaskToFrame(Task##TypeName);
+	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
 
 /* Add a task to run in Render thread with ONE parameter.
  * RenderThread is built in parameter.
@@ -49,13 +49,9 @@ namespace tix
 	class FRenderThread : public TThread
 	{
 	public:
-		FRenderThread();
-		virtual ~FRenderThread();
-
-		FRHI * GetRHI()
-		{
-			return RHI;
-		}
+		static void CreateRenderThread();
+		static void DestroyRenderThread();
+		static FRenderThread* Get();
 
 		// Functions run on game thread.
 		virtual void Stop() override;
@@ -73,6 +69,11 @@ namespace tix
 		virtual void OnThreadEnd() override;
 
 		void AddRenderer(FRenderer* Renderer);
+
+	private:
+		static FRenderThread* RenderThread;
+		FRenderThread();
+		virtual ~FRenderThread();
 
 	protected:
 		void CreateRenderComponents();
