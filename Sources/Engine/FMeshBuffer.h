@@ -21,27 +21,27 @@ namespace tix
 			void* vertex_data, int32 vertex_count,
 			E_INDEX_TYPE index_type, void* index_data, int32 index_count);
 
-		int32	GetVerticesCount()
+		int32	GetVerticesCount() const
 		{
 			return VsDataCount;
 		}
 
-		int32 GetIndicesCount()
+		int32 GetIndicesCount() const
 		{
 			return PsDataCount;
 		}
 
-		E_MB_TYPES	GetType()
+		E_MB_TYPES	GetType() const
 		{
 			return Type;
 		}
 
-		E_PRIMITIVE_TYPE GetPrimitiveType()
+		E_PRIMITIVE_TYPE GetPrimitiveType() const
 		{
 			return PrimitiveType;
 		}
 
-		E_INDEX_TYPE GetIndexType()
+		E_INDEX_TYPE GetIndexType() const
 		{
 			return IndexType;
 		}
@@ -51,12 +51,17 @@ namespace tix
 			PrimitiveType = type;
 		}
 
-		uint32 GetVSFormat()
+		uint32 GetVSFormat() const
 		{
 			return VsFormat;
 		}
 
-		const aabbox3df& GetBBox()
+		uint32 GetStride() const
+		{
+			return Stride;
+		}
+
+		const aabbox3df& GetBBox() const
 		{
 			return BBox;
 		}
@@ -76,7 +81,6 @@ namespace tix
 			return PsData;
 		}
 	protected:
-		virtual void CreateHardwareBuffer() = 0;
 
 	protected:
 		E_MB_TYPES			Type;
@@ -94,5 +98,6 @@ namespace tix
 		int32				PsDataCount;
 
 		uint32				VsFormat;
+		uint32				Stride;
 	};
 }

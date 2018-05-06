@@ -19,8 +19,13 @@ namespace tix
 	public:
 		virtual ~FRHIDx12();
 
+		// RHI common methods
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
+
+		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer) override;
+
+		// DirectX 12 specified methods
 
 	protected: 
 		FRHIDx12();
@@ -32,6 +37,34 @@ namespace tix
 		void CreateWindowsSizeDependentResources();
 		void MoveToNextFrame();
 
+		uint64 UpdateSubresources(
+			_In_ ID3D12GraphicsCommandList* pCmdList,
+			_In_ ID3D12Resource* pDestinationResource,
+			_In_ ID3D12Resource* pIntermediate,
+			_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+			_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
+			uint64 RequiredSize,
+			_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
+			_In_reads_(NumSubresources) const uint32* pNumRows,
+			_In_reads_(NumSubresources) const uint64* pRowSizesInBytes,
+			_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData);
+		uint64 UpdateSubresources(
+			_In_ ID3D12GraphicsCommandList* pCmdList,
+			_In_ ID3D12Resource* pDestinationResource,
+			_In_ ID3D12Resource* pIntermediate,
+			uint64 IntermediateOffset,
+			_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+			_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
+			_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData);
+
+		void Transition(
+			_In_ ID3D12GraphicsCommandList* pCmdList,
+			_In_ ID3D12Resource* pResource,
+			D3D12_RESOURCE_STATES stateBefore,
+			D3D12_RESOURCE_STATES stateAfter,
+			UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
+
 	private:
 		ComPtr<ID3D12Device>			D3dDevice;
 		ComPtr<IDXGIFactory4>			DxgiFactory;
@@ -42,6 +75,7 @@ namespace tix
 		ComPtr<ID3D12DescriptorHeap>	DsvHeap;
 		ComPtr<ID3D12CommandQueue>		CommandQueue;
 		ComPtr<ID3D12CommandAllocator>	CommandAllocators[FRHI::FrameBufferNum];
+		ComPtr<ID3D12GraphicsCommandList>	CommandLists[FRHI::FrameBufferNum];
 
 		// CPU/GPU Synchronization.
 		ComPtr<ID3D12Fence>				Fence;

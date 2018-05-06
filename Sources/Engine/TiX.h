@@ -6,6 +6,7 @@
 #pragma once
 
 // Include std symbols
+#include <stdlib.h>
 #include <string>
 #include <list>
 #include <vector>
@@ -43,6 +44,7 @@ using namespace std;
 #include "FTexture.h"
 #include "FPipelineState.h"
 #include "FRenderer.h"
+#include "FFrameResources.h"
 #include "FRHI.h"
 
 #include "TEngineConfig.h"

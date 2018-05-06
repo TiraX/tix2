@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipelineState.cpp" />
@@ -45,6 +47,8 @@
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Engine\FFrameResources.h" />
+    <ClInclude Include="..\..\Sources\Engine\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineState.h" />

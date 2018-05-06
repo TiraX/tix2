@@ -8,6 +8,8 @@
 
 #if COMPILE_WITH_RHI_DX12
 #include "TDeviceWin32.h"
+#include "FFrameResourcesDx12.h"
+#include "FMeshBufferDx12.h"
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
@@ -16,15 +18,28 @@
 
 namespace tix
 {
-#define VALIDATE_HRESULT(hr) TI_ASSERT(SUCCEEDED(hr))
 	FRHIDx12::FRHIDx12()
-		: CurrentFrame(0)
+		: FRHI(ERHI_DX12)
+		, CurrentFrame(0)
 	{
 		Init();
+
+		// Create frame resource holders
+		for (int32 i = 0; i < FRHI::FrameBufferNum; ++i)
+		{
+			FrameResources[i] = ti_new FFrameResources;
+		}
+		TI_TODO("Remove all references when done with this frame.");
 	}
 
 	FRHIDx12::~FRHIDx12()
 	{
+		// delete frame resource holders
+		for (int32 i = 0; i < FRHI::FrameBufferNum; ++i)
+		{
+			ti_delete FrameResources[i];
+			FrameResources[i] = nullptr;
+		}
 	}
 
 	void FRHIDx12::Init()
@@ -58,6 +73,10 @@ namespace tix
 #endif
 		VALIDATE_HRESULT(hr);
 
+		// Prevent the GPU from over-clocking or under-clocking to get consistent timings
+		//if (DeveloperModeEnabled)
+		//	D3dDevice->SetStablePowerState(TRUE);
+
 		// Create the command queue.
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -86,9 +105,13 @@ namespace tix
 		VALIDATE_HRESULT(hr);
 		DsvHeap->SetName(L"DsvHeap");
 
+		// Create command allocator and command list.
 		for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
 		{
 			hr = D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n]));
+			VALIDATE_HRESULT(hr);
+			hr = D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[n].Get(), nullptr, IID_PPV_ARGS(&CommandLists[n]));
+			VALIDATE_HRESULT(hr);
 		}
 
 		// Create synchronization objects.
@@ -114,7 +137,7 @@ namespace tix
 		ComPtr<IDXGIAdapter1> adapter;
 		*ppAdapter = nullptr;
 
-		for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != DxgiFactory->EnumAdapters1(adapterIndex, &adapter); adapterIndex++)
+		for (uint32 adapterIndex = 0; DXGI_ERROR_NOT_FOUND != DxgiFactory->EnumAdapters1(adapterIndex, &adapter); adapterIndex++)
 		{
 			DXGI_ADAPTER_DESC1 desc;
 			adapter->GetDesc1(&desc);
@@ -129,6 +152,10 @@ namespace tix
 			// actual device yet.
 			if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
 			{
+				char AdapterName[128];
+				size_t Converted;
+				wcstombs_s(&Converted, AdapterName, 128, desc.Description, 128);
+				_LOG(Log, "D3D12-capable hardware found:  %s (%u MB)\n", AdapterName, desc.DedicatedVideoMemory >> 20);
 				break;
 			}
 		}
@@ -223,7 +250,7 @@ namespace tix
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(RtvHeap->GetCPUDescriptorHandleForHeapStart());
-			for (UINT n = 0; n < FRHI::FrameBufferNum; n++)
+			for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
 			{
 				hr = SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n]));
 				VALIDATE_HRESULT(hr);
@@ -321,6 +348,213 @@ namespace tix
 
 		// Set the fence value for the next frame.
 		FenceValues[CurrentFrame] = currentFenceValue + 1;
+	}
+
+	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
+	{
+		TI_ASSERT(MeshBuffer->GetType() == EMBT_Dx12);
+		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
+		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
+		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
+
+		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
+		// The upload resource must not be released until after the GPU has finished using it.
+		ComPtr<ID3D12Resource> VertexBufferUpload;
+
+		int32 BufferSize = MeshBuffer->GetVerticesCount() * MeshBuffer->GetStride();
+		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&defaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&MBDx12->VertexBuffer)));
+
+		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&VertexBufferUpload)));
+
+		TI_TODO("Give mesh vertex buffer a meanful d3d 12 name.");
+		MBDx12->VertexBuffer->SetName(L"VertexBuffer");
+
+		// Upload the vertex buffer to the GPU.
+		{
+			D3D12_SUBRESOURCE_DATA VertexData = {};
+			VertexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetVSData());
+			VertexData.RowPitch = BufferSize;
+			VertexData.SlicePitch = VertexData.RowPitch;
+
+			UpdateSubresources(CommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+
+			Transition(CommandList.Get(), MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		}
+
+		const uint32 IndexBufferSize = sizeof(MeshBuffer->GetIndicesCount() * (MeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+
+		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
+		// The upload resource must not be released until after the GPU has finished using it.
+		ComPtr<ID3D12Resource> IndexBufferUpload;
+
+		CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&defaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&IndexBufferDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&MBDx12->IndexBuffer)));
+
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&IndexBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&IndexBufferUpload)));
+
+		TI_TODO("Give mesh index buffer a meanful d3d 12 name.");
+		MBDx12->IndexBuffer->SetName(L"IndexBuffer");
+
+		// Upload the index buffer to the GPU.
+		{
+			D3D12_SUBRESOURCE_DATA IndexData = {};
+			IndexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetPSData());
+			IndexData.RowPitch = IndexBufferSize;
+			IndexData.SlicePitch = IndexData.RowPitch;
+
+			UpdateSubresources(CommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
+
+			Transition(CommandList.Get(), MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		}
+
+		// Hold resources used here
+		FrameResource->MeshBuffers.push_back(MeshBuffer);
+		FrameResource->D3d12Resources.push_back(VertexBufferUpload);
+		FrameResource->D3d12Resources.push_back(IndexBufferUpload);
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// All arrays must be populated (e.g. by calling GetCopyableFootprints)
+	uint64 FRHIDx12::UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_ ID3D12Resource* pIntermediate,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
+		uint64 RequiredSize,
+		_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
+		_In_reads_(NumSubresources) const uint32* pNumRows,
+		_In_reads_(NumSubresources) const uint64* pRowSizesInBytes,
+		_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData)
+	{
+		// Minor validation
+		D3D12_RESOURCE_DESC IntermediateDesc = pIntermediate->GetDesc();
+		D3D12_RESOURCE_DESC DestinationDesc = pDestinationResource->GetDesc();
+		if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
+			IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
+			RequiredSize >(SIZE_T) - 1 ||
+			(DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
+			(FirstSubresource != 0 || NumSubresources != 1)))
+		{
+			return 0;
+		}
+
+		uint8* pData;
+		HRESULT hr = pIntermediate->Map(0, nullptr, reinterpret_cast<void**>(&pData));
+		if (FAILED(hr))
+		{
+			return 0;
+		}
+
+		for (uint32 i = 0; i < NumSubresources; ++i)
+		{
+			if (pRowSizesInBytes[i] > (SIZE_T)-1) return 0;
+			D3D12_MEMCPY_DEST DestData = { pData + pLayouts[i].Offset, pLayouts[i].Footprint.RowPitch, pLayouts[i].Footprint.RowPitch * pNumRows[i] };
+			MemcpySubresource(&DestData, &pSrcData[i], (SIZE_T)pRowSizesInBytes[i], pNumRows[i], pLayouts[i].Footprint.Depth);
+		}
+		pIntermediate->Unmap(0, nullptr);
+
+		if (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
+		{
+			CD3DX12_BOX SrcBox(uint32(pLayouts[0].Offset), uint32(pLayouts[0].Offset + pLayouts[0].Footprint.Width));
+			pCmdList->CopyBufferRegion(
+				pDestinationResource, 0, pIntermediate, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
+		}
+		else
+		{
+			for (uint32 i = 0; i < NumSubresources; ++i)
+			{
+				CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
+				CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);
+				pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+			}
+		}
+		return RequiredSize;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Heap-allocating UpdateSubresources implementation
+	uint64 FRHIDx12::UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_ ID3D12Resource* pIntermediate,
+		uint64 IntermediateOffset,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
+		_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData)
+	{
+		uint64 RequiredSize = 0;
+		uint64 MemToAlloc = static_cast<uint64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(uint32) + sizeof(uint64)) * NumSubresources;
+		if (MemToAlloc > SIZE_MAX)
+		{
+			return 0;
+		}
+		void* pMem = HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(MemToAlloc));
+		if (pMem == nullptr)
+		{
+			return 0;
+		}
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(pMem);
+		uint64* pRowSizesInBytes = reinterpret_cast<uint64*>(pLayouts + NumSubresources);
+		uint32* pNumRows = reinterpret_cast<uint32*>(pRowSizesInBytes + NumSubresources);
+
+		D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
+		ID3D12Device* pDevice;
+		pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+		pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
+		pDevice->Release();
+
+		uint64 Result = UpdateSubresources(pCmdList, pDestinationResource, pIntermediate, FirstSubresource, NumSubresources, RequiredSize, pLayouts, pNumRows, pRowSizesInBytes, pSrcData);
+		HeapFree(GetProcessHeap(), 0, pMem);
+		return Result;
+	}
+
+	void FRHIDx12::Transition(
+		_In_ ID3D12GraphicsCommandList* pCmdList,
+		_In_ ID3D12Resource* pResource,
+		D3D12_RESOURCE_STATES stateBefore,
+		D3D12_RESOURCE_STATES stateAfter,
+		UINT subresource,
+		D3D12_RESOURCE_BARRIER_FLAGS flags)
+	{
+		TI_TODO("Make transition barrier a batch way.");
+		D3D12_RESOURCE_BARRIER barrier;
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags = flags;
+		barrier.Transition.pResource = pResource;
+		barrier.Transition.StateBefore = stateBefore;
+		barrier.Transition.StateAfter = stateAfter;
+		barrier.Transition.Subresource = subresource;
+		pCmdList->ResourceBarrier(1, &barrier);
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12

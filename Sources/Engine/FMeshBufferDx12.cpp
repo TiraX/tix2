@@ -4,6 +4,7 @@
 */
 
 #include "stdafx.h"
+#include "FRHIDx12.h"
 #include "FMeshBufferDx12.h"
 
 #if COMPILE_WITH_RHI_DX12
@@ -32,17 +33,6 @@ namespace tix
 		DXGI_FORMAT_R8G8B8A8_UINT,		// ESSI_BLENDINDEX,
 		DXGI_FORMAT_R32G32B32A32_FLOAT,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
-	static const int32 SematicSize[ESSI_TOTAL] =
-	{
-		12,	// ESSI_POSITION,
-		12,	// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
-		4,	// ESSI_COLOR,
-		8,	// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
-		8,	// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
-		12,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
-		4,	// ESSI_BLENDINDEX,
-		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
-	};
 	FMeshBufferDx12::FMeshBufferDx12()
 		: FMeshBuffer(EMBT_Dx12)
 	{
@@ -50,45 +40,6 @@ namespace tix
 
 	FMeshBufferDx12::~FMeshBufferDx12()
 	{
-	}
-
-	void FMeshBufferDx12::CreateHardwareBuffer() 
-	{
-		// Create Layout
-		TVector<D3D12_INPUT_ELEMENT_DESC> Layout;
-		GetLayout(Layout);
-
-
-	}
-
-	void FMeshBufferDx12::GetLayout(TVector<D3D12_INPUT_ELEMENT_DESC>& Layout)
-	{
-		int32 Segments = 0;
-		for (uint32 seg = 1; seg <= EVSSEG_TOTAL; seg <<= 1)
-		{
-			if (VsFormat & seg)
-			{
-				++Segments;
-			}
-		}
-		Layout.resize(Segments);
-		for (uint32 seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
-		{
-			if (VsFormat & seg)
-			{
-				int32 SemanticOffset = 0;
-				D3D12_INPUT_ELEMENT_DESC& Desc = Layout[i];
-				Desc.SemanticName = SemanticName[i];
-				Desc.SemanticIndex = i;
-				Desc.Format = SematicFormat[i];
-				Desc.InputSlot = 0;
-				Desc.AlignedByteOffset = SemanticOffset;
-				Desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-				Desc.InstanceDataStepRate = 0;
-
-				SemanticOffset += SematicSize[i];
-			}
-		}
 	}
 }
 

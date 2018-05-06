@@ -33,8 +33,13 @@ namespace tix
 		RHI = nullptr;
 	}
 
-	FRHI::FRHI()
+	FRHI::FRHI(E_RHI_TYPE InRHIType)
+		: RHIType(InRHIType)
 	{
+		for (int32 i = 0; i < FrameBufferNum; ++i)
+		{
+			FrameResources[i] = nullptr;
+		}
 	}
 
 	FRHI::~FRHI()

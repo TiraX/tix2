@@ -14,6 +14,7 @@ namespace tix
 		ERHI_NUM,
 	};
 
+	class FFrameResources;
 	// Render hardware interface
 	class FRHI
 	{
@@ -27,11 +28,20 @@ namespace tix
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
+		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer) = 0;
+
+		E_RHI_TYPE GetRHIType() const
+		{
+			return RHIType;
+		}
+
 	protected:
 		static FRHI* RHI;
-		FRHI();
+		FRHI(E_RHI_TYPE InRHIType);
 		virtual ~FRHI();
 
-	private:
+	protected:
+		E_RHI_TYPE RHIType;
+		FFrameResources * FrameResources[FrameBufferNum];
 	};
 }
