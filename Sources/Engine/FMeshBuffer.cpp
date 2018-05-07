@@ -18,8 +18,8 @@ namespace tix
 		4,	// ESSI_BLENDINDEX,
 		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
-	FMeshBuffer::FMeshBuffer(E_MB_TYPES type)
-		: Type(type)
+	FMeshBuffer::FMeshBuffer(E_MB_TYPES InType, const int8* InName)
+		: Type(InType)
 		, PrimitiveType(EPT_TRIANGLELIST)
 		, VsData(nullptr)
 		, VsDataCount(0)
@@ -29,28 +29,29 @@ namespace tix
 		, VsFormat(0)
 		, Stride(0)
 		, MeshFlag(0)
+#if defined (TIX_DEBUG)
+		, Name(InName)
+#endif
 	{
 	}
 
 	FMeshBuffer::~FMeshBuffer()
 	{
-		TI_TODO("Release VsData and PsData");
+		SAFE_DELETE(VsData);
+		SAFE_DELETE(PsData);
 	}
 
 	void FMeshBuffer::SetVertexStreamData(
 		uint32 InFormat,
-		void* InVertexData, int32 InVertexCount,
-		E_INDEX_TYPE InIndexType, void* InIndexData, int32 InIndexCount)
+		const void* InVertexData, int32 InVertexCount,
+		E_INDEX_TYPE InIndexType, 
+		const void* InIndexData, int32 InIndexCount)
 	{
 		VsFormat = InFormat;
 		VsDataCount = InVertexCount;
 
 		IndexType = InIndexType;
 		PsDataCount = InIndexCount;
-
-		TI_TODO("Align VsData and PsData with 16 bytes.");
-		VsData = (uint8*)InVertexData;
-		PsData = (uint8*)InIndexData;
 
 		// Calculate stride
 		Stride = 0;
@@ -62,6 +63,14 @@ namespace tix
 			}
 		}
 
-		//CreateHardwareBuffer();
+		const uint32 VsSize = InVertexCount * Stride;
+		const uint32 VsBufferSize = ti_align(VsSize, 16);
+		VsData = ti_new uint8[VsBufferSize];
+		memcpy(VsData, InVertexData, VsSize);
+
+		const uint32 PsSize = InIndexCount * (InIndexType == EIT_16BIT ? sizeof(uint16) : sizeof(uint32));
+		const uint32 PsBufferSize = ti_align(PsSize, 16);
+		PsData = ti_new uint8[PsBufferSize];
+		memcpy(PsData, InIndexData, PsSize);
 	}
 }

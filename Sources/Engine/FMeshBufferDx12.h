@@ -12,7 +12,7 @@ namespace tix
 	class FMeshBufferDx12 : public FMeshBuffer
 	{
 	public:
-		FMeshBufferDx12();
+		FMeshBufferDx12(const int8* InName);
 		virtual ~FMeshBufferDx12();
 
 	protected:

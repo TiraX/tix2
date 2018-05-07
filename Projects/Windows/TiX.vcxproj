@@ -97,6 +97,7 @@
     <ClInclude Include="..\..\Sources\Engine\TTypePixelFormat.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypeRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypes.h" />
+    <ClInclude Include="..\..\Sources\Engine\TUtils.h" />
     <ClInclude Include="..\..\Sources\Engine\TVersion.h" />
     <ClInclude Include="..\..\Sources\Engine\TiX.h" />
   </ItemGroup>

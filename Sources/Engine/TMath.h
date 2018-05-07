@@ -214,7 +214,17 @@ inline float Q_rsqrt( float number )
 	// y   = y * ( threehalfs - ( x2 * y * y ) ); // 2nd iteration, this can be removed
 
 	return y;
-}  
+} 
+
+inline uint32 ti_align(uint32 n, uint32 align_num)
+{
+	return (n + align_num - 1) & (~(align_num - 1));
+}
+
+inline int32 ti_align(int32 n, uint32 align_num)
+{
+	return (n + align_num - 1) & (~(align_num - 1));
+}
 
 #include "math/Vector2d.h"
 #include "math/Vector3d.h"

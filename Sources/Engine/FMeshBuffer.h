@@ -13,13 +13,15 @@ namespace tix
 	class FMeshBuffer : public IReferenceCounted
 	{
 	public:
-		FMeshBuffer(E_MB_TYPES type);
+		FMeshBuffer(E_MB_TYPES InType, const int8* InName);
 		virtual ~FMeshBuffer();
 
 	public:
-		virtual void	SetVertexStreamData(uint32 format,
-			void* vertex_data, int32 vertex_count,
-			E_INDEX_TYPE index_type, void* index_data, int32 index_count);
+		void	SetVertexStreamData(
+			uint32 InFormat,
+			const void* InVertexData, int32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			const void* InIndexData, int32 InIndexCount);
 
 		int32	GetVerticesCount() const
 		{
@@ -80,6 +82,13 @@ namespace tix
 		{
 			return PsData;
 		}
+
+#if defined (TIX_DEBUG)
+		const TString GetName() const
+		{
+			return Name;
+		}
+#endif
 	protected:
 
 	protected:
@@ -99,5 +108,8 @@ namespace tix
 
 		uint32				VsFormat;
 		uint32				Stride;
+#if defined (TIX_DEBUG)
+		TString				Name;
+#endif
 	};
 }

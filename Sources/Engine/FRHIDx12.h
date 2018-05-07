@@ -58,12 +58,15 @@ namespace tix
 			_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData);
 
 		void Transition(
-			_In_ ID3D12GraphicsCommandList* pCmdList,
 			_In_ ID3D12Resource* pResource,
 			D3D12_RESOURCE_STATES stateBefore,
 			D3D12_RESOURCE_STATES stateAfter,
-			UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			uint32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
 			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
+
+		void FlushResourceBarriers(
+			_In_ ID3D12GraphicsCommandList* pCmdList
+			);
 
 	private:
 		ComPtr<ID3D12Device>			D3dDevice;
@@ -85,6 +88,10 @@ namespace tix
 		uint32							CurrentFrame;
 
 		uint32							RtvDescriptorSize;
+
+		static const uint32				MaxResourceBarrierBuffers = 16;
+		D3D12_RESOURCE_BARRIER			ResourceBarrierBuffers[MaxResourceBarrierBuffers];
+		uint32							NumBarriersToFlush;
 
 		friend class FRHI;
 	};

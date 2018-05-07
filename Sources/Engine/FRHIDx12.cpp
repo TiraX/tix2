@@ -21,6 +21,7 @@ namespace tix
 	FRHIDx12::FRHIDx12()
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
+		, NumBarriersToFlush(0)
 	{
 		Init();
 
@@ -29,7 +30,6 @@ namespace tix
 		{
 			FrameResources[i] = ti_new FFrameResources;
 		}
-		TI_TODO("Remove all references when done with this frame.");
 	}
 
 	FRHIDx12::~FRHIDx12()
@@ -305,6 +305,8 @@ namespace tix
 		HRESULT hr;
 		hr = CommandAllocators[CurrentFrame]->Reset();
 		VALIDATE_HRESULT(hr);
+
+		TI_ASSERT(NumBarriersToFlush == 0);
 	}
 
 	void FRHIDx12::EndFrame()
@@ -348,6 +350,10 @@ namespace tix
 
 		// Set the fence value for the next frame.
 		FenceValues[CurrentFrame] = currentFenceValue + 1;
+
+		// Release resources references
+		TI_TODO("Validat if CurrentFrame is the correct point to release.");
+		FrameResources[CurrentFrame]->RemoveAllReferences();
 	}
 
 	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
@@ -381,8 +387,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&VertexBufferUpload)));
 
-		TI_TODO("Give mesh vertex buffer a meanful d3d 12 name.");
-		MBDx12->VertexBuffer->SetName(L"VertexBuffer");
+		MBDx12->VertexBuffer->SetName(FromString(MeshBuffer->GetName() + "_VB").c_str());
 
 		// Upload the vertex buffer to the GPU.
 		{
@@ -393,7 +398,7 @@ namespace tix
 
 			UpdateSubresources(CommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
-			Transition(CommandList.Get(), MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
 
 		const uint32 IndexBufferSize = sizeof(MeshBuffer->GetIndicesCount() * (MeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
@@ -419,8 +424,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&IndexBufferUpload)));
 
-		TI_TODO("Give mesh index buffer a meanful d3d 12 name.");
-		MBDx12->IndexBuffer->SetName(L"IndexBuffer");
+		MBDx12->IndexBuffer->SetName(FromString(MeshBuffer->GetName() + "_IB").c_str());
 
 		// Upload the index buffer to the GPU.
 		{
@@ -431,8 +435,10 @@ namespace tix
 
 			UpdateSubresources(CommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
-			Transition(CommandList.Get(), MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		}
+
+		FlushResourceBarriers(CommandList.Get());
 
 		// Hold resources used here
 		FrameResource->MeshBuffers.push_back(MeshBuffer);
@@ -539,22 +545,30 @@ namespace tix
 	}
 
 	void FRHIDx12::Transition(
-		_In_ ID3D12GraphicsCommandList* pCmdList,
 		_In_ ID3D12Resource* pResource,
 		D3D12_RESOURCE_STATES stateBefore,
 		D3D12_RESOURCE_STATES stateAfter,
-		UINT subresource,
+		uint32 subresource,
 		D3D12_RESOURCE_BARRIER_FLAGS flags)
 	{
-		TI_TODO("Make transition barrier a batch way.");
-		D3D12_RESOURCE_BARRIER barrier;
+		D3D12_RESOURCE_BARRIER& barrier = ResourceBarrierBuffers[NumBarriersToFlush++];
+		TI_ASSERT(NumBarriersToFlush <= MaxResourceBarrierBuffers);
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = flags;
 		barrier.Transition.pResource = pResource;
 		barrier.Transition.StateBefore = stateBefore;
 		barrier.Transition.StateAfter = stateAfter;
 		barrier.Transition.Subresource = subresource;
-		pCmdList->ResourceBarrier(1, &barrier);
+	}
+
+	void FRHIDx12::FlushResourceBarriers(
+		_In_ ID3D12GraphicsCommandList* pCmdList)
+	{
+		if (NumBarriersToFlush > 0)
+		{
+			pCmdList->ResourceBarrier(NumBarriersToFlush, ResourceBarrierBuffers);
+			NumBarriersToFlush = 0;
+		}
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12
