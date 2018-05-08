@@ -40,6 +40,8 @@ using namespace std;
 #include "TFile.h"
 #include "TStream.h"
 #include "TTicker.h"
+#include "TImage.h"
+#include "FRenderResource.h"
 #include "FMeshBuffer.h"
 #include "FShader.h"
 #include "FTexture.h"

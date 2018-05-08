@@ -33,8 +33,8 @@ namespace tix
 		DXGI_FORMAT_R8G8B8A8_UINT,		// ESSI_BLENDINDEX,
 		DXGI_FORMAT_R32G32B32A32_FLOAT,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
-	FMeshBufferDx12::FMeshBufferDx12(const int8* InName)
-		: FMeshBuffer(EMBT_Dx12, InName)
+	FMeshBufferDx12::FMeshBufferDx12()
+		: FMeshBuffer(ERF_Dx12)
 	{
 	}
 

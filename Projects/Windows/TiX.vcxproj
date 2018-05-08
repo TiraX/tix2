@@ -28,7 +28,9 @@
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -39,6 +41,7 @@
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TStream.cpp" />
@@ -53,10 +56,13 @@
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineState.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
+    <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
+    <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />
@@ -81,6 +87,7 @@
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
+    <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
@@ -92,7 +99,7 @@
     <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
     <ClInclude Include="..\..\Sources\Engine\TMath.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypeCull.h" />
-    <ClInclude Include="..\..\Sources\Engine\TTypeMesh.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTypeRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypeNode.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypePixelFormat.h" />
     <ClInclude Include="..\..\Sources\Engine\TTypeRenderer.h" />

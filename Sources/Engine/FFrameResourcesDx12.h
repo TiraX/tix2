@@ -16,6 +16,9 @@ namespace tix
 
 		virtual void RemoveAllReferences();
 
+		void HoldDxReference(ComPtr<ID3D12Resource> Res);
+
+	private:
 		// Hold some temp resources used in this frame
 		TVector< ComPtr<ID3D12Resource> > D3d12Resources;
 	};

@@ -9,17 +9,16 @@
 
 namespace tix
 {
-	class FMeshBufferDx12 : public FMeshBuffer
+	class FShaderDx12 : public FShader
 	{
 	public:
-		FMeshBufferDx12();
-		virtual ~FMeshBufferDx12();
+		FShaderDx12();
+		virtual ~FShaderDx12();
 
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> VertexBuffer;
-		ComPtr<ID3D12Resource> IndexBuffer;
+		TStream Shader;
 
 		friend class FRHIDx12;
 	};

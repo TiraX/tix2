@@ -28,4 +28,9 @@ namespace tix
 		}
 		D3d12Resources.clear();
 	}
+
+	void FFrameResourcesDx12::HoldDxReference(ComPtr<ID3D12Resource> Res)
+	{
+		D3d12Resources.push_back(Res);
+	}
 }

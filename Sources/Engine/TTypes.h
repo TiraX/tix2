@@ -41,7 +41,7 @@ typedef std::thread::id TThreadId;
 #include "TInputEventType.h"
 #include "TTypeCull.h"
 #include "TTypeRenderer.h"
-#include "TTypeMesh.h"
+#include "TTypeRenderResource.h"
 #include "TTypeNode.h"
 #include "TTypePixelFormat.h"
 

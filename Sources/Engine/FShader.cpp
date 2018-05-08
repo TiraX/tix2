@@ -7,7 +7,8 @@
 
 namespace tix
 {
-	FShader::FShader()
+	FShader::FShader(E_RESOURCE_FAMILY InFamily)
+		: FRenderResource(InFamily)
 	{
 	}
 

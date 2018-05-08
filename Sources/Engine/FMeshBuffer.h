@@ -10,10 +10,10 @@ namespace tix
 	class FMeshBuffer;
 	typedef TI_INTRUSIVE_PTR(FMeshBuffer) FMeshBufferPtr;
 
-	class FMeshBuffer : public IReferenceCounted
+	class FMeshBuffer : public FRenderResource
 	{
 	public:
-		FMeshBuffer(E_MB_TYPES InType, const int8* InName);
+		FMeshBuffer(E_RESOURCE_FAMILY InFamily);
 		virtual ~FMeshBuffer();
 
 	public:
@@ -31,11 +31,6 @@ namespace tix
 		int32 GetIndicesCount() const
 		{
 			return PsDataCount;
-		}
-
-		E_MB_TYPES	GetType() const
-		{
-			return Type;
 		}
 
 		E_PRIMITIVE_TYPE GetPrimitiveType() const
@@ -82,17 +77,9 @@ namespace tix
 		{
 			return PsData;
 		}
-
-#if defined (TIX_DEBUG)
-		const TString GetName() const
-		{
-			return Name;
-		}
-#endif
 	protected:
 
 	protected:
-		E_MB_TYPES			Type;
 		E_PRIMITIVE_TYPE	PrimitiveType;
 		int32				Usage;
 		aabbox3df			BBox;
@@ -108,8 +95,5 @@ namespace tix
 
 		uint32				VsFormat;
 		uint32				Stride;
-#if defined (TIX_DEBUG)
-		TString				Name;
-#endif
 	};
 }

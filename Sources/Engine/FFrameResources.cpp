@@ -27,4 +27,9 @@ namespace tix
 		}
 		MeshBuffers.clear();
 	}
+
+	void FFrameResources::HoldReference(FMeshBufferPtr MeshBuffer)
+	{
+		MeshBuffers.push_back(MeshBuffer);
+	}
 }

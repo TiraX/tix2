@@ -7,14 +7,16 @@
 
 namespace tix
 {
-	class FShader : public IReferenceCounted
+	class FShader : public FRenderResource
 	{
 	public:
-		FShader();
+		FShader(E_RESOURCE_FAMILY InFamily);
 		virtual ~FShader();
 
 	protected:
 
 	protected:
 	};
+
+	typedef TI_INTRUSIVE_PTR(FShader) FShaderPtr;
 }

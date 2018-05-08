@@ -7,7 +7,8 @@
 
 namespace tix
 {
-	FTexture::FTexture()
+	FTexture::FTexture(E_RESOURCE_FAMILY InFamily)
+		: FRenderResource(InFamily)
 	{
 	}
 

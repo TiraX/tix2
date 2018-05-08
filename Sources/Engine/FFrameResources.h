@@ -18,6 +18,8 @@ namespace tix
 
 		virtual void RemoveAllReferences();
 
+		void HoldReference(FMeshBufferPtr MeshBuffer);
+	private:
 		TVector<FMeshBufferPtr> MeshBuffers;
 	};
 }

@@ -85,6 +85,15 @@
     <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TImage.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -177,9 +186,6 @@
     <ClInclude Include="..\..\Sources\Engine\TTypeCull.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TTypeMesh.h">
-      <Filter>Sources\Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTypeNode.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
@@ -244,6 +250,21 @@
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TUtils.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeRenderResource.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRenderResource.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TImage.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>

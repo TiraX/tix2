@@ -7,14 +7,15 @@
 
 namespace tix
 {
-	class FTexture : public IReferenceCounted
+	class FTexture : public FRenderResource
 	{
 	public:
-		FTexture();
+		FTexture(E_RESOURCE_FAMILY InFamily);
 		virtual ~FTexture();
 
 	protected:
 
 	protected:
 	};
+	typedef TI_INTRUSIVE_PTR(FTexture) FTexturePtr;
 }

@@ -358,7 +358,7 @@ namespace tix
 
 	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
 	{
-		TI_ASSERT(MeshBuffer->GetType() == EMBT_Dx12);
+		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
 		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
@@ -387,7 +387,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&VertexBufferUpload)));
 
-		MBDx12->VertexBuffer->SetName(FromString(MeshBuffer->GetName() + "_VB").c_str());
+		MBDx12->VertexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
 
 		// Upload the vertex buffer to the GPU.
 		{
@@ -424,7 +424,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&IndexBufferUpload)));
 
-		MBDx12->IndexBuffer->SetName(FromString(MeshBuffer->GetName() + "_IB").c_str());
+		MBDx12->IndexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
 
 		// Upload the index buffer to the GPU.
 		{
@@ -441,9 +441,9 @@ namespace tix
 		FlushResourceBarriers(CommandList.Get());
 
 		// Hold resources used here
-		FrameResource->MeshBuffers.push_back(MeshBuffer);
-		FrameResource->D3d12Resources.push_back(VertexBufferUpload);
-		FrameResource->D3d12Resources.push_back(IndexBufferUpload);
+		FrameResource->HoldReference(MeshBuffer);
+		FrameResource->HoldDxReference(VertexBufferUpload);
+		FrameResource->HoldDxReference(IndexBufferUpload);
 
 		return true;
 	}

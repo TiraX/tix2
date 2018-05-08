@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace ti
+namespace tix
 {
 	class SColorf;
 	class SColor

@@ -7,16 +7,6 @@
 
 namespace tix
 {
-	enum E_RENDERER_TYPE
-	{
-		ERDRT_NULL,
-		ERDRT_D3D9,
-		ERDRT_D3D10,
-		ERDRT_GL,
-        ERDRT_METAL,
-		ERDRT_THREAD,
-	};
-
 	enum E_FRAMEBUFFER
 	{
 		EFB_COLOR		= 0,
