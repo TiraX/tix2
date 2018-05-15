@@ -10,6 +10,7 @@
 #include "TDeviceWin32.h"
 #include "FFrameResourcesDx12.h"
 #include "FMeshBufferDx12.h"
+#include "FTextureDx12.h"
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
@@ -329,6 +330,16 @@ namespace tix
 		}
 	}
 
+	FTexturePtr FRHIDx12::CreateTexture(TImagePtr SourceImage)
+	{
+		return ti_new FTextureDx12(SourceImage);
+	}
+
+	FTexturePtr FRHIDx12::CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height)
+	{
+		return ti_new FTextureDx12(Format, Width, Height);
+	}
+
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{
@@ -354,98 +365,6 @@ namespace tix
 		// Release resources references
 		TI_TODO("Validat if CurrentFrame is the correct point to release.");
 		FrameResources[CurrentFrame]->RemoveAllReferences();
-	}
-
-	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
-	{
-		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
-		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
-		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
-		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
-
-		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
-		// The upload resource must not be released until after the GPU has finished using it.
-		ComPtr<ID3D12Resource> VertexBufferUpload;
-
-		int32 BufferSize = MeshBuffer->GetVerticesCount() * MeshBuffer->GetStride();
-		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
-		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&defaultHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&MBDx12->VertexBuffer)));
-
-		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&uploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&VertexBufferUpload)));
-
-		MBDx12->VertexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
-
-		// Upload the vertex buffer to the GPU.
-		{
-			D3D12_SUBRESOURCE_DATA VertexData = {};
-			VertexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetVSData());
-			VertexData.RowPitch = BufferSize;
-			VertexData.SlicePitch = VertexData.RowPitch;
-
-			UpdateSubresources(CommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
-
-			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-		}
-
-		const uint32 IndexBufferSize = sizeof(MeshBuffer->GetIndicesCount() * (MeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
-
-		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
-		// The upload resource must not be released until after the GPU has finished using it.
-		ComPtr<ID3D12Resource> IndexBufferUpload;
-
-		CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&defaultHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&IndexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&MBDx12->IndexBuffer)));
-
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&uploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&IndexBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&IndexBufferUpload)));
-
-		MBDx12->IndexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
-
-		// Upload the index buffer to the GPU.
-		{
-			D3D12_SUBRESOURCE_DATA IndexData = {};
-			IndexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetPSData());
-			IndexData.RowPitch = IndexBufferSize;
-			IndexData.SlicePitch = IndexData.RowPitch;
-
-			UpdateSubresources(CommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
-
-			Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
-		}
-
-		FlushResourceBarriers(CommandList.Get());
-
-		// Hold resources used here
-		FrameResource->HoldReference(MeshBuffer);
-		FrameResource->HoldDxReference(VertexBufferUpload);
-		FrameResource->HoldDxReference(IndexBufferUpload);
-
-		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -569,6 +488,189 @@ namespace tix
 			pCmdList->ResourceBarrier(NumBarriersToFlush, ResourceBarrierBuffers);
 			NumBarriersToFlush = 0;
 		}
+	}
+
+	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
+	{
+		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
+		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
+		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
+		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
+
+		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
+		// The upload resource must not be released until after the GPU has finished using it.
+		ComPtr<ID3D12Resource> VertexBufferUpload;
+
+		int32 BufferSize = MeshBuffer->GetVerticesCount() * MeshBuffer->GetStride();
+		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&defaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&MBDx12->VertexBuffer)));
+
+		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&VertexBufferUpload)));
+
+		MBDx12->VertexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
+
+		// Upload the vertex buffer to the GPU.
+		{
+			D3D12_SUBRESOURCE_DATA VertexData = {};
+			VertexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetVSData());
+			VertexData.RowPitch = BufferSize;
+			VertexData.SlicePitch = VertexData.RowPitch;
+
+			UpdateSubresources(CommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+
+			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		}
+
+		const uint32 IndexBufferSize = sizeof(MeshBuffer->GetIndicesCount() * (MeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+
+		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
+		// The upload resource must not be released until after the GPU has finished using it.
+		ComPtr<ID3D12Resource> IndexBufferUpload;
+
+		CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&defaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&IndexBufferDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&MBDx12->IndexBuffer)));
+
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&IndexBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&IndexBufferUpload)));
+
+		MBDx12->IndexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
+
+		// Upload the index buffer to the GPU.
+		{
+			D3D12_SUBRESOURCE_DATA IndexData = {};
+			IndexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetPSData());
+			IndexData.RowPitch = IndexBufferSize;
+			IndexData.SlicePitch = IndexData.RowPitch;
+
+			UpdateSubresources(CommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
+
+			Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		}
+
+		FlushResourceBarriers(CommandList.Get());
+
+		// Hold resources used here
+		FrameResource->HoldReference(MeshBuffer);
+		FrameResource->HoldDxReference(VertexBufferUpload);
+		FrameResource->HoldDxReference(IndexBufferUpload);
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	// Returns required size of a buffer to be used for data upload
+	inline uint64 GetRequiredIntermediateSize(
+		_In_ ID3D12Resource* pDestinationResource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources)
+	{
+		D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
+		uint64 RequiredSize = 0;
+
+		ID3D12Device* pDevice;
+		pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+		pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &RequiredSize);
+		pDevice->Release();
+
+		return RequiredSize;
+	}
+
+	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture)
+	{
+		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+		TImagePtr SourceImage = Texture->GetSourceImage();
+
+		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
+		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
+
+		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
+		// the command list that references it has finished executing on the GPU.
+		// We will flush the GPU at the end of this method to ensure the resource is not
+		// prematurely destroyed.
+		ComPtr<ID3D12Resource> TextureUploadHeap;
+
+		// Describe and create a Texture2D.
+		D3D12_RESOURCE_DESC textureDesc = {};
+		textureDesc.MipLevels = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.Width = Texture->GetWidth();
+		textureDesc.Height = Texture->GetHeight();
+		textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		textureDesc.DepthOrArraySize = 1;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&textureDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&TexDx12->TextureResource)));
+
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, 1);
+
+		// Create the GPU upload buffer.
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&TextureUploadHeap)));
+
+		// Copy data to the intermediate upload heap and then schedule a copy 
+		// from the upload heap to the Texture2D.
+		D3D12_SUBRESOURCE_DATA textureData = {};
+		textureData.pData = SourceImage->Data();
+		textureData.RowPitch = SourceImage->GetPitch();
+		textureData.SlicePitch = textureData.RowPitch * Texture->GetHeight();
+
+		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, 1, &textureData);
+		Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		// Describe and create a SRV for the texture.
+		//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		//srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		//srvDesc.Format = textureDesc.Format;
+		//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		//srvDesc.Texture2D.MipLevels = 1;
+		//m_device->CreateShaderResourceView(m_texture.Get(), &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+		TI_TODO("Create SRV.");
+
+		FlushResourceBarriers(CommandList.Get());
+		// Hold resources used here
+		FrameResource->HoldReference(Texture);
+		FrameResource->HoldDxReference(TextureUploadHeap);
+
+		return true;
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12

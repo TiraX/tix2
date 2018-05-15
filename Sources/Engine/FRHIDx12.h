@@ -23,7 +23,11 @@ namespace tix
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
+		virtual FTexturePtr CreateTexture(TImagePtr SourceImage);
+		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height);
+
 		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer) override;
+		virtual bool UpdateHardwareBuffer(FTexturePtr Texture) override;
 
 		// DirectX 12 specified methods
 

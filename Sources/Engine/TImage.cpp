@@ -63,8 +63,8 @@ namespace tix
         if (data_size != -1)
         {
             DataSize        = data_size;
-            Data            = ti_new uint8[DataSize];
-            memset(Data, 0, DataSize);
+            ImageData            = ti_new uint8[DataSize];
+            memset(ImageData, 0, DataSize);
             Pitch           = 0;
         }
         else
@@ -72,16 +72,16 @@ namespace tix
             if (IsCompressedFormat(PixelFormat))
             {
                 DataSize	= ((w + 3) / 4) * ((h + 3) / 4) * k_PIXEL_FORMAT_SIZE_MAP[pixel_format];
-                Data		= ti_new uint8[DataSize];
-                memset(Data, 0, sizeof(uint8) * DataSize );
+                ImageData		= ti_new uint8[DataSize];
+                memset(ImageData, 0, sizeof(uint8) * DataSize );
                 Pitch		= 0;
             }
             else
             {
                 Pitch		= Width * k_PIXEL_FORMAT_SIZE_MAP[pixel_format];
                 DataSize	= Pitch * Height;
-                Data		= ti_new uint8[DataSize];
-                memset(Data, 0, sizeof(uint8) * DataSize );
+                ImageData		= ti_new uint8[DataSize];
+                memset(ImageData, 0, sizeof(uint8) * DataSize );
             }
         }
 	}
@@ -90,7 +90,7 @@ namespace tix
 	{
 		ClearMipmaps();
 
-		ti_delete[] Data;
+		ti_delete[] ImageData;
 	}
 
 	bool TImage::IsCompressedFormat(int fmt)
@@ -102,7 +102,7 @@ namespace tix
 	TImagePtr TImage::Clone()
 	{
 		TImagePtr cImage	= ti_new TImage(PixelFormat, Width, Height);
-		memcpy(cImage->Lock(), Data, Height * Pitch);
+		memcpy(cImage->Lock(), ImageData, Height * Pitch);
 		cImage->Unlock();
 
 		return cImage;
@@ -110,7 +110,7 @@ namespace tix
 
 	uint8* TImage::Lock()
 	{
-		return Data;
+		return ImageData;
 	}
 
 	void TImage::Unlock()
@@ -131,16 +131,16 @@ namespace tix
 		{
 		case EPF_SRGB8_ALPHA:
 		case EPF_RGBA8:
-			Data[offset + 0]	= c.R;
-			Data[offset + 1]	= c.G;
-			Data[offset + 2]	= c.B;
-			Data[offset + 3]	= c.A;
+			ImageData[offset + 0]	= c.R;
+			ImageData[offset + 1]	= c.G;
+			ImageData[offset + 2]	= c.B;
+			ImageData[offset + 3]	= c.A;
 			break;
 		case EPF_SRGB8:
 		case EPF_RGB8:
-			Data[offset + 0]	= c.R;
-			Data[offset + 1]	= c.G;
-			Data[offset + 2]	= c.B;
+			ImageData[offset + 0]	= c.R;
+			ImageData[offset + 1]	= c.G;
+			ImageData[offset + 2]	= c.B;
 			break;
 		default:
 			TI_ASSERT(0);
@@ -152,7 +152,7 @@ namespace tix
 	{
 		TI_ASSERT(!IsCompressedFormat(PixelFormat));
 		int offset		= y * Pitch + x * k_PIXEL_FORMAT_SIZE_MAP[PixelFormat];
-		float* fdata	= (float*)(Data + offset);
+		float* fdata	= (float*)(ImageData + offset);
 		switch (PixelFormat)
 		{
 		case EPF_RG32F:
@@ -178,7 +178,7 @@ namespace tix
 		switch (PixelFormat)
 		{
 		case EPF_A8:
-			Data[offset]		= c;
+			ImageData[offset]		= c;
 			break;
 		default:
 			TI_ASSERT(0);
@@ -201,27 +201,27 @@ namespace tix
 		case EPF_SRGB8_ALPHA:
 		case EPF_RGBA8:
 			{
-				color.R		= Data[offset + 0];
-				color.G		= Data[offset + 1];
-				color.B		= Data[offset + 2];
-				color.A		= Data[offset + 3];
+				color.R		= ImageData[offset + 0];
+				color.G		= ImageData[offset + 1];
+				color.B		= ImageData[offset + 2];
+				color.A		= ImageData[offset + 3];
 			}
 			break;
 		case EPF_SRGB8:
 		case EPF_RGB8:
 			{
-				color.R		= Data[offset + 0];
-				color.G		= Data[offset + 1];
-				color.B		= Data[offset + 2];
+				color.R		= ImageData[offset + 0];
+				color.G		= ImageData[offset + 1];
+				color.B		= ImageData[offset + 2];
 				color.A		= 255;
 			}
 			break;
 		case EPF_A8:
 			{
-				color.R		= Data[offset];
-				color.G		= Data[offset];
-				color.B		= Data[offset];
-				color.A		= Data[offset];
+				color.R		= ImageData[offset];
+				color.G		= ImageData[offset];
+				color.B		= ImageData[offset];
+				color.A		= ImageData[offset];
 			}
 			break;
 		default:
@@ -266,7 +266,7 @@ namespace tix
 		if (y >= Height)	y	= Height - 1;
 		SColorf c;
 		int offset		= y * Pitch + x * k_PIXEL_FORMAT_SIZE_MAP[PixelFormat];
-		float *fdata	= (float*)(Data + offset);
+		float *fdata	= (float*)(ImageData + offset);
 		switch (PixelFormat)
 		{
 		case EPF_DEPTH32:
@@ -423,9 +423,9 @@ namespace tix
 			int y0	= y * Pitch;
 			int y1	= (Height - y - 1) * Pitch;
 
-			memcpy(tmp, Data + y0, Pitch);
-			memcpy(Data + y0, Data + y1, Pitch);
-			memcpy(Data + y1, tmp, Pitch);
+			memcpy(tmp, ImageData + y0, Pitch);
+			memcpy(ImageData + y0, ImageData + y1, Pitch);
+			memcpy(ImageData + y1, tmp, Pitch);
 		}
 		ti_delete[] tmp;
 	}

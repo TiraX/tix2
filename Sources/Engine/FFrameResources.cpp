@@ -26,10 +26,20 @@ namespace tix
 			MB = nullptr;
 		}
 		MeshBuffers.clear();
+		for (auto& Tex : Textures)
+		{
+			Tex = nullptr;
+		}
+		Textures.clear();
 	}
 
 	void FFrameResources::HoldReference(FMeshBufferPtr MeshBuffer)
 	{
 		MeshBuffers.push_back(MeshBuffer);
+	}
+
+	void FFrameResources::HoldReference(FTexturePtr Texture)
+	{
+		Textures.push_back(Texture);
 	}
 }

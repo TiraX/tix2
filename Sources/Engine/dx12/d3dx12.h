@@ -1386,24 +1386,6 @@ inline void MemcpySubresource(
 }
 
 //------------------------------------------------------------------------------------------------
-// Returns required size of a buffer to be used for data upload
-inline UINT64 GetRequiredIntermediateSize(
-    _In_ ID3D12Resource* pDestinationResource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources)
-{
-    D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
-    UINT64 RequiredSize = 0;
-    
-    ID3D12Device* pDevice;
-    pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
-    pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &RequiredSize);
-    pDevice->Release();
-    
-    return RequiredSize;
-}
-
-//------------------------------------------------------------------------------------------------
 inline bool D3D12IsLayoutOpaque( D3D12_TEXTURE_LAYOUT Layout )
 { return Layout == D3D12_TEXTURE_LAYOUT_UNKNOWN || Layout == D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE; }
 

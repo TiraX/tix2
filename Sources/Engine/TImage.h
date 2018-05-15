@@ -36,6 +36,11 @@ namespace tix
 		virtual uint8*		Lock();
 		virtual void		Unlock();
 
+		const uint8*	Data() const
+		{
+			return ImageData;
+		}
+
 		int32	GetPitch() const
 		{
 			return Pitch;
@@ -80,7 +85,7 @@ namespace tix
 		int		Pitch;
 		int		DataSize;
 
-		uint8*	Data;
+		uint8*	ImageData;
 
 		typedef std::vector<TImagePtr> VecMipmapImages;
 		VecMipmapImages		Mipmaps;
