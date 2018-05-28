@@ -1,0 +1,7 @@
+source1/
+Projects/Windows/TiX.vcxproj.user
+Projects/Windows/.vs/
+Projects/Windows/Debug/
+Projects/Windows/x64/
+Samples/01.Startup/x64/
+*.user
