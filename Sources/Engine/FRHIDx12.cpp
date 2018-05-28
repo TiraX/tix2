@@ -23,6 +23,7 @@ namespace tix
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
 		, NumBarriersToFlush(0)
+		, SrvDescriptorSize(0)
 	{
 		Init();
 
@@ -129,6 +130,16 @@ namespace tix
 
 		CreateWindowsSizeDependentResources();
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
+
+		// Describe and create a shader resource view (SRV) heap for the texture.
+		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+		srvHeapDesc.NumDescriptors = 1;
+		srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&SrvHeap)));
+
+		SrvHeapHandle = SrvHeap->GetCPUDescriptorHandleForHeapStart();
+		SrvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
@@ -600,6 +611,13 @@ namespace tix
 		return RequiredSize;
 	}
 
+	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::AllocateDescriptorHandle()
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE ret = SrvHeapHandle;
+		SrvHeapHandle.ptr += SrvDescriptorSize;
+		return ret;
+	}
+
 	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
@@ -657,13 +675,13 @@ namespace tix
 		Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		// Describe and create a SRV for the texture.
-		//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		//srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		//srvDesc.Format = textureDesc.Format;
-		//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		//srvDesc.Texture2D.MipLevels = 1;
-		//m_device->CreateShaderResourceView(m_texture.Get(), &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
-		TI_TODO("Create SRV.");
+		TexDx12->TexDescriptor = AllocateDescriptorHandle();
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = textureDesc.Format;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &srvDesc, TexDx12->TexDescriptor);
 
 		FlushResourceBarriers(CommandList.Get());
 		// Hold resources used here

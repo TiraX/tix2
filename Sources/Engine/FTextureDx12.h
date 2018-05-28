@@ -20,6 +20,7 @@ namespace tix
 
 	private:
 		ComPtr<ID3D12Resource> TextureResource;
+		D3D12_CPU_DESCRIPTOR_HANDLE TexDescriptor;
 		friend class FRHIDx12;
 	};
 }

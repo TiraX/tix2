@@ -69,8 +69,9 @@ namespace tix
 			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
 		void FlushResourceBarriers(
-			_In_ ID3D12GraphicsCommandList* pCmdList
-			);
+			_In_ ID3D12GraphicsCommandList* pCmdList);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptorHandle();
 
 	private:
 		ComPtr<ID3D12Device>			D3dDevice;
@@ -96,6 +97,10 @@ namespace tix
 		static const uint32				MaxResourceBarrierBuffers = 16;
 		D3D12_RESOURCE_BARRIER			ResourceBarrierBuffers[MaxResourceBarrierBuffers];
 		uint32							NumBarriersToFlush;
+
+		ComPtr<ID3D12DescriptorHeap>	SrvHeap;
+		D3D12_CPU_DESCRIPTOR_HANDLE		SrvHeapHandle;
+		uint32							SrvDescriptorSize;
 
 		friend class FRHI;
 	};
