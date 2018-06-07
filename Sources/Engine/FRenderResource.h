@@ -13,7 +13,10 @@ namespace tix
 		FRenderResource(E_RESOURCE_FAMILY InFamily)
 			: ResourceFamily(InFamily)
 		{}
-		virtual ~FRenderResource() {}
+		virtual ~FRenderResource() 
+		{
+			TI_ASSERT(IsRenderThread());
+		}
 
 		E_RESOURCE_FAMILY GetResourceFamily() const
 		{
