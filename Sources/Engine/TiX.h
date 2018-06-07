@@ -49,6 +49,7 @@ using namespace std;
 #include "FRenderer.h"
 #include "FFrameResources.h"
 #include "FRHI.h"
+#include "FRenderThread.h"
 
 #include "TEngineConfig.h"
 #include "TEngine.h"

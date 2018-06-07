@@ -23,6 +23,20 @@ namespace tix
 
 	FTextureDx12::~FTextureDx12()
 	{
+		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
+		if (IsRenderThread())
+		{
+			RHIDx12->RecallDescriptor(TexDescriptor);
+		}
+		else
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TextureRecallDescriptor,
+				FRHIDx12*, RHIDx12, RHIDx12,
+				D3D12_CPU_DESCRIPTOR_HANDLE, Handle, TexDescriptor,
+				{
+					RHIDx12->RecallDescriptor(Handle);
+				});
+		}
 	}
 }
 

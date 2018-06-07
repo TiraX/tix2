@@ -611,8 +611,19 @@ namespace tix
 		return RequiredSize;
 	}
 
+	void FRHIDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+	{
+		AvaibleSrvHeapHandles.push_back(Handle);
+	}
+
 	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::AllocateDescriptorHandle()
 	{
+		if (AvaibleSrvHeapHandles.size() > 0)
+		{
+			D3D12_CPU_DESCRIPTOR_HANDLE ret = AvaibleSrvHeapHandles.back();
+			AvaibleSrvHeapHandles.pop_back();
+			return ret;
+		}
 		D3D12_CPU_DESCRIPTOR_HANDLE ret = SrvHeapHandle;
 		SrvHeapHandle.ptr += SrvDescriptorSize;
 		return ret;

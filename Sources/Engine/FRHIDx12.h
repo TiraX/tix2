@@ -30,6 +30,7 @@ namespace tix
 		virtual bool UpdateHardwareBuffer(FTexturePtr Texture) override;
 
 		// DirectX 12 specified methods
+		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);
 
 	protected: 
 		FRHIDx12();
@@ -101,6 +102,7 @@ namespace tix
 		ComPtr<ID3D12DescriptorHeap>	SrvHeap;
 		D3D12_CPU_DESCRIPTOR_HANDLE		SrvHeapHandle;
 		uint32							SrvDescriptorSize;
+		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> AvaibleSrvHeapHandles;
 
 		friend class FRHI;
 	};
