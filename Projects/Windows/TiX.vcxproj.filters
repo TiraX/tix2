@@ -17,6 +17,9 @@
     <Filter Include="Sources\Render\dx12">
       <UniqueIdentifier>{7eb8b042-f59b-49ac-b2ee-2ace38ea7ead}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Scene">
+      <UniqueIdentifier>{bdfc19fb-c18a-4840-b952-2bd5238e2ee2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
@@ -93,6 +96,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp">
       <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNode.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FNode.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TScene.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FScene.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNodeMesh.cpp">
+      <Filter>Sources\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -266,6 +287,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TImage.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNode.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FNode.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TScene.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FScene.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNodeMesh.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

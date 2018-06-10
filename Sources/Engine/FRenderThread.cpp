@@ -35,6 +35,7 @@ namespace tix
 	FRenderThread::FRenderThread()
 		: TThread("RenderThread")
 		, RHI(nullptr)
+		, RenderScene(nullptr)
 		, TriggerNum(0)
 		, PreFrameIndex(0)
 		, RenderFrameIndex(0)
@@ -56,6 +57,9 @@ namespace tix
 		// Create RHI to submit commands to GPU
 		FRHI::CreateRHI(ERHI_DX12);
 		RHI = FRHI::Get();
+
+		// Create render scene
+		RenderScene = ti_new FScene;
 	}
 
 	void FRenderThread::DestroyRenderComponents()
@@ -66,6 +70,8 @@ namespace tix
 			ti_delete Renderer;
 		}
 		Renderers.clear();
+
+		SAFE_DELETE(RenderScene);
 
 		// Release RHI
 		FRHI::ReleaseRHI();

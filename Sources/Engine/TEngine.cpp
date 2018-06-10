@@ -31,6 +31,10 @@ namespace tix
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
 
+		// Create components
+		TI_ASSERT(Scene == nullptr);
+		Scene = ti_new TScene;
+
 		// Create Render Thread
 		FRenderThread::CreateRenderThread();
 	}
@@ -48,6 +52,7 @@ namespace tix
 
 	TEngine::TEngine()
 		: Device(nullptr)
+		, Scene(nullptr)
 	{
 	}
 
@@ -62,6 +67,9 @@ namespace tix
 
 		// Shut down render thread
 		FRenderThread::DestroyRenderThread();
+
+		// delete components
+		SAFE_DELETE(Scene);
 
 		// delete device
 		TDevice::DestoryDevice(Device);

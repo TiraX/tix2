@@ -90,6 +90,11 @@ namespace tix
 
 		void AddRenderer(FRenderer* Renderer);
 
+		FScene* GetRenderScene()
+		{
+			return RenderScene;
+		}
+
 	private:
 		static FRenderThread* RenderThread;
 		FRenderThread();
@@ -117,5 +122,6 @@ namespace tix
 		// Render components
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
+		FScene * RenderScene;
 	};
 }

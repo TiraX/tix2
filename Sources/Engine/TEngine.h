@@ -20,6 +20,11 @@ namespace tix
 		TI_API void Start();
 		TI_API TDevice*	GetDevice();
 
+		TScene* GetScene()
+		{
+			return Scene;
+		}
+
 		TI_API void AddRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);
 	private:
@@ -35,6 +40,8 @@ namespace tix
 
 	private:
 		TDevice * Device;
+
+		TScene * Scene;
 
 		uint64 LastFrameTime;
 		TVector<TTicker*> Tickers;
