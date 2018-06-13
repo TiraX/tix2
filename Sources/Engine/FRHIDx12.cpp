@@ -501,10 +501,12 @@ namespace tix
 		}
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer)
+	FMeshBufferPtr FRHIDx12::CreateMeshBuffer(TMeshBufferPtr InMeshBuffer)
 	{
-		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
+		FMeshBufferPtr MeshBuffer = ti_new FMeshBufferDx12();
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
+		MeshBuffer->SetFromTMeshBuffer(InMeshBuffer);
+
 		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
 
@@ -512,7 +514,7 @@ namespace tix
 		// The upload resource must not be released until after the GPU has finished using it.
 		ComPtr<ID3D12Resource> VertexBufferUpload;
 
-		int32 BufferSize = MeshBuffer->GetVerticesCount() * MeshBuffer->GetStride();
+		int32 BufferSize = InMeshBuffer->GetVerticesCount() * InMeshBuffer->GetStride();
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -537,7 +539,7 @@ namespace tix
 		// Upload the vertex buffer to the GPU.
 		{
 			D3D12_SUBRESOURCE_DATA VertexData = {};
-			VertexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetVSData());
+			VertexData.pData = reinterpret_cast<const uint8*>(InMeshBuffer->GetVSData());
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
@@ -546,7 +548,7 @@ namespace tix
 			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
 
-		const uint32 IndexBufferSize = sizeof(MeshBuffer->GetIndicesCount() * (MeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+		const uint32 IndexBufferSize = sizeof(InMeshBuffer->GetIndicesCount() * (InMeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
 
 		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
@@ -574,7 +576,7 @@ namespace tix
 		// Upload the index buffer to the GPU.
 		{
 			D3D12_SUBRESOURCE_DATA IndexData = {};
-			IndexData.pData = reinterpret_cast<const uint8*>(MeshBuffer->GetPSData());
+			IndexData.pData = reinterpret_cast<const uint8*>(InMeshBuffer->GetPSData());
 			IndexData.RowPitch = IndexBufferSize;
 			IndexData.SlicePitch = IndexData.RowPitch;
 
@@ -590,7 +592,7 @@ namespace tix
 		FrameResource->HoldDxReference(VertexBufferUpload);
 		FrameResource->HoldDxReference(IndexBufferUpload);
 
-		return true;
+		return MeshBuffer;
 	}
 
 	//------------------------------------------------------------------------------------------------

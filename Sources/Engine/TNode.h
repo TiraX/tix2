@@ -8,10 +8,17 @@
 namespace tix
 {
 	class FNode;
+
+#define CREATE_RENDER_THREAD_NODE(ClassType) \
+	TI_ASSERT(Parent && Parent->GetRenderThreadNode()); \
+	TI_ASSERT(Node_RenderThread == nullptr); \
+	Node_RenderThread = ti_new ClassType(NodeType, nullptr); \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddNodeToFScene, FNode*, Node, Node_RenderThread, FNode*, Parent, Parent->GetRenderThreadNode(), { FScene * scene = RenderThread->GetRenderScene(); scene->AddNode(Node, Parent); })
+
 	class TNode 
 	{
 	public:
-		TNode(E_NODE_TYPE type, TNode* parent, bool bCreateRenderNode = true);
+		TNode(E_NODE_TYPE type, TNode* parent);
 		virtual ~TNode();
 
 		virtual const TString& GetId() const
@@ -105,6 +112,17 @@ namespace tix
 		}
 		
 		virtual void RemoveAndDeleteAll();
+
+		virtual void CreateRenderThreadNode();
+
+		// GetRenderThreadNode only be called from CREATE_RENDER_THREAD_NODE
+		FNode * GetRenderThreadNode()
+		{
+			return Node_RenderThread;
+		}
+
+		// interfaces for different nodes
+		virtual void SetMeshBuffer(TMeshBufferPtr MeshBuffer) {};
 
 	protected:
 		virtual bool RemoveChild(TNode* child);

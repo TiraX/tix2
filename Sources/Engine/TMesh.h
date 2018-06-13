@@ -7,18 +7,19 @@
 
 namespace tix
 {
-	// FMeshBuffer, hold vertex buffer and index buffer render resource
-	class FMeshBuffer;
-	typedef TI_INTRUSIVE_PTR(FMeshBuffer) FMeshBufferPtr;
-
-	class FMeshBuffer : public FRenderResource
+	// TMeshBuffer, hold mesh vertex and index data memory in game thread
+	class TMeshBuffer : public IReferenceCounted
 	{
 	public:
-		FMeshBuffer(E_RESOURCE_FAMILY InFamily);
-		virtual ~FMeshBuffer();
+		TMeshBuffer();
+		~TMeshBuffer();
 
 	public:
-		void SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer);
+		void SetVertexStreamData(
+			uint32 InFormat,
+			const void* InVertexData, int32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			const void* InIndexData, int32 InIndexCount);
 
 		int32 GetVerticesCount() const
 		{
@@ -38,6 +39,16 @@ namespace tix
 		E_INDEX_TYPE GetIndexType() const
 		{
 			return IndexType;
+		}
+
+		int32 GetUsage() const
+		{
+			return Usage;
+		}
+
+		uint32 GetFlag() const
+		{
+			return MeshFlag;
 		}
 
 		void SetPrimitiveType(E_PRIMITIVE_TYPE type)
@@ -64,6 +75,16 @@ namespace tix
 		{
 			BBox = bbox;
 		}
+
+		const void* GetVSData() const
+		{
+			return VsData;
+		}
+
+		const void* GetPSData() const
+		{
+			return PsData;
+		}
 	protected:
 
 	protected:
@@ -73,12 +94,15 @@ namespace tix
 
 		uint32				MeshFlag;
 
+		uint8*				VsData;
 		int32				VsDataCount;
 
 		E_INDEX_TYPE		IndexType;
+		uint8*				PsData;
 		int32				PsDataCount;
 
 		uint32				VsFormat;
 		uint32				Stride;
 	};
+	typedef TI_INTRUSIVE_PTR(TMeshBuffer) TMeshBufferPtr;
 }

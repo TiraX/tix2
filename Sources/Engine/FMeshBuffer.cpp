@@ -21,10 +21,8 @@ namespace tix
 	FMeshBuffer::FMeshBuffer(E_RESOURCE_FAMILY InFamily)
 		: FRenderResource(InFamily)
 		, PrimitiveType(EPT_TRIANGLELIST)
-		, VsData(nullptr)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
-		, PsData(nullptr)
 		, PsDataCount(0)
 		, VsFormat(0)
 		, Stride(0)
@@ -34,40 +32,18 @@ namespace tix
 
 	FMeshBuffer::~FMeshBuffer()
 	{
-		SAFE_DELETE(VsData);
-		SAFE_DELETE(PsData);
 	}
 
-	void FMeshBuffer::SetVertexStreamData(
-		uint32 InFormat,
-		const void* InVertexData, int32 InVertexCount,
-		E_INDEX_TYPE InIndexType, 
-		const void* InIndexData, int32 InIndexCount)
+	void FMeshBuffer::SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer)
 	{
-		VsFormat = InFormat;
-		VsDataCount = InVertexCount;
-
-		IndexType = InIndexType;
-		PsDataCount = InIndexCount;
-
-		// Calculate stride
-		Stride = 0;
-		for (UINT seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
-		{
-			if (VsFormat & seg)
-			{
-				Stride += SematicSize[i];
-			}
-		}
-
-		const uint32 VsSize = InVertexCount * Stride;
-		const uint32 VsBufferSize = ti_align(VsSize, 16);
-		VsData = ti_new uint8[VsBufferSize];
-		memcpy(VsData, InVertexData, VsSize);
-
-		const uint32 PsSize = InIndexCount * (InIndexType == EIT_16BIT ? sizeof(uint16) : sizeof(uint32));
-		const uint32 PsBufferSize = ti_align(PsSize, 16);
-		PsData = ti_new uint8[PsBufferSize];
-		memcpy(PsData, InIndexData, PsSize);
+		PrimitiveType = InMeshBuffer->GetPrimitiveType();
+		Usage = InMeshBuffer->GetUsage();
+		BBox = InMeshBuffer->GetBBox();
+		MeshFlag = InMeshBuffer->GetFlag();
+		VsDataCount = InMeshBuffer->GetVerticesCount();
+		IndexType = InMeshBuffer->GetIndexType();
+		PsDataCount = InMeshBuffer->GetIndicesCount();
+		VsFormat = InMeshBuffer->GetVSFormat();
+		Stride = InMeshBuffer->GetStride();
 	}
 }

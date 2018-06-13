@@ -9,8 +9,16 @@ By ZhaoShuai tirax.cn@gmail.com
 namespace tix
 {
 	TNodeSceneRoot::TNodeSceneRoot()
-		: TNode(ENT_ROOT, nullptr, false)
+		: TNode(ENT_ROOT, nullptr)
 	{
+	}
+	TNodeSceneRoot::~TNodeSceneRoot()
+	{
+	}
+
+	void TNodeSceneRoot::CreateRenderThreadNode()
+	{
+		TI_ASSERT(Node_RenderThread == nullptr);
 		// Create render thread node and add it to FScene
 		Node_RenderThread = ti_new FNode(ENT_ROOT, nullptr);
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(SetFSceneRootNode,
@@ -20,15 +28,13 @@ namespace tix
 				scene->SetRootNode(Node);
 			});
 	}
-	TNodeSceneRoot::~TNodeSceneRoot()
-	{
-	}
 	////////////////////////////////////////////////////////////////////////////
 	TScene::TScene()
 		: Flag(0)
 	{
 		// Create root element
 		NodeRoot = ti_new TNodeSceneRoot();
+		NodeRoot->CreateRenderThreadNode();
 
 		// Create default camera, this camera can only deleted by render stage.
 		DefaultCamera = ti_new TNodeCamera(nullptr);

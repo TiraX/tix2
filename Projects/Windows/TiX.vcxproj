@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FNode.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipelineState.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
@@ -44,9 +45,10 @@
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TNodeMesh.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
@@ -62,6 +64,7 @@
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FNode.h" />
+    <ClInclude Include="..\..\Sources\Engine\FNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineState.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
@@ -97,9 +100,10 @@
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TImage.h" />
+    <ClInclude Include="..\..\Sources\Engine\TMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TNode.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h" />
-    <ClInclude Include="..\..\Sources\Engine\TNodeMesh.h" />
+    <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
     <ClInclude Include="..\..\Sources\Engine\TScene.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />

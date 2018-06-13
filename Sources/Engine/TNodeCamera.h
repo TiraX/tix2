@@ -30,6 +30,8 @@ namespace tix
 
 		virtual void RegisterElement();
 
+		virtual void CreateRenderThreadNode() override {};
+
 		virtual void SetPosition(const vector3df& pos);
 
 		//! Sets the projection matrix of the camera.

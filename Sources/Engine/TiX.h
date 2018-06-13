@@ -41,8 +41,10 @@ using namespace std;
 #include "TStream.h"
 #include "TTicker.h"
 #include "TImage.h"
+#include "TMesh.h"
 #include "TNode.h"
 #include "TNodeCamera.h"
+#include "TNodeStaticMesh.h"
 #include "TScene.h"
 
 #include "FRenderResource.h"
@@ -55,6 +57,7 @@ using namespace std;
 #include "FFrameResources.h"
 #include "FRHI.h"
 #include "FNode.h"
+#include "FNodeStaticMesh.h"
 #include "FScene.h"
 #include "FRenderThread.h"
 

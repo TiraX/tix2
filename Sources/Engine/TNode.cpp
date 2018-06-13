@@ -8,7 +8,7 @@
 
 namespace tix
 {
-	TNode::TNode(E_NODE_TYPE type, TNode* parent, bool bCreateRenderNode)
+	TNode::TNode(E_NODE_TYPE type, TNode* parent)
 		: NodeType(type)
 		, Parent(nullptr)
 		, NodeFlag(ENF_VISIBLE | ENF_DIRTY_POS)
@@ -18,22 +18,6 @@ namespace tix
 	{
 		if (parent)
 			parent->AddChild(this);
-
-		if (bCreateRenderNode)
-		{
-			// Render thread node should always have a parent.
-			TI_ASSERT(parent && parent->Node_RenderThread);
-
-			// Create render thread node and add it to FScene
-			Node_RenderThread = ti_new FNode(type, nullptr);
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddNodeToFScene,
-				FNode*, Node, Node_RenderThread,
-				FNode*, Parent, parent->Node_RenderThread,
-				{
-					FScene * scene = RenderThread->GetRenderScene();
-					scene->AddNode(Node, Parent);
-				});
-		}
 	}
 
 	TNode::~TNode()
@@ -253,5 +237,10 @@ namespace tix
 				NodeFlag |= ENF_ABSOLUTETRANSFORMATION_UPDATED;
 			}
 		}
+	}
+
+	void TNode::CreateRenderThreadNode()
+	{
+		CREATE_RENDER_THREAD_NODE(FNode);
 	}
 }

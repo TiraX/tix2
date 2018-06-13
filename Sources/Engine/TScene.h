@@ -35,6 +35,8 @@ namespace tix
 	public:
 		TNodeSceneRoot();
 		virtual ~TNodeSceneRoot();
+
+		virtual void CreateRenderThreadNode() override;
 	};
 
 	class TNodeCamera;
