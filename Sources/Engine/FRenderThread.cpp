@@ -64,6 +64,12 @@ namespace tix
 
 	void FRenderThread::DestroyRenderComponents()
 	{
+		// Finish all un-finished tasks
+		for (int32 i = 0; i < FRHI::FrameBufferNum; i++)
+		{
+			DoRenderTasks();
+		}
+
 		// Release all renderers
 		for (auto Renderer : Renderers)
 		{
