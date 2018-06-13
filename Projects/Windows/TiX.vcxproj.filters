@@ -306,5 +306,8 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeMesh.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

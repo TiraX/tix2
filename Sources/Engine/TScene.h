@@ -33,13 +33,8 @@ namespace tix
 		: public TNode
 	{
 	public:
-		TNodeSceneRoot()
-			: TNode(ENT_ROOT, nullptr)
-		{
-		}
-		virtual ~TNodeSceneRoot()
-		{
-		}
+		TNodeSceneRoot();
+		virtual ~TNodeSceneRoot();
 	};
 
 	class TNodeCamera;
@@ -50,8 +45,7 @@ namespace tix
 		TScene();
 		virtual ~TScene();
 
-		TI_API void UpdateAll(float dt, TNode* root = nullptr);
-		TI_API void DrawAll(TNode* root = nullptr);
+		TI_API void TickAllNodes(float dt, TNode* root = nullptr);
 
 		void SetStageFlag(E_STAGE_FLAG flag, bool enable)
 		{
@@ -77,14 +71,11 @@ namespace tix
 		TI_API TNodeCamera* CreateCamera();
 
 	protected:
-		//void RegisterElements(TNode* root);
-		//void DrawRenderList();
-		//void DrawRenderList(E_STAGE_LIST_TYPE list_type);
-		//void DrawTransparent();
+
 
 	protected:
 		TNodeSceneRoot * NodeRoot;
-		uint32				Flag;
+		uint32 Flag;
 
 		TNodeCamera* DefaultCamera;
 		TNodeCamera* ActiveCamera;

@@ -9,10 +9,30 @@
 namespace tix
 {
 	FScene::FScene()
+		: RootNode(nullptr)
 	{
 	}
 
 	FScene::~FScene()
 	{
+	}
+
+	void FScene::SetRootNode(FNode * Node)
+	{
+		TI_ASSERT(RootNode == nullptr);
+		RootNode = Node;
+	}
+
+	void FScene::AddNode(FNode * Node, FNode * Parent)
+	{
+		TI_ASSERT(IsRenderThread());
+		Parent->AddChild(Node);
+	}
+
+	void FScene::RemoveNode(FNode * Node)
+	{
+		TI_ASSERT(IsRenderThread());
+		Node->Remove();
+		ti_delete Node;
 	}
 }

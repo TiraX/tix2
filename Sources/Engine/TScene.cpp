@@ -8,6 +8,22 @@ By ZhaoShuai tirax.cn@gmail.com
 
 namespace tix
 {
+	TNodeSceneRoot::TNodeSceneRoot()
+		: TNode(ENT_ROOT, nullptr, false)
+	{
+		// Create render thread node and add it to FScene
+		Node_RenderThread = ti_new FNode(ENT_ROOT, nullptr);
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(SetFSceneRootNode,
+			FNode*, Node, Node_RenderThread,
+			{
+				FScene * scene = RenderThread->GetRenderScene();
+				scene->SetRootNode(Node);
+			});
+	}
+	TNodeSceneRoot::~TNodeSceneRoot()
+	{
+	}
+	////////////////////////////////////////////////////////////////////////////
 	TScene::TScene()
 		: Flag(0)
 	{
@@ -29,16 +45,16 @@ namespace tix
 		ti_delete	NodeRoot;
 	}
 
-	void TScene::UpdateAll(float dt, TNode* root)
+	void TScene::TickAllNodes(float dt, TNode* root)
 	{
 		if (root == nullptr)
 			root = NodeRoot;
 
+		// Update all nodes logic
 		root->Update(dt);
-	}
 
-	void TScene::DrawAll(TNode* root)
-	{
+		// Update all nodes transformations
+		root->UpdateAllTransformation();
 	}
 
 	void TScene::SetActiveCamera(TNodeCamera* camera)

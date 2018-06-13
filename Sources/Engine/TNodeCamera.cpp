@@ -8,9 +8,8 @@
 
 namespace tix
 {
-	TNodeCamera::TNodeCamera(TNode* parent, 
-									 const vector3df& pos, const vector3df& target)
-		: TNode(ENT_CAMERA, parent)
+	TNodeCamera::TNodeCamera(TNode* parent, const vector3df& pos, const vector3df& target)
+		: TNode(ENT_CAMERA, parent, false)
 		, CameraFlags(ECAMF_MAT_PROJECTION_DIRTY | ECAMF_MAT_VIEW_DIRTY)
 		, Target(target)
 		, UpVector(0.0f, 0.0f, 1.0f)

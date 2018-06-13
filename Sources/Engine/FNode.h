@@ -18,25 +18,11 @@ namespace tix
 		virtual void AddChild(FNode* child);		// add child at the end of children
 		virtual void Remove();
 
-		virtual void RegisterElement();
-
-		virtual void SetPosition(const vector3df& pos);
-		virtual void SetScale(const vector3df& scale);
-		virtual void SetRotate(const quaternion& rotate);
-
-		virtual void UpdateAbsoluteTransformation();
-		virtual void UpdateAllTransformation();
 		virtual const matrix4& GetAbsoluteTransformation() const;
-		virtual const matrix4& GetRelativeTransformation();
 		
 		FNode* GetParent()
 		{
 			return Parent;
-		}
-
-		E_NODE_TYPE GetType() const
-		{
-			return NodeType;
 		}
 
 		uint32 GetFlag() const
@@ -47,21 +33,6 @@ namespace tix
 		uint32	GetChildrenCount()
 		{
 			return (uint32)Children.size();
-		}
-
-		virtual const vector3df& GetRelativePosition() const
-		{
-			return RelativePosition;
-		}
-
-		virtual const quaternion& GetRelativeRotation() const
-		{
-			return RelativeRotate;
-		}
-
-		virtual const vector3df& GetRelativeScale() const
-		{
-			return RelativeScale;
 		}
 
 		virtual vector3df GetAbsolutePosition()
@@ -82,16 +53,11 @@ namespace tix
 		}
 
 		virtual void RemoveAndDeleteAll();
-		virtual void NotifyNode(const char* message, int param) {};
 
 	protected:
 		virtual bool RemoveChild(FNode* child);
 
 	protected:
-		union {
-			E_NODE_TYPE		NodeType;
-			char			NodeTypeName[4];
-		};
 
 		FNode*				Parent;
 		typedef TVector<FNode*>	VecRenderElements;
@@ -99,12 +65,9 @@ namespace tix
 
 		uint32				NodeFlag;
 
-		vector3df			RelativePosition;
-		quaternion			RelativeRotate;
-		vector3df			RelativeScale;
-
+		// Node in render thread only used for render thread frustum cull, only need absolute transform
+		// Absolute transformation is passed from game thread
 		matrix4				AbsoluteTransformation;
-		matrix4				RelativeTransformation;
 	};
 
 } // end namespace tix

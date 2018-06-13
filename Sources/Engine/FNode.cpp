@@ -9,11 +9,8 @@
 namespace tix
 {
 	FNode::FNode(E_NODE_TYPE type, FNode* parent)
-		: NodeType(type)
-		, Parent(NULL)
+		: Parent(nullptr)
 		, NodeFlag(ENF_VISIBLE | ENF_DIRTY_POS)
-		, RelativeRotate(0.f, 0.f, 0.f, 1.f)
-		, RelativeScale(1.f, 1.f, 1.f)
 	{
 		if (parent)
 			parent->AddChild(this);
@@ -64,97 +61,8 @@ namespace tix
 		Children.clear();
 	}
 
-	void FNode::RegisterElement()
-	{
-        if (!IsVisible())
-        {
-            return;
-        }
-		UpdateAbsoluteTransformation();
-
-		VecRenderElements::const_iterator it = Children.begin();
-		for ( ; it != Children.end() ; ++ it)
-		{
-			(*it)->RegisterElement();
-		}
-
-		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
-	}
-
-	void FNode::SetPosition(const vector3df& pos)
-	{
-		RelativePosition	= pos;
-		NodeFlag		|= ENF_DIRTY_POS;
-	}
-
-	void FNode::SetScale(const vector3df& scale)
-	{
-		RelativeScale		= scale;
-		NodeFlag		|= ENF_DIRTY_SCALE;
-	}
-
-	void FNode::SetRotate(const quaternion& rotate)
-	{
-		RelativeRotate	= rotate;
-		NodeFlag		|= ENF_DIRTY_ROT;
-	}
-
 	const matrix4& FNode::GetAbsoluteTransformation() const
 	{
 		return AbsoluteTransformation;
-	}
-
-	const matrix4& FNode::GetRelativeTransformation()
-	{
-		if ((NodeFlag & (ENF_DIRTY_TRANSFORM)) != 0)
-		{
-			if (NodeFlag & (ENF_DIRTY_SCALE | ENF_DIRTY_ROT))
-			{
-				RelativeRotate.getMatrix(RelativeTransformation);
-				if (RelativeScale != vector3df(1.f, 1.f, 1.f))
-				{
-					RelativeTransformation.postScale(RelativeScale);
-				}
-				RelativeTransformation.setTranslation(RelativePosition);
-			}
-			else
-			{
-				RelativeTransformation.setTranslation(RelativePosition);
-			}
-			NodeFlag &= ~ENF_DIRTY_TRANSFORM;
-		}
-		return RelativeTransformation;
-	}
-
-	void FNode::UpdateAllTransformation()
-	{
-		UpdateAbsoluteTransformation();
-
-		VecRenderElements::const_iterator it = Children.begin();
-		for ( ; it != Children.end() ; ++ it)
-		{
-			(*it)->UpdateAllTransformation();
-		}
-
-		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
-	}
-
-	void FNode::UpdateAbsoluteTransformation()
-	{
-		if (Parent && 
-		   ((Parent->NodeFlag & ENF_ABSOLUTETRANSFORMATION_UPDATED) || 
-		    (NodeFlag & ENF_DIRTY_TRANSFORM)))
-		{
-			Parent->GetAbsoluteTransformation().mult34(GetRelativeTransformation(), AbsoluteTransformation);
-			NodeFlag |= ENF_ABSOLUTETRANSFORMATION_UPDATED;
-		}
-		else
-		{
-			if (NodeFlag & ENF_DIRTY_TRANSFORM)
-			{
-				AbsoluteTransformation = GetRelativeTransformation();
-				NodeFlag |= ENF_ABSOLUTETRANSFORMATION_UPDATED;
-			}
-		}
 	}
 }

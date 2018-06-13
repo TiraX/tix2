@@ -7,10 +7,11 @@
 
 namespace tix
 {
+	class FNode;
 	class TNode 
 	{
 	public:
-		TNode(E_NODE_TYPE type, TNode* parent);
+		TNode(E_NODE_TYPE type, TNode* parent, bool bCreateRenderNode = true);
 		virtual ~TNode();
 
 		virtual const TString& GetId() const
@@ -44,6 +45,10 @@ namespace tix
 		virtual TNode* IsIntersectWithPoint(const vector3df& p, aabbox3df& outBBox, vector3df& outIntersection);
 
 		virtual void Update(float dt);
+
+		// Update all note's transformation in game thread, since some tick need that
+		virtual void UpdateAllTransformation();
+		virtual const matrix4& GetAbsoluteTransformation() const;
 
 		TNode* GetParent()
 		{
@@ -103,23 +108,31 @@ namespace tix
 
 	protected:
 		virtual bool RemoveChild(TNode* child);
+		virtual void UpdateAbsoluteTransformation();
+		virtual const matrix4& GetRelativeTransformation();
 
 	protected:
 		union {
-			E_NODE_TYPE		NodeType;
-			char			NodeTypeName[4];
+			E_NODE_TYPE NodeType;
+			char NodeTypeName[4];
 		};
-		TString				NodeId;
+		TString NodeId;
 
-		TNode*				Parent;
+		TNode * Parent;
 		typedef TVector<TNode*>	VecRenderElements;
-		VecRenderElements	Children;
+		VecRenderElements Children;
 
-		uint32				NodeFlag;
+		uint32 NodeFlag;
 
-		vector3df			RelativePosition;
-		quaternion			RelativeRotate;
-		vector3df			RelativeScale;
+		vector3df RelativePosition;
+		quaternion RelativeRotate;
+		vector3df RelativeScale;
+
+		matrix4 AbsoluteTransformation;
+		matrix4 RelativeTransformation;
+
+		// Hold a reference in render thread
+		FNode * Node_RenderThread;
 	};
 
 } // end namespace tix

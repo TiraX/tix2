@@ -8,19 +8,49 @@
 
 namespace tix
 {
-	TNode::TNode(E_NODE_TYPE type, TNode* parent)
+	TNode::TNode(E_NODE_TYPE type, TNode* parent, bool bCreateRenderNode)
 		: NodeType(type)
-		, Parent(NULL)
+		, Parent(nullptr)
 		, NodeFlag(ENF_VISIBLE | ENF_DIRTY_POS)
 		, RelativeRotate(0.f, 0.f, 0.f, 1.f)
 		, RelativeScale(1.f, 1.f, 1.f)
+		, Node_RenderThread(nullptr)
 	{
 		if (parent)
 			parent->AddChild(this);
+
+		if (bCreateRenderNode)
+		{
+			// Render thread node should always have a parent.
+			TI_ASSERT(parent && parent->Node_RenderThread);
+
+			// Create render thread node and add it to FScene
+			Node_RenderThread = ti_new FNode(type, nullptr);
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddNodeToFScene,
+				FNode*, Node, Node_RenderThread,
+				FNode*, Parent, parent->Node_RenderThread,
+				{
+					FScene * scene = RenderThread->GetRenderScene();
+					scene->AddNode(Node, Parent);
+				});
+		}
 	}
 
 	TNode::~TNode()
 	{
+		// Remove render thread node
+		if (Node_RenderThread)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveNodeFromFScene,
+				FNode*, Node, Node_RenderThread,
+				{
+					FScene * scene = RenderThread->GetRenderScene();
+					scene->RemoveNode(Node);
+				});
+			Node_RenderThread = nullptr;
+		}
+
+		// Remove and delete all children
 		Remove();
 		RemoveAndDeleteAll();
 	}
@@ -164,5 +194,64 @@ namespace tix
 			}
 		}
 		return NULL;
+	}
+
+	const matrix4& TNode::GetAbsoluteTransformation() const
+	{
+		return AbsoluteTransformation;
+	}
+
+	const matrix4& TNode::GetRelativeTransformation()
+	{
+		if ((NodeFlag & (ENF_DIRTY_TRANSFORM)) != 0)
+		{
+			if (NodeFlag & (ENF_DIRTY_SCALE | ENF_DIRTY_ROT))
+			{
+				RelativeRotate.getMatrix(RelativeTransformation);
+				if (RelativeScale != vector3df(1.f, 1.f, 1.f))
+				{
+					RelativeTransformation.postScale(RelativeScale);
+				}
+				RelativeTransformation.setTranslation(RelativePosition);
+			}
+			else
+			{
+				RelativeTransformation.setTranslation(RelativePosition);
+			}
+			NodeFlag &= ~ENF_DIRTY_TRANSFORM;
+		}
+		return RelativeTransformation;
+	}
+
+	void TNode::UpdateAllTransformation()
+	{
+		UpdateAbsoluteTransformation();
+
+		VecRenderElements::const_iterator it = Children.begin();
+		for (; it != Children.end(); ++it)
+		{
+			(*it)->UpdateAllTransformation();
+		}
+
+		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
+	}
+
+	void TNode::UpdateAbsoluteTransformation()
+	{
+		if (Parent &&
+			((Parent->NodeFlag & ENF_ABSOLUTETRANSFORMATION_UPDATED) ||
+			(NodeFlag & ENF_DIRTY_TRANSFORM)))
+		{
+			Parent->GetAbsoluteTransformation().mult34(GetRelativeTransformation(), AbsoluteTransformation);
+			NodeFlag |= ENF_ABSOLUTETRANSFORMATION_UPDATED;
+		}
+		else
+		{
+			if (NodeFlag & ENF_DIRTY_TRANSFORM)
+			{
+				AbsoluteTransformation = GetRelativeTransformation();
+				NodeFlag |= ENF_ABSOLUTETRANSFORMATION_UPDATED;
+			}
+		}
 	}
 }

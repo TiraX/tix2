@@ -31,12 +31,12 @@ namespace tix
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
 
+		// Create Render Thread
+		FRenderThread::CreateRenderThread();
+
 		// Create components
 		TI_ASSERT(Scene == nullptr);
 		Scene = ti_new TScene;
-
-		// Create Render Thread
-		FRenderThread::CreateRenderThread();
 	}
 
 	void TEngine::Destroy()
@@ -65,11 +65,11 @@ namespace tix
 		}
 		Tickers.clear();
 
-		// Shut down render thread
-		FRenderThread::DestroyRenderThread();
-
 		// delete components
 		SAFE_DELETE(Scene);
+
+		// Shut down render thread
+		FRenderThread::DestroyRenderThread();
 
 		// delete device
 		TDevice::DestoryDevice(Device);

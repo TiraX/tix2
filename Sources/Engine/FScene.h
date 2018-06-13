@@ -11,6 +11,14 @@ namespace tix
 	{
 	public:
 		FScene();
-		virtual ~FScene();
+		~FScene();
+		
+		void SetRootNode(FNode * Node);
+		void AddNode(FNode * Node, FNode * Parent);
+		void RemoveNode(FNode * Node);
+
+	protected:
+		FNode * RootNode;
+		TVector<FMeshRelevance> StaticDrawList;
 	};
 } // end namespace tix

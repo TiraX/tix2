@@ -17,13 +17,13 @@ namespace tix
 		virtual ~FMeshBuffer();
 
 	public:
-		void	SetVertexStreamData(
+		void SetVertexStreamData(
 			uint32 InFormat,
 			const void* InVertexData, int32 InVertexCount,
 			E_INDEX_TYPE InIndexType,
 			const void* InIndexData, int32 InIndexCount);
 
-		int32	GetVerticesCount() const
+		int32 GetVerticesCount() const
 		{
 			return VsDataCount;
 		}

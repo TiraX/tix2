@@ -47,12 +47,14 @@ using namespace std;
 
 #include "FRenderResource.h"
 #include "FMeshBuffer.h"
+#include "FMeshRelevance.h"
 #include "FShader.h"
 #include "FTexture.h"
 #include "FPipelineState.h"
 #include "FRenderer.h"
 #include "FFrameResources.h"
 #include "FRHI.h"
+#include "FNode.h"
 #include "FScene.h"
 #include "FRenderThread.h"
 

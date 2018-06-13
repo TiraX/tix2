@@ -60,6 +60,7 @@
     <ClInclude Include="..\..\Sources\Engine\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FNode.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineState.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
