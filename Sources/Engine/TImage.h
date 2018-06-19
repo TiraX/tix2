@@ -18,7 +18,8 @@ namespace tix
 		TImage(E_PIXEL_FORMAT pixel_format, int w, int h, int data_size = -1);
 		virtual ~TImage();
 
-		TI_API static TImagePtr	LoadImageTix(TFile& file_input, bool is_srgb);
+		TI_API static TImagePtr LoadImageTix(const TString& Filename);
+		TI_API static TImagePtr	LoadImageTix(TFile& FileInput);
 
 		TI_API void			GenerateMipmaps();
 		TI_API void			ClearMipmaps();

@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FTextureDx12::FTextureDx12(TImagePtr InSourceImage)
-		: FTexture(ERF_Dx12, InSourceImage)
+	FTextureDx12::FTextureDx12()
+		: FTexture(ERF_Dx12)
 	{
 	}
 

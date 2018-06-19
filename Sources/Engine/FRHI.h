@@ -28,11 +28,11 @@ namespace tix
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
-		virtual FTexturePtr CreateTexture(TImagePtr SourceImage) = 0;
+		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
 
 		virtual FMeshBufferPtr CreateMeshBuffer(TMeshBufferPtr MeshBuffer) = 0;
-		virtual bool UpdateHardwareBuffer(FTexturePtr Texture) = 0;
+		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TImagePtr InImage) = 0;
 
 		E_RHI_TYPE GetRHIType() const
 		{

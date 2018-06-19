@@ -12,7 +12,7 @@ namespace tix
 	class FTextureDx12 : public FTexture
 	{
 	public:
-		FTextureDx12(TImagePtr InSourceImage);
+		FTextureDx12();
 		FTextureDx12(E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight);
 		virtual ~FTextureDx12();
 

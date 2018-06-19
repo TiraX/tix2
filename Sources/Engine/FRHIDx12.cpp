@@ -341,9 +341,9 @@ namespace tix
 		}
 	}
 
-	FTexturePtr FRHIDx12::CreateTexture(TImagePtr SourceImage)
+	FTexturePtr FRHIDx12::CreateTexture()
 	{
-		return ti_new FTextureDx12(SourceImage);
+		return ti_new FTextureDx12();
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height)
@@ -631,11 +631,11 @@ namespace tix
 		return ret;
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture)
+	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TImagePtr SourceImage)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-		TImagePtr SourceImage = Texture->GetSourceImage();
+		Texture->InitTextureInfo(SourceImage);
 
 		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);

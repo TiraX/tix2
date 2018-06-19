@@ -7,23 +7,27 @@
 
 namespace tix
 {
-	FTexture::FTexture(E_RESOURCE_FAMILY InFamily, TImagePtr InSourceImage)
+	FTexture::FTexture(E_RESOURCE_FAMILY InFamily)
 		: FRenderResource(InFamily)
-		, Format(InSourceImage->GetFormat())
-		, Width(InSourceImage->GetWidth())
-		, Height(InSourceImage->GetHeight())
 	{
 	}
 
 	FTexture::FTexture(E_RESOURCE_FAMILY InFamily, E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight)
 		: FRenderResource(InFamily)
-		, Format(InFormat)
-		, Width(InWidth)
-		, Height(InHeight)
 	{
+		TextureDesc.Format = InFormat;
+		TextureDesc.Width = InWidth;
+		TextureDesc.Height = InHeight;
 	}
 
 	FTexture::~FTexture()
 	{
+	}
+
+	void FTexture::InitTextureInfo(TImagePtr Image)
+	{
+		TextureDesc.Format = Image->GetFormat();
+		TextureDesc.Width = Image->GetWidth();
+		TextureDesc.Height = Image->GetHeight();
 	}
 }
