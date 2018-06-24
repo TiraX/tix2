@@ -40,9 +40,6 @@
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TStream.cpp">
-      <Filter>Sources\Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
@@ -129,6 +126,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TMesh.cpp">
       <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TResFile.cpp">
+      <Filter>Sources\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -338,6 +338,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTexture.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TResFile.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TResfileDef.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

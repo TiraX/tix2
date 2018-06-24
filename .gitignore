@@ -5,3 +5,4 @@ Projects/Windows/Debug/
 Projects/Windows/x64/
 Samples/01.Startup/x64/
 *.user
+Samples/02.MeshConverter/x64/

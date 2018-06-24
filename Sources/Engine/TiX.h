@@ -43,6 +43,8 @@ using namespace std;
 #include "TImage.h"
 #include "TTexture.h"
 #include "TMesh.h"
+#include "TResfileDef.h"
+#include "TResFile.h"
 #include "TNode.h"
 #include "TNodeCamera.h"
 #include "TNodeStaticMesh.h"

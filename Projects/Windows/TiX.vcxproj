@@ -51,11 +51,11 @@
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TResFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TStream.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
@@ -109,6 +109,8 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
+    <ClInclude Include="..\..\Sources\Engine\TResFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TResfileDef.h" />
     <ClInclude Include="..\..\Sources\Engine\TResourceLibrary.h" />
     <ClInclude Include="..\..\Sources\Engine\TScene.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
