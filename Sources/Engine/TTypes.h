@@ -22,7 +22,6 @@ typedef unsigned long long	uint64;
 typedef long long			int64;
 #endif
 
-typedef half	float16;
 typedef float	float32;
 typedef double	float64;
 

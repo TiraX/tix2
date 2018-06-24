@@ -172,7 +172,7 @@ namespace tix
 		//vector3df up = UpVector;
 		//up.normalize();
 
-		//f32 dp = CamDir.dotProduct(up);
+		//float32 dp = CamDir.dotProduct(up);
 
 		//if (equals(fabs(dp), 1.f))
 		//{

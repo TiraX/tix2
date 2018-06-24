@@ -312,7 +312,7 @@ public:
 	T Y;
 };
 
-//! Typedef for f32 2d vector.
+//! Typedef for float32 2d vector.
 typedef vector2d<float32> vector2df;
 typedef vector2d<float64> vector2df64;
 //! Typedef for integer 2d vector.

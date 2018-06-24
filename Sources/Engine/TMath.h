@@ -24,7 +24,7 @@
 #define AIR(x)				(IR(x)&0x7fffffff)
 
 //! Floating-point representation of an integer value.
-#define FR(x)				((f32&)(x))
+#define FR(x)				((float32&)(x))
 
 //! integer representation of 1.0
 #define IEEE_1_0			0x3f800000
@@ -226,8 +226,9 @@ inline int32 ti_align(int32 n, uint32 align_num)
 	return (n + align_num - 1) & (~(align_num - 1));
 }
 
-#include "math/half.hpp"
-using namespace half_float;
+//#include "math/half.hpp"
+//using namespace half_float;
+//typedef half float16;
 
 #include "math/Vector2d.h"
 #include "math/Vector3d.h"

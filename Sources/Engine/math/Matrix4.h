@@ -1576,7 +1576,7 @@ namespace tix
 	}
 
 
-	//! Typedef for f32 matrix
+	//! Typedef for float32 matrix
 	typedef CMatrix4<float32> matrix4;
 	//! global const identity matrix
 	extern const matrix4 IdentityMatrix;

@@ -304,7 +304,7 @@ namespace tix
 
 		for (s32 i=0; i<6; ++i)
 		{
-			const f32 len = reciprocal_squareroot(
+			const float32 len = reciprocal_squareroot(
 				Planes[i].Normal.getLengthSQ() );
 			Planes[i].Normal *= len;
 			Planes[i].D *= len;

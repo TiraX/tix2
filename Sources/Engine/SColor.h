@@ -34,7 +34,7 @@ namespace tix
 		}
 
 		//! Returns the luminance of the color.
-		f32 getLuminance() const
+		float32 getLuminance() const
 		{
 			return 0.3f*R + 0.59f*G + 0.11f*B;
 		}
@@ -136,14 +136,14 @@ namespace tix
 			return c;
 		}
 		//!
-		f32& operator [] (uint32 i)
+		float32& operator [] (uint32 i)
 		{
 			TI_ASSERT(i < 4);
 			return GetDataPtr()[i];
 		}
 
 		//!
-		const f32& operator [] (uint32 i) const
+		const float32& operator [] (uint32 i) const
 		{
 			TI_ASSERT(i < 4);
 			return GetDataPtr()[i];

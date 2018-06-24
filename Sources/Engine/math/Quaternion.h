@@ -264,11 +264,11 @@ namespace tix
 		}
 
 
-	//	const f32 diag = m(0,0) + m(1,1) + m(2,2);
+	//	const float32 diag = m(0,0) + m(1,1) + m(2,2);
 
 	//	if( diag > 0.0f )
 	//	{
-	//		f32 scale = sqrtf(1.0f + diag); // get scale from diagonal
+	//		float32 scale = sqrtf(1.0f + diag); // get scale from diagonal
 
 	//		// TODO: speed this up
 	//		W = 0.5f * scale;
@@ -282,7 +282,7 @@ namespace tix
 	//	{
 	//		// 1st element of diag is greatest value
 	//		// find scale according to 1st element
-	//		f32 scale = sqrtf( 1.0f + m(0,0) - m(1,1) - m(2,2));
+	//		float32 scale = sqrtf( 1.0f + m(0,0) - m(1,1) - m(2,2));
 
 	//		X = 0.5f * scale;
 	//		scale = 0.5f / scale;
@@ -294,7 +294,7 @@ namespace tix
 	//	{
 	//		// 2nd element of diag is greatest value
 	//		// find scale according to 2nd element
-	//		f32 scale = sqrtf( 1.0f + m(1,1) - m(0,0) - m(2,2));
+	//		float32 scale = sqrtf( 1.0f + m(1,1) - m(0,0) - m(2,2));
 
 	//		// TODO: speed this up
 	//		Y = 0.5f * scale;
@@ -307,7 +307,7 @@ namespace tix
 	//	{
 	//		// 3rd element of diag is greatest value
 	//		// find scale according to 3rd element
-	//		f32 scale = sqrtf( 1.0f + m(2,2) - m(0,0) - m(1,1));
+	//		float32 scale = sqrtf( 1.0f + m(2,2) - m(0,0) - m(1,1));
 
 	//		// TODO: speed this up
 	//		Z = 0.5f * scale;

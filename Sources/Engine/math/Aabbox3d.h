@@ -391,7 +391,7 @@ namespace tix
 		vector3d<T> MaxEdge;
 	};
 
-	//! Typedef for a f32 3d bounding box.
+	//! Typedef for a float32 3d bounding box.
 	typedef aabbox3d<float> aabbox3df;
 	//! Typedef for an integer 3d bounding box.
 	typedef aabbox3d<int> aabbox3di;

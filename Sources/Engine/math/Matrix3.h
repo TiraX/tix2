@@ -57,7 +57,7 @@ namespace tix
 		T		m_[2][3];
 	};
 
-	//! Typedef for f32 matrix
+	//! Typedef for float32 matrix
 	typedef CMatrix3<float32> matrix3;
 
 	template <class T>

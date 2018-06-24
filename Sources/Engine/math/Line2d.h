@@ -97,7 +97,7 @@ public:
 	vector2d<T> end;
 };
 
-//! Typedef for an f32 line.
+//! Typedef for an float32 line.
 typedef line2d<float32> line2df;
 //! Typedef for an integer line.
 typedef line2d<int32> line2di;

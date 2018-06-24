@@ -292,7 +292,7 @@ namespace tix
 	};
 
 
-	//! Typedef for a f32 3d triangle.
+	//! Typedef for a float32 3d triangle.
 	typedef triangle3d<float32> triangle3df;
 
 	//! Typedef for an integer 3d triangle.

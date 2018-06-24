@@ -30,7 +30,7 @@ namespace tix
 		T X, Y, Z, W;
 	};
 
-	//! Typedef for a f32 4d vector.
+	//! Typedef for a float32 4d vector.
 	typedef vector4d<float32> vector4df;
 	//! Typedef for an integer 4d vector.
 	typedef vector4d<int> vector4di;

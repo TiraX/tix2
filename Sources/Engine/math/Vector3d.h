@@ -299,7 +299,7 @@ namespace tix
 		T Z;
 	};
 
-	//! Typedef for a f32 3d vector.
+	//! Typedef for a float32 3d vector.
 	typedef vector3d<float32> vector3df;
 	//! Typedef for an integer 3d vector.
 	typedef vector3d<int> vector3di;

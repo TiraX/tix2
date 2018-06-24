@@ -128,7 +128,7 @@ public:
 	vector3d<T> end;
 };
 
-//! Typedef for an f32 line.
+//! Typedef for an float32 line.
 typedef line3d<float32> line3df;
 //! Typedef for an integer line.
 typedef line3d<int32> line3di;

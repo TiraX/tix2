@@ -216,7 +216,7 @@ namespace tix
 	};
 
 
-	//! Typedef for a f32 3d plane.
+	//! Typedef for a float32 3d plane.
 	typedef plane3d<float32> plane3df;
 	//! Typedef for an integer 3d plane.
 	typedef plane3d<int> plane3di;
