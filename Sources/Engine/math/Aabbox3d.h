@@ -358,9 +358,9 @@ namespace tix
 		/** \param other: other box to interpolate between
 			\param d: value between 0.0f and 1.0f.
 			\return Interpolated box. */
-		aabbox3d<T> getInterpolated(const aabbox3d<T>& other, f32 d) const
+		aabbox3d<T> getInterpolated(const aabbox3d<T>& other, float32 d) const
 		{
-			f32 inv = 1.0f - d;
+			float32 inv = 1.0f - d;
 			return aabbox3d<T>((other.MinEdge*inv) + (MinEdge*d),
 							   (other.MaxEdge*inv) + (MaxEdge*d));
 		}

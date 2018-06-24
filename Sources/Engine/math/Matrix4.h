@@ -898,19 +898,19 @@ namespace tix
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setRotationRadians( const vector3d<T>& rotation )
 	{
-		const f64 cr = cos( rotation.getX() );
-		const f64 sr = sin( rotation.getX() );
-		const f64 cp = cos( rotation.getY() );
-		const f64 sp = sin( rotation.getY() );
-		const f64 cy = cos( rotation.getZ() );
-		const f64 sy = sin( rotation.getZ() );
+		const float64 cr = cos( rotation.getX() );
+		const float64 sr = sin( rotation.getX() );
+		const float64 cp = cos( rotation.getY() );
+		const float64 sp = sin( rotation.getY() );
+		const float64 cy = cos( rotation.getZ() );
+		const float64 sy = sin( rotation.getZ() );
 
 		M[0] = (T)( cp*cy );
 		M[1] = (T)( cp*sy );
 		M[2] = (T)( -sp );
 
-		const f64 srsp = sr*sp;
-		const f64 crsp = cr*sp;
+		const float64 srsp = sr*sp;
+		const float64 crsp = cr*sp;
 
 		M[4] = (T)( srsp*cy-cr*sy );
 		M[5] = (T)( srsp*sy+cr*cy );
@@ -931,11 +931,11 @@ namespace tix
 	{
 		const CMatrix4<T> &mat = *this;
 
-		f64 Y = -asin(mat(0,2));
-		const f64 C = cos(Y);
+		float64 Y = -asin(mat(0,2));
+		const float64 C = cos(Y);
 		Y *= RADTODEG64;
 
-		f64 rotx, roty, X, Z;
+		float64 rotx, roty, X, Z;
 
 		if (fabs(C)>ROUNDING_ERROR_64)
 		{
@@ -969,19 +969,19 @@ namespace tix
 	template <class T>
 	inline CMatrix4<T>& CMatrix4<T>::setInverseRotationRadians( const vector3d<T>& rotation )
 	{
-		f64 cr = cos( rotation.getX() );
-		f64 sr = sin( rotation.getX() );
-		f64 cp = cos( rotation.getY() );
-		f64 sp = sin( rotation.getY() );
-		f64 cy = cos( rotation.getZ() );
-		f64 sy = sin( rotation.getZ() );
+		float64 cr = cos( rotation.getX() );
+		float64 sr = sin( rotation.getX() );
+		float64 cp = cos( rotation.getY() );
+		float64 sp = sin( rotation.getY() );
+		float64 cy = cos( rotation.getZ() );
+		float64 sy = sin( rotation.getZ() );
 
 		M[0] = (T)( cp*cy );
 		M[4] = (T)( cp*sy );
 		M[8] = (T)( -sp );
 
-		f64 srsp = sr*sp;
-		f64 crsp = cr*sp;
+		float64 srsp = sr*sp;
+		float64 crsp = cr*sp;
 
 		M[1] = (T)( srsp*cy-cr*sy );
 		M[5] = (T)( srsp*sy+cr*cy );
@@ -1577,7 +1577,7 @@ namespace tix
 
 
 	//! Typedef for f32 matrix
-	typedef CMatrix4<f32> matrix4;
+	typedef CMatrix4<float32> matrix4;
 	//! global const identity matrix
 	extern const matrix4 IdentityMatrix;
 
@@ -1628,7 +1628,7 @@ namespace tix
 	template<typename T>
 	CMatrix4<T> buildProjectionMatrixPerspectiveFov(T fieldOfViewRadians, T aspectRatio, T zNear, T zFar)
 	{
-		const f64 h = 1.0/tan(fieldOfViewRadians/2.0);
+		const float64 h = 1.0/tan(fieldOfViewRadians/2.0);
 		const T w = (T)(h / aspectRatio);
 
 		CMatrix4<T> m(CMatrix4<T>::EM4CONST_NOTHING);
@@ -1660,7 +1660,7 @@ namespace tix
 	template<typename T>
 	CMatrix4<T> buildProjectionMatrixPerspectiveFovInfinity(T fieldOfViewRadians, T aspectRatio, T zNear)
 	{
-		const f64 h = 1.0/tan(fieldOfViewRadians/2.0);
+		const float64 h = 1.0/tan(fieldOfViewRadians/2.0);
 		const T w = (T)(h / aspectRatio);
 
 		CMatrix4<T> m(CMatrix4<T>::EM4CONST_NOTHING);

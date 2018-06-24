@@ -81,6 +81,7 @@
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />
+    <ClInclude Include="..\..\Sources\Engine\math\half.hpp" />
     <ClInclude Include="..\..\Sources\Engine\math\Line2d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Line3d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Matrix3.h" />

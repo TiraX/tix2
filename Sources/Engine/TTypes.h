@@ -22,8 +22,9 @@ typedef unsigned long long	uint64;
 typedef long long			int64;
 #endif
 
-typedef float	f32;
-typedef double	f64;
+typedef half	float16;
+typedef float	float32;
+typedef double	float64;
 
 #define TVector		std::vector
 #define TList		std::list

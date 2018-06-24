@@ -101,16 +101,16 @@ namespace tix
 			const vector3d<T> b = pointB - pointA;
 			const vector3d<T> c = p - pointA;
 			
-			const f64 dotAA = a.dotProduct( a);
-			const f64 dotAB = a.dotProduct( b);
-			const f64 dotAC = a.dotProduct( c);
-			const f64 dotBB = b.dotProduct( b);
-			const f64 dotBC = b.dotProduct( c);
+			const float64 dotAA = a.dotProduct( a);
+			const float64 dotAB = a.dotProduct( b);
+			const float64 dotAC = a.dotProduct( c);
+			const float64 dotBB = b.dotProduct( b);
+			const float64 dotBC = b.dotProduct( c);
 			 
 			// get coordinates in barycentric coordinate system
-			const f64 invDenom =  1/(dotAA * dotBB - dotAB * dotAB); 
-			const f64 u = (dotBB * dotAC - dotAB * dotBC) * invDenom;
-			const f64 v = (dotAA * dotBC - dotAB * dotAC ) * invDenom;
+			const float64 invDenom =  1/(dotAA * dotBB - dotAB * dotAB); 
+			const float64 u = (dotBB * dotAC - dotAB * dotBC) * invDenom;
+			const float64 v = (dotAA * dotBC - dotAB * dotAC ) * invDenom;
 		 
 			// We count border-points as inside to keep downward compatibility.
 			// That's why we use >= and <= instead of > and < as more commonly seen on the web.
@@ -161,7 +161,7 @@ namespace tix
 			vector3d<T> pvec = lineVect.crossProduct(edge2);
 
 			// If determinant is near zero, ray lies in plane of triangle
-			f32 det = edge1.dotProduct(pvec);
+			float32 det = edge1.dotProduct(pvec);
 
 			vector3d<T> tvec;
 			if( det > 0 )
@@ -192,7 +192,7 @@ namespace tix
 
 			// Calculate t, scale parameters, ray intersects triangle
 			*t = edge2.dotProduct(qvec);
-			f32 fInvDet = 1.0f / det;
+			float32 fInvDet = 1.0f / det;
 			*t *= fInvDet;
 			*u *= fInvDet;
 			*v *= fInvDet;
@@ -238,7 +238,7 @@ namespace tix
 		bool isFrontFacing(const vector3d<T>& lookDirection) const
 		{
 			const vector3d<T> n = getNormal().normalize();
-			const f32 d = (f32)n.dotProduct(lookDirection);
+			const float32 d = (float32)n.dotProduct(lookDirection);
 			return F32_LOWER_EQUAL_0(d);
 		}
 
@@ -293,7 +293,7 @@ namespace tix
 
 
 	//! Typedef for a f32 3d triangle.
-	typedef triangle3d<f32> triangle3df;
+	typedef triangle3d<float32> triangle3df;
 
 	//! Typedef for an integer 3d triangle.
 	typedef triangle3d<int32> triangle3di;

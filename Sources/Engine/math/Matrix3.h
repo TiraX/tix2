@@ -58,7 +58,7 @@ namespace tix
 	};
 
 	//! Typedef for f32 matrix
-	typedef CMatrix3<f32> matrix3;
+	typedef CMatrix3<float32> matrix3;
 
 	template <class T>
 	inline CMatrix3<T>::CMatrix3()

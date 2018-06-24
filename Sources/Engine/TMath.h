@@ -42,41 +42,41 @@
 #define	F32_A_GREATER_B(a,b)	(F32_AS_int32((a)) > F32_AS_int32((b)))
 
 
-const f32 ROUNDING_ERROR_32 = 0.00005f;
-const f64 ROUNDING_ERROR_64 = 0.000005;
+const float32 ROUNDING_ERROR_32 = 0.00005f;
+const float64 ROUNDING_ERROR_64 = 0.000005;
 
 #ifdef PI // make sure we don't collide with a define
 #undef PI
 #endif
 //! Constant for PI.
-const f32 PI		= 3.14159265359f;
+const float32 PI		= 3.14159265359f;
 
 //! Constant for reciprocal of PI.
-const f32 RECIPROCAL_PI	= 1.0f/PI;
+const float32 RECIPROCAL_PI	= 1.0f/PI;
 
 //! Constant for half of PI.
-const f32 HALF_PI	= PI/2.0f;
+const float32 HALF_PI	= PI/2.0f;
 
 #ifdef PI64 // make sure we don't collide with a define
 #undef PI64
 #endif
 //! Constant for 64bit PI.
-const f64 PI64		= 3.1415926535897932384626433832795028841971693993751;
+const float64 PI64		= 3.1415926535897932384626433832795028841971693993751;
 
 //! Constant for 64bit reciprocal of PI.
-const f64 RECIPROCAL_PI64 = 1.0/PI64;
+const float64 RECIPROCAL_PI64 = 1.0/PI64;
 
 //! 32bit Constant for converting from degrees to radians
-const f32 DEGTORAD = PI / 180.0f;
+const float32 DEGTORAD = PI / 180.0f;
 
 //! 32bit constant for converting from radians to degrees (formally known as GRAD_PI)
-const f32 RADTODEG   = 180.0f / PI;
+const float32 RADTODEG   = 180.0f / PI;
 
 //! 64bit constant for converting from degrees to radians (formally known as GRAD_PI2)
-const f64 DEGTORAD64 = PI64 / 180.0;
+const float64 DEGTORAD64 = PI64 / 180.0;
 
 //! 64bit constant for converting from radians to degrees
-const f64 RADTODEG64 = 180.0 / PI64;
+const float64 RADTODEG64 = 180.0 / PI64;
 
 #define	RAD_TO_DEG(x)					((x)*RADTODEG)
 #define	DEG_TO_RAD(x)					((x)*DEGTORAD)
@@ -179,7 +179,7 @@ inline bool equals(const float a, const float b, const float tolerance = ROUNDIN
 }
 
 //! returns if a equals zero, taking rounding errors into account
-inline bool iszero(const f32 a, const f32 tolerance = ROUNDING_ERROR_32)
+inline bool iszero(const float32 a, const float32 tolerance = ROUNDING_ERROR_32)
 {
 	return equals(a, 0.0f, tolerance);
 }
@@ -190,7 +190,7 @@ inline bool iszero(const int a, const int tolerance = 0)
 	return ( a & 0x7ffffff ) <= tolerance;
 }
 
-inline float reciprocal_squareroot(const f32 x)
+inline float reciprocal_squareroot(const float32 x)
 {
 	// comes from Nvidia
 	unsigned int tmp = ((unsigned int)(IEEE_1_0 << 1) + IEEE_1_0 - *(uint32*)&x) >> 1;
@@ -225,6 +225,9 @@ inline int32 ti_align(int32 n, uint32 align_num)
 {
 	return (n + align_num - 1) & (~(align_num - 1));
 }
+
+#include "math/half.hpp"
+using namespace half_float;
 
 #include "math/Vector2d.h"
 #include "math/Vector3d.h"

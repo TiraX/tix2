@@ -98,7 +98,7 @@ public:
 };
 
 //! Typedef for an f32 line.
-typedef line2d<f32> line2df;
+typedef line2d<float32> line2df;
 //! Typedef for an integer line.
 typedef line2d<int32> line2di;
 

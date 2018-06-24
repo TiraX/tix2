@@ -345,5 +345,8 @@
     <ClInclude Include="..\..\Sources\Engine\TResfileDef.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\math\half.hpp">
+      <Filter>Sources\Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

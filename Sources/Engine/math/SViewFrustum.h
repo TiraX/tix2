@@ -92,7 +92,7 @@ namespace tix
 		vector3df getNearRightDown() const;
 
 		//! returns a bounding box enclosing the whole view frustum
-		const aabbox3d<f32> &getBoundingBox() const;
+		const aabbox3d<float32> &getBoundingBox() const;
 
 		//! recalculates the bounding box member based on the planes
 		inline void recalculateBoundingBox();
@@ -137,10 +137,10 @@ namespace tix
 		vector3df CameraPosition;
 
 		//! all planes enclosing the view frustum.
-		plane3d<f32> Planes[VF_PLANE_COUNT];
+		plane3d<float32> Planes[VF_PLANE_COUNT];
 
 		//! bounding box around the view frustum
-		aabbox3d<f32> BoundingBox;
+		aabbox3d<float32> BoundingBox;
 
 		//! Hold a copy of important transform matrices
 		matrix4 Matrices[ETS_COUNT_3];
@@ -245,7 +245,7 @@ namespace tix
 
 
 
-	inline const aabbox3d<f32> &SViewFrustum::getBoundingBox() const
+	inline const aabbox3d<float32> &SViewFrustum::getBoundingBox() const
 	{
 		return BoundingBox;
 	}
@@ -357,7 +357,7 @@ namespace tix
 		uint32 i;
 		for ( i=0; i != VF_PLANE_COUNT; ++i)
 		{
-			const f32 len = -reciprocal_squareroot(
+			const float32 len = -reciprocal_squareroot(
 				Planes[i].Normal.getLengthSQ());
 			Planes[i].Normal *= len;
 			Planes[i].D *= len;

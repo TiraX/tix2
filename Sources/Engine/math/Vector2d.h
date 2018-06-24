@@ -94,7 +94,7 @@ public:
 
 	//! Gets the length of the vector.
 	/** \return The length of the vector. */
-	T getLength() const { return (T)sqrt((f64)(X*X + Y*Y)); }
+	T getLength() const { return (T)sqrt((float64)(X*X + Y*Y)); }
 
 	//! Get the squared length of this vector
 	/** This is useful because it is much faster than getLength().
@@ -131,7 +131,7 @@ public:
 	/** \param degrees Amount of degrees to rotate by.
 	\param center Rotation center.
 	\return This vector after transformation. */
-	vector2d<T>& rotateBy(f64 degrees, const vector2d<T>& center)
+	vector2d<T>& rotateBy(float64 degrees, const vector2d<T>& center)
 	{
 		degrees *= DEGTORAD64;
 		const T cs = (T)cos(degrees);
@@ -155,7 +155,7 @@ public:
 		T l = X*X + Y*Y;
 		if (l == 0)
 			return *this;
-		l = reciprocal_squareroot ( (f32)l );
+		l = reciprocal_squareroot ( (float32)l );
 		X *= l;
 		Y *= l;
 		return *this;
@@ -165,7 +165,7 @@ public:
 	/** 0 is to the left (9 o'clock), values increase clockwise.
 	This method has been suggested by Pr3t3nd3r.
 	\return Returns a value between 0 and 360. */
-	f64 getAngleTrig() const
+	float64 getAngleTrig() const
 	{
 		if (X == 0)
 			return Y < 0 ? 270 : 90;
@@ -188,14 +188,14 @@ public:
 	//! Calculates the angle of this vector in degrees in the counter trigonometric sense.
 	/** 0 is to the right (3 o'clock), values increase counter-clockwise.
 	\return Returns a value between 0 and 360. */
-	inline f64 getAngle() const
+	inline float64 getAngle() const
 	{
 		if (Y == 0) // corrected thanks to a suggestion by Jox
 			return X < 0 ? 180 : 0;
 		else if (X == 0)
 			return Y < 0 ? 90 : 270;
 
-		f64 tmp = Y / getLength();
+		float64 tmp = Y / getLength();
 		tmp = atan(sqrt(1 - tmp*tmp) / tmp) * RADTODEG64;
 
 		if (X>0 && Y>0)
@@ -216,14 +216,14 @@ public:
 	//! Calculates the angle between this vector and another one in degree.
 	/** \param b Other vector to test with.
 	\return Returns a value between 0 and 90. */
-	inline f64 getAngleWith(const vector2d<T>& b) const
+	inline float64 getAngleWith(const vector2d<T>& b) const
 	{
-		f64 tmp = X*b.getX() + Y*b.getY();
+		float64 tmp = X*b.getX() + Y*b.getY();
 
 		if (tmp == 0.0)
 			return 90.0;
 
-		tmp = tmp / sqrt((f64)((X*X + Y*Y) * (b.getX()*b.getX() + b.getY()*b.getY())));
+		tmp = tmp / sqrt((float64)((X*X + Y*Y) * (b.getX()*b.getX() + b.getY()*b.getY())));
 		if (tmp < 0.0)
 			tmp = -tmp;
 
@@ -253,7 +253,7 @@ public:
 	/** \param other Other vector to interpolate with.
 	\param d Value between 0.0f and 1.0f.
 	\return Interpolated vector. */
-	vector2d<T> getInterpolated(const vector2d<T>& other, f32 d) const
+	vector2d<T> getInterpolated(const vector2d<T>& other, float32 d) const
 	{
 		T inv = (T) 1.0 - d;
 		return vector2d<T>(other.getX()*inv + X*d, other.getY()*inv + Y*d);
@@ -280,7 +280,7 @@ public:
 	/** \param a first vector to interpolate with
 	\param b second vector to interpolate with
 	\param t value between 0.0f and 1.0f. */
-	vector2d<T>& interpolate(const vector2d<T>& a, const vector2d<T>& b, const f32 t)
+	vector2d<T>& interpolate(const vector2d<T>& a, const vector2d<T>& b, const float32 t)
 	{
 		X = b.getX() + ( ( a.getX() - b.getX() ) * t );
 		Y = b.getY() + ( ( a.getY() - b.getY() ) * t );
@@ -313,8 +313,8 @@ public:
 };
 
 //! Typedef for f32 2d vector.
-typedef vector2d<f32> vector2df;
-typedef vector2d<f64> vector2df64;
+typedef vector2d<float32> vector2df;
+typedef vector2d<float64> vector2df64;
 //! Typedef for integer 2d vector.
 typedef vector2d<int> vector2di;
 typedef vector2d<unsigned short> vector2du16;

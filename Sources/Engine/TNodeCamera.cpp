@@ -119,45 +119,45 @@ namespace tix
 		return UpVector;
 	}
 
-	f32 TNodeCamera::GetNearValue() const 
+	float32 TNodeCamera::GetNearValue() const 
 	{
 		return ZNear;
 	}
 
-	f32 TNodeCamera::GetFarValue() const 
+	float32 TNodeCamera::GetFarValue() const 
 	{
 		return ZFar;
 	}
 
-	f32 TNodeCamera::GetAspectRatio() const 
+	float32 TNodeCamera::GetAspectRatio() const 
 	{
 		return Aspect;
 	}
 
-	f32 TNodeCamera::GetFOV() const 
+	float32 TNodeCamera::GetFOV() const 
 	{
 		return Fovy;
 	}
 
-	void TNodeCamera::SetNearValue(f32 f)
+	void TNodeCamera::SetNearValue(float32 f)
 	{
 		ZNear = f;
 		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;
 	}
 
-	void TNodeCamera::SetFarValue(f32 f)
+	void TNodeCamera::SetFarValue(float32 f)
 	{
 		ZFar = f;
 		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;
 	}
 
-	void TNodeCamera::SetAspectRatio(f32 f)
+	void TNodeCamera::SetAspectRatio(float32 f)
 	{
 		Aspect = f;
 		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;
 	}
 
-	void TNodeCamera::SetFOV(f32 f)
+	void TNodeCamera::SetFOV(float32 f)
 	{
 		Fovy = f;
 		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;

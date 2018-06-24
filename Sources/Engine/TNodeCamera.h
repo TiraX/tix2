@@ -70,19 +70,19 @@ namespace tix
 
 		//! Gets distance from the camera to the near plane.
 		//! \return Value of the near plane of the camera.
-		virtual f32 GetNearValue() const;
+		virtual float32 GetNearValue() const;
 
 		//! Gets the distance from the camera to the far plane.
 		//! \return Value of the far plane of the camera.
-		virtual f32 GetFarValue() const;
+		virtual float32 GetFarValue() const;
 
 		//! Get the aspect ratio of the camera.
 		//! \return The aspect ratio of the camera.
-		virtual f32 GetAspectRatio() const;
+		virtual float32 GetAspectRatio() const;
 
 		//! Gets the field of view of the camera.
 		//! \return Field of view of the camera
-		virtual f32 GetFOV() const;
+		virtual float32 GetFOV() const;
 
 		void LockAction(bool lock)
 		{
@@ -106,16 +106,16 @@ namespace tix
 		}
 
 		//! Sets the value of the near clipping plane. (default: 1.0f)
-		virtual void SetNearValue(f32 zn);
+		virtual void SetNearValue(float32 zn);
 
 		//! Sets the value of the far clipping plane (default: 2000.0f)
-		virtual void SetFarValue(f32 zf);
+		virtual void SetFarValue(float32 zf);
 
 		//! Sets the aspect ratio (default: 4.0f / 3.0f)
-		virtual void SetAspectRatio(f32 aspect);
+		virtual void SetAspectRatio(float32 aspect);
 
 		//! Sets the field of view (Default: PI / 3.5f)
-		virtual void SetFOV(f32 fovy);
+		virtual void SetFOV(float32 fovy);
 
 		//! Returns the view area. Sometimes needed by bsp or lod render nodes.
 		virtual const SViewFrustum* GetViewFrustum() const;
@@ -153,12 +153,12 @@ namespace tix
 		vector3df HorVector;
 		vector3df VerVector;
 
-		f32 Fovy;	// Field of view, in radians. 
+		float32 Fovy;	// Field of view, in radians. 
 
 
-		f32 Aspect;	// Aspect ratio. 
-		f32 ZNear;	// value of the near view-plane. 
-		f32 ZFar;	// Z-value of the far view-plane.
+		float32 Aspect;	// Aspect ratio. 
+		float32 ZNear;	// value of the near view-plane. 
+		float32 ZFar;	// Z-value of the far view-plane.
 
 		SViewFrustum ViewArea;
 	};

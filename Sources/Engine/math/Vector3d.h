@@ -168,7 +168,7 @@ namespace tix
 			T l = X*X + Y*Y + Z*Z;
 			if (l == 0)
 				return *this;
-			l = (T) reciprocal_squareroot ( (f32)l );
+			l = (T) reciprocal_squareroot ( (float32)l );
 			X *= l;
 			Y *= l;
 			Z *= l;
@@ -204,7 +204,7 @@ namespace tix
 		//! Rotates the vector by a specified number of degrees around the Y axis and the specified center.
 		/** \param degrees Number of degrees to rotate around the Y axis.
 			\param center The center of the rotation. */
-		void rotateXZBy(f64 degrees, const vector3d<T>& center=vector3d<T>())
+		void rotateXZBy(float64 degrees, const vector3d<T>& center=vector3d<T>())
 		{
 			degrees *= DEGTORAD64;
 			T cs = (T)cos(degrees);
@@ -219,7 +219,7 @@ namespace tix
 		//! Rotates the vector by a specified number of degrees around the Z axis and the specified center.
 		/** \param degrees: Number of degrees to rotate around the Z axis.
 			\param center: The center of the rotation. */
-		void rotateXYBy(f64 degrees, const vector3d<T>& center=vector3d<T>())
+		void rotateXYBy(float64 degrees, const vector3d<T>& center=vector3d<T>())
 		{
 			degrees *= DEGTORAD64;
 			T cs = (T)cos(degrees);
@@ -234,7 +234,7 @@ namespace tix
 		//! Rotates the vector by a specified number of degrees around the X axis and the specified center.
 		/** \param degrees: Number of degrees to rotate around the X axis.
 			\param center: The center of the rotation. */
-		void rotateYZBy(f64 degrees, const vector3d<T>& center=vector3d<T>())
+		void rotateYZBy(float64 degrees, const vector3d<T>& center=vector3d<T>())
 		{
 			degrees *= DEGTORAD64;
 			T cs = (T)cos(degrees);
@@ -300,7 +300,7 @@ namespace tix
 	};
 
 	//! Typedef for a f32 3d vector.
-	typedef vector3d<f32> vector3df;
+	typedef vector3d<float32> vector3df;
 	//! Typedef for an integer 3d vector.
 	typedef vector3d<int> vector3di;
 
