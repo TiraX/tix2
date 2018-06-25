@@ -4,7 +4,7 @@
 */
 
 #include "stdafx.h"
-
+#include "ResHelper.h"
 #include "ResMeshHelper.h"
 
 namespace tix
@@ -15,6 +15,12 @@ namespace tix
 		Segments[InStreamType] = ti_new TResMeshSegment;
 		Segments[InStreamType]->Data = InData;
 		Segments[InStreamType]->StrideInFloat = InStrideInByte / sizeof(float);
+	}
+
+	void TMeshDefine::SetFaces(int32* Indices, int32 Count)
+	{
+		Faces.Data = Indices;
+		Faces.Count = Count;
 	}
 
 	/////////////////////////////////////////////////////////////////
@@ -40,7 +46,7 @@ namespace tix
 		ChunkHeader.Version = TIRES_VERSION_CHUNK_MESH;
 		ChunkHeader.ElementCount = (int32)Meshes.size();
 
-		TStream HeaderStream, DataStream;
+		TStream HeaderStream, DataStream(1024 * 8);
 		for (int32 m = 0; m < ChunkHeader.ElementCount; ++m)
 		{
 			const TMeshDefine& Mesh = Meshes[m];
@@ -74,19 +80,17 @@ namespace tix
 			float* DataTangent = Mesh.Segments[ESSI_TANGENT] ? Mesh.Segments[ESSI_TANGENT]->Data : nullptr;
 			float* DataBI = Mesh.Segments[ESSI_BLENDINDEX] ? Mesh.Segments[ESSI_BLENDINDEX]->Data : nullptr;
 			float* DataBW = Mesh.Segments[ESSI_BLENDWEIGHT] ? Mesh.Segments[ESSI_BLENDWEIGHT]->Data : nullptr;
+
+			TI_ASSERT(DataPos != nullptr);
+			const int32 VertexStart = DataStream.GetLength();
 			for (int32 v = 0; v < Mesh.NumVertices; ++v)
 			{
-				//ESSI_POSITION = 0,
-				//ESSI_NORMAL,
-				//ESSI_COLOR,
-				//ESSI_TEXCOORD0,
-				//ESSI_TEXCOORD1,
-				//ESSI_TANGENT,
-				//ESSI_BLENDINDEX,
-				//ESSI_BLENDWEIGHT,
 				if (DataPos != nullptr)
 				{
-					DataStream.Put(DataPos, sizeof(vector3df) * 3);
+					vector3df pos(DataPos[0], DataPos[1], DataPos[2]);
+					MeshHeader.BBox.addInternalPoint(pos);
+
+					DataStream.Put(DataPos, sizeof(vector3df));
 					DataPos += Mesh.Segments[ESSI_POSITION]->StrideInFloat;
 				}
 				if (DataNormal != nullptr)
@@ -111,12 +115,75 @@ namespace tix
 				}
 				if (DataUv0 != nullptr)
 				{
-
+					TI_TODO("use full precision uv coord temp, change to half in futher.");
+					DataStream.Put(DataUv0, sizeof(float) * 2);
+					DataUv0 += Mesh.Segments[ESSI_TEXCOORD0]->StrideInFloat;
+				}
+				if (DataUv1 != nullptr)
+				{
+					TI_TODO("use full precision uv coord temp, change to half in futher.");
+					DataStream.Put(DataUv1, sizeof(float) * 2);
+					DataUv1 += Mesh.Segments[ESSI_TEXCOORD1]->StrideInFloat;
+				}
+				if (DataTangent != nullptr)
+				{
+					uint8 TData[4];
+					TData[0] = FloatToUNorm(DataTangent[0]);
+					TData[1] = FloatToUNorm(DataTangent[1]);
+					TData[2] = FloatToUNorm(DataTangent[2]);
+					TData[3] = 255;
+					DataStream.Put(TData, sizeof(TData));
+					DataTangent += Mesh.Segments[ESSI_TANGENT]->StrideInFloat;
+				}
+				if (DataBI != nullptr)
+				{
+					DataStream.Put(DataBI, sizeof(float) * 4);
+					DataBI += Mesh.Segments[ESSI_BLENDINDEX]->StrideInFloat;
+				}
+				if (DataBW != nullptr)
+				{
+					DataStream.Put(DataBW, sizeof(float) * 4);
+					DataBW += Mesh.Segments[ESSI_BLENDWEIGHT]->StrideInFloat;
 				}
 			}
+			const int32 VertexEnd = DataStream.GetLength();
 
-			TI_TODO("Continue from here. output binary and read it.");
+			// 8 bytes align
+			TI_ASSERT((VertexEnd - VertexStart) % 4 == 0);
+			FillZero8(DataStream);
+
+			// - Indices
+			const int32 IndexStart = DataStream.GetLength();
+			TI_ASSERT(Mesh.Faces.Count == MeshHeader.PrimitiveCount * 3);
+			if (MeshHeader.IndexType == EIT_16BIT)
+			{
+				for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+				{
+					uint16 Index = (uint16)Mesh.Faces.Data[i];
+					DataStream.Put(&Index, sizeof(uint16));
+				}
+			}
+			else
+			{
+				for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+				{
+					uint32 Index = (uint32)Mesh.Faces.Data[i];
+					DataStream.Put(&Index, sizeof(uint32));
+				}
+			}
+			const int32 IndexEnd = DataStream.GetLength();
+			FillZero8(DataStream);
+
+			// Fill header
+			const int32 HeaderStart = HeaderStream.GetLength();
+			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
+			const int32 HeaderEnd = HeaderStream.GetLength();
+			FillZero8(HeaderStream);
 		}
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
+
+		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
+		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
+		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 }

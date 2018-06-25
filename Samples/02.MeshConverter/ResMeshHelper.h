@@ -7,158 +7,16 @@
 
 namespace tix
 {
-
-	// help functions
-	inline TString& trim(TString& text)
-	{
-		if (!text.empty())
-		{
-			text.erase(0, text.find_first_not_of(_T(" \n\r\t")));
-			text.erase(text.find_last_not_of(_T(" \n\r\t")) + 1);
-		}
-		return text;
-	}
-
-	inline TVector<float> ReadFloatArray(const char* float_array_str, const char seperator = ' ')
-	{
-		TVector<float> Result;
-
-		TString value = float_array_str;
-		value = trim(value);
-
-		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
-		char *start, *end;
-		start = str_cpy;
-		end = start;
-
-		float num;
-		while (*end)
-		{
-			if (*end == seperator)
-			{
-				*end = 0;
-				num = (float)atof(start);
-				start = end + 1;
-				Result.push_back(num);
-			}
-			++end;
-		}
-
-		if (strlen(start) > 0)
-		{
-			num = (float)atof(start);
-			Result.push_back(num);
-		}
-
-		delete[] str_cpy;
-		return Result;
-	}
-
-	inline TVector<int> ReadIntArray(const char* int_array_str, const char seperator = ' ')
-	{
-		TVector<int> Result;
-
-		TString value = int_array_str;
-		value = trim(value);
-
-		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
-		char *start, *end;
-		start = str_cpy;
-		end = start;
-
-		int num;
-		while (*end)
-		{
-			if (*end == seperator)
-			{
-				*end = 0;
-				num = atoi(start);
-				start = end + 1;
-				Result.push_back(num);
-			}
-			++end;
-		}
-
-		if (strlen(start) > 0)
-		{
-			num = atoi(start);
-			Result.push_back(num);
-		}
-
-		delete[] str_cpy;
-		return Result;
-	}
-
-	inline TVector<TString> ReadStringArray(const char* string_array_str, const char sep = ' ')
-	{
-		TVector<TString> Result;
-
-		TString value = string_array_str;
-		value = trim(value);
-
-		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
-		char *start, *end;
-		start = str_cpy;
-		end = start;
-
-		TString str;
-		while (*end)
-		{
-			if (*end == sep)
-			{
-				*end = 0;
-				str = start;
-				start = end + 1;
-				Result.push_back(str);
-			}
-			++end;
-		}
-
-		if (strlen(start) > 0)
-		{
-			str = start;
-			Result.push_back(str);
-		}
-
-		delete[] str_cpy;
-		return Result;
-	}
-
-	inline int32 AddStringToList(TVector<TString>& Strings, const TString& String)
-	{
-		for (int32 s = 0 ; s < (int32)Strings.size() ; ++ s)
-		{
-			if (Strings[s] == String)
-			{
-				return s;
-			}
-		}
-		Strings.push_back(String);
-		return (int32)Strings.size() - 1;
-	}
-
-	inline uint8 FloatToUNorm(float n)
-	{
-		if (n < -1.f)
-			n = -1.f;
-		if (n > 1.f)
-			n = 1.f;
-		n = n * 0.5f + 0.5f;
-		float n0 = n * 255.f + 0.5f;
-		return (uint8)n0;
-	}
-
-	/////////////////////////////////////////////////////////////////
 	struct TResMeshSegment
 	{
 		float* Data;
 		int32 StrideInFloat;
+	};
+
+	struct TResMeshFaces
+	{
+		int32* Data;
+		int32 Count;
 	};
 
 	struct TMeshDefine
@@ -169,6 +27,9 @@ namespace tix
 			, NumTriangles(InNumTriangles)
 		{
 			memset(Segments, 0, sizeof(TResMeshSegment*) * ESSI_TOTAL);
+
+			Faces.Data = nullptr;
+			Faces.Count = 0;
 		}
 		~TMeshDefine()
 		{
@@ -182,8 +43,10 @@ namespace tix
 		int32 NumVertices;
 		int32 NumTriangles;
 		TResMeshSegment* Segments[ESSI_TOTAL];
+		TResMeshFaces Faces;
 
 		void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
+		void SetFaces(int32* Indices, int32 Count);
 	};
 
 	class TResMeshHelper

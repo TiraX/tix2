@@ -55,7 +55,12 @@ namespace tix
 			return Buffer;
 		}
 
-		int32 GetLength()
+		const char* GetBuffer() const
+		{
+			return Buffer;
+		}
+
+		int32 GetLength() const
 		{
 			return Pos;
 		}
@@ -69,14 +74,13 @@ namespace tix
 			}
 			else
 			{
-				size = (size + 4) & (~3);
+				size = (size + 3) & (~3);
 			}
 			char* newBuffer = ti_new char[size];
 			memcpy(newBuffer, Buffer, Pos);
 
-			char* oldBuffer = Buffer;
+			ti_delete[] Buffer;
 			Buffer = newBuffer;
-			ti_delete[] oldBuffer;
 
 			BufferSize = size;
 		}

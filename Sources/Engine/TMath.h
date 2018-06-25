@@ -226,6 +226,36 @@ inline int32 ti_align(int32 n, uint32 align_num)
 	return (n + align_num - 1) & (~(align_num - 1));
 }
 
+inline uint32 ti_align4(uint32 n)
+{
+	return ti_align(n, 4);
+}
+
+inline uint32 ti_align8(uint32 n)
+{
+	return ti_align(n, 8);
+}
+
+inline uint32 ti_align16(uint32 n)
+{
+	return ti_align(n, 16);
+}
+
+inline int32 ti_align4(int32 n)
+{
+	return ti_align(n, 4);
+}
+
+inline int32 ti_align8(int32 n)
+{
+	return ti_align(n, 8);
+}
+
+inline int32 ti_align16(int32 n)
+{
+	return ti_align(n, 16);
+}
+
 //#include "math/half.hpp"
 //using namespace half_float;
 //typedef half float16;

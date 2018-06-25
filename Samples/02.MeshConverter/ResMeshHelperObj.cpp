@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 
+#include "ResHelper.h"
 #include "ResMeshHelper.h"
 #include <fstream>
 
@@ -125,6 +126,7 @@ namespace tix
 				Mesh.AddSegment(ESSI_POSITION, (float*)&PosArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_NORMAL, (float*)&NormalArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&UVArrayNew[0], sizeof(vector3df));
+				Mesh.SetFaces(&Indices[0], (int32)Indices.size());
 			}
 			ResMesh.OutputMesh(OutStream, OutStrings);
 
