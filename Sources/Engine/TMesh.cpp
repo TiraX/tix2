@@ -8,17 +8,18 @@
 
 namespace tix
 {
-	static const int32 SematicSize[ESSI_TOTAL] =
+	const int32 TMeshBuffer::SematicSize[ESSI_TOTAL] =
 	{
 		12,	// ESSI_POSITION,
-		12,	// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
+		4,	// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
 		4,	// ESSI_COLOR,
 		8,	// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
 		8,	// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
-		12,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
+		4,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
 		4,	// ESSI_BLENDINDEX,
 		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
+
 	TMeshBuffer::TMeshBuffer()
 		: PrimitiveType(EPT_TRIANGLELIST)
 		, VsData(nullptr)
@@ -38,6 +39,20 @@ namespace tix
 		SAFE_DELETE(PsData);
 	}
 
+	int32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
+	{
+		// Calculate stride
+		int32 Stride = 0;
+		for (uint32 seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
+		{
+			if ((Format & seg) != 0)
+			{
+				Stride += SematicSize[i];
+			}
+		}
+		return Stride;
+	}
+
 	void TMeshBuffer::SetVertexStreamData(
 		uint32 InFormat,
 		const void* InVertexData, int32 InVertexCount,
@@ -50,15 +65,7 @@ namespace tix
 		IndexType = InIndexType;
 		PsDataCount = InIndexCount;
 
-		// Calculate stride
-		Stride = 0;
-		for (UINT seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
-		{
-			if (VsFormat & seg)
-			{
-				Stride += SematicSize[i];
-			}
-		}
+		Stride = GetStrideFromFormat(VsFormat);
 
 		const uint32 VsSize = InVertexCount * Stride;
 		const uint32 VsBufferSize = ti_align(VsSize, 16);

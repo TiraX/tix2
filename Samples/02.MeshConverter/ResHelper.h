@@ -145,7 +145,7 @@ namespace tix
 
 	inline void SaveStringList(const TVector<TString>& Strings, TStream& Stream)
 	{
-		char zero[4] = { 0 };
+		char zero[8] = { 0 };
 
 		int32* string_offsets = ti_new int32[Strings.size()];
 		int32 offset = 0;
@@ -161,7 +161,8 @@ namespace tix
 		for (int i = 0; i < (int)Strings.size(); ++i)
 		{
 			const TString& s = Strings[i];
-			int32 len = (((int32)s.size() + 4) & ~3);
+			//int32 len = (((int32)s.size() + 4) & ~3);
+			int32 len = ti_align8((int32)s.size());
 			int32 real_len = (int32)s.size();
 			Stream.Put(s.c_str(), real_len);
 			Stream.Put(zero, len - real_len);;

@@ -14,7 +14,11 @@ namespace tix
 		TMeshBuffer();
 		~TMeshBuffer();
 
+		static const TI_API int32 SematicSize[ESSI_TOTAL];
+
 	public:
+		static int32 GetStrideFromFormat(uint32 Format);
+
 		void SetVertexStreamData(
 			uint32 InFormat,
 			const void* InVertexData, int32 InVertexCount,

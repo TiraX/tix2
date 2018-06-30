@@ -22,6 +22,16 @@ namespace tix
 		Destroy();
 	}
 
+	TResFilePtr TResFile::LoadResfile(const TString& InFilename)
+	{
+		TResFilePtr ResFile = ti_new TResFile;
+		if (ResFile->Load(InFilename))
+		{
+			return ResFile;
+		}
+		return nullptr;
+	}
+
 	void TResFile::Destroy()
 	{
 		Filename = "";
@@ -53,6 +63,11 @@ namespace tix
 	bool TResFile::Load(TFile& res_file)
 	{
 		Filename = res_file.GetFileName();
+		TI_ASSERT(Filebuffer == nullptr);
+		Filebuffer = ti_new int8[res_file.GetSize()];
+		res_file.Read(Filebuffer, res_file.GetSize(), res_file.GetSize());
+		res_file.Close();
+
 		int32 pos = 0;
 		Header = (TResfileHeader*)(Filebuffer + pos);
 		if (Header->Version != TIRES_VERSION_MAINFILE)
@@ -61,7 +76,7 @@ namespace tix
 			_LOG(Error, "Wrong file version. [%s]\n", Filename.c_str());
 			return false;
 		}
-		pos += sizeof(TResfileHeader);
+		pos += ti_align8((int32)sizeof(TResfileHeader));
 
 		LoadStringList();
 
@@ -103,5 +118,42 @@ namespace tix
 			chunk_start		+= chunkHeader->ChunkSize;
 		}
 		return true;
+	}
+
+	TNodeStaticMesh* TResFile::CreateStaticMesh(TNode* ParentNode)
+	{
+		if (ChunkHeader[ECL_MESHES] == nullptr)
+			return nullptr;
+
+		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_MESHES];
+		const int MeshCount = ChunkHeader[ECL_MESHES]->ElementCount;
+		if (MeshCount == 0)
+		{
+			return nullptr;
+		}
+
+		TVector<TNodeStaticMesh*> MeshList;
+		MeshList.reserve(MeshCount);
+
+		if (ParentNode == nullptr)
+		{
+			ParentNode = TEngine::Get()->GetScene()->GetRoot();
+		}
+		TNodeStaticMesh * Node = ti_new TNodeStaticMesh(ParentNode);
+		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)) * MeshCount);
+		int32 MeshDataOffset = 0;
+		for (int i = 0; i < MeshCount; ++i)
+		{
+			THeaderMesh* Header = (THeaderMesh*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)) * i);
+			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
+
+			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
+			const int8* VertexData = MeshDataStart + MeshDataOffset;
+			const int8* IndexData = MeshDataStart + ti_align8(Header->VertexCount * VertexStride);
+			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
+
+			Node->AddMeshBuffer(Mesh);
+		}
+		return Node;
 	}
 }

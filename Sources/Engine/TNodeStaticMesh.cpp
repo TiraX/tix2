@@ -22,8 +22,9 @@ namespace tix
 		CREATE_RENDER_THREAD_NODE(FNodeStaticMesh);
 	}
 
-	void TNodeStaticMesh::SetMeshBuffer(TMeshBufferPtr InMeshBuffer)
+	void TNodeStaticMesh::AddMeshBuffer(TMeshBufferPtr InMeshBuffer)
 	{
+		TI_TODO("Support multi mesh buffer in one node.");
 		MeshBuffer = InMeshBuffer;
 
 		// send to render thread node to get mesh buffer render resource

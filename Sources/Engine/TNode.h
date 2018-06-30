@@ -122,7 +122,7 @@ namespace tix
 		}
 
 		// interfaces for different nodes
-		virtual void SetMeshBuffer(TMeshBufferPtr MeshBuffer) {};
+		virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) {};
 
 	protected:
 		virtual bool RemoveChild(TNode* child);

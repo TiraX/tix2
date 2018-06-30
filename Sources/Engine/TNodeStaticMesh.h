@@ -13,7 +13,7 @@ namespace tix
 		TNodeStaticMesh(TNode* parent);
 		virtual ~TNodeStaticMesh();
 		
-		virtual void SetMeshBuffer(TMeshBufferPtr MeshBuffer) override;
+		virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) override;
 		virtual void CreateRenderThreadNode() override;
 
 	protected:

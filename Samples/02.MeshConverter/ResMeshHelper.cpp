@@ -90,6 +90,7 @@ namespace tix
 					vector3df pos(DataPos[0], DataPos[1], DataPos[2]);
 					MeshHeader.BBox.addInternalPoint(pos);
 
+					TI_ASSERT(sizeof(vector3df) == TMeshBuffer::SematicSize[ESSI_POSITION]);
 					DataStream.Put(DataPos, sizeof(vector3df));
 					DataPos += Mesh.Segments[ESSI_POSITION]->StrideInFloat;
 				}
@@ -100,6 +101,8 @@ namespace tix
 					NData[1] = FloatToUNorm(DataNormal[1]);
 					NData[2] = FloatToUNorm(DataNormal[2]);
 					NData[3] = 255;
+
+					TI_ASSERT(sizeof(NData) == TMeshBuffer::SematicSize[ESSI_NORMAL]);
 					DataStream.Put(NData, sizeof(NData));
 					DataNormal += Mesh.Segments[ESSI_NORMAL]->StrideInFloat;
 				}
@@ -110,18 +113,22 @@ namespace tix
 					CData[1] = FloatToUNorm(DataColor[1]);
 					CData[2] = FloatToUNorm(DataColor[2]);
 					CData[3] = FloatToUNorm(DataColor[3]);
+
+					TI_ASSERT(sizeof(CData) == TMeshBuffer::SematicSize[ESSI_COLOR]);
 					DataStream.Put(CData, sizeof(CData));
 					DataColor += Mesh.Segments[ESSI_COLOR]->StrideInFloat;
 				}
 				if (DataUv0 != nullptr)
 				{
 					TI_TODO("use full precision uv coord temp, change to half in futher.");
+					TI_ASSERT(sizeof(float) * 2 == TMeshBuffer::SematicSize[ESSI_TEXCOORD0]);
 					DataStream.Put(DataUv0, sizeof(float) * 2);
 					DataUv0 += Mesh.Segments[ESSI_TEXCOORD0]->StrideInFloat;
 				}
 				if (DataUv1 != nullptr)
 				{
 					TI_TODO("use full precision uv coord temp, change to half in futher.");
+					TI_ASSERT(sizeof(float) * 2 == TMeshBuffer::SematicSize[ESSI_TEXCOORD1]);
 					DataStream.Put(DataUv1, sizeof(float) * 2);
 					DataUv1 += Mesh.Segments[ESSI_TEXCOORD1]->StrideInFloat;
 				}
@@ -132,16 +139,21 @@ namespace tix
 					TData[1] = FloatToUNorm(DataTangent[1]);
 					TData[2] = FloatToUNorm(DataTangent[2]);
 					TData[3] = 255;
+
+					TI_ASSERT(sizeof(TData) == TMeshBuffer::SematicSize[ESSI_TANGENT]);
 					DataStream.Put(TData, sizeof(TData));
 					DataTangent += Mesh.Segments[ESSI_TANGENT]->StrideInFloat;
 				}
 				if (DataBI != nullptr)
 				{
+					TI_TODO("use float precision blend index temp, change to uint8 in futher.");
+					TI_ASSERT(sizeof(float) * 4 == TMeshBuffer::SematicSize[ESSI_BLENDINDEX]);
 					DataStream.Put(DataBI, sizeof(float) * 4);
 					DataBI += Mesh.Segments[ESSI_BLENDINDEX]->StrideInFloat;
 				}
 				if (DataBW != nullptr)
 				{
+					TI_ASSERT(sizeof(float) * 4 == TMeshBuffer::SematicSize[ESSI_BLENDWEIGHT]);
 					DataStream.Put(DataBW, sizeof(float) * 4);
 					DataBW += Mesh.Segments[ESSI_BLENDWEIGHT]->StrideInFloat;
 				}
