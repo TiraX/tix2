@@ -195,6 +195,7 @@ namespace tix
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
 		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
+		FillZero8(OutStream);
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}

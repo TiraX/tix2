@@ -38,7 +38,7 @@ namespace tix
 			}
 		}
 		HeaderResfile.ChunkCount = Chunks;
-		HeaderResfile.FileSize = sizeof(TResfileHeader);
+		HeaderResfile.FileSize = ti_align8((int32)sizeof(TResfileHeader));
 		for (int32 c = 0; c < ECL_COUNT ; ++ c)
 		{
 			if (ChunkStreams[c].GetLength() > 0)
@@ -59,23 +59,24 @@ namespace tix
 		FillZero8(ChunkHeaderStream);
 
 		// Write to file
-		ofstream f(Filename, ios::out);
-		if (f.is_open())
+		TFile file;
+		if (file.Open(Filename, EFA_CREATEWRITE))
 		{
 			// header
-			f.write(ChunkHeaderStream.GetBuffer(), ChunkHeaderStream.GetLength());
-			
+			file.Write(ChunkHeaderStream.GetBuffer(), ChunkHeaderStream.GetLength());
+
 			// chunk
-			for (int32 c = 0 ; c < ECL_COUNT ; ++ c)
+			for (int32 c = 0; c < ECL_COUNT; ++c)
 			{
 				if (ChunkStreams[c].GetLength() > 0)
 				{
-					f.write(ChunkStreams[c].GetBuffer(), ChunkStreams[c].GetLength());
+					file.Write(ChunkStreams[c].GetBuffer(), ChunkStreams[c].GetLength());
 				}
 			}
 
 			// strings
-			f.write(StringStream.GetBuffer(), StringStream.GetLength());
+			file.Write(StringStream.GetBuffer(), StringStream.GetLength());
+			file.Close();
 			return true;
 		}
 

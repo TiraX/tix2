@@ -130,6 +130,14 @@ namespace tix
 		return Result;
 	}
 
+	inline void FillZero8(TStream& Stream)
+	{
+		char zero[64] = { 0 };
+		int32 bytes = ti_align8(Stream.GetLength()) - Stream.GetLength();
+		TI_ASSERT(bytes <= 64);
+		Stream.Put(zero, bytes);
+	}
+
 	inline int32 AddStringToList(TVector<TString>& Strings, const TString& String)
 	{
 		for (int32 s = 0 ; s < (int32)Strings.size() ; ++ s)
@@ -158,6 +166,7 @@ namespace tix
 		}
 
 		Stream.Put(string_offsets, (int32)Strings.size() * sizeof(int32));
+		FillZero8(Stream);
 		for (int i = 0; i < (int)Strings.size(); ++i)
 		{
 			const TString& s = Strings[i];
@@ -179,14 +188,6 @@ namespace tix
 		n = n * 0.5f + 0.5f;
 		float n0 = n * 255.f + 0.5f;
 		return (uint8)n0;
-	}
-
-	inline void FillZero8(TStream& Stream)
-	{
-		char zero[64] = { 0 };
-		int32 bytes = ti_align8(Stream.GetLength()) - Stream.GetLength();
-		TI_ASSERT(bytes <= 64);
-		Stream.Put(zero, bytes);
 	}
 	/////////////////////////////////////////////////////////////////
 	class TResFileHelper

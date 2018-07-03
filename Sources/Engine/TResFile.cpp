@@ -140,17 +140,19 @@ namespace tix
 			ParentNode = TEngine::Get()->GetScene()->GetRoot();
 		}
 		TNodeStaticMesh * Node = ti_new TNodeStaticMesh(ParentNode);
-		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)) * MeshCount);
+		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)));
+		const int8* VertexDataStart = MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * MeshCount;
 		int32 MeshDataOffset = 0;
 		for (int i = 0; i < MeshCount; ++i)
 		{
-			THeaderMesh* Header = (THeaderMesh*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)) * i);
+			const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * i);
 			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
 
 			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
-			const int8* VertexData = MeshDataStart + MeshDataOffset;
-			const int8* IndexData = MeshDataStart + ti_align8(Header->VertexCount * VertexStride);
+			const int8* VertexData = VertexDataStart + MeshDataOffset;
+			const int8* IndexData = VertexDataStart + ti_align8(Header->VertexCount * VertexStride);
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
+			Mesh->SetBBox(Header->BBox);
 
 			Node->AddMeshBuffer(Mesh);
 		}
