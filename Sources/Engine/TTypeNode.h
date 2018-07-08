@@ -10,7 +10,7 @@ namespace tix
 	enum E_NODE_TYPE
 	{
 		ENT_Node = TI_MAKE_IDENTIFIER('N', 'O', 'D', 'E'),
-		ENT_ROOT = TI_MAKE_IDENTIFIER('R', 'O', 'O', 'T'),
+		ENT_SceneRoot = TI_MAKE_IDENTIFIER('R', 'O', 'O', 'T'),
 		ENT_StaticMesh = TI_MAKE_IDENTIFIER('M', 'E', 'S', 'H'),
 		ENT_Camera = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'A'),
 		//ENT_GEOMETRY		= TI_MAKE_IDENTIFIER('G', 'E', 'O', 'M'),

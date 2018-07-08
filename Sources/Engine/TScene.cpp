@@ -8,8 +8,8 @@ By ZhaoShuai tirax.cn@gmail.com
 
 namespace tix
 {
-	TNodeSceneRoot::TNodeSceneRoot()
-		: TNode(ENT_ROOT, nullptr)
+	TNodeSceneRoot::TNodeSceneRoot(TNode * Parent)
+		: TNode(TNodeSceneRoot::NODE_TYPE, nullptr)
 	{
 	}
 	TNodeSceneRoot::~TNodeSceneRoot()
@@ -20,7 +20,7 @@ namespace tix
 	{
 		TI_ASSERT(Node_RenderThread == nullptr);
 		// Create render thread node and add it to FScene
-		Node_RenderThread = ti_new FNode(ENT_ROOT, nullptr);
+		Node_RenderThread = ti_new FNode(ENT_SceneRoot, nullptr);
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(SetFSceneRootNode,
 			FNode*, Node, Node_RenderThread,
 			{
@@ -33,8 +33,7 @@ namespace tix
 		: Flag(0)
 	{
 		// Create root element
-		NodeRoot = ti_new TNodeSceneRoot();
-		NodeRoot->CreateRenderThreadNode();
+		NodeRoot = TNodeFactory::CreateNode<TNodeSceneRoot>(nullptr);
 
 		// Create default camera, this camera can only deleted by render stage.
 		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(nullptr);

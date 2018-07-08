@@ -30,7 +30,7 @@ namespace tix
 		// Create frame resource holders
 		for (int32 i = 0; i < FRHI::FrameBufferNum; ++i)
 		{
-			FrameResources[i] = ti_new FFrameResources;
+			FrameResources[i] = ti_new FFrameResourcesDx12;
 		}
 	}
 

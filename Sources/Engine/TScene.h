@@ -32,8 +32,8 @@ namespace tix
 	class TNodeSceneRoot
 		: public TNode
 	{
+		DECLARE_NODE_WITH_CONSTRUCTOR(SceneRoot);
 	public:
-		TNodeSceneRoot();
 		virtual ~TNodeSceneRoot();
 
 		virtual void CreateRenderThreadNode() override;

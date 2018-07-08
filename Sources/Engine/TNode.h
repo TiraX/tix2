@@ -16,6 +16,7 @@ namespace tix
 		static T* CreateNode(TNode* Parent)
 		{
 			T* Node = ti_new T(Parent);
+			Node->CreateRenderThreadNode();
 			return Node;
 		}
 	};
