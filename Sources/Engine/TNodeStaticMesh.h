@@ -9,8 +9,9 @@ namespace tix
 {
 	class TNodeStaticMesh : public TNode
 	{
+		DECLARE_NODE_WITH_CONSTRUCTOR(StaticMesh);
+
 	public:
-		TNodeStaticMesh(TNode* parent);
 		virtual ~TNodeStaticMesh();
 		
 		virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) override;

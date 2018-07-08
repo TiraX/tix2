@@ -9,6 +9,7 @@ namespace tix
 {
 	class TNodeCamera : public TNode
 	{
+		DECLARE_NODE_WITH_CONSTRUCTOR(Camera);
 	public:
 		enum E_CAMERA_FLAG
 		{
@@ -24,8 +25,6 @@ namespace tix
 			ECAMF_LOCK_ACTION			= 1 << 12,
 		};
 	public:
-		TNodeCamera(TNode* parent, 
-						const vector3df& pos = vector3df(-500, 0, 0), const vector3df& target = vector3df(0, 0, 0));
 		virtual ~TNodeCamera();
 
 		virtual void RegisterElement();

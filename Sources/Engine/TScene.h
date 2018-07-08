@@ -69,9 +69,6 @@ namespace tix
 		TI_API void SetActiveCamera(TNodeCamera* camera);
 		TI_API TNodeCamera* GetActiveCamera();
 
-		TI_API TNode* CreateNode(const char* node_id);
-		TI_API TNodeCamera* CreateCamera();
-
 	protected:
 
 

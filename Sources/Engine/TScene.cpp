@@ -37,7 +37,7 @@ namespace tix
 		NodeRoot->CreateRenderThreadNode();
 
 		// Create default camera, this camera can only deleted by render stage.
-		DefaultCamera = ti_new TNodeCamera(nullptr);
+		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(nullptr);
 		DefaultCamera->SetAspectRatio(1.f);
 		SetActiveCamera(DefaultCamera);
 	}
@@ -74,17 +74,5 @@ namespace tix
 	TNodeCamera* TScene::GetActiveCamera()
 	{
 		return ActiveCamera;
-	}
-
-	TNode* TScene::CreateNode(const char* node_id)
-	{
-		TNode* node = ti_new TNode(ENT_NODE, nullptr);
-		node->SetId(node_id);
-		return node;
-	}
-
-	TNodeCamera* TScene::CreateCamera()
-	{
-		return ti_new TNodeCamera(nullptr);
 	}
 }

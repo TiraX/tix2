@@ -9,6 +9,24 @@ namespace tix
 {
 	class FNode;
 
+	class TNodeFactory
+	{
+	public:
+		template<class T>
+		static T* CreateNode(TNode* Parent)
+		{
+			T* Node = ti_new T(Parent);
+			return Node;
+		}
+	};
+	
+#define DECLARE_NODE_WITH_CONSTRUCTOR(NodeName) \
+		friend class TNodeFactory; \
+	protected: \
+		TNode##NodeName(TNode * Parent); \
+	public: \
+		static const E_NODE_TYPE NODE_TYPE = ENT_##NodeName;
+
 #define CREATE_RENDER_THREAD_NODE(ClassType) \
 	TI_ASSERT(Parent && Parent->GetRenderThreadNode()); \
 	TI_ASSERT(Node_RenderThread == nullptr); \
@@ -17,9 +35,13 @@ namespace tix
 
 	class TNode 
 	{
+		friend class TNodeFactory;
 	public:
+		static const E_NODE_TYPE NODE_TYPE = ENT_Node;
+	protected:
 		TNode(E_NODE_TYPE type, TNode* parent);
 		virtual ~TNode();
+	public:
 
 		virtual const TString& GetId() const
 		{

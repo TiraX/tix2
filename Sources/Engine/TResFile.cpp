@@ -139,7 +139,7 @@ namespace tix
 		{
 			ParentNode = TEngine::Get()->GetScene()->GetRoot();
 		}
-		TNodeStaticMesh * Node = ti_new TNodeStaticMesh(ParentNode);
+		TNodeStaticMesh * Node = TNodeFactory::CreateNode<TNodeStaticMesh>(ParentNode);
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)));
 		const int8* VertexDataStart = MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * MeshCount;
 		int32 MeshDataOffset = 0;

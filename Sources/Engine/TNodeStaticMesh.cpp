@@ -9,7 +9,7 @@
 namespace tix
 {
 	TNodeStaticMesh::TNodeStaticMesh(TNode* parent)
-		: TNode(ENT_MESH, parent)
+		: TNode(TNodeStaticMesh::NODE_TYPE, parent)
 	{
 	}
 
