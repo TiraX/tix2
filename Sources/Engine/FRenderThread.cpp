@@ -11,6 +11,7 @@
 namespace tix
 {
 	FRenderThread* FRenderThread::RenderThread = nullptr;
+	bool FRenderThread::Inited = false;
 
 	void FRenderThread::CreateRenderThread()
 	{
@@ -30,6 +31,11 @@ namespace tix
 	FRenderThread* FRenderThread::Get()
 	{
 		return RenderThread;
+	}
+
+	bool FRenderThread::IsInited()
+	{
+		return Inited;
 	}
 
 	FRenderThread::FRenderThread()
@@ -104,6 +110,8 @@ namespace tix
 		TThread::IndicateRenderThread();
 
 		CreateRenderComponents();
+
+		Inited = true;
 	}
 
 	void FRenderThread::OnThreadEnd()

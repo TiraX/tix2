@@ -72,6 +72,7 @@ namespace tix
 		static void CreateRenderThread();
 		static void DestroyRenderThread();
 		static FRenderThread* Get();
+		static bool IsInited();
 
 		// Functions run on game thread.
 		virtual void Stop() override;
@@ -123,5 +124,7 @@ namespace tix
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
 		FScene * RenderScene;
+
+		static bool Inited;
 	};
 }

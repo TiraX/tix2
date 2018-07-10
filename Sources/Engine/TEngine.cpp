@@ -37,6 +37,12 @@ namespace tix
 		// Create components
 		TI_ASSERT(Scene == nullptr);
 		Scene = ti_new TScene;
+
+		// Waiting for render thread create
+		while (!FRenderThread::IsInited())
+		{
+			TThread::ThreadSleep(10);
+		}
 	}
 
 	void TEngine::Destroy()
