@@ -22,6 +22,10 @@ namespace tix
 
 	TNode::~TNode()
 	{
+		// Remove and delete all children
+		Remove();
+		RemoveAndDeleteAll();
+
 		// Remove render thread node
 		if (Node_RenderThread)
 		{
@@ -33,10 +37,6 @@ namespace tix
 				});
 			Node_RenderThread = nullptr;
 		}
-
-		// Remove and delete all children
-		Remove();
-		RemoveAndDeleteAll();
 	}
 
 	void TNode::AddChild(TNode* child)
