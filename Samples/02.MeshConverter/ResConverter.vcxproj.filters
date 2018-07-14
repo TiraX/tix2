@@ -19,12 +19,12 @@
     <ClInclude Include="ResHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResTextureHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshConverter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResMeshHelper.cpp">
@@ -34,6 +34,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResConverter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResTextureHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResTextureHelperDds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

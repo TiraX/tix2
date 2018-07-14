@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TiX", "TiX.vcxproj", "{35BB
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartUp", "..\..\Samples\01.Startup\StartUp.vcxproj", "{576878BE-6A4B-4DD8-ABDE-E7E3AF0B7C4E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeshConverter", "..\..\Samples\02.MeshConverter\MeshConverter.vcxproj", "{0C0C8AF9-DC50-4197-ACD1-9D6A885F3E7D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResConverter", "..\..\Samples\02.MeshConverter\ResConverter.vcxproj", "{0C0C8AF9-DC50-4197-ACD1-9D6A885F3E7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

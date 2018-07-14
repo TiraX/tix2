@@ -24,6 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MeshConverter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <ProjectName>ResConverter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -150,14 +151,17 @@
   <ItemGroup>
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
+    <ClInclude Include="ResTextureHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MeshConverter.cpp" />
+    <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
     <ClCompile Include="ResMeshHelperObj.cpp" />
+    <ClCompile Include="ResTextureHelper.cpp" />
+    <ClCompile Include="ResTextureHelperDds.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
