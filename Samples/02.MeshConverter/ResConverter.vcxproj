@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dds.h" />
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />

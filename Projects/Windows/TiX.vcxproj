@@ -55,6 +55,7 @@
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TTexture.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
