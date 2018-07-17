@@ -16,8 +16,41 @@ namespace tix
 	TResTextureHelper::~TResTextureHelper()
 	{
 	}
+
+	void TResTextureHelper::AddTexture(const TString& Name, const TString& Path, TTexturePtr Texture)
+	{
+		TTextureDefine Define;
+		Define.Name = Name;
+		Define.Path = Path;
+		Define.TextureRes = Texture;
+
+		Textures.push_back(Define);
+	}
 	
 	void TResTextureHelper::OutputTexture(TStream& OutStream, TVector<TString>& OutStrings)
 	{
+		TResfileChunkHeader ChunkHeader;
+		ChunkHeader.ID = TIRES_ID_CHUNK_TEXTURE;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_TEXTURE;
+		ChunkHeader.ElementCount = (int32)Textures.size();
+
+		TStream HeaderStream, DataStream(1024 * 8);
+		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
+		{
+			TTextureDefine Define = Textures[t];
+
+			// init header
+			THeaderTexture TextureHeader;
+			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define.Name);
+			TextureHeader.Desc = Define.TextureRes->Desc;
+
+			TI_TODO("Continue...");
+		}
+		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
+
+		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
+		FillZero8(OutStream);
+		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
+		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 }

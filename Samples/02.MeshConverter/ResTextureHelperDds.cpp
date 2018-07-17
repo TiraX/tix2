@@ -823,6 +823,23 @@ namespace tix
 
 		TTexturePtr Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset);
 
+		TString Name, Path;
+		size_t Mark = Filename.rfind('/');
+		if (Mark == TString::npos)
+		{
+			Name = Filename;
+		}
+		else
+		{
+			Name = Filename.substr(Mark + 1);
+			Path = Filename.substr(0, Mark);
+		}
+
+		TResTextureHelper ResTextureHelper;
+		ResTextureHelper.AddTexture(Name, Path, Texture);
+
+		ResTextureHelper.OutputTexture(OutStream, OutStrings);
+
 		return true;
 	}
 }
