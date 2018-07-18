@@ -111,6 +111,10 @@ namespace tix
 				ChunkHeader[ECL_MESHES] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_MESH);
 				break;
+			case TIRES_ID_CHUNK_TEXTURE:
+				ChunkHeader[ECL_TEXTURES] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_TEXTURE);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -126,7 +130,7 @@ namespace tix
 			return nullptr;
 
 		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_MESHES];
-		const int MeshCount = ChunkHeader[ECL_MESHES]->ElementCount;
+		const int32 MeshCount = ChunkHeader[ECL_MESHES]->ElementCount;
 		if (MeshCount == 0)
 		{
 			return nullptr;
@@ -143,7 +147,7 @@ namespace tix
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)));
 		const int8* VertexDataStart = MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * MeshCount;
 		int32 MeshDataOffset = 0;
-		for (int i = 0; i < MeshCount; ++i)
+		for (int32 i = 0; i < MeshCount; ++i)
 		{
 			const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * i);
 			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
@@ -157,5 +161,46 @@ namespace tix
 			Node->AddMeshBuffer(Mesh);
 		}
 		return Node;
+	}
+
+	TTexturePtr TResFile::CreateTexture()
+	{
+		if (ChunkHeader[ECL_TEXTURES] == nullptr)
+			return nullptr;
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_TEXTURES];
+		const int32 TextureCount = ChunkHeader[ECL_TEXTURES]->ElementCount;
+		if (TextureCount == 0)
+		{
+			return nullptr;
+		}
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)));
+		const uint8* TextureDataStart = HeaderStart + ti_align8((int32)sizeof(THeaderTexture)) * TextureCount;
+
+		TTexturePtr Result;
+		// each ResFile should have only 1 resource
+		for (int32 i = 0; i < TextureCount; ++i)
+		{
+			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + ti_align8((int32)sizeof(THeaderTexture)) * i);
+			TTexturePtr Texture = ti_new TTexture;
+			Texture->Desc = Header->Desc;
+
+			int32 DataOffset = 0;
+			for (uint32 m = 0; m < Texture->Desc.Mips; ++m)
+			{
+				const uint8* Data = TextureDataStart + DataOffset;
+				int32 Width = *(const int32*)(Data + sizeof(uint32) * 0);
+				int32 Height = *(const int32*)(Data + sizeof(uint32) * 1);
+				int32 Size = *(const int32*)(Data + sizeof(uint32) * 2);
+				int32 Pitch = *(const int32*)(Data + sizeof(uint32) * 3);
+				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, Size, Pitch);
+				DataOffset += Size + sizeof(uint32) * 4;
+				DataOffset = ti_align8(DataOffset);
+			}
+
+			Result = Texture;
+		}
+		return Result;
 	}
 }

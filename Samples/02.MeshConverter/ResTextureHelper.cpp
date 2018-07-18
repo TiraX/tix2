@@ -44,7 +44,21 @@ namespace tix
 			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define.Name);
 			TextureHeader.Desc = Define.TextureRes->Desc;
 
-			TI_TODO("Continue...");
+			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
+			FillZero8(HeaderStream);
+
+			const TVector<TTexture::TSurface*>& Surfaces = Define.TextureRes->GetSurfaces();
+			for (auto* Surface : Surfaces)
+			{
+				TI_ASSERT(Surface->DataSize % 4 == 0);
+				DataStream.Put(&Surface->Width, sizeof(uint32));
+				DataStream.Put(&Surface->Height, sizeof(uint32));
+				DataStream.Put(&Surface->DataSize, sizeof(uint32));
+				DataStream.Put(&Surface->Pitch, sizeof(uint32));
+
+				DataStream.Put(Surface->Data, Surface->DataSize);
+				FillZero8(DataStream);
+			}
 		}
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 

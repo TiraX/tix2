@@ -24,9 +24,7 @@ namespace tix
 			Texture->Desc.Format = Image->GetFormat();
 			Texture->Desc.Width = Image->GetWidth();
 			Texture->Desc.Height = Image->GetHeight();
-			Texture->Desc.WrapModeS = WrapMode;
-			Texture->Desc.WrapModeT = WrapMode;
-			Texture->Desc.WrapModeR = WrapMode;
+			Texture->Desc.WrapMode = WrapMode;
 			Texture->Desc.SRGB = sRGB;
 			Texture->TextureResource = FRHI::Get()->CreateTexture();
 

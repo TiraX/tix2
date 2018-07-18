@@ -728,6 +728,14 @@ namespace tix
 		{
 			// Create the texture
 			TTexturePtr Texture = ti_new TTexture();
+			TI_TODO("Determine texture format.");
+			Texture->Desc.Format = EPF_COMPRESSED_RGB_S3TC_DXT1;
+			Texture->Desc.Width = width;
+			Texture->Desc.Height = height;
+			Texture->Desc.WrapMode = ETC_REPEAT;
+			TI_TODO("Check dds srgb.");
+			Texture->Desc.SRGB = 0;
+			Texture->Desc.Mips = mipCount;
 
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;

@@ -64,12 +64,9 @@ namespace tix
 		E_PIXEL_FORMAT Format;
 		int32 Width;
 		int32 Height;
-		E_TEXTURE_CLAMP WrapModeS;
-		E_TEXTURE_CLAMP WrapModeT;
-		E_TEXTURE_CLAMP WrapModeR;
+		E_TEXTURE_CLAMP WrapMode;
 		uint32 SRGB;
 		uint32 Mips;
-		uint32 DataSize;
 	};
 
 	class FTexture;
@@ -81,8 +78,6 @@ namespace tix
 		TTextureDesc Desc;
 		FTexturePtr TextureResource;
 
-		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, uint32 DataSize, uint32 RowPitch);
-	protected:
 		class TSurface
 		{
 		public:
@@ -101,11 +96,17 @@ namespace tix
 			}
 
 			uint8 * Data;
-			uint32 DataSize;
-			uint32 Pitch;
 			uint32 Width;
 			uint32 Height;
+			uint32 DataSize;
+			uint32 Pitch;
 		};
+		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, uint32 DataSize, uint32 RowPitch);
+		TI_API const TVector<TSurface*>& GetSurfaces() const
+		{
+			return  Surfaces;
+		}
+	protected:
 
 	protected:
 		TVector<TSurface*> Surfaces;

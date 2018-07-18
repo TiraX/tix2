@@ -27,6 +27,7 @@ namespace tix
 		TI_API bool Load(TFile& res_file);
 
 		TI_API TNodeStaticMesh* CreateStaticMesh(TNode* ParentNode = nullptr);
+		TI_API TTexturePtr CreateTexture();
 
 		const TString& GetFilename()
 		{
