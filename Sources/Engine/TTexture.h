@@ -72,7 +72,7 @@ namespace tix
 	class FTexture;
 	typedef TI_INTRUSIVE_PTR(FTexture) FTexturePtr;
 
-	class TTexture : public IReferenceCounted
+	class TTexture : public TResource
 	{
 	public:
 		TTextureDesc Desc;

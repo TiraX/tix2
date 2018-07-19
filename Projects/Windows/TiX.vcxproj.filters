@@ -133,6 +133,9 @@
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TResource.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\half.hpp">
       <Filter>Sources\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TResource.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

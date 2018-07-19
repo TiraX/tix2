@@ -29,5 +29,7 @@ namespace tix
 		TI_API virtual void RemoveUnusedResouces() {};
 
 	protected:
+		typedef TMap< TString, TResourcePtr >	MapResources;
+		MapResources Resources;
 	};
 }

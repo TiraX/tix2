@@ -8,7 +8,7 @@
 namespace tix
 {
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
-	class TMeshBuffer : public IReferenceCounted
+	class TMeshBuffer : public TResource
 	{
 	public:
 		TMeshBuffer();

@@ -40,6 +40,7 @@ using namespace std;
 #include "TFile.h"
 #include "TStream.h"
 #include "TTicker.h"
+#include "TResource.h"
 #include "TImage.h"
 #include "TTexture.h"
 #include "TMesh.h"
