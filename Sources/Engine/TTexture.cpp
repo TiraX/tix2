@@ -8,6 +8,15 @@
 
 namespace tix
 {
+	TTexture::TTexture()
+		: TResource(ERES_TEXTURE)
+	{}
+
+	TTexture::~TTexture()
+	{
+		ClearSurfaceData();
+	}
+
 	void TTexture::AddSurface(int32 Width, int32 Height, const uint8* Data, uint32 DataSize, uint32 RowPitch)
 	{
 		TSurface * Surface = ti_new TSurface;
@@ -20,5 +29,14 @@ namespace tix
 		memcpy(Surface->Data, Data, DataSize);
 
 		Surfaces.push_back(Surface);
+	}
+
+	void TTexture::ClearSurfaceData()
+	{
+		for (TSurface* Surface : Surfaces)
+		{
+			ti_delete Surface;
+		}
+		Surfaces.clear();
 	}
 }

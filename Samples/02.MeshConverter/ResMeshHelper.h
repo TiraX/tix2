@@ -19,9 +19,9 @@ namespace tix
 		int32 Count;
 	};
 
-	struct TMeshDefine
+	struct TResMeshDefine
 	{
-		TMeshDefine(const TString& InName, int32 InNumVertices, int32 InNumTriangles)
+		TResMeshDefine(const TString& InName, int32 InNumVertices, int32 InNumTriangles)
 			: Name(InName)
 			, NumVertices(InNumVertices)
 			, NumTriangles(InNumTriangles)
@@ -31,7 +31,7 @@ namespace tix
 			Faces.Data = nullptr;
 			Faces.Count = 0;
 		}
-		~TMeshDefine()
+		~TResMeshDefine()
 		{
 			for (int32 i = 0; i < ESSI_TOTAL; ++i)
 			{
@@ -57,12 +57,12 @@ namespace tix
 
 		static bool LoadObjFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
 
-		TMeshDefine& AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles);
+		TResMeshDefine& AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles);
 		void OutputMesh(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:
 
 	private:
-		TVector<TMeshDefine> Meshes;
+		TVector<TResMeshDefine> Meshes;
 	};
 }

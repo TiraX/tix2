@@ -22,16 +22,6 @@ namespace tix
 		Destroy();
 	}
 
-	TResFilePtr TResFile::LoadResfile(const TString& InFilename)
-	{
-		TResFilePtr ResFile = ti_new TResFile;
-		if (ResFile->Load(InFilename))
-		{
-			return ResFile;
-		}
-		return nullptr;
-	}
-
 	void TResFile::Destroy()
 	{
 		Filename = "";
@@ -124,7 +114,18 @@ namespace tix
 		return true;
 	}
 
-	TNodeStaticMesh* TResFile::CreateStaticMesh(TNode* ParentNode)
+	TResourcePtr TResFile::CreateResource()
+	{
+		if (ChunkHeader[ECL_MESHES] != nullptr)
+			return CreateMeshBuffer();
+
+		if (ChunkHeader[ECL_TEXTURES] != nullptr)
+			return CreateTexture();
+
+		return nullptr;
+	}
+
+	TMeshBufferPtr TResFile::CreateMeshBuffer()
 	{
 		if (ChunkHeader[ECL_MESHES] == nullptr)
 			return nullptr;
@@ -139,11 +140,8 @@ namespace tix
 		TVector<TNodeStaticMesh*> MeshList;
 		MeshList.reserve(MeshCount);
 
-		if (ParentNode == nullptr)
-		{
-			ParentNode = TEngine::Get()->GetScene()->GetRoot();
-		}
-		TNodeStaticMesh * Node = TNodeFactory::CreateNode<TNodeStaticMesh>(ParentNode);
+		TMeshBufferPtr Result;
+
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align8((int32)sizeof(TResfileChunkHeader)));
 		const int8* VertexDataStart = MeshDataStart + ti_align8((int32)sizeof(THeaderMesh)) * MeshCount;
 		int32 MeshDataOffset = 0;
@@ -158,9 +156,9 @@ namespace tix
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 			Mesh->SetBBox(Header->BBox);
 
-			Node->AddMeshBuffer(Mesh);
+			Result = Mesh;
 		}
-		return Node;
+		return Result;
 	}
 
 	TTexturePtr TResFile::CreateTexture()

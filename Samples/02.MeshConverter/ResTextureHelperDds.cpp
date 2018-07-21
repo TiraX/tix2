@@ -541,7 +541,7 @@ namespace tix
 		}
 	}
 	//--------------------------------------------------------------------------------------
-	static TTexturePtr CreateTextureFromDDS(
+	static TResTextureDefine* CreateTextureFromDDS(
 		const DDS_HEADER* header,
 		const uint8* Data,
 		uint32 DataSize)
@@ -727,7 +727,7 @@ namespace tix
 
 		{
 			// Create the texture
-			TTexturePtr Texture = ti_new TTexture();
+			TResTextureDefine* Texture = ti_new TResTextureDefine();
 			TI_TODO("Determine texture format.");
 			Texture->Desc.Format = EPF_COMPRESSED_RGB_S3TC_DXT1;
 			Texture->Desc.Width = width;
@@ -737,10 +737,17 @@ namespace tix
 			Texture->Desc.SRGB = 0;
 			Texture->Desc.Mips = mipCount;
 
+			Texture->Surfaces.resize(mipCount);
+
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;
 			uint32 RowBytes = 0;
 			uint32 index = 0;
+			if (arraySize > 1)
+			{
+				printf("Error: Texture array not supported yet.\n");
+				TI_ASSERT(0);
+			}
 			for (uint32 j = 0; j < arraySize; j++)
 			{
 				uint32 w = width;
@@ -756,7 +763,10 @@ namespace tix
 						nullptr
 					);
 
-					Texture->AddSurface(w, h, SrcData, NumBytes, RowBytes);
+					TResSurfaceData& Surface = Texture->Surfaces[i];
+					Surface.W = w;
+					Surface.H = h;
+					Surface.Data.Put(SrcData, NumBytes);
 
 					SrcData += NumBytes * d;
 
@@ -829,8 +839,6 @@ namespace tix
 			return false;
 		}
 
-		TTexturePtr Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset);
-
 		TString Name, Path;
 		size_t Mark = Filename.rfind('/');
 		if (Mark == TString::npos)
@@ -843,8 +851,12 @@ namespace tix
 			Path = Filename.substr(0, Mark);
 		}
 
+		TResTextureDefine* Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset);
+		Texture->Name = Name;
+		Texture->Path = Path;
+
 		TResTextureHelper ResTextureHelper;
-		ResTextureHelper.AddTexture(Name, Path, Texture);
+		ResTextureHelper.AddTexture(Texture);
 
 		ResTextureHelper.OutputTexture(OutStream, OutStrings);
 

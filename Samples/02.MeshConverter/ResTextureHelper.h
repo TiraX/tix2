@@ -7,11 +7,18 @@
 
 namespace tix
 {
-	struct TTextureDefine
+	struct TResSurfaceData
+	{
+		int32 W, H;
+		TStream Data;
+	};
+	struct TResTextureDefine
 	{
 		TString Name;
 		TString Path;
-		TTexturePtr TextureRes;
+
+		TTextureDesc Desc;
+		TVector<TResSurfaceData> Surfaces;
 	};
 
 	class TResTextureHelper
@@ -22,12 +29,12 @@ namespace tix
 
 		static bool LoadDdsFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
 
-		void AddTexture(const TString& Name, const TString& Path, TTexturePtr Texture);
+		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:
 
 	private:
-		TVector<TTextureDefine> Textures;
+		TVector<TResTextureDefine*> Textures;
 	};
 }

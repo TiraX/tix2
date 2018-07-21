@@ -7,14 +7,24 @@
 
 namespace tix
 {
+	enum E_RESOURCE_TYPE
+	{
+		ERES_MESH,
+		ERES_TEXTURE,
+
+		ERES_COUNT,
+	};
 	class TResource : public IReferenceCounted
 	{
 	public:
-		TResource()
+		TResource(E_RESOURCE_TYPE Type)
+			: ResType(Type)
 		{}
 		virtual ~TResource()
 		{}
 
+	protected:
+		E_RESOURCE_TYPE ResType;
 #ifdef TI_DEBUG
 		TString ResourceName;
 #endif

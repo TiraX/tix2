@@ -130,6 +130,14 @@ namespace tix
 		return Result;
 	}
 
+	inline void FillZero4(TStream& Stream)
+	{
+		char zero[64] = { 0 };
+		int32 bytes = ti_align4(Stream.GetLength()) - Stream.GetLength();
+		TI_ASSERT(bytes <= 64);
+		Stream.Put(zero, bytes);
+	}
+
 	inline void FillZero8(TStream& Stream)
 	{
 		char zero[64] = { 0 };

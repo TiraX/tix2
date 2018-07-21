@@ -7,29 +7,23 @@
 
 namespace tix
 {
-	class TiRefRes : public IReferenceCounted
-	{
-	public:
-		TiRefRes();
-		virtual ~TiRefRes();
-
-#if defined (TIX_DEBUG)
-		TString ResourceFilename;
-#endif
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-
 	class TResourceLibrary
 	{
 	public:
+		TI_API static TResourceLibrary* Get();
+
+		TI_API TResourcePtr LoadResource(const TString& ResFilename);
+		TI_API void RemoveUnusedResouces();
+
+	private:
+		static TResourceLibrary* s_instance;
 		TResourceLibrary();
 		virtual ~TResourceLibrary();
 
-		TI_API virtual void RemoveUnusedResouces() {};
-
-	protected:
+	private:
 		typedef TMap< TString, TResourcePtr >	MapResources;
 		MapResources Resources;
+
+		friend class TEngine;
 	};
 }

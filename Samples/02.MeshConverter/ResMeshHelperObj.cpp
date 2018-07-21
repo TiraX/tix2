@@ -122,7 +122,7 @@ namespace tix
 				TI_ASSERT(PosArrayNew.size() == IndexMap.size());
 
 				// assign segment
-				TMeshDefine& Mesh = ResMesh.AddMesh(GroupNames[g], (int32)PosArrayNew.size(), (int32)Indices.size() / 3);
+				TResMeshDefine& Mesh = ResMesh.AddMesh(GroupNames[g], (int32)PosArrayNew.size(), (int32)Indices.size() / 3);
 				Mesh.AddSegment(ESSI_POSITION, (float*)&PosArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_NORMAL, (float*)&NormalArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&UVArrayNew[0], sizeof(vector3df));

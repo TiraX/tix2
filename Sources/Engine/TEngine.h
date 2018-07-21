@@ -42,6 +42,7 @@ namespace tix
 		TDevice * Device;
 
 		TScene * Scene;
+		TResourceLibrary * ResourceLibrary;
 
 		uint64 LastFrameTime;
 		TVector<TTicker*> Tickers;

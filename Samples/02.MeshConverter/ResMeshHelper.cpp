@@ -9,7 +9,7 @@
 
 namespace tix
 {
-	void TMeshDefine::AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte)
+	void TResMeshDefine::AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte)
 	{
 		TI_ASSERT(InStrideInByte % sizeof(float) == 0);
 		Segments[InStreamType] = ti_new TResMeshSegment;
@@ -17,7 +17,7 @@ namespace tix
 		Segments[InStreamType]->StrideInFloat = InStrideInByte / sizeof(float);
 	}
 
-	void TMeshDefine::SetFaces(int32* Indices, int32 Count)
+	void TResMeshDefine::SetFaces(int32* Indices, int32 Count)
 	{
 		Faces.Data = Indices;
 		Faces.Count = Count;
@@ -33,9 +33,9 @@ namespace tix
 	{
 	}
 
-	TMeshDefine& TResMeshHelper::AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles)
+	TResMeshDefine& TResMeshHelper::AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles)
 	{
-		Meshes.push_back(TMeshDefine(Name, NumVertices, NumTriangles));
+		Meshes.push_back(TResMeshDefine(Name, NumVertices, NumTriangles));
 		return Meshes.back();
 	}
 
@@ -49,7 +49,7 @@ namespace tix
 		TStream HeaderStream, DataStream(1024 * 8);
 		for (int32 m = 0; m < ChunkHeader.ElementCount; ++m)
 		{
-			const TMeshDefine& Mesh = Meshes[m];
+			const TResMeshDefine& Mesh = Meshes[m];
 			TI_ASSERT(Mesh.Segments[ESSI_POSITION] != nullptr);
 
 			// init header

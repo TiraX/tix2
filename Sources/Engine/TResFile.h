@@ -9,25 +9,20 @@
 
 namespace tix
 {
-	class TResFile;
-	typedef TI_INTRUSIVE_PTR(TResFile) TResFilePtr;
-
-	class TNode;
-	class TNodeStaticMesh;
-
 	class TResFile : public IReferenceCounted
 	{
-	public:
+	private:
 		TResFile();
 		virtual ~TResFile();
 
-		static TI_API TResFilePtr LoadResfile(const TString& InFilename);
+		bool Load(const TString& InFilename);
+		bool Load(TFile& res_file);
 
-		TI_API bool Load(const TString& InFilename);
-		TI_API bool Load(TFile& res_file);
+		TResourcePtr CreateResource();
 
-		TI_API TNodeStaticMesh* CreateStaticMesh(TNode* ParentNode = nullptr);
-		TI_API TTexturePtr CreateTexture();
+		//TNodeStaticMesh* CreateStaticMesh(TNode* ParentNode = nullptr);
+		TMeshBufferPtr CreateMeshBuffer();
+		TTexturePtr CreateTexture();
 
 		const TString& GetFilename()
 		{
@@ -49,5 +44,8 @@ namespace tix
 		const TResfileChunkHeader* ChunkHeader[ECL_COUNT];
 		TResfileHeader* Header;
 		int32* StringOffsets;
+
+		friend class TResourceLibrary;
 	};
+	typedef TI_INTRUSIVE_PTR(TResFile) TResFilePtr;
 }

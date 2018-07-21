@@ -37,6 +37,7 @@ namespace tix
 		// Create components
 		TI_ASSERT(Scene == nullptr);
 		Scene = ti_new TScene;
+		ResourceLibrary = ti_new TResourceLibrary;
 
 		// Waiting for render thread create
 		while (!FRenderThread::IsInited())
@@ -59,6 +60,7 @@ namespace tix
 	TEngine::TEngine()
 		: Device(nullptr)
 		, Scene(nullptr)
+		, ResourceLibrary(nullptr)
 	{
 	}
 
@@ -73,6 +75,7 @@ namespace tix
 
 		// delete components
 		SAFE_DELETE(Scene);
+		SAFE_DELETE(ResourceLibrary);
 
 		// Shut down render thread
 		FRenderThread::DestroyRenderThread();

@@ -7,6 +7,7 @@
 
 namespace tix
 {
+	class TNode;
 	class FNode;
 
 	class TNodeFactory

@@ -75,6 +75,9 @@ namespace tix
 	class TTexture : public TResource
 	{
 	public:
+		TTexture();
+		virtual ~TTexture();
+
 		TTextureDesc Desc;
 		FTexturePtr TextureResource;
 
@@ -106,6 +109,7 @@ namespace tix
 		{
 			return  Surfaces;
 		}
+		TI_API void ClearSurfaceData();
 	protected:
 
 	protected:

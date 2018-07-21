@@ -9,16 +9,60 @@
 
 namespace tix
 {
-	TiRefRes::TiRefRes()
-	{}
+	TResourceLibrary* TResourceLibrary::s_instance = nullptr;
 
-	TiRefRes::~TiRefRes()
-	{}
+	TResourceLibrary* TResourceLibrary::Get()
+	{
+		return s_instance;
+	}
 
-	//////////////////////////////////////////////////////////////////////////
 	TResourceLibrary::TResourceLibrary()
-	{}
+	{
+		TI_ASSERT(s_instance == nullptr);
+		s_instance = this;
+	}
 
 	TResourceLibrary::~TResourceLibrary()
-	{}
+	{
+		TI_ASSERT(s_instance != nullptr);
+		s_instance = nullptr;
+	}
+
+	TResourcePtr TResourceLibrary::LoadResource(const TString& ResFilename)
+	{
+		if (Resources.find(ResFilename) == Resources.end())
+		{
+			// Load resource to library
+
+			return nullptr;
+		}
+		else
+		{
+			return Resources[ResFilename];
+		}
+	}
+
+	void TResourceLibrary::RemoveUnusedResouces()
+	{
+		TI_ASSERT(0);
+		TI_TODO("TResourceLibrary remove unused resources implementation.");
+		//		MapTextures::iterator it	= Textures.begin();
+		//		for ( ; it != Textures.end() ; )
+		//		{
+		//			if ( it->second->referenceCount() == 1)
+		//			{
+		//#ifdef TI_PLATFORM_WIN32
+		//				TiTexturePtr texture	= it->second;
+		//				TextureData		-= texture->GetWidth() * texture->GetHeight() * 4;
+		//#endif
+		//				_LOG("[unused texture] : %s\n", it->first.c_str());
+		//				it->second	= NULL;
+		//				Textures.erase( it ++ );
+		//			}
+		//			else
+		//			{
+		//				++ it;
+		//			}
+		//		}
+	}
 }

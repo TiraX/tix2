@@ -7,13 +7,13 @@
 
 namespace tix
 {
-	class TLibraryTexture : public TResourceLibrary
+	class TLibraryTexture
 	{
 	public:
 		TLibraryTexture();
 		virtual ~TLibraryTexture();
 
-		TI_API virtual void RemoveUnusedResouces() override;
+		TI_API virtual void RemoveUnusedResouces() ;
 
 		TI_API virtual bool	IsExist(const TString& texture_name);
 		TI_API TTexturePtr GetTexture(const TString& TextureFilename, E_TEXTURE_CLAMP WrapMode = ETC_REPEAT, bool sRGB = true);

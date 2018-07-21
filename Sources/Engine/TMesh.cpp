@@ -21,7 +21,8 @@ namespace tix
 	};
 
 	TMeshBuffer::TMeshBuffer()
-		: PrimitiveType(EPT_TRIANGLELIST)
+		: TResource(ERES_MESH)
+		, PrimitiveType(EPT_TRIANGLELIST)
 		, VsData(nullptr)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
