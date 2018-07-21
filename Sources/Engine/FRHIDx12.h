@@ -27,7 +27,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height);
 
 		virtual FMeshBufferPtr CreateMeshBuffer(TMeshBufferPtr MeshBuffer) override;
-		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TImagePtr InImage) override;
+		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) override;
 
 		// DirectX 12 specified methods
 		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);

@@ -17,12 +17,13 @@ namespace tix
 		ClearSurfaceData();
 	}
 
-	void TTexture::AddSurface(int32 Width, int32 Height, const uint8* Data, int32 DataSize)
+	void TTexture::AddSurface(int32 Width, int32 Height, const uint8* Data, int32 RowPitch, int32 DataSize)
 	{
 		TSurface * Surface = ti_new TSurface;
 		uint32 AlignedDataSize = ti_align4(DataSize);
 		Surface->Data = ti_new uint8[AlignedDataSize];
 		Surface->DataSize = DataSize;
+		Surface->RowPitch = RowPitch;
 		Surface->Width = Width;
 		Surface->Height = Height;
 		memcpy(Surface->Data, Data, DataSize);
@@ -37,5 +38,15 @@ namespace tix
 			ti_delete Surface;
 		}
 		Surfaces.clear();
+	}
+
+	void TTexture::InitRenderThread()
+	{
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TTextureUpdateFTexture,
+			FTexturePtr, Texture_RT, TextureResource,
+			TTexturePtr, TextureData, this,
+			{
+				RHI->UpdateHardwareBuffer(Texture_RT, TextureData);
+			});
 	}
 }

@@ -24,10 +24,8 @@ namespace tix
 	{
 	}
 
-	void FTexture::InitTextureInfo(TImagePtr Image)
+	void FTexture::InitTextureInfo(TTexturePtr InTexture)
 	{
-		TextureDesc.Format = Image->GetFormat();
-		TextureDesc.Width = Image->GetWidth();
-		TextureDesc.Height = Image->GetHeight();
+		TextureDesc = InTexture->Desc;
 	}
 }

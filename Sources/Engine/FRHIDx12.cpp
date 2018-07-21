@@ -631,11 +631,12 @@ namespace tix
 		return ret;
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TImagePtr SourceImage)
+	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-		Texture->InitTextureInfo(SourceImage);
+		Texture->InitTextureInfo(InTexData);
+		const TTextureDesc& Desc = InTexData->Desc;
 
 		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
@@ -646,9 +647,10 @@ namespace tix
 		// prematurely destroyed.
 		ComPtr<ID3D12Resource> TextureUploadHeap;
 
+		TI_TODO("2. Figure out texture dds format.")
 		// Describe and create a Texture2D.
 		D3D12_RESOURCE_DESC textureDesc = {};
-		textureDesc.MipLevels = 1;
+		textureDesc.MipLevels = Desc.Mips;
 		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		textureDesc.Width = Texture->GetWidth();
 		textureDesc.Height = Texture->GetHeight();
@@ -679,12 +681,18 @@ namespace tix
 
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the Texture2D.
-		D3D12_SUBRESOURCE_DATA textureData = {};
-		textureData.pData = SourceImage->Data();
-		textureData.RowPitch = SourceImage->GetPitch();
-		textureData.SlicePitch = textureData.RowPitch * Texture->GetHeight();
+		D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[Desc.Mips];
+		const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
+		for (uint32 m = 0; m < Desc.Mips; ++m)
+		{
+			D3D12_SUBRESOURCE_DATA& texData = TextureDatas[m];
+			const TTexture::TSurface* Surface = TextureSurfaces[m];
+			texData.pData = Surface->Data;
+			texData.RowPitch = Surface->RowPitch;
+			texData.SlicePitch = Surface->DataSize;
+		}
 
-		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, 1, &textureData);
+		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
 		Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		// Describe and create a SRV for the texture.

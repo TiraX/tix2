@@ -53,6 +53,7 @@ namespace tix
 				int32 DataLength = ti_align4(Surface.Data.GetLength());
 				DataStream.Put(&Surface.W, sizeof(int32));
 				DataStream.Put(&Surface.H, sizeof(int32));
+				DataStream.Put(&Surface.RowPitch, sizeof(int32));
 				DataStream.Put(&DataLength, sizeof(int32));
 
 				DataStream.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());

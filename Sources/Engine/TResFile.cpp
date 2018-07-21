@@ -195,9 +195,10 @@ namespace tix
 				const uint8* Data = TextureDataStart + DataOffset;
 				int32 Width = *(const int32*)(Data + sizeof(int32) * 0);
 				int32 Height = *(const int32*)(Data + sizeof(int32) * 1);
-				int32 Size = *(const int32*)(Data + sizeof(int32) * 2);
-				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 3, Size);
-				DataOffset += Size + sizeof(uint32) * 3;
+				int32 RowPitch = *(const int32*)(Data + sizeof(int32) * 2);
+				int32 Size = *(const int32*)(Data + sizeof(int32) * 3);
+				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, RowPitch, Size);
+				DataOffset += Size + sizeof(uint32) * 4;
 				DataOffset = ti_align4(DataOffset);
 			}
 

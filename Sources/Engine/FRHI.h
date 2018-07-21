@@ -32,7 +32,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
 
 		virtual FMeshBufferPtr CreateMeshBuffer(TMeshBufferPtr MeshBuffer) = 0;
-		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TImagePtr InImage) = 0;
+		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 
 		E_RHI_TYPE GetRHIType() const
 		{

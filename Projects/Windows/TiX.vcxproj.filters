@@ -115,9 +115,6 @@
     <ClCompile Include="..\..\Sources\Engine\FNodeStaticMesh.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TLibraryTexture.cpp">
-      <Filter>Sources\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
@@ -332,9 +329,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FNodeStaticMesh.h">
       <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TLibraryTexture.h">
-      <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TResourceLibrary.h">
       <Filter>Sources\Render</Filter>

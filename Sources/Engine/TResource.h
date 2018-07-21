@@ -23,6 +23,8 @@ namespace tix
 		virtual ~TResource()
 		{}
 
+		virtual void InitRenderThread() {};
+
 	protected:
 		E_RESOURCE_TYPE ResType;
 #ifdef TI_DEBUG

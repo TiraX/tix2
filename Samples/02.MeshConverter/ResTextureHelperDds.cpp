@@ -766,6 +766,7 @@ namespace tix
 					TResSurfaceData& Surface = Texture->Surfaces[i];
 					Surface.W = w;
 					Surface.H = h;
+					Surface.RowPitch = RowBytes;
 					Surface.Data.Put(SrcData, NumBytes);
 
 					SrcData += NumBytes * d;

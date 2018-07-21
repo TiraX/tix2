@@ -14,7 +14,7 @@ namespace tix
 		FTexture(E_RESOURCE_FAMILY InFamily, E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight);
 		virtual ~FTexture();
 
-		void InitTextureInfo(TImagePtr Image);
+		void InitTextureInfo(TTexturePtr Image);
 
 		int32 GetWidth() const
 		{

@@ -78,6 +78,8 @@ namespace tix
 		TTexture();
 		virtual ~TTexture();
 
+		virtual void InitRenderThread();
+
 		TTextureDesc Desc;
 		FTexturePtr TextureResource;
 
@@ -86,9 +88,10 @@ namespace tix
 		public:
 			TSurface()
 				: Data(nullptr)
-				, DataSize(0)
 				, Width(0)
 				, Height(0)
+				, DataSize(0)
+				, RowPitch(0)
 			{}
 			~TSurface()
 			{
@@ -100,8 +103,9 @@ namespace tix
 			uint32 Width;
 			uint32 Height;
 			uint32 DataSize;
+			uint32 RowPitch;
 		};
-		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, int32 DataSize);
+		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, int32 RowPitch, int32 DataSize);
 		TI_API const TVector<TSurface*>& GetSurfaces() const
 		{
 			return  Surfaces;

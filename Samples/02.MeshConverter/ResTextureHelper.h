@@ -10,6 +10,7 @@ namespace tix
 	struct TResSurfaceData
 	{
 		int32 W, H;
+		int32 RowPitch;
 		TStream Data;
 	};
 	struct TResTextureDefine
