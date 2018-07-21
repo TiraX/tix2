@@ -39,7 +39,7 @@ namespace tix
 				TResourcePtr Res = ResFile->CreateResource();
 				if (Res != nullptr)
 				{
-					TI_TODO("1. Create render thread resource.");
+					Res->InitRenderThreadResource();
 					Resources[ResFilename] = Res;
 					return Res;
 				}

@@ -631,6 +631,51 @@ namespace tix
 		return ret;
 	}
 
+	static const DXGI_FORMAT FormatMap[] = 
+	{
+		DXGI_FORMAT_UNKNOWN, //EPF_A8,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGB8,
+		DXGI_FORMAT_UNKNOWN, //EPF_BGR8,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGBA8,
+		DXGI_FORMAT_UNKNOWN, //EPF_BGRA8,
+		DXGI_FORMAT_UNKNOWN, //EPF_SRGB8,
+		DXGI_FORMAT_UNKNOWN, //EPF_SRGB8_ALPHA,
+
+		// Float formats
+		DXGI_FORMAT_UNKNOWN, //EPF_R16F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RG16F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGB16F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGBA16F,
+		DXGI_FORMAT_UNKNOWN, //EPF_R32F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RG32F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGB32F,
+		DXGI_FORMAT_UNKNOWN, //EPF_RGBA32F,
+
+		// Depth formats
+		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH16,
+		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH24,
+		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH32,
+		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH24_STENCIL8,
+
+		// Compressed formats
+		// DXT formats
+		DXGI_FORMAT_BC1_UNORM,	//EPF_DDS_DXT1,
+		DXGI_FORMAT_BC2_UNORM,	//EPF_DDS_DXT3,
+		DXGI_FORMAT_BC3_UNORM,	//EPF_DDS_DXT5,
+		DXGI_FORMAT_UNKNOWN, //EPF_DDS_RESERVED,
+
+		// PVR formats
+		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_sRGB_PVRTC_4BPP,
+		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_sRGB_Alpha_PVRTC_4BPP,
+		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_RGB_PVRTC_4BPP,
+		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_RGBA_PVRTC_4BPP,
+
+		// ETC format
+		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_ETC,
+
+		DXGI_FORMAT_UNKNOWN, //EPF_UNKNOWN,
+	};
+
 	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
@@ -647,11 +692,12 @@ namespace tix
 		// prematurely destroyed.
 		ComPtr<ID3D12Resource> TextureUploadHeap;
 
-		TI_TODO("2. Figure out texture dds format.")
+		DXGI_FORMAT DxgiFormat = FormatMap[Desc.Format];
+		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
 		// Describe and create a Texture2D.
 		D3D12_RESOURCE_DESC textureDesc = {};
 		textureDesc.MipLevels = Desc.Mips;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.Format = DxgiFormat;
 		textureDesc.Width = Texture->GetWidth();
 		textureDesc.Height = Texture->GetHeight();
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;

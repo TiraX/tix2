@@ -95,7 +95,7 @@ namespace tix
 
 	bool TImage::IsCompressedFormat(int fmt)
 	{
-		bool IsCompressed = fmt >= EPF_COMPRESSED_RGB_S3TC_DXT1 && fmt < EPF_UNKNOWN;
+		bool IsCompressed = fmt >= EPF_DDS_DXT1 && fmt < EPF_UNKNOWN;
 		return IsCompressed;
 	}
 

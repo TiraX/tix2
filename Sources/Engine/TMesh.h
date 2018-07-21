@@ -19,6 +19,8 @@ namespace tix
 	public:
 		static int32 GetStrideFromFormat(uint32 Format);
 
+		virtual void InitRenderThreadResource() override;
+
 		void SetVertexStreamData(
 			uint32 InFormat,
 			const void* InVertexData, int32 InVertexCount,

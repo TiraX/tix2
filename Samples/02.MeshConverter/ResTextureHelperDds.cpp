@@ -259,6 +259,20 @@ namespace tix
 		}
 	}
 
+	E_PIXEL_FORMAT GetTixFormatFromDXGIFormat(DXGI_FORMAT DFormat)
+	{
+		switch (DFormat)
+		{
+		case DXGI_FORMAT_BC1_UNORM:
+			return EPF_DDS_DXT1;
+		case DXGI_FORMAT_BC2_UNORM:
+			return EPF_DDS_DXT3;
+		case DXGI_FORMAT_BC3_UNORM:
+			return EPF_DDS_DXT5;
+		}
+		return EPF_UNKNOWN;
+	}
+
 	//--------------------------------------------------------------------------------------
 	// Return the BPP for a particular format
 	//--------------------------------------------------------------------------------------
@@ -728,12 +742,10 @@ namespace tix
 		{
 			// Create the texture
 			TResTextureDefine* Texture = ti_new TResTextureDefine();
-			TI_TODO("Determine texture format.");
-			Texture->Desc.Format = EPF_COMPRESSED_RGB_S3TC_DXT1;
+			Texture->Desc.Format = GetTixFormatFromDXGIFormat(format);
 			Texture->Desc.Width = width;
 			Texture->Desc.Height = height;
 			Texture->Desc.WrapMode = ETC_REPEAT;
-			TI_TODO("Check dds srgb.");
 			Texture->Desc.SRGB = 0;
 			Texture->Desc.Mips = mipCount;
 

@@ -40,7 +40,7 @@ namespace tix
 		Surfaces.clear();
 	}
 
-	void TTexture::InitRenderThread()
+	void TTexture::InitRenderThreadResource()
 	{
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TTextureUpdateFTexture,
 			FTexturePtr, Texture_RT, TextureResource,

@@ -54,6 +54,11 @@ namespace tix
 		return Stride;
 	}
 
+	void TMeshBuffer::InitRenderThreadResource()
+	{
+		TI_TODO("3. MeshBuffer Init render thread resource.");
+	}
+
 	void TMeshBuffer::SetVertexStreamData(
 		uint32 InFormat,
 		const void* InVertexData, int32 InVertexCount,

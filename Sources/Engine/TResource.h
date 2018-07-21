@@ -23,7 +23,7 @@ namespace tix
 		virtual ~TResource()
 		{}
 
-		virtual void InitRenderThread() {};
+		virtual void InitRenderThreadResource() {};
 
 	protected:
 		E_RESOURCE_TYPE ResType;
