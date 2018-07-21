@@ -45,7 +45,7 @@ using namespace std;
 #include "TTexture.h"
 #include "TMesh.h"
 #include "TResfileDef.h"
-//#include "TResFile.h"
+#include "TResFile.h"
 #include "TNode.h"
 #include "TNodeCamera.h"
 #include "TNodeStaticMesh.h"
@@ -66,7 +66,6 @@ using namespace std;
 #include "FRenderThread.h"
 
 #include "TResourceLibrary.h"
-#include "TLibraryTexture.h"
 #include "TEngineConfig.h"
 #include "TEngine.h"
 

@@ -33,6 +33,17 @@ namespace tix
 		if (Resources.find(ResFilename) == Resources.end())
 		{
 			// Load resource to library
+			TResFilePtr ResFile = ti_new TResFile;
+			if (ResFile->Load(ResFilename))
+			{
+				TResourcePtr Res = ResFile->CreateResource();
+				if (Res != nullptr)
+				{
+					TI_TODO("1. Create render thread resource.");
+					Resources[ResFilename] = Res;
+					return Res;
+				}
+			}
 
 			return nullptr;
 		}

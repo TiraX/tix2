@@ -116,13 +116,18 @@ namespace tix
 
 	TResourcePtr TResFile::CreateResource()
 	{
+		TResourcePtr Resource;
 		if (ChunkHeader[ECL_MESHES] != nullptr)
-			return CreateMeshBuffer();
+			Resource = CreateMeshBuffer();
 
 		if (ChunkHeader[ECL_TEXTURES] != nullptr)
-			return CreateTexture();
+			Resource = CreateTexture();
 
-		return nullptr;
+#ifdef TI_DEBUG
+		Resource->ResourceName = Filename;
+#endif
+
+		return Resource;
 	}
 
 	TMeshBufferPtr TResFile::CreateMeshBuffer()
@@ -188,13 +193,12 @@ namespace tix
 			for (uint32 m = 0; m < Texture->Desc.Mips; ++m)
 			{
 				const uint8* Data = TextureDataStart + DataOffset;
-				int32 Width = *(const int32*)(Data + sizeof(uint32) * 0);
-				int32 Height = *(const int32*)(Data + sizeof(uint32) * 1);
-				int32 Size = *(const int32*)(Data + sizeof(uint32) * 2);
-				int32 Pitch = *(const int32*)(Data + sizeof(uint32) * 3);
-				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, Size, Pitch);
-				DataOffset += Size + sizeof(uint32) * 4;
-				DataOffset = ti_align8(DataOffset);
+				int32 Width = *(const int32*)(Data + sizeof(int32) * 0);
+				int32 Height = *(const int32*)(Data + sizeof(int32) * 1);
+				int32 Size = *(const int32*)(Data + sizeof(int32) * 2);
+				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 3, Size);
+				DataOffset += Size + sizeof(uint32) * 3;
+				DataOffset = ti_align4(DataOffset);
 			}
 
 			Result = Texture;

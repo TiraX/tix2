@@ -87,7 +87,6 @@ namespace tix
 			TSurface()
 				: Data(nullptr)
 				, DataSize(0)
-				, Pitch(0)
 				, Width(0)
 				, Height(0)
 			{}
@@ -95,16 +94,14 @@ namespace tix
 			{
 				SAFE_DELETE_ARRAY(Data);
 				DataSize = 0;
-				Pitch = 0;
 			}
 
 			uint8 * Data;
 			uint32 Width;
 			uint32 Height;
 			uint32 DataSize;
-			uint32 Pitch;
 		};
-		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, uint32 DataSize, uint32 RowPitch);
+		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, int32 DataSize);
 		TI_API const TVector<TSurface*>& GetSurfaces() const
 		{
 			return  Surfaces;
