@@ -55,25 +55,19 @@ namespace tix
 
 	void TResourceLibrary::RemoveUnusedResouces()
 	{
-		TI_ASSERT(0);
-		TI_TODO("TResourceLibrary remove unused resources implementation.");
-		//		MapTextures::iterator it	= Textures.begin();
-		//		for ( ; it != Textures.end() ; )
-		//		{
-		//			if ( it->second->referenceCount() == 1)
-		//			{
-		//#ifdef TI_PLATFORM_WIN32
-		//				TiTexturePtr texture	= it->second;
-		//				TextureData		-= texture->GetWidth() * texture->GetHeight() * 4;
-		//#endif
-		//				_LOG("[unused texture] : %s\n", it->first.c_str());
-		//				it->second	= NULL;
-		//				Textures.erase( it ++ );
-		//			}
-		//			else
-		//			{
-		//				++ it;
-		//			}
-		//		}
+		MapResources::iterator it = Resources.begin();
+		for (; it != Resources.end(); )
+		{
+			if (it->second->referenceCount() == 1)
+			{
+				_LOG(Log, "unused resource : [%s], removed\n", it->first.c_str());
+				it->second = nullptr;
+				Resources.erase(it++);
+			}
+			else
+			{
+				++it;
+			}
+		}
 	}
 }
