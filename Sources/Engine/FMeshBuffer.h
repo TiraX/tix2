@@ -15,6 +15,8 @@ namespace tix
 		virtual ~FMeshBuffer();
 
 	public:
+		virtual void Destroy() override {};
+
 		void SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer);
 
 		int32 GetVerticesCount() const

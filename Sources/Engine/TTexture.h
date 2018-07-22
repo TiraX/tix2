@@ -92,6 +92,7 @@ namespace tix
 		virtual ~TTexture();
 
 		virtual void InitRenderThreadResource() override;
+		virtual void DestroyRenderThreadResource() override;
 
 		TTextureDesc Desc;
 		FTexturePtr TextureResource;

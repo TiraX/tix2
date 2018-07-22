@@ -15,6 +15,7 @@ namespace tix
 		FMeshBufferDx12();
 		virtual ~FMeshBufferDx12();
 
+		virtual void Destroy() override;
 	protected:
 
 	private:

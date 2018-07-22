@@ -23,6 +23,12 @@ namespace tix
 
 	FTextureDx12::~FTextureDx12()
 	{
+	}
+
+	void FTextureDx12::Destroy()
+	{
+		TI_ASSERT(IsRenderThread());
+		TextureResource = nullptr;
 		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
 		RHIDx12->RecallDescriptor(TexDescriptor);
 	}

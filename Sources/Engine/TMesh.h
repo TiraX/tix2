@@ -25,6 +25,7 @@ namespace tix
 		static int32 GetStrideFromFormat(uint32 Format);
 
 		virtual void InitRenderThreadResource() override;
+		virtual void DestroyRenderThreadResource() override;
 
 		void SetVertexStreamData(
 			uint32 InFormat,

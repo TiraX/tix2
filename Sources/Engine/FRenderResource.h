@@ -15,8 +15,9 @@ namespace tix
 		{}
 		virtual ~FRenderResource() 
 		{
-			TI_ASSERT(IsRenderThread());
 		}
+
+		virtual void Destroy() = 0;
 
 		E_RESOURCE_FAMILY GetResourceFamily() const
 		{

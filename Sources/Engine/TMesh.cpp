@@ -58,12 +58,25 @@ namespace tix
 	{
 		TI_ASSERT(MeshBufferResource == nullptr);
 		MeshBufferResource = FRHI::Get()->CreateMeshBuffer();
+
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TMeshBufferUpdateFMeshBuffer,
 			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
 			TMeshBufferPtr, InMeshData, this,
 			{
 				RHI->UpdateHardwareBuffer(MeshBuffer, InMeshData);
 			});
+	}
+
+	void TMeshBuffer::DestroyRenderThreadResource()
+	{
+		TI_ASSERT(MeshBufferResource != nullptr);
+
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMeshBufferDestroyFMeshBuffer,
+			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
+			{
+				MeshBuffer->Destroy();
+			});
+		MeshBufferResource = nullptr;
 	}
 
 	void TMeshBuffer::SetVertexStreamData(

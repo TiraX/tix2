@@ -41,6 +41,13 @@ namespace tix
 	FMeshBufferDx12::~FMeshBufferDx12()
 	{
 	}
+
+	void FMeshBufferDx12::Destroy()
+	{
+		TI_ASSERT(IsRenderThread());
+		VertexBuffer = nullptr;
+		IndexBuffer = nullptr;
+	}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

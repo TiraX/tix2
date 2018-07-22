@@ -51,4 +51,16 @@ namespace tix
 				RHI->UpdateHardwareBuffer(Texture_RT, TextureData);
 			});
 	}
+
+	void TTexture::DestroyRenderThreadResource()
+	{
+		TI_ASSERT(TextureResource != nullptr);
+
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
+			FTexturePtr, Texture_RT, TextureResource,
+			{
+				Texture_RT->Destroy();
+			});
+		TextureResource = nullptr;
+	}
 }

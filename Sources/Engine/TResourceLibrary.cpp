@@ -24,6 +24,7 @@ namespace tix
 
 	TResourceLibrary::~TResourceLibrary()
 	{
+		RemoveUnusedResouces();
 		TI_ASSERT(s_instance != nullptr);
 		s_instance = nullptr;
 	}
@@ -61,6 +62,7 @@ namespace tix
 			if (it->second->referenceCount() == 1)
 			{
 				_LOG(Log, "unused resource : [%s], removed\n", it->first.c_str());
+				it->second->DestroyRenderThreadResource();
 				it->second = nullptr;
 				Resources.erase(it++);
 			}
