@@ -44,8 +44,6 @@
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TImageLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp" />
@@ -104,7 +102,6 @@
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
-    <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TNode.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h" />

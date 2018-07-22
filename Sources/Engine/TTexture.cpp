@@ -4,7 +4,6 @@
 */
 
 #include "stdafx.h"
-#include "TImage.h"
 
 namespace tix
 {

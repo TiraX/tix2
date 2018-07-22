@@ -91,9 +91,6 @@
     <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TImage.cpp">
-      <Filter>Sources\Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
@@ -117,9 +114,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp">
       <Filter>Sources\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TImageLoading.cpp">
-      <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TMesh.cpp">
       <Filter>Sources\Render</Filter>
@@ -302,9 +296,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h">
       <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TImage.h">
-      <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TNode.h">
       <Filter>Sources\Scene</Filter>
