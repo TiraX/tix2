@@ -7,6 +7,18 @@
 
 namespace tix
 {
+	//! Texture types.
+	enum E_TEXTURE_TYPE
+	{
+		ETT_TEXTURE_1D,
+		ETT_TEXTURE_2D,
+		ETT_TEXTURE_3D,
+
+		ETT_TEXTURE_CUBE,
+
+		ETT_TEXTURE_UNKNOWN,
+	};
+
 	//! Texture filter types.
 	enum E_TEXTURE_FILTER_TYPE
 	{
@@ -61,6 +73,7 @@ namespace tix
 
 	struct TTextureDesc
 	{
+		E_TEXTURE_TYPE Type;
 		E_PIXEL_FORMAT Format;
 		int32 Width;
 		int32 Height;

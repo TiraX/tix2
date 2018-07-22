@@ -259,6 +259,27 @@ namespace tix
 		}
 	}
 
+	E_TEXTURE_TYPE GetTixTypeFromDdsType(uint32 ResDim, bool isCube)
+	{
+		switch (ResDim)
+		{
+		case D3D12_RESOURCE_DIMENSION_TEXTURE1D:
+			return ETT_TEXTURE_1D;
+		case D3D12_RESOURCE_DIMENSION_TEXTURE2D:
+			if (isCube)
+			{
+				return ETT_TEXTURE_CUBE;
+			}
+			else
+			{
+				return ETT_TEXTURE_2D;
+			}
+		case D3D12_RESOURCE_DIMENSION_TEXTURE3D:
+			return ETT_TEXTURE_3D;
+		}
+		return ETT_TEXTURE_UNKNOWN;
+	}
+
 	E_PIXEL_FORMAT GetTixFormatFromDXGIFormat(DXGI_FORMAT DFormat)
 	{
 		switch (DFormat)
@@ -742,6 +763,7 @@ namespace tix
 		{
 			// Create the texture
 			TResTextureDefine* Texture = ti_new TResTextureDefine();
+			Texture->Desc.Type = GetTixTypeFromDdsType(resDim, (header->caps2 & DDS_CUBEMAP) != 0);
 			Texture->Desc.Format = GetTixFormatFromDXGIFormat(format);
 			Texture->Desc.Width = width;
 			Texture->Desc.Height = height;
