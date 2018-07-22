@@ -11,6 +11,7 @@ namespace tix
 	{
 		ERES_MESH,
 		ERES_TEXTURE,
+		ERES_PIPELINE,
 
 		ERES_COUNT,
 	};
