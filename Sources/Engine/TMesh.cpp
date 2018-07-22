@@ -56,7 +56,14 @@ namespace tix
 
 	void TMeshBuffer::InitRenderThreadResource()
 	{
-		TI_TODO("3. MeshBuffer Init render thread resource.");
+		TI_ASSERT(MeshBufferResource == nullptr);
+		MeshBufferResource = FRHI::Get()->CreateMeshBuffer();
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TMeshBufferUpdateFMeshBuffer,
+			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
+			TMeshBufferPtr, InMeshData, this,
+			{
+				RHI->UpdateHardwareBuffer(MeshBuffer, InMeshData);
+			});
 	}
 
 	void TMeshBuffer::SetVertexStreamData(

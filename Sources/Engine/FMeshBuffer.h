@@ -8,9 +8,6 @@
 namespace tix
 {
 	// FMeshBuffer, hold vertex buffer and index buffer render resource
-	class FMeshBuffer;
-	typedef TI_INTRUSIVE_PTR(FMeshBuffer) FMeshBufferPtr;
-
 	class FMeshBuffer : public FRenderResource
 	{
 	public:

@@ -7,6 +7,9 @@
 
 namespace tix
 {
+	class FMeshBuffer;
+	typedef TI_INTRUSIVE_PTR(FMeshBuffer) FMeshBufferPtr;
+
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
 	class TMeshBuffer : public TResource
 	{
@@ -17,6 +20,8 @@ namespace tix
 		static const TI_API int32 SematicSize[ESSI_TOTAL];
 
 	public:
+		FMeshBufferPtr MeshBufferResource;
+
 		static int32 GetStrideFromFormat(uint32 Format);
 
 		virtual void InitRenderThreadResource() override;

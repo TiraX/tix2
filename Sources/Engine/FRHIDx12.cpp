@@ -351,6 +351,11 @@ namespace tix
 		return ti_new FTextureDx12(Format, Width, Height);
 	}
 
+	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
+	{
+		return ti_new FMeshBufferDx12();
+	}
+
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{
@@ -501,11 +506,11 @@ namespace tix
 		}
 	}
 
-	FMeshBufferPtr FRHIDx12::CreateMeshBuffer(TMeshBufferPtr InMeshBuffer)
+	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
-		FMeshBufferPtr MeshBuffer = ti_new FMeshBufferDx12();
+		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
-		MeshBuffer->SetFromTMeshBuffer(InMeshBuffer);
+		MeshBuffer->SetFromTMeshBuffer(InMeshData);
 
 		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
@@ -514,7 +519,7 @@ namespace tix
 		// The upload resource must not be released until after the GPU has finished using it.
 		ComPtr<ID3D12Resource> VertexBufferUpload;
 
-		int32 BufferSize = InMeshBuffer->GetVerticesCount() * InMeshBuffer->GetStride();
+		int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -539,7 +544,7 @@ namespace tix
 		// Upload the vertex buffer to the GPU.
 		{
 			D3D12_SUBRESOURCE_DATA VertexData = {};
-			VertexData.pData = reinterpret_cast<const uint8*>(InMeshBuffer->GetVSData());
+			VertexData.pData = reinterpret_cast<const uint8*>(InMeshData->GetVSData());
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
@@ -548,7 +553,7 @@ namespace tix
 			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
 
-		const uint32 IndexBufferSize = sizeof(InMeshBuffer->GetIndicesCount() * (InMeshBuffer->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+		const uint32 IndexBufferSize = sizeof(InMeshData->GetIndicesCount() * (InMeshData->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
 
 		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
@@ -576,7 +581,7 @@ namespace tix
 		// Upload the index buffer to the GPU.
 		{
 			D3D12_SUBRESOURCE_DATA IndexData = {};
-			IndexData.pData = reinterpret_cast<const uint8*>(InMeshBuffer->GetPSData());
+			IndexData.pData = reinterpret_cast<const uint8*>(InMeshData->GetPSData());
 			IndexData.RowPitch = IndexBufferSize;
 			IndexData.SlicePitch = IndexData.RowPitch;
 
@@ -592,7 +597,7 @@ namespace tix
 		FrameResource->HoldDxReference(VertexBufferUpload);
 		FrameResource->HoldDxReference(IndexBufferUpload);
 
-		return MeshBuffer;
+		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -714,7 +719,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&TexDx12->TextureResource)));
 
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, 1);
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, Desc.Mips);
 
 		// Create the GPU upload buffer.
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -740,6 +745,8 @@ namespace tix
 
 		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
 		Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		ti_delete[] TextureDatas;
 
 		// Describe and create a SRV for the texture.
 		TexDx12->TexDescriptor = AllocateDescriptorHandle();

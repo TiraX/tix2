@@ -42,6 +42,9 @@ namespace tix
 
 	void TTexture::InitRenderThreadResource()
 	{
+		TI_ASSERT(TextureResource == nullptr);
+		TextureResource = FRHI::Get()->CreateTexture();
+
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TTextureUpdateFTexture,
 			FTexturePtr, Texture_RT, TextureResource,
 			TTexturePtr, TextureData, this,

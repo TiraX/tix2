@@ -35,8 +35,7 @@ namespace tix
 			TMeshBufferPtr, MeshBuffer, InMeshBuffer,
 			{
 				FNodeStaticMesh * NodeMesh = static_cast<FNodeStaticMesh*>(Node_RT);
-				FMeshBufferPtr MeshBuffer_RenderResource = RHI->CreateMeshBuffer(MeshBuffer);
-				NodeMesh->SetMeshBuffer(MeshBuffer_RenderResource);
+				NodeMesh->SetMeshBuffer(MeshBuffer->MeshBufferResource);
 			});
 	}
 }
