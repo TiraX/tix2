@@ -4,20 +4,32 @@
 */
 
 #include "stdafx.h"
-#include "TMesh.h"
+#include "TMeshBuffer.h"
 
 namespace tix
 {
-	const int32 TMeshBuffer::SematicSize[ESSI_TOTAL] =
+	const int32 TMeshBuffer::SemanticSize[ESSI_TOTAL] =
 	{
 		12,	// ESSI_POSITION,
-		4,	// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
+		4,	// ESSI_NORMAL,
 		4,	// ESSI_COLOR,
 		8,	// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
 		8,	// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
 		4,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
 		4,	// ESSI_BLENDINDEX,
 		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
+	};
+
+	const int8* TMeshBuffer::SemanticName[ESSI_TOTAL] =
+	{
+		"POSITION",		// ESSI_POSITION,
+		"NORMAL",		// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
+		"COLOR",		// ESSI_COLOR,
+		"TEXCOORD",		// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
+		"TEXCOORD",		// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
+		"TANGENT",		// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
+		"BLENDINDEX",	// ESSI_BLENDINDEX,
+		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
 
 	TMeshBuffer::TMeshBuffer()
@@ -32,6 +44,7 @@ namespace tix
 		, Stride(0)
 		, MeshFlag(0)
 	{
+		TI_TODO("Change uv0 & uv1 stream to 4 component input.");
 	}
 
 	TMeshBuffer::~TMeshBuffer()
@@ -48,10 +61,23 @@ namespace tix
 		{
 			if ((Format & seg) != 0)
 			{
-				Stride += SematicSize[i];
+				Stride += SemanticSize[i];
 			}
 		}
 		return Stride;
+	}
+
+	TVector<E_MESH_STREAM_INDEX> TMeshBuffer::GetSteamsFromFormat(uint32 Format)
+	{
+		TVector<E_MESH_STREAM_INDEX> Streams;
+		for (uint32 seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
+		{
+			if ((Format & seg) != 0)
+			{
+				Streams.push_back((E_MESH_STREAM_INDEX)i);
+			}
+		}
+		return Streams;
 	}
 
 	void TMeshBuffer::InitRenderThreadResource()

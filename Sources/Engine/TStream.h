@@ -28,7 +28,7 @@ namespace tix
 
 		virtual ~TStream()
 		{
-			ti_delete[] Buffer;
+			Destroy();
 		}
 
 		void Put(const void* buf, int size)
@@ -48,6 +48,17 @@ namespace tix
 		void Reset()
 		{
 			Pos = 0;
+		}
+
+		void Destroy()
+		{
+			if (Buffer != nullptr)
+			{
+				ti_delete[] Buffer;
+				Buffer = nullptr;
+			}
+			Pos = 0;
+			BufferSize = 0;
 		}
 
 		char* GetBuffer()
@@ -79,7 +90,10 @@ namespace tix
 			char* newBuffer = ti_new char[size];
 			memcpy(newBuffer, Buffer, Pos);
 
-			ti_delete[] Buffer;
+			if (Buffer != nullptr)
+			{
+				ti_delete[] Buffer;
+			}
 			Buffer = newBuffer;
 
 			BufferSize = size;

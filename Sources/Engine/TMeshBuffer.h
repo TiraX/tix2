@@ -17,12 +17,14 @@ namespace tix
 		TMeshBuffer();
 		~TMeshBuffer();
 
-		static const TI_API int32 SematicSize[ESSI_TOTAL];
+		static const TI_API int32 SemanticSize[ESSI_TOTAL];
+		static const TI_API int8* SemanticName[ESSI_TOTAL];
 
 	public:
 		FMeshBufferPtr MeshBufferResource;
 
 		static int32 GetStrideFromFormat(uint32 Format);
+		static TVector<E_MESH_STREAM_INDEX> GetSteamsFromFormat(uint32 Format);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;

@@ -71,7 +71,7 @@ namespace tix
 	void FRenderThread::DestroyRenderComponents()
 	{
 		// Finish all un-finished tasks
-		for (int32 i = 0; i < FRHI::FrameBufferNum; i++)
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; i++)
 		{
 			DoRenderTasks();
 		}
@@ -149,7 +149,7 @@ namespace tix
 		}
 
 		// Move to next
-		RenderFrameIndex = (RenderFrameIndex + 1) % FRHI::FrameBufferNum;
+		RenderFrameIndex = (RenderFrameIndex + 1) % FRHIConfig::FrameBufferNum;
 	}
 
 	void FRenderThread::TriggerRender()
@@ -158,7 +158,7 @@ namespace tix
 		// Add Trigger Number
 		++TriggerNum;
 		// Frame index move to next frame. Close current frame data
-		PreFrameIndex = (PreFrameIndex + 1) % FRHI::FrameBufferNum;
+		PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
 		RenderCond.notify_one();
 	}
 
@@ -168,7 +168,7 @@ namespace tix
 		// Add Trigger Number
 		++TriggerNum;
 		// Frame index move to next frame. Close current frame data
-		PreFrameIndex = (PreFrameIndex + 1) % FRHI::FrameBufferNum;
+		PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
 		IsRunning = false;
 		RenderCond.notify_one();
 	}

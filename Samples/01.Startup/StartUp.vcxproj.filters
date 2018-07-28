@@ -5,6 +5,12 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{59e40704-fe99-4d0f-902b-9b7e6acd06e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders\dx12">
+      <UniqueIdentifier>{e7086f15-11c1-47c2-85cf-883d7031a12a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -21,5 +27,13 @@
     <ClCompile Include="StartUp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Sources\Engine\shaders\dx12\SamplePixelShader.hlsl">
+      <Filter>Source Files\Shaders\dx12</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\Sources\Engine\shaders\dx12\SampleVertexShader.hlsl">
+      <Filter>Source Files\Shaders\dx12</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

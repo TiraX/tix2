@@ -60,5 +60,7 @@ namespace tix
 		EPT_QUADS,
 		EPT_QUAD_STRIP,
 		EPT_POLYGON,
+
+		EPT_COUNT
 	};
 }

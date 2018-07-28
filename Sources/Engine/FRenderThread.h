@@ -118,7 +118,7 @@ namespace tix
 		int32 PreFrameIndex;
 		// Frame Index that is rendering
 		int32 RenderFrameIndex;
-		FRenderFrame RenderFrames[FRHI::FrameBufferNum];
+		FRenderFrame RenderFrames[FRHIConfig::FrameBufferNum];
 
 		// Render components
 		FRHI * RHI;

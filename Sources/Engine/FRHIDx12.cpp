@@ -7,10 +7,12 @@
 #include "FRHIDx12.h"
 
 #if COMPILE_WITH_RHI_DX12
+#include "FRHIDx12Conversion.h"
 #include "TDeviceWin32.h"
 #include "FFrameResourcesDx12.h"
 #include "FMeshBufferDx12.h"
 #include "FTextureDx12.h"
+#include "FPipelineDx12.h"
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
@@ -28,7 +30,7 @@ namespace tix
 		Init();
 
 		// Create frame resource holders
-		for (int32 i = 0; i < FRHI::FrameBufferNum; ++i)
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
 			FrameResources[i] = ti_new FFrameResourcesDx12;
 		}
@@ -37,7 +39,7 @@ namespace tix
 	FRHIDx12::~FRHIDx12()
 	{
 		// delete frame resource holders
-		for (int32 i = 0; i < FRHI::FrameBufferNum; ++i)
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
 			ti_delete FrameResources[i];
 			FrameResources[i] = nullptr;
@@ -90,7 +92,7 @@ namespace tix
 
 		// Create descriptor heaps for render target views and depth stencil views.
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors = FRHI::FrameBufferNum;
+		rtvHeapDesc.NumDescriptors = FRHIConfig::FrameBufferNum;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		hr = D3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&RtvHeap));
@@ -108,7 +110,7 @@ namespace tix
 		DsvHeap->SetName(L"DsvHeap");
 
 		// Create command allocator and command list.
-		for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
+		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
 			hr = D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n]));
 			VALIDATE_HRESULT(hr);
@@ -178,7 +180,7 @@ namespace tix
 	void FRHIDx12::CreateWindowsSizeDependentResources()
 	{
 		// Clear the previous window size specific content and update the tracked fence values.
-		for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
+		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
 			BackBufferRTs[n] = nullptr;
 			FenceValues[n] = FenceValues[CurrentFrame];
@@ -203,7 +205,7 @@ namespace tix
 		if (SwapChain != nullptr)
 		{
 			// If the swap chain already exists, resize it.
-			HRESULT hr = SwapChain->ResizeBuffers(FRHI::FrameBufferNum, BackBufferWidth, BackBufferHeight, BackBufferFormat, 0);
+			HRESULT hr = SwapChain->ResizeBuffers(FRHIConfig::FrameBufferNum, BackBufferWidth, BackBufferHeight, BackBufferFormat, 0);
 
 			if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 			{
@@ -229,7 +231,7 @@ namespace tix
 			swapChainDesc.SampleDesc.Count = 1;							// Don't use multi-sampling.
 			swapChainDesc.SampleDesc.Quality = 0;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDesc.BufferCount = FRHI::FrameBufferNum;			// Use triple-buffering to minimize latency.
+			swapChainDesc.BufferCount = FRHIConfig::FrameBufferNum;			// Use triple-buffering to minimize latency.
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	// All Windows Universal apps must use _FLIP_ SwapEffects.
 			swapChainDesc.Flags = 0;
 			swapChainDesc.Scaling = DXGI_SCALING_NONE;
@@ -262,7 +264,7 @@ namespace tix
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(RtvHeap->GetCPUDescriptorHandleForHeapStart());
-			for (uint32 n = 0; n < FRHI::FrameBufferNum; n++)
+			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
 				hr = SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n]));
 				VALIDATE_HRESULT(hr);
@@ -305,6 +307,31 @@ namespace tix
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DsvHeap->GetCPUDescriptorHandleForHeapStart());
+		}
+
+		// Create a root signature with a single constant buffer slot.
+		{
+			CD3DX12_DESCRIPTOR_RANGE range;
+			CD3DX12_ROOT_PARAMETER parameter;
+
+			range.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+			parameter.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_VERTEX);
+
+			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+			CD3DX12_ROOT_SIGNATURE_DESC descRootSignature;
+			descRootSignature.Init(1, &parameter, 0, nullptr, rootSignatureFlags);
+
+			ComPtr<ID3DBlob> pSignature;
+			ComPtr<ID3DBlob> pError;
+			VALIDATE_HRESULT(D3D12SerializeRootSignature(&descRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, pSignature.GetAddressOf(), pError.GetAddressOf()));
+			VALIDATE_HRESULT(D3dDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), IID_PPV_ARGS(&RootSignature)));
+			RootSignature->SetName(L"RootSignature");
 		}
 
 		// Set the 3D rendering viewport to target the entire window.
@@ -354,6 +381,11 @@ namespace tix
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
 	{
 		return ti_new FMeshBufferDx12();
+	}
+
+	FPipelinePtr FRHIDx12::CreatePipeline()
+	{
+		return ti_new FPipelineDx12();
 	}
 
 	// Prepare to render the next frame.
@@ -636,51 +668,6 @@ namespace tix
 		return ret;
 	}
 
-	static const DXGI_FORMAT FormatMap[] = 
-	{
-		DXGI_FORMAT_UNKNOWN, //EPF_A8,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGB8,
-		DXGI_FORMAT_UNKNOWN, //EPF_BGR8,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGBA8,
-		DXGI_FORMAT_UNKNOWN, //EPF_BGRA8,
-		DXGI_FORMAT_UNKNOWN, //EPF_SRGB8,
-		DXGI_FORMAT_UNKNOWN, //EPF_SRGB8_ALPHA,
-
-		// Float formats
-		DXGI_FORMAT_UNKNOWN, //EPF_R16F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RG16F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGB16F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGBA16F,
-		DXGI_FORMAT_UNKNOWN, //EPF_R32F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RG32F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGB32F,
-		DXGI_FORMAT_UNKNOWN, //EPF_RGBA32F,
-
-		// Depth formats
-		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH16,
-		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH24,
-		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH32,
-		DXGI_FORMAT_UNKNOWN, //EPF_DEPTH24_STENCIL8,
-
-		// Compressed formats
-		// DXT formats
-		DXGI_FORMAT_BC1_UNORM,	//EPF_DDS_DXT1,
-		DXGI_FORMAT_BC2_UNORM,	//EPF_DDS_DXT3,
-		DXGI_FORMAT_BC3_UNORM,	//EPF_DDS_DXT5,
-		DXGI_FORMAT_UNKNOWN, //EPF_DDS_RESERVED,
-
-		// PVR formats
-		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_sRGB_PVRTC_4BPP,
-		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_sRGB_Alpha_PVRTC_4BPP,
-		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_RGB_PVRTC_4BPP,
-		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_RGBA_PVRTC_4BPP,
-
-		// ETC format
-		DXGI_FORMAT_UNKNOWN, //EPF_COMPRESSED_ETC,
-
-		DXGI_FORMAT_UNKNOWN, //EPF_UNKNOWN,
-	};
-
 	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
@@ -697,7 +684,7 @@ namespace tix
 		// prematurely destroyed.
 		ComPtr<ID3D12Resource> TextureUploadHeap;
 
-		DXGI_FORMAT DxgiFormat = FormatMap[Desc.Format];
+		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
 		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
 		// Describe and create a Texture2D.
 		D3D12_RESOURCE_DESC textureDesc = {};
@@ -761,6 +748,58 @@ namespace tix
 		// Hold resources used here
 		FrameResource->HoldReference(Texture);
 		FrameResource->HoldDxReference(TextureUploadHeap);
+
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
+	{
+		TI_ASSERT(Pipeline->GetResourceFamily() == ERF_Dx12);
+		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
+		const TPipelineDesc& Desc = InPipelineDesc->Desc;
+
+		TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+		TVector<D3D12_INPUT_ELEMENT_DESC> InputLayout;
+		InputLayout.resize(Streams.size());
+
+		// Fill layout desc
+		uint32 VertexDataOffset = 0;
+		for (uint32 i = 0; i < InputLayout.size(); ++i)
+		{
+			D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
+			InputElement.SemanticName = TMeshBuffer::SemanticName[i];
+			InputElement.SemanticIndex = 0;
+			InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[i];
+			InputElement.InputSlot = 0;
+			InputElement.AlignedByteOffset = VertexDataOffset;
+			VertexDataOffset += TMeshBuffer::SemanticSize[i];
+			InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+			InputElement.InstanceDataStepRate = 0;
+		}
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
+		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size() * sizeof(D3D12_INPUT_ELEMENT_DESC)) };
+		state.pRootSignature = RootSignature.Get();
+		state.VS = { InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength()) };
+		state.PS = { InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength()) };
+		MakeDx12RasterizerDesc(Desc, state.RasterizerState);
+		MakeDx12BlendState(Desc, state.BlendState);
+		MakeDx12DepthStencilState(Desc, state.DepthStencilState);
+		state.SampleMask = UINT_MAX;
+		state.PrimitiveTopologyType = k_PRIMITIVE_TYPE_MAP[Desc.PrimitiveType];
+		TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
+		state.NumRenderTargets = 1;
+		state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[0]];
+		state.DSVFormat = k_PIXEL_FORMAT_MAP[Desc.DepthFormat];
+		state.SampleDesc.Count = 1;
+
+		VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
+
+		// Shader data can be deleted once the pipeline state is created.
+		//for (int32 s = 0; s < ESS_COUNT; ++s)
+		//{
+		//	InPipelineDesc->.ShaderCode[s].Destroy();
+		//}
 
 		return true;
 	}

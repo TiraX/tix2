@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "FRHIConfig.h"
+
 namespace tix
 {
 	enum E_RHI_TYPE
@@ -19,8 +21,6 @@ namespace tix
 	class FRHI
 	{
 	public: 
-		static const int32 FrameBufferNum = 3;	// Use triple buffers
-
 		static FRHI* Get();
 		static void CreateRHI(E_RHI_TYPE RhiType);
 		static void ReleaseRHI();
@@ -32,9 +32,11 @@ namespace tix
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
 
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
+		virtual FPipelinePtr CreatePipeline() = 0;
 
 		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) = 0;
+		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 
 		E_RHI_TYPE GetRHIType() const
 		{
@@ -48,6 +50,6 @@ namespace tix
 
 	protected:
 		E_RHI_TYPE RHIType;
-		FFrameResources * FrameResources[FrameBufferNum];
+		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
 	};
 }

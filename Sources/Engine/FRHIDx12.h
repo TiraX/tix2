@@ -27,9 +27,11 @@ namespace tix
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) override;
 
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
+		virtual FPipelinePtr CreatePipeline() override;
 
 		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) override;
+		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 
 		// DirectX 12 specified methods
 		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);
@@ -80,27 +82,30 @@ namespace tix
 		ComPtr<ID3D12Device>			D3dDevice;
 		ComPtr<IDXGIFactory4>			DxgiFactory;
 		ComPtr<IDXGISwapChain3>			SwapChain;
-		ComPtr<ID3D12Resource>			BackBufferRTs[FRHI::FrameBufferNum];
+		ComPtr<ID3D12Resource>			BackBufferRTs[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12Resource>			DepthStencil;
 		ComPtr<ID3D12DescriptorHeap>	RtvHeap;
 		ComPtr<ID3D12DescriptorHeap>	DsvHeap;
 		ComPtr<ID3D12CommandQueue>		CommandQueue;
-		ComPtr<ID3D12CommandAllocator>	CommandAllocators[FRHI::FrameBufferNum];
-		ComPtr<ID3D12GraphicsCommandList>	CommandLists[FRHI::FrameBufferNum];
+		ComPtr<ID3D12CommandAllocator>	CommandAllocators[FRHIConfig::FrameBufferNum];
+		ComPtr<ID3D12GraphicsCommandList>	CommandLists[FRHIConfig::FrameBufferNum];
+
+		ComPtr<ID3D12RootSignature>		RootSignature;
 
 		// CPU/GPU Synchronization.
 		ComPtr<ID3D12Fence>				Fence;
-		uint64							FenceValues[FRHI::FrameBufferNum];
+		uint64							FenceValues[FRHIConfig::FrameBufferNum];
 		HANDLE							FenceEvent;
-
 		uint32							CurrentFrame;
 
 		uint32							RtvDescriptorSize;
 
+		// Barriers
 		static const uint32				MaxResourceBarrierBuffers = 16;
 		D3D12_RESOURCE_BARRIER			ResourceBarrierBuffers[MaxResourceBarrierBuffers];
 		uint32							NumBarriersToFlush;
 
+		// Srv heaps
 		ComPtr<ID3D12DescriptorHeap>	SrvHeap;
 		D3D12_CPU_DESCRIPTOR_HANDLE		SrvHeapHandle;
 		uint32							SrvDescriptorSize;

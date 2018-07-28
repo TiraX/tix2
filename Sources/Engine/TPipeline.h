@@ -33,7 +33,9 @@ namespace tix
 		EBF_ONE_MINUS_CONSTANT_COLOR,
 		EBF_CONSTANT_ALPHA,
 		EBF_ONE_MINUS_CONSTANT_ALPHA,
-		EBF_SRC_ALPHA_SATURATE
+		EBF_SRC_ALPHA_SATURATE,
+
+		EBF_COUNT,
 	};
 
 	enum E_BLEND_EQUATION
@@ -42,7 +44,9 @@ namespace tix
 		EBE_FUNC_SUBTRACT,
 		EBE_FUNC_REVERSE_SUBTRACT,
 		EBE_MIN,
-		EBE_MAX
+		EBE_MAX,
+
+		EBE_COUNT,
 	};
 
 	struct TBlendState
@@ -71,20 +75,27 @@ namespace tix
 	// Rasterizer definition
 	enum E_FILL_MODE
 	{
-		EFM_WIREFRAME = 0,
-		EFM_SOLID = 1,
+		EFM_WIREFRAME,
+		EFM_SOLID,
+
+		EFM_COUNT,
 	};
 
 	enum E_FRONT_FACE
 	{
 		EFF_CW,
-		EFF_CCW
+		EFF_CCW,
+
+		EFF_COUNT,
 	};
 
 	enum E_CULL_MODE
 	{
-		ECM_FRONT = 0,
-		ECM_BACK = 1
+		ECM_NONE,
+		ECM_FRONT,
+		ECM_BACK,
+
+		ECM_COUNT,
 	};
 	struct TRasterizerDesc
 	{
@@ -92,40 +103,44 @@ namespace tix
 		uint8 CullMode;
 		uint8 MultiSampleCount;
 		uint8 Reserved;
-		float DepthBias;
+		int32 DepthBias;
 
 		TRasterizerDesc()
 			: FillMode(EFM_SOLID)
 			, CullMode(ECM_BACK)
 			, MultiSampleCount(0)
 			, Reserved(0)
-			, DepthBias(0.f)
+			, DepthBias(0)
 		{}
 	};
 
 	// Depth and Stencil definition
 	enum E_COMPARISON_FUNC
 	{
-		ECF_NEVER = 1,
-		ECF_LESS = 2,
-		ECF_LESS_EQUAL = 3,
-		ECF_EQUAL = 4,
-		ECF_GREATER = 5,
-		ECF_NOT_EQUAL = 6,
-		ECF_GREATER_EQUAL = 7,
-		ECF_ALWAYS = 8
+		ECF_NEVER,
+		ECF_LESS,
+		ECF_LESS_EQUAL,
+		ECF_EQUAL,
+		ECF_GREATER,
+		ECF_NOT_EQUAL,
+		ECF_GREATER_EQUAL,
+		ECF_ALWAYS,
+
+		ECF_COUNT,
 	};
 
 	enum E_STENCIL_OP
 	{
-		ESO_KEEP = 1,
-		ESO_ZERO = 2,
-		ESO_REPLACE = 3,
-		ESO_INCR_SAT = 4,
-		ESO_DECR_SAT = 5,
-		ESO_INVERT = 6,
-		ESO_INCR = 7,
-		ESO_DECR = 8
+		ESO_KEEP,
+		ESO_ZERO,
+		ESO_REPLACE,
+		ESO_INCR_SAT,
+		ESO_DECR_SAT,
+		ESO_INVERT,
+		ESO_INCR,
+		ESO_DECR,
+
+		ESO_COUNT,
 	};
 	struct TDepthStencilOpDesc
 	{
@@ -158,47 +173,45 @@ namespace tix
 		{}
 	};
 
-	//typedef struct D3D12_GRAPHICS_PIPELINE_STATE_DESC
-	//{
-	//	ID3D12RootSignature *pRootSignature;
-	//	D3D12_SHADER_BYTECODE VS;
-	//	D3D12_SHADER_BYTECODE PS;
-	//	D3D12_SHADER_BYTECODE DS;
-	//	D3D12_SHADER_BYTECODE HS;
-	//	D3D12_SHADER_BYTECODE GS;
-	//	D3D12_STREAM_OUTPUT_DESC StreamOutput;
-	//	D3D12_BLEND_DESC BlendState;
-	//	UINT SampleMask;
-	//	D3D12_RASTERIZER_DESC RasterizerState;
-	//	D3D12_DEPTH_STENCIL_DESC DepthStencilState;
-	//	D3D12_INPUT_LAYOUT_DESC InputLayout;
-	//	D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBStripCutValue;
-	//	D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveTopologyType;
-	//	UINT NumRenderTargets;
-	//	DXGI_FORMAT RTVFormats[8];
-	//	DXGI_FORMAT DSVFormat;
-	//	DXGI_SAMPLE_DESC SampleDesc;
-	//	UINT NodeMask;
-	//	D3D12_CACHED_PIPELINE_STATE CachedPSO;
-	//	D3D12_PIPELINE_STATE_FLAGS Flags;
-	//} 	D3D12_GRAPHICS_PIPELINE_STATE_DESC;
+	enum E_SHADER_STAGE
+	{
+		ESS_VERTEX_SHADER,
+		ESS_PIXEL_SHADER,
+		ESS_DOMAIN_SHADER,
+		ESS_HULL_SHADER,
+		ESS_GEOMETRY_SHADER,
+
+		ESS_COUNT,
+	};
 	struct TPipelineDesc
 	{
-		TString VsName;
-		TString PsName;
-		TString DsName;
-		TString HsName;
-		TString GsName;
+		TString ShaderName[ESS_COUNT];
 		uint32 Flags;
 		TBlendState BlendState;
 		TRasterizerDesc RasterizerDesc;
 		TDepthStencilDesc DepthStencilDesc;
 		uint32 VsFormat;
+		uint32 PrimitiveType;
+
+		E_PIXEL_FORMAT RTFormats[FRHIConfig::MultiRTMax];
+		E_PIXEL_FORMAT DepthFormat;
 
 		TPipelineDesc()
 			: Flags(EPSO_DEPTH | EPSO_DEPTH_TEST)
 			, VsFormat(EVSSEG_POSITION)
-		{}
+			, PrimitiveType(EPT_TRIANGLELIST)
+		{
+			for (int32 i = 0; i < FRHIConfig::MultiRTMax; i++)
+			{
+				RTFormats[i] = EPF_RGBA8;
+			}
+			DepthFormat = EPF_DEPTH24_STENCIL8;
+		}
+
+		bool IsEnabled(E_PIPELINE_STATES_OPTION Option) const
+		{
+			return (Flags & Option) != 0;
+		}
 	};
 
 	class FPipeline;
@@ -210,11 +223,15 @@ namespace tix
 		TPipeline();
 		virtual ~TPipeline();
 
+		void SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength);
+
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
 		TPipelineDesc Desc;
 		FPipelinePtr PipelineResource;
+
+		TStream ShaderCode[ESS_COUNT];
 	protected:
 
 	protected:

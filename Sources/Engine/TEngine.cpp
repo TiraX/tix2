@@ -147,7 +147,7 @@ namespace tix
 	void TEngine::TickFinished()
 	{
 		FRenderThread * RT = FRenderThread::Get();
-		while (RT->GetTriggerNum() >= FRHI::FrameBufferNum)
+		while (RT->GetTriggerNum() >= FRHIConfig::FrameBufferNum)
 		{
 			TThread::ThreadSleep(10);
 		}

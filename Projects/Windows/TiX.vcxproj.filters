@@ -112,9 +112,6 @@
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TMesh.cpp">
-      <Filter>Sources\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TResFile.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
@@ -128,6 +125,12 @@
       <Filter>Sources\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TMeshBuffer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
   </ItemGroup>
@@ -324,9 +327,6 @@
     <ClInclude Include="..\..\Sources\Engine\TResourceLibrary.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TMesh.h">
-      <Filter>Sources\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTexture.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
@@ -347,6 +347,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FPipelineDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TMeshBuffer.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

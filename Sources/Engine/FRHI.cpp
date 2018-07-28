@@ -36,7 +36,7 @@ namespace tix
 	FRHI::FRHI(E_RHI_TYPE InRHIType)
 		: RHIType(InRHIType)
 	{
-		for (int32 i = 0; i < FrameBufferNum; ++i)
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
 			FrameResources[i] = nullptr;
 		}
