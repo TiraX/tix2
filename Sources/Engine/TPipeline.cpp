@@ -11,7 +11,6 @@ namespace tix
 	TPipeline::TPipeline()
 		: TResource(ERES_PIPELINE)
 	{
-		TI_TODO("0. Continue with pipeline.");
 	}
 
 	TPipeline::~TPipeline()
@@ -26,7 +25,6 @@ namespace tix
 	
 	void TPipeline::InitRenderThreadResource()
 	{
-		TI_TODO("Try to reference DESC as InstrusivePtr directly. Do not pass TPipelinePtr, pass TPipelineDescPtr instead");
 		TI_ASSERT(PipelineResource == nullptr);
 		PipelineResource = FRHI::Get()->CreatePipeline();
 
@@ -40,6 +38,13 @@ namespace tix
 
 	void TPipeline::DestroyRenderThreadResource()
 	{
-		TI_TODO("2. Destroy pipeline render thread resource");
+		TI_ASSERT(PipelineResource != nullptr);
+
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TPipelineDestroyFPipeline,
+			FPipelinePtr, Pipeline_RT, PipelineResource,
+			{
+				Pipeline_RT->Destroy();
+			});
+		PipelineResource = nullptr;
 	}
 }

@@ -19,6 +19,12 @@ namespace tix
 	FPipelineDx12::~FPipelineDx12()
 	{
 	}
+
+	void FPipelineDx12::Destroy()
+	{
+		TI_ASSERT(IsRenderThread());
+		PipelineState = nullptr;
+	}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12
