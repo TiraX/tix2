@@ -203,9 +203,9 @@ namespace tix
 		{
 			for (int32 i = 0; i < FRHIConfig::MultiRTMax; i++)
 			{
-				RTFormats[i] = EPF_RGBA8;
+				RTFormats[i] = FRHIConfig::DefaultBackBufferFormat;
 			}
-			DepthFormat = EPF_DEPTH24_STENCIL8;
+			DepthFormat = FRHIConfig::DefaultDepthBufferFormat;
 		}
 
 		bool IsEnabled(E_PIPELINE_STATES_OPTION Option) const
@@ -216,12 +216,17 @@ namespace tix
 
 	class FPipeline;
 	typedef TI_INTRUSIVE_PTR(FPipeline) FPipelinePtr;
+	class TPipeline;
+	typedef TI_INTRUSIVE_PTR(TPipeline) TPipelinePtr;
 
 	class TPipeline : public TResource
 	{
 	public:
 		TPipeline();
 		virtual ~TPipeline();
+
+		// a test interface.
+		static TI_API TPipelinePtr CreatePipeline(const TString& VsPath, const TString& PsPath, const uint32 VsFormat);
 
 		void SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength);
 
@@ -237,7 +242,4 @@ namespace tix
 	protected:
 
 	};
-
-	typedef TI_INTRUSIVE_PTR(TPipeline) TPipelinePtr;
-
 }

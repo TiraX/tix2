@@ -131,7 +131,6 @@ namespace tix
 		}
 
 		CreateWindowsSizeDependentResources();
-		_LOG(Log, "  RHI DirectX 12 inited.\n");
 
 		// Describe and create a shader resource view (SRV) heap for the texture.
 		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
@@ -142,6 +141,8 @@ namespace tix
 
 		SrvHeapHandle = SrvHeap->GetCPUDescriptorHandleForHeapStart();
 		SrvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
@@ -199,8 +200,9 @@ namespace tix
 
 		HRESULT hr;
 
-		DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-		DXGI_FORMAT DepthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+		const DXGI_FORMAT BackBufferFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultBackBufferFormat];
+		const DXGI_FORMAT DepthBufferFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultDepthBufferFormat];
+		TI_ASSERT(BackBufferFormat != DXGI_FORMAT_UNKNOWN && DepthBufferFormat != DXGI_FORMAT_UNKNOWN);
 
 		if (SwapChain != nullptr)
 		{
@@ -766,19 +768,20 @@ namespace tix
 		uint32 VertexDataOffset = 0;
 		for (uint32 i = 0; i < InputLayout.size(); ++i)
 		{
+			E_MESH_STREAM_INDEX Stream = Streams[i];
 			D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
-			InputElement.SemanticName = TMeshBuffer::SemanticName[i];
+			InputElement.SemanticName = TMeshBuffer::SemanticName[Stream];
 			InputElement.SemanticIndex = 0;
-			InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[i];
+			InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
 			InputElement.InputSlot = 0;
 			InputElement.AlignedByteOffset = VertexDataOffset;
-			VertexDataOffset += TMeshBuffer::SemanticSize[i];
+			VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
 			InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 			InputElement.InstanceDataStepRate = 0;
 		}
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
-		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size() * sizeof(D3D12_INPUT_ELEMENT_DESC)) };
+		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
 		state.pRootSignature = RootSignature.Get();
 		TI_ASSERT(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength() > 0);
 		state.VS = { InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength()) };
@@ -807,6 +810,7 @@ namespace tix
 		state.NumRenderTargets = 1;
 		state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[0]];
 		state.DSVFormat = k_PIXEL_FORMAT_MAP[Desc.DepthFormat];
+		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] && DXGI_FORMAT_UNKNOWN != state.DSVFormat);
 		state.SampleDesc.Count = 1;
 
 		VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));

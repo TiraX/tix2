@@ -59,7 +59,7 @@ namespace tix
 		}
 	}
 
-	int TFile::Read(void* buffer, int buffer_size, int read_size) const
+	int32 TFile::Read(void* buffer, int32 buffer_size, int32 read_size) const
 	{
 		if (!File)
 			return 0;
@@ -68,36 +68,36 @@ namespace tix
 		return (int32)fread(buffer, 1, read_size, File);
 	}
 
-	int TFile::Write(const void* buffer, int size)
+	int32 TFile::Write(const void* buffer, int32 size)
 	{
 		if (!File)
 			return 0;
 		return (int32)fwrite(buffer, 1, size, File);
 	}
 
-	void TFile::Seek(int offset, bool relative /* = false */)
+	void TFile::Seek(int32 offset, bool relative /* = false */)
 	{
 		fseek(File, offset, relative ? SEEK_CUR : SEEK_SET);
 	}
 
-	int TFile::Tell() const
+	int32 TFile::Tell() const
 	{
 		return ftell(File);
 	}
 
 	bool TFile::IsEnd() const
 	{
-		int pos = ftell(File);
+		int32 pos = ftell(File);
 		return pos >= Size;
 	}
 
-	int TFile::BytesLeft() const
+	int32 TFile::BytesLeft() const
 	{
-		int pos = ftell(File);
+		int32 pos = ftell(File);
 		return Size - pos;
 	}
 	
-	char* TFile::GetMemoryPointer(int size)
+	char* TFile::GetMemoryPointer(int32 size)
 	{
 		TI_ASSERT(0);	// not supported in TiFile, only in TiFileBuffer;
 		return nullptr;
@@ -120,7 +120,7 @@ namespace tix
 		}
 	}
 
-	bool TiFileBuffer::Open(const TString& filename, char* file_buffer, int size)
+	bool TiFileBuffer::Open(const TString& filename, char* file_buffer, int32 size)
 	{
 		Filename	= filename;
 		Size		= size;
@@ -129,7 +129,7 @@ namespace tix
 		return true;
 	}
 
-	int TiFileBuffer::Read(void* buffer, int buffer_size, int read_size) const
+	int32 TiFileBuffer::Read(void* buffer, int32 buffer_size, int32 read_size) const
 	{
 		TI_ASSERT(FileBuffer);
 		if (read_size > buffer_size)
@@ -140,7 +140,7 @@ namespace tix
 		return read_size;
 	}
 
-	char* TiFileBuffer::GetMemoryPointer(int read_size)
+	char* TiFileBuffer::GetMemoryPointer(int32 read_size)
 	{
 		TI_ASSERT(Size - ReadPos >= read_size);
 		char* result	= FileBuffer + ReadPos;
@@ -148,7 +148,7 @@ namespace tix
 		return result;
 	}
 
-	void TiFileBuffer::Seek(int offset, bool relative /* = false */)
+	void TiFileBuffer::Seek(int32 offset, bool relative /* = false */)
 	{
 		if (relative)
 			ReadPos		+= offset;
@@ -156,7 +156,7 @@ namespace tix
 			ReadPos		= offset;
 	}
 
-	int TiFileBuffer::Tell() const
+	int32 TiFileBuffer::Tell() const
 	{
 		return ReadPos;
 	}
@@ -166,7 +166,7 @@ namespace tix
 		return ReadPos >= Size;
 	}
 
-	int TiFileBuffer::BytesLeft() const
+	int32 TiFileBuffer::BytesLeft() const
 	{
 		return Size - ReadPos;
 	}

@@ -13,8 +13,6 @@ namespace tix
 		FPipeline(E_RESOURCE_FAMILY InFamily);
 		virtual ~FPipeline();
 
-		virtual void Destroy() override {};
-
 	protected:
 
 	protected:

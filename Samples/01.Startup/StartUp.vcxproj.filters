@@ -29,10 +29,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\Sources\Engine\shaders\dx12\SamplePixelShader.hlsl">
+    <FxCompile Include="shaders\dx12\SamplePixelShader.hlsl">
       <Filter>Source Files\Shaders\dx12</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\Sources\Engine\shaders\dx12\SampleVertexShader.hlsl">
+    <FxCompile Include="shaders\dx12\SampleVertexShader.hlsl">
       <Filter>Source Files\Shaders\dx12</Filter>
     </FxCompile>
   </ItemGroup>

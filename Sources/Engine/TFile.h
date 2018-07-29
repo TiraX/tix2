@@ -24,17 +24,17 @@ namespace tix
 		virtual bool Open(const TString& filename, E_FILE_ACCESS access);
 		virtual void Close();
 
-		virtual int  Read(void* buffer, int buffer_size, int read_size) const;
-		virtual int  Write(const void* buffer, int size);
-		virtual void Seek(int offset, bool relative = false);
+		virtual int32 Read(void* buffer, int32 buffer_size, int32 read_size) const;
+		virtual int32 Write(const void* buffer, int32 size);
+		virtual void Seek(int32 offset, bool relative = false);
 
-		virtual int  Tell() const;
+		virtual int32 Tell() const;
 		virtual bool IsEnd() const;
-		virtual int  BytesLeft() const;
+		virtual int32 BytesLeft() const;
 
-		virtual char*	GetMemoryPointer(int size);
+		virtual char* GetMemoryPointer(int32 size);
 
-		int  GetSize() const
+		int32  GetSize() const
 		{
 			return Size;
 		}
@@ -44,8 +44,8 @@ namespace tix
 		}
 	protected:
 		TString	Filename;
-		FILE*		File;
-		int			Size;
+		FILE* File;
+		int32 Size;
 	};
 
 	class TI_API TiFileBuffer : public TFile
@@ -54,18 +54,18 @@ namespace tix
 		TiFileBuffer(bool delete_buffer = true);
 		virtual ~TiFileBuffer();
 
-		virtual bool	Open(const TString& filename, char* file_buffer, int size);
-		virtual int		Read(void* buffer, int buffer_size, int read_size) const;
-		virtual void	Seek(int offset, bool relative = false);
+		virtual bool Open(const TString& filename, char* file_buffer, int32 size);
+		virtual int32 Read(void* buffer, int32 buffer_size, int32 read_size) const;
+		virtual void Seek(int32 offset, bool relative = false);
 
-		virtual int		Tell() const;
-		virtual char*	GetMemoryPointer(int size);
+		virtual int32 Tell() const;
+		virtual char* GetMemoryPointer(int32 size);
 
-		virtual bool	IsEnd() const;
-		virtual int		BytesLeft() const;
+		virtual bool IsEnd() const;
+		virtual int32 BytesLeft() const;
 	protected:
-		char*			FileBuffer;
-		bool			DeleteBuffer;
-		mutable int		ReadPos;
+		char* FileBuffer;
+		bool DeleteBuffer;
+		mutable int32 ReadPos;
 	};
 }

@@ -10,14 +10,14 @@ namespace tix
 	class TI_API TStream : public IReferenceCounted
 	{
 	public:
-		TStream(int buf_size = 1024)
+		TStream(int32 buf_size = 1024)
 			: BufferSize(buf_size)
 			, Pos(0)
 		{
 			Buffer = ti_new char[BufferSize];
 		}
 
-		TStream(void* buf, int buf_size)
+		TStream(void* buf, int32 buf_size)
 			: Pos(buf_size)
 		{
 			BufferSize = (buf_size + 3) & (~3);
@@ -31,18 +31,25 @@ namespace tix
 			Destroy();
 		}
 
-		void Put(const void* buf, int size)
+		void Put(const void* buf, int32 size)
 		{
 			if (size == 0)
 				return;
 
 			if (Pos + size > BufferSize)
 			{
-				ReallocBuffer(Pos + size);
+				IncreaseBuffer(Pos + size);
 			}
 
 			memcpy(Buffer + Pos, buf, size);
 			Pos += size;
+		}
+
+		void Put(TFile& File)
+		{
+			File.Seek(0);
+			ReallocBuffer(File.GetSize());
+			Pos += File.Read(Buffer, BufferSize, File.GetSize());
 		}
 
 		void Reset()
@@ -77,16 +84,22 @@ namespace tix
 		}
 
 	protected:
-		void ReallocBuffer(int size)
+		void IncreaseBuffer(int32 size)
 		{
 			if (size < BufferSize * 2)
 			{
 				size = BufferSize * 2;
 			}
-			else
-			{
-				size = (size + 3) & (~3);
-			}
+
+			ReallocBuffer(size);
+		}
+
+		void ReallocBuffer(int32 size)
+		{
+			size = ti_align4(size);
+			if (size < BufferSize)
+				return;
+
 			char* newBuffer = ti_new char[size];
 			memcpy(newBuffer, Buffer, Pos);
 
@@ -100,9 +113,9 @@ namespace tix
 		}
 
 	protected:
-		char*	Buffer;
-		int		Pos;
-		int		BufferSize;
+		char* Buffer;
+		int32 Pos;
+		int32 BufferSize;
 	};
 
 	typedef TI_INTRUSIVE_PTR(TStream)	TStreamPtr;
