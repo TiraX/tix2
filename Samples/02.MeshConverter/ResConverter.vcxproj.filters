@@ -25,6 +25,9 @@
     <ClInclude Include="dds.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResPipelineHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -46,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResTextureHelperDds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResPipelineHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

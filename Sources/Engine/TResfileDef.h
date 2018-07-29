@@ -13,23 +13,24 @@ namespace tix
 		TIRES_VERSION_CHUNK_MESH	= 1,
 		//TIRES_VERSION_CHUNK_SCEN	= 4,	// add TiMaterial in DAE converting, remove Material, use default TiMaterial instead;added trigger node
 		TIRES_VERSION_CHUNK_TEXTURE	= 1,
-		TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
-		TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
-		TIRES_VERSION_CHUNK_LIT		= 1,
-		TIRES_VERSION_CHUNK_CAM		= 1,
-		TIRES_VERSION_CHUNK_SHAD	= 5,	
+		TIRES_VERSION_CHUNK_PIPELINE = 1,
+		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
+		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
+		//TIRES_VERSION_CHUNK_LIT		= 1,
+		//TIRES_VERSION_CHUNK_CAM		= 1,
+		//TIRES_VERSION_CHUNK_SHAD	= 5,	
 		// in v4: add stencil options, add support for metal shader functions
 		// in v5: add flag options for OpenGLES 3.0 shader
-		TIRES_VERSION_CHUNK_MTRL	= 1,
-		TIRES_VERSION_CHUNK_EMIT	= 14,	
+		//TIRES_VERSION_CHUNK_MTRL	= 1,
+		//TIRES_VERSION_CHUNK_EMIT	= 14,	
 		// in v14: add particle frame animation interval
 		// add particle default fade time; add Particle Color Boost, add Emitter's BBox, add emitter param 'EmitLife' & 'EmitDelay', and GEOMETRY particle type, add Particle Life random and Particle Size random
-		TIRES_VERSION_CHUNK_TIMT	= 5,
+		//TIRES_VERSION_CHUNK_TIMT	= 5,
 		// in v2: add material set, each model can have max to 5 material sets
 		// in v3: add bind lights for material. to bind specified lights by names
 		// in v4: add material texture sample method
 		// in v5: add material flag for pbr materials
-		TIRES_VERSION_CHUNK_TIUI	= 20,	
+		//TIRES_VERSION_CHUNK_TIUI	= 20,	
 		// in v14: add scroll direction for UiScrollArea
 		// add anim flag in AnimDesc; add a new symbol: event_mask; upgrade animation version; add default sfx and button sfx; add node alignment by viewport; add FAN ui node
 		// in v15: add text gradient in ui fonts
@@ -39,7 +40,7 @@ namespace tix
 		// in v19: add Camera info for draw box to render extra geometries; add child width and height for scroll area; add input box flag for text box
 		// in v20: re-factor node flags for more usage
 
-		TIRES_VERSION_CHUNK_RES		= 1,
+		//TIRES_VERSION_CHUNK_RES		= 1,
 	};
 
 	enum 
@@ -47,6 +48,7 @@ namespace tix
 		TIRES_ID_RESFILE			= TI_MAKE_IDENTIFIER('T', 'I', 'R', 'S'),
 		TIRES_ID_CHUNK_MESH			= TI_MAKE_IDENTIFIER('M', 'E', 'S', 'H'),
 		TIRES_ID_CHUNK_TEXTURE		= TI_MAKE_IDENTIFIER('T', 'E', 'X', 'E'),
+		TIRES_ID_CHUNK_PIPELINE		= TI_MAKE_IDENTIFIER('P', 'I', 'P', 'L'),
 		//TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
@@ -65,10 +67,11 @@ namespace tix
 
 	enum E_CHUNK_LIB
 	{
-		//ECL_MATERIALS,
-		//ECL_CONTROLLERS,
 		ECL_MESHES,
 		ECL_TEXTURES,
+		ECL_PIPELINE,
+		//ECL_MATERIALS,
+		//ECL_CONTROLLERS,
 		//ECL_SHADERS,
 		//ECL_ANIMATIONS,
 		//ECL_PARTICLEEFFECT,

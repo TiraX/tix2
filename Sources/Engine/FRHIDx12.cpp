@@ -780,8 +780,24 @@ namespace tix
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size() * sizeof(D3D12_INPUT_ELEMENT_DESC)) };
 		state.pRootSignature = RootSignature.Get();
+		TI_ASSERT(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength() > 0);
 		state.VS = { InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength()) };
-		state.PS = { InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength()) };
+		if (InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength() > 0)
+		{
+			state.PS = { InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength()) };
+		}
+		if (InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetLength() > 0)
+		{
+			state.DS = { InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetLength()) };
+		}
+		if (InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetLength() > 0)
+		{
+			state.HS = { InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetLength()) };
+		}
+		if (InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetLength() > 0)
+		{
+			state.GS = { InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetLength()) };
+		}
 		MakeDx12RasterizerDesc(Desc, state.RasterizerState);
 		MakeDx12BlendState(Desc, state.BlendState);
 		MakeDx12DepthStencilState(Desc, state.DepthStencilState);
