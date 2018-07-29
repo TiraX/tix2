@@ -74,6 +74,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />

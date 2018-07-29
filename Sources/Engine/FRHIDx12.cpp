@@ -48,9 +48,19 @@ namespace tix
 
 	void FRHIDx12::Init()
 	{
+#if defined(TIX_DEBUG)
+		// If the project is in a debug build, enable debugging via SDK Layers.
+		{
+			ComPtr<ID3D12Debug> debugController;
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+			{
+				debugController->EnableDebugLayer();
+			}
+		}
+#endif
 		// Create D3D12 Device
 		HRESULT hr;
-		hr = CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory));
+		VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
 
 		ComPtr<IDXGIAdapter1> adapter;
 		GetHardwareAdapter(&adapter);
@@ -112,10 +122,8 @@ namespace tix
 		// Create command allocator and command list.
 		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
-			hr = D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n]));
-			VALIDATE_HRESULT(hr);
-			hr = D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[n].Get(), nullptr, IID_PPV_ARGS(&CommandLists[n]));
-			VALIDATE_HRESULT(hr);
+			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n])));
+			VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[n].Get(), nullptr, IID_PPV_ARGS(&CommandLists[n])));
 		}
 
 		// Create synchronization objects.
@@ -236,7 +244,7 @@ namespace tix
 			swapChainDesc.BufferCount = FRHIConfig::FrameBufferNum;			// Use triple-buffering to minimize latency.
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	// All Windows Universal apps must use _FLIP_ SwapEffects.
 			swapChainDesc.Flags = 0;
-			swapChainDesc.Scaling = DXGI_SCALING_NONE;
+			swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
 			ComPtr<IDXGISwapChain1> swapChain;

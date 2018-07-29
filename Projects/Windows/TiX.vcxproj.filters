@@ -357,5 +357,8 @@
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h">
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
