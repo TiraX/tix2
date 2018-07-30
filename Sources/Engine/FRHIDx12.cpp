@@ -123,7 +123,6 @@ namespace tix
 		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
 			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n])));
-			VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[n].Get(), nullptr, IID_PPV_ARGS(&CommandLists[n])));
 		}
 
 		// Create synchronization objects.
@@ -149,6 +148,55 @@ namespace tix
 
 		SrvHeapHandle = SrvHeap->GetCPUDescriptorHandleForHeapStart();
 		SrvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		// Create Default Pipeline State Object
+		TI_TODO("1.Create Default Pipeline State Object");
+		{
+			static const D3D12_INPUT_ELEMENT_DESC inputLayout[] =
+			{
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			};
+
+			TFile fvs, fps;
+			TStream svs, sps;
+			if (fvs.Open("../../Content/SampleVertexShader.cso", EFA_READ))
+			{
+				svs.Put(fvs);
+				fvs.Close();
+			}
+			if (fps.Open("../../Content/SamplePixelShader.cso", EFA_READ))
+			{
+				sps.Put(fps);
+				fps.Close();
+			}
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
+			state.InputLayout = { inputLayout, _countof(inputLayout) };
+			state.pRootSignature = RootSignature.Get();
+			state.VS = CD3DX12_SHADER_BYTECODE(svs.GetBuffer(), svs.GetLength());
+			state.PS = CD3DX12_SHADER_BYTECODE(sps.GetBuffer(), sps.GetLength());
+			state.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+			state.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			state.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			state.SampleMask = UINT_MAX;
+			state.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			state.NumRenderTargets = 1;
+			state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultBackBufferFormat];
+			state.DSVFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultDepthBufferFormat];
+			state.SampleDesc.Count = 1;
+
+			HRESULT hhhh = D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&DefaultPipelineState));
+			VALIDATE_HRESULT(hhhh);
+
+			// Shader data can be deleted once the pipeline state is created.
+			svs.Destroy();
+			sps.Destroy();
+		}
+
+		// Create Default Command list
+		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), DefaultPipelineState.Get(), IID_PPV_ARGS(&CommandList)));
 
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
@@ -351,9 +399,8 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
-		HRESULT hr;
-		hr = CommandAllocators[CurrentFrame]->Reset();
-		VALIDATE_HRESULT(hr);
+		HRESULT hrr = CommandAllocators[CurrentFrame]->Reset();
+		VALIDATE_HRESULT(hrr);
 
 		TI_ASSERT(NumBarriersToFlush == 0);
 	}
@@ -554,7 +601,6 @@ namespace tix
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
 		MeshBuffer->SetFromTMeshBuffer(InMeshData);
 
-		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
 
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
@@ -685,7 +731,6 @@ namespace tix
 		Texture->InitTextureInfo(InTexData);
 		const TTextureDesc& Desc = InTexData->Desc;
 
-		ComPtr<ID3D12GraphicsCommandList> CommandList = CommandLists[CurrentFrame];
 		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
 
 		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until

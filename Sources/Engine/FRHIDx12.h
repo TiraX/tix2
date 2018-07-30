@@ -79,36 +79,38 @@ namespace tix
 		D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptorHandle();
 
 	private:
-		ComPtr<ID3D12Device>			D3dDevice;
-		ComPtr<IDXGIFactory4>			DxgiFactory;
-		ComPtr<IDXGISwapChain3>			SwapChain;
-		ComPtr<ID3D12Resource>			BackBufferRTs[FRHIConfig::FrameBufferNum];
-		ComPtr<ID3D12Resource>			DepthStencil;
-		ComPtr<ID3D12DescriptorHeap>	RtvHeap;
-		ComPtr<ID3D12DescriptorHeap>	DsvHeap;
-		ComPtr<ID3D12CommandQueue>		CommandQueue;
-		ComPtr<ID3D12CommandAllocator>	CommandAllocators[FRHIConfig::FrameBufferNum];
-		ComPtr<ID3D12GraphicsCommandList>	CommandLists[FRHIConfig::FrameBufferNum];
+		ComPtr<ID3D12Device> D3dDevice;
+		ComPtr<IDXGIFactory4> DxgiFactory;
+		ComPtr<IDXGISwapChain3> SwapChain;
+		ComPtr<ID3D12Resource> BackBufferRTs[FRHIConfig::FrameBufferNum];
+		ComPtr<ID3D12Resource> DepthStencil;
+		ComPtr<ID3D12DescriptorHeap> RtvHeap;
+		ComPtr<ID3D12DescriptorHeap> DsvHeap;
+		ComPtr<ID3D12CommandQueue> CommandQueue;
+		ComPtr<ID3D12CommandAllocator> CommandAllocators[FRHIConfig::FrameBufferNum];
 
-		ComPtr<ID3D12RootSignature>		RootSignature;
+		ComPtr<ID3D12PipelineState> DefaultPipelineState;
+		ComPtr<ID3D12GraphicsCommandList> CommandList;
+
+		ComPtr<ID3D12RootSignature> RootSignature;
 
 		// CPU/GPU Synchronization.
-		ComPtr<ID3D12Fence>				Fence;
-		uint64							FenceValues[FRHIConfig::FrameBufferNum];
-		HANDLE							FenceEvent;
-		uint32							CurrentFrame;
+		ComPtr<ID3D12Fence> Fence;
+		uint64 FenceValues[FRHIConfig::FrameBufferNum];
+		HANDLE FenceEvent;
+		uint32 CurrentFrame;
 
-		uint32							RtvDescriptorSize;
+		uint32 RtvDescriptorSize;
 
 		// Barriers
-		static const uint32				MaxResourceBarrierBuffers = 16;
-		D3D12_RESOURCE_BARRIER			ResourceBarrierBuffers[MaxResourceBarrierBuffers];
-		uint32							NumBarriersToFlush;
+		static const uint32 MaxResourceBarrierBuffers = 16;
+		D3D12_RESOURCE_BARRIER ResourceBarrierBuffers[MaxResourceBarrierBuffers];
+		uint32 NumBarriersToFlush;
 
 		// Srv heaps
-		ComPtr<ID3D12DescriptorHeap>	SrvHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE		SrvHeapHandle;
-		uint32							SrvDescriptorSize;
+		ComPtr<ID3D12DescriptorHeap> SrvHeap;
+		D3D12_CPU_DESCRIPTOR_HANDLE SrvHeapHandle;
+		uint32 SrvDescriptorSize;
 		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> AvaibleSrvHeapHandles;
 
 		friend class FRHI;
