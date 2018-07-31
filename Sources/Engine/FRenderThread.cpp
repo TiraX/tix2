@@ -93,7 +93,8 @@ namespace tix
 	{
 		// Waiting for Game thread tick
 		WaitForRenderSignal();
-
+		
+		RHI->BeginFrame();
 		// Do render thread tasks
 		DoRenderTasks();
 
@@ -102,6 +103,7 @@ namespace tix
 		{
 			Renderer->Render(RHI);
 		}
+		RHI->EndFrame();
 	}
 
 	void FRenderThread::OnThreadStart()

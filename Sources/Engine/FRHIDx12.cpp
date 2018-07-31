@@ -148,55 +148,10 @@ namespace tix
 
 		SrvHeapHandle = SrvHeap->GetCPUDescriptorHandleForHeapStart();
 		SrvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-		// Create Default Pipeline State Object
-		TI_TODO("1.Create Default Pipeline State Object");
-		{
-			static const D3D12_INPUT_ELEMENT_DESC inputLayout[] =
-			{
-				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-				{ "NORMAL", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			};
-
-			TFile fvs, fps;
-			TStream svs, sps;
-			if (fvs.Open("../../Content/SampleVertexShader.cso", EFA_READ))
-			{
-				svs.Put(fvs);
-				fvs.Close();
-			}
-			if (fps.Open("../../Content/SamplePixelShader.cso", EFA_READ))
-			{
-				sps.Put(fps);
-				fps.Close();
-			}
-
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
-			state.InputLayout = { inputLayout, _countof(inputLayout) };
-			state.pRootSignature = RootSignature.Get();
-			state.VS = CD3DX12_SHADER_BYTECODE(svs.GetBuffer(), svs.GetLength());
-			state.PS = CD3DX12_SHADER_BYTECODE(sps.GetBuffer(), sps.GetLength());
-			state.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-			state.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-			state.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			state.SampleMask = UINT_MAX;
-			state.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			state.NumRenderTargets = 1;
-			state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultBackBufferFormat];
-			state.DSVFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultDepthBufferFormat];
-			state.SampleDesc.Count = 1;
-
-			HRESULT hhhh = D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&DefaultPipelineState));
-			VALIDATE_HRESULT(hhhh);
-
-			// Shader data can be deleted once the pipeline state is created.
-			svs.Destroy();
-			sps.Destroy();
-		}
-
+		
 		// Create Default Command list
 		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), DefaultPipelineState.Get(), IID_PPV_ARGS(&CommandList)));
+		VALIDATE_HRESULT(CommandList->Close());
 
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
@@ -399,14 +354,19 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
-		HRESULT hrr = CommandAllocators[CurrentFrame]->Reset();
-		VALIDATE_HRESULT(hrr);
-
+		VALIDATE_HRESULT(CommandAllocators[CurrentFrame]->Reset());
 		TI_ASSERT(NumBarriersToFlush == 0);
+
+		VALIDATE_HRESULT(CommandList->Reset(CommandAllocators[CurrentFrame].Get(), nullptr));
 	}
 
 	void FRHIDx12::EndFrame()
 	{
+		// Execute the command list.
+		VALIDATE_HRESULT(CommandList->Close());
+		ID3D12CommandList* ppCommandLists[] = { CommandList.Get() };
+		CommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
 		// The first argument instructs DXGI to block until VSync, putting the application
 		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
 		// frames that will never be displayed to the screen.
