@@ -408,11 +408,12 @@ namespace tix
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{
-		HRESULT hr;
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
-		hr = CommandQueue->Signal(Fence.Get(), currentFenceValue);
-		VALIDATE_HRESULT(hr);
+		VALIDATE_HRESULT(CommandQueue->Signal(Fence.Get(), currentFenceValue));
+
+		// Release resources references
+		FrameResources[CurrentFrame]->RemoveAllReferences();
 
 		// Advance the frame index.
 		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
@@ -420,16 +421,12 @@ namespace tix
 		// Check to see if the next frame is ready to start.
 		if (Fence->GetCompletedValue() < FenceValues[CurrentFrame])
 		{
-			hr = Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent);
+			VALIDATE_HRESULT(Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
 		}
 
 		// Set the fence value for the next frame.
 		FenceValues[CurrentFrame] = currentFenceValue + 1;
-
-		// Release resources references
-		TI_TODO("Validat if CurrentFrame is the correct point to release.");
-		FrameResources[CurrentFrame]->RemoveAllReferences();
 	}
 
 	//------------------------------------------------------------------------------------------------
