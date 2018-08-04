@@ -47,7 +47,7 @@ namespace tix
 		TScene();
 		virtual ~TScene();
 
-		TI_API void TickAllNodes(float dt, TNode* root = nullptr);
+		TI_API void TickAllNodes(float Dt, TNode* Root = nullptr);
 
 		void SetStageFlag(E_STAGE_FLAG flag, bool enable)
 		{

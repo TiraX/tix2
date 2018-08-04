@@ -30,39 +30,39 @@ namespace tix
 		CameraFlags |= ECAMF_MAT_VIEW_DIRTY;
 	}
 
-	void TNodeCamera::RegisterElement()
+	void TNodeCamera::Update(float Dt)
 	{
-		//CameraFlags		&= ~ECAMF_MAT_UPDATED;
-		//TNode::RegisterElement();
-		//if ((CameraFlags & ECAMF_MAT_PROJECTION_DIRTY) != 0)
-		//{
-		//	RecalculateProjectionMatrix();
-		//	CameraFlags &= ~ECAMF_MAT_PROJECTION_DIRTY;
-		//	CameraFlags	|= ECAMF_MAT_PROJ_UPDATED;
-		//}
-		//if ((CameraFlags & ECAMF_MAT_VIEW_DIRTY) != 0)
-		//{
-		//	RecalculateViewMatrix();
-		//	CameraFlags &= ~ECAMF_MAT_VIEW_DIRTY;
-		//	CameraFlags |= ECAMF_MAT_VIEW_UPDATED;
-		//}
-		//if ((CameraFlags & ECAMF_MAT_VP_DIRTY) != 0)
-		//{
-		//	ViewArea.Matrices[ETS_VP] = ViewArea.Matrices[ETS_PROJECTION] * ViewArea.Matrices[ETS_VIEW];
-		//	CameraFlags &= ~ECAMF_MAT_VP_DIRTY;
-		//	CameraFlags |= ECAMF_MAT_VP_UPDATED;
-		//}
+		CameraFlags		&= ~ECAMF_MAT_UPDATED;
+		TNode::Update(Dt);
+		if ((CameraFlags & ECAMF_MAT_PROJECTION_DIRTY) != 0)
+		{
+			RecalculateProjectionMatrix();
+			CameraFlags &= ~ECAMF_MAT_PROJECTION_DIRTY;
+			CameraFlags	|= ECAMF_MAT_PROJ_UPDATED;
+		}
+		if ((CameraFlags & ECAMF_MAT_VIEW_DIRTY) != 0)
+		{
+			RecalculateViewMatrix();
+			CameraFlags &= ~ECAMF_MAT_VIEW_DIRTY;
+			CameraFlags |= ECAMF_MAT_VIEW_UPDATED;
+		}
+		if ((CameraFlags & ECAMF_MAT_VP_DIRTY) != 0)
+		{
+			ViewArea.Matrices[ETS_VP] = ViewArea.Matrices[ETS_PROJECTION] * ViewArea.Matrices[ETS_VIEW];
+			CameraFlags &= ~ECAMF_MAT_VP_DIRTY;
+			CameraFlags |= ECAMF_MAT_VP_UPDATED;
+		}
 
-		//if ((CameraFlags & ECAMF_MAT_UPDATED) != 0)
-		//{
-		//	// mark in render stage
-		//	TiEngine::Get()->GetRenderStage()->SetStageFlag(STAGE_CAMERA_DIRTY, true);
-		//}
-
-		//TiRenderer* renderer	= TiEngine::Get()->GetRenderer();
-		//renderer->SetTransform(ETS_VIEW, ViewArea.Matrices[ETS_VIEW]);
-		//renderer->SetTransform(ETS_PROJECTION, ViewArea.Matrices[ETS_PROJECTION]);
-		//renderer->SetTransform(ETS_VP, ViewArea.Matrices[ETS_VP]);
+		if ((CameraFlags & ECAMF_MAT_UPDATED) != 0)
+		{
+			// Notify render thread
+			TI_ASSERT(0);
+			//TiEngine::Get()->GetRenderStage()->SetStageFlag(STAGE_CAMERA_DIRTY, true);
+			//TiRenderer* renderer = TiEngine::Get()->GetRenderer();
+			//renderer->SetTransform(ETS_VIEW, ViewArea.Matrices[ETS_VIEW]);
+			//renderer->SetTransform(ETS_PROJECTION, ViewArea.Matrices[ETS_PROJECTION]);
+			//renderer->SetTransform(ETS_VP, ViewArea.Matrices[ETS_VP]);
+		}
 	}
 
 	//! Sets the projection matrix of the camera. The matrix4 class has some methods
@@ -164,8 +164,9 @@ namespace tix
 
 	void TNodeCamera::RecalculateViewMatrix()
 	{
-		//vector3df pos		= GetAbsolutePosition();
-		//CamDir				= Target - pos;
+		TI_ASSERT(0);
+		//vector3df pos = GetAbsolutePosition();
+		//CamDir = Target - pos;
 		//CamDir.normalize();
 
 		//vector3df up = UpVector;
@@ -197,21 +198,6 @@ namespace tix
 		ViewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixPerspectiveFov(Fovy, Aspect, ZNear, ZFar);
 		const matrix4& mat	= ViewArea.Matrices[ETS_PROJECTION];
 		CameraFlags |= ECAMF_MAT_VP_DIRTY;
-		//if (isOrthogonal())
-		//{
-		//	m_viewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixOrtho(2 * m_magy * m_aspect, 2 * m_magy, m_zNear, m_zFar);
-		//}
-		//else
-		//{
-		//	if(FarIsInfinity)
-		//	{
-		//		m_viewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixPerspectiveFovInfinity(m_fovy, m_aspect, m_zNear);
-		//	}
-		//	else
-		//	{
-		//		m_viewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixPerspectiveFov(m_fovy, m_aspect, m_zNear, m_zFar);
-		//	}
-		//}
 
 		ViewArea.setTransformState(ETS_PROJECTION);
 	}
@@ -224,12 +210,14 @@ namespace tix
 
 	void TNodeCamera::RecalculateViewArea()
 	{
+		TI_ASSERT(0);
 		//ViewArea.CameraPosition = GetAbsolutePosition();
 		//ViewArea.setFrom(ViewArea.Matrices[SViewFrustum::ETS_VIEW_PROJECTION_3]);
 	}
 
 	void TNodeCamera::GetRayFrom2DPoint(const vector2di& pos, line3df &ray, float length)
 	{
+		TI_ASSERT(0);
 		//vector3df orig,dir;
 		//const matrix4& matProj	= ViewArea.Matrices[ETS_PROJECTION];
 		//const matrix4& matView	= ViewArea.Matrices[ETS_VIEW];
@@ -253,6 +241,7 @@ namespace tix
 
 	void TNodeCamera::GetRayFrom2DPoint(const vector2df& pos, line3df &ray, float length)
 	{
+		TI_ASSERT(0);
 		//vector3df orig,dir;
 		//const matrix4& matProj	= ViewArea.Matrices[ETS_PROJECTION];
 		//const matrix4& matView	= ViewArea.Matrices[ETS_VIEW];
@@ -298,6 +287,7 @@ namespace tix
 
 	vector2df TNodeCamera::Convert3Dto2D(const vector3df& pos)
 	{
+		TI_ASSERT(0);
 		vector2df _pos_2d;
 		//float _proj_pos[4];
 

@@ -17,17 +17,15 @@ namespace tix
 			ECAMF_MAT_PROJECTION_DIRTY	= 1 << 1,
 			ECAMF_MAT_VP_DIRTY			= 1 << 2,
 
-			ECAMF_MAT_VIEW_UPDATED		= 1 << 8,
-			ECAMF_MAT_PROJ_UPDATED		= 1 << 9,
-			ECAMF_MAT_VP_UPDATED		= 1 << 10,
+			ECAMF_MAT_VIEW_UPDATED		= 1 << 3,
+			ECAMF_MAT_PROJ_UPDATED		= 1 << 4,
+			ECAMF_MAT_VP_UPDATED		= 1 << 5,
 			ECAMF_MAT_UPDATED			= (ECAMF_MAT_VIEW_UPDATED | ECAMF_MAT_VP_UPDATED | ECAMF_MAT_PROJ_UPDATED),
-
-			ECAMF_LOCK_ACTION			= 1 << 12,
 		};
 	public:
 		virtual ~TNodeCamera();
 
-		virtual void RegisterElement();
+		virtual void Update(float Dt) override;
 
 		virtual void CreateRenderThreadNode() override {};
 
@@ -82,14 +80,6 @@ namespace tix
 		//! Gets the field of view of the camera.
 		//! \return Field of view of the camera
 		virtual float32 GetFOV() const;
-
-		void LockAction(bool lock)
-		{
-			if (lock)
-				CameraFlags	|= ECAMF_LOCK_ACTION;
-			else
-				CameraFlags	&= ~ECAMF_LOCK_ACTION;
-		}
 
 		virtual const vector3df& GetCamDir()
 		{

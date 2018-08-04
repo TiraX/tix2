@@ -50,16 +50,19 @@ namespace tix
 		ti_delete	NodeRoot;
 	}
 
-	void TScene::TickAllNodes(float dt, TNode* root)
+	void TScene::TickAllNodes(float Dt, TNode* Root)
 	{
-		if (root == nullptr)
-			root = NodeRoot;
+		if (Root == nullptr)
+			Root = NodeRoot;
+
+		// Update Camera first
+		ActiveCamera->Update(Dt);
 
 		// Update all nodes logic
-		root->Update(dt);
+		Root->Update(Dt);
 
 		// Update all nodes transformations
-		root->UpdateAllTransformation();
+		Root->UpdateAllTransformation();
 	}
 
 	void TScene::SetActiveCamera(TNodeCamera* camera)
