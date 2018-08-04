@@ -7,6 +7,7 @@
 #include "FRHIDx12.h"
 #include "FFrameResourcesDx12.h"
 
+#if COMPILE_WITH_RHI_DX12
 namespace tix
 {
 	FFrameResourcesDx12::FFrameResourcesDx12()
@@ -34,3 +35,4 @@ namespace tix
 		D3d12Resources.push_back(Res);
 	}
 }
+#endif	//COMPILE_WITH_RHI_DX12

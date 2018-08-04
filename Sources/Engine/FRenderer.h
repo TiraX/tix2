@@ -14,13 +14,9 @@ namespace tix
 	class TI_API FRenderer
 	{
 	public: 
-		FRenderer();
-		virtual ~FRenderer();
+		FRenderer() {};
+		virtual ~FRenderer() {};
 
-		virtual void PrepareViewUniforms();
-		virtual void Render(FRHI* RHI, FScene* Scene);
-
-	protected:
-		virtual void DrawMeshBuffer(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline);
+		virtual void Render(FRHI* RHI, FScene* Scene) = 0;
 	};
 }

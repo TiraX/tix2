@@ -133,6 +133,15 @@
     <ClCompile Include="..\..\Sources\Engine\TMeshBuffer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FUniformBuffer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FUniformBufferDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -358,6 +367,18 @@
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FUniformBuffer.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FUniformBufferView.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FUniformBufferDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

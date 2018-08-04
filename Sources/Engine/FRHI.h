@@ -30,13 +30,14 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
-
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer() = 0;
 
 		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
+		virtual bool UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
 
 		E_RHI_TYPE GetRHIType() const
 		{

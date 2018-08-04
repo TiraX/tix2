@@ -13,6 +13,7 @@
 #include "FMeshBufferDx12.h"
 #include "FTextureDx12.h"
 #include "FPipelineDx12.h"
+#include "FUniformBufferDx12.h"
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
@@ -25,7 +26,7 @@ namespace tix
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
 		, NumBarriersToFlush(0)
-		, SrvDescriptorSize(0)
+		, DescriptorIncSize(0)
 	{
 		Init();
 
@@ -141,13 +142,14 @@ namespace tix
 
 		// Describe and create a shader resource view (SRV) heap for the texture.
 		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-		srvHeapDesc.NumDescriptors = 1;
+		srvHeapDesc.NumDescriptors = FRHIConfig::MaxDescriptorNum;
 		srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&SrvHeap)));
+		srvHeapDesc.NodeMask = 0;
+		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&DescriptorHeap)));
 
-		SrvHeapHandle = SrvHeap->GetCPUDescriptorHandleForHeapStart();
-		SrvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		DescriptorHeapHandle = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		DescriptorIncSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		
 		// Create Default Command list
 		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), DefaultPipelineState.Get(), IID_PPV_ARGS(&CommandList)));
@@ -403,6 +405,11 @@ namespace tix
 	FPipelinePtr FRHIDx12::CreatePipeline()
 	{
 		return ti_new FPipelineDx12();
+	}
+
+	FUniformBufferPtr FRHIDx12::CreateUniformBuffer()
+	{
+		return ti_new FUniformBufferDx12();
 	}
 
 	// Prepare to render the next frame.
@@ -665,19 +672,19 @@ namespace tix
 
 	void FRHIDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle)
 	{
-		AvaibleSrvHeapHandles.push_back(Handle);
+		AvaibleDescriptorHeapHandles.push_back(Handle);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::AllocateDescriptorHandle()
 	{
-		if (AvaibleSrvHeapHandles.size() > 0)
+		if (AvaibleDescriptorHeapHandles.size() > 0)
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE ret = AvaibleSrvHeapHandles.back();
-			AvaibleSrvHeapHandles.pop_back();
+			D3D12_CPU_DESCRIPTOR_HANDLE ret = AvaibleDescriptorHeapHandles.back();
+			AvaibleDescriptorHeapHandles.pop_back();
 			return ret;
 		}
-		D3D12_CPU_DESCRIPTOR_HANDLE ret = SrvHeapHandle;
-		SrvHeapHandle.ptr += SrvDescriptorSize;
+		D3D12_CPU_DESCRIPTOR_HANDLE ret = DescriptorHeapHandle;
+		DescriptorHeapHandle.ptr += DescriptorIncSize;
 		return ret;
 	}
 
@@ -830,6 +837,44 @@ namespace tix
 		//{
 		//	InPipelineDesc->.ShaderCode[s].Destroy();
 		//}
+		TI_TODO("Release shader code data");
+
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize)
+	{
+		TI_ASSERT(UniformBuffer->GetResourceFamily() == ERF_Dx12);
+		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
+
+		int32 AlignedDataSize = ti_align(InDataSize, 256);
+		CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
+
+		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&constantBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&UniformBufferDx12->ConstantBuffer)));
+
+		UniformBufferDx12->CbvDescriptor = AllocateDescriptorHandle();
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
+		cbvDesc.SizeInBytes = AlignedDataSize;
+		D3dDevice->CreateConstantBufferView(&cbvDesc, UniformBufferDx12->CbvDescriptor);
+
+		// Map the constant buffers.
+		uint8 * MappedConstantBuffer = nullptr;
+		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+		VALIDATE_HRESULT(UniformBufferDx12->ConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
+		memcpy(MappedConstantBuffer, InData, InDataSize);
+		if (AlignedDataSize - InDataSize > 0)
+		{
+			memset(MappedConstantBuffer + InDataSize, 0, AlignedDataSize - InDataSize);
+		}
+		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
 
 		return true;
 	}

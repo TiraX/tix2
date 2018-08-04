@@ -5,6 +5,8 @@
 
 #pragma once
 
+#if COMPILE_WITH_RHI_DX12
+
 namespace tix
 {
 	// Frame resources hold all the resources(textures, buffers, shaders etc), used in this frame, make sure they are not released until GPU done with them
@@ -23,3 +25,5 @@ namespace tix
 		TVector< ComPtr<ID3D12Resource> > D3d12Resources;
 	};
 }
+
+#endif //COMPILE_WITH_RHI_DX12

@@ -25,13 +25,14 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) override;
-
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
+		virtual FUniformBufferPtr CreateUniformBuffer() override;
 
 		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
+		virtual bool UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
 
 		// DirectX 12 specified methods
 		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);
@@ -107,11 +108,11 @@ namespace tix
 		D3D12_RESOURCE_BARRIER ResourceBarrierBuffers[MaxResourceBarrierBuffers];
 		uint32 NumBarriersToFlush;
 
-		// Srv heaps
-		ComPtr<ID3D12DescriptorHeap> SrvHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE SrvHeapHandle;
-		uint32 SrvDescriptorSize;
-		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> AvaibleSrvHeapHandles;
+		// Descriptor heaps
+		ComPtr<ID3D12DescriptorHeap> DescriptorHeap;
+		D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapHandle;
+		uint32 DescriptorIncSize;
+		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> AvaibleDescriptorHeapHandles;
 
 		friend class FRHI;
 	};

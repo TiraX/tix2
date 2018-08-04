@@ -28,7 +28,10 @@ namespace tix
 		void CollectAllMeshRelevance();
 		void TranverseNode(FNode * Node);
 
-
+		const FViewProjectionInfo& GetViewProjection() const
+		{
+			return ViewProjection;
+		}
 	protected:
 		FNode * RootNode;
 		TVector<FMeshRelevance> StaticDrawList;

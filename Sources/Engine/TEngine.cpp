@@ -91,7 +91,7 @@ namespace tix
 
 	void TEngine::AddDefaultRenderer()
 	{
-		FRenderer * Renderer = ti_new FRenderer;
+		FRenderer * Renderer = ti_new FDefaultRenderer;
 		AddRenderer(Renderer);
 	}
 
