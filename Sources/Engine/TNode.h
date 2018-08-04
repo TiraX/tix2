@@ -75,8 +75,6 @@ namespace tix
 		virtual TNode* IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection);
 		virtual TNode* IsIntersectWithPoint(const vector3df& p, aabbox3df& outBBox, vector3df& outIntersection);
 
-		virtual void Update(float dt);
-
 		// Update all note's transformation in game thread, since some tick need that
 		virtual void UpdateAllTransformation();
 		virtual const matrix4& GetAbsoluteTransformation() const;
@@ -121,6 +119,11 @@ namespace tix
 		virtual const vector3df& GetRelativeScale() const
 		{
 			return RelativeScale;
+		}
+
+		virtual vector3df GetAbsolutePosition()
+		{
+			return AbsoluteTransformation.getTranslation();
 		}
 
 		inline bool IsVisible()

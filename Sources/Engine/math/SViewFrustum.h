@@ -38,9 +38,9 @@ namespace tix
 		//! Hold a copy of important transform matrices
 		enum E_TRANSFORMATION_STATE_3
 		{
-			ETS_VIEW_PROJECTION_3 = ETS_PROJECTION + 1,
-			ETS_VIEW_MODEL_INVERSE_3,
-			ETS_CURRENT_3,
+			ETS_VIEW_PROJECTION_3 = ETS_COUNT,
+			//ETS_VIEW_MODEL_INVERSE_3,
+			//ETS_CURRENT_3,
 			ETS_COUNT_3
 		};
 
@@ -375,14 +375,14 @@ namespace tix
 				Matrices[ETS_VIEW_PROJECTION_3].setbyproduct_nocheck(
 					Matrices[ETS_PROJECTION],
 					Matrices[ETS_VIEW]);
-				Matrices[ETS_VIEW_MODEL_INVERSE_3] = Matrices[ETS_VIEW];
-				Matrices[ETS_VIEW_MODEL_INVERSE_3].makeInverse();
+				//Matrices[ETS_VIEW_MODEL_INVERSE_3] = Matrices[ETS_VIEW];
+				//Matrices[ETS_VIEW_MODEL_INVERSE_3].makeInverse();
 				break;
 
 			case ETS_WORLD:
-				Matrices[ETS_CURRENT_3].setbyproduct(
-					Matrices[ETS_VIEW_PROJECTION_3 ],
-					Matrices[ETS_WORLD]);
+				//Matrices[ETS_CURRENT_3].setbyproduct(
+				//	Matrices[ETS_VIEW_PROJECTION_3 ],
+				//	Matrices[ETS_WORLD]);
 				break;
 			default:
 				break;

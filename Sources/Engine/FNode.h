@@ -46,11 +46,6 @@ namespace tix
 			return Children[Index];
 		}
 
-		virtual vector3df GetAbsolutePosition()
-		{
-			return AbsoluteTransformation.getTranslation();
-		}
-
 		inline bool IsVisible()
 		{
 			return (NodeFlag & ENF_VISIBLE) != 0;

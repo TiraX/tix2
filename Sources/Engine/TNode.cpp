@@ -125,16 +125,6 @@ namespace tix
 		}
 	}
 
-	void TNode::Update(float dt)
-	{
-		// update children
-		VecRenderElements::const_iterator it = Children.begin();
-		for ( ; it != Children.end() ; ++ it)
-		{
-			(*it)->Update(dt);
-		}
-	}
-
 	TNode* TNode::IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection)
 	{
 		// test children

@@ -7,6 +7,16 @@
 
 namespace tix
 {
+	struct FViewProjectionInfo
+	{
+		matrix4 MatView;
+		matrix4 MatProj;
+		vector3df CamPos;
+		vector3df CamDir;
+		vector3df HorVector;
+		vector3df VerVector;
+	};
+
 	class TNodeCamera : public TNode
 	{
 		DECLARE_NODE_WITH_CONSTRUCTOR(Camera);
@@ -15,21 +25,20 @@ namespace tix
 		{
 			ECAMF_MAT_VIEW_DIRTY		= 1 << 0,
 			ECAMF_MAT_PROJECTION_DIRTY	= 1 << 1,
-			ECAMF_MAT_VP_DIRTY			= 1 << 2,
+			ECAMF_MAT_VP_DIRTY			= (ECAMF_MAT_VIEW_DIRTY | ECAMF_MAT_PROJECTION_DIRTY),
 
-			ECAMF_MAT_VIEW_UPDATED		= 1 << 3,
-			ECAMF_MAT_PROJ_UPDATED		= 1 << 4,
-			ECAMF_MAT_VP_UPDATED		= 1 << 5,
+			ECAMF_MAT_VIEW_UPDATED		= 1 << 2,
+			ECAMF_MAT_PROJ_UPDATED		= 1 << 3,
+			ECAMF_MAT_VP_UPDATED		= 1 << 4,
 			ECAMF_MAT_UPDATED			= (ECAMF_MAT_VIEW_UPDATED | ECAMF_MAT_VP_UPDATED | ECAMF_MAT_PROJ_UPDATED),
 		};
 	public:
 		virtual ~TNodeCamera();
 
-		virtual void Update(float Dt) override;
-
 		virtual void CreateRenderThreadNode() override {};
 
-		virtual void SetPosition(const vector3df& pos);
+		virtual void SetPosition(const vector3df& pos) override;
+		virtual void UpdateAllTransformation() override;
 
 		//! Sets the projection matrix of the camera.
 		/** The matrix4 class has some methods
@@ -143,7 +152,6 @@ namespace tix
 		vector3df VerVector;
 
 		float32 Fovy;	// Field of view, in radians. 
-
 
 		float32 Aspect;	// Aspect ratio. 
 		float32 ZNear;	// value of the near view-plane. 

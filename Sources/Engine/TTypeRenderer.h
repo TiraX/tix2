@@ -37,19 +37,6 @@ namespace tix
 		ETS_WORLD,
 		//! Projection transformation
 		ETS_PROJECTION,
-		//! View * Projection
-		ETS_VP,
-		//! MVP matrix
-		ETS_WVP,
-		//! World matrix inverse and transposed.
-		ETS_WORLDIT,
-		//! Light camera View * Projection, used for shadow map
-		ETS_LVP,
-		ETS_LWVP,
-		//! World * View
-		ETS_WV,
-		//! Post transform
-		ETS_POST,
 		//! Not used
 		ETS_COUNT
 	};

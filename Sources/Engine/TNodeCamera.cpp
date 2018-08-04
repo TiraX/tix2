@@ -30,10 +30,10 @@ namespace tix
 		CameraFlags |= ECAMF_MAT_VIEW_DIRTY;
 	}
 
-	void TNodeCamera::Update(float Dt)
+	void TNodeCamera::UpdateAllTransformation()
 	{
-		CameraFlags		&= ~ECAMF_MAT_UPDATED;
-		TNode::Update(Dt);
+		TNode::UpdateAllTransformation();
+		CameraFlags &= ~ECAMF_MAT_UPDATED;
 		if ((CameraFlags & ECAMF_MAT_PROJECTION_DIRTY) != 0)
 		{
 			RecalculateProjectionMatrix();
@@ -46,22 +46,30 @@ namespace tix
 			CameraFlags &= ~ECAMF_MAT_VIEW_DIRTY;
 			CameraFlags |= ECAMF_MAT_VIEW_UPDATED;
 		}
-		if ((CameraFlags & ECAMF_MAT_VP_DIRTY) != 0)
-		{
-			ViewArea.Matrices[ETS_VP] = ViewArea.Matrices[ETS_PROJECTION] * ViewArea.Matrices[ETS_VIEW];
-			CameraFlags &= ~ECAMF_MAT_VP_DIRTY;
-			CameraFlags |= ECAMF_MAT_VP_UPDATED;
-		}
+		//if ((CameraFlags & ECAMF_MAT_VP_DIRTY) != 0)
+		//{
+		//	ViewArea.Matrices[ETS_VP] = ViewArea.Matrices[ETS_PROJECTION] * ViewArea.Matrices[ETS_VIEW];
+		//	CameraFlags &= ~ECAMF_MAT_VP_DIRTY;
+		//	CameraFlags |= ECAMF_MAT_VP_UPDATED;
+		//}
 
 		if ((CameraFlags & ECAMF_MAT_UPDATED) != 0)
 		{
 			// Notify render thread
-			TI_ASSERT(0);
-			//TiEngine::Get()->GetRenderStage()->SetStageFlag(STAGE_CAMERA_DIRTY, true);
-			//TiRenderer* renderer = TiEngine::Get()->GetRenderer();
-			//renderer->SetTransform(ETS_VIEW, ViewArea.Matrices[ETS_VIEW]);
-			//renderer->SetTransform(ETS_PROJECTION, ViewArea.Matrices[ETS_PROJECTION]);
-			//renderer->SetTransform(ETS_VP, ViewArea.Matrices[ETS_VP]);
+			FViewProjectionInfo Info;
+			Info.MatProj = ViewArea.Matrices[ETS_PROJECTION];
+			Info.MatView = ViewArea.Matrices[ETS_VIEW];
+			Info.CamPos = GetAbsolutePosition();
+			Info.CamDir = CamDir;
+			Info.HorVector = HorVector;
+			Info.VerVector = VerVector;
+
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateViewProjectionRenderThread,
+				FViewProjectionInfo, ViewProjectionInfo, Info,
+				{
+					FScene * Scene = RenderThread->GetRenderScene();
+					Scene->SetViewProjection(ViewProjectionInfo);
+				});
 		}
 	}
 
@@ -164,40 +172,36 @@ namespace tix
 
 	void TNodeCamera::RecalculateViewMatrix()
 	{
-		TI_ASSERT(0);
-		//vector3df pos = GetAbsolutePosition();
-		//CamDir = Target - pos;
-		//CamDir.normalize();
+		vector3df pos = GetAbsolutePosition();
+		CamDir = Target - pos;
+		CamDir.normalize();
 
-		//vector3df up = UpVector;
-		//up.normalize();
+		vector3df up = UpVector;
+		up.normalize();
 
-		//float32 dp = CamDir.dotProduct(up);
+		float32 dp = CamDir.dotProduct(up);
 
-		//if (equals(fabs(dp), 1.f))
-		//{
-		//	up.setX(up.getX() + 0.5f);
-		//}
+		if (equals(fabs(dp), 1.f))
+		{
+			up.setX(up.getX() + 0.5f);
+		}
 
-		//ViewArea.Matrices[ETS_VIEW] = buildCameraLookAtMatrix(pos, Target, up);;
-		//ViewArea.setTransformState(ETS_VIEW);
+		ViewArea.Matrices[ETS_VIEW] = buildCameraLookAtMatrix(pos, Target, up);;
+		ViewArea.setTransformState(ETS_VIEW);
 
-		//RecalculateViewArea();
+		RecalculateViewArea();
 
-		//// calculate hor and ver vector for billboard
-		//HorVector	= CamDir.crossProduct(UpVector);
-		//HorVector.normalize();
-		//VerVector	= HorVector.crossProduct(CamDir);
-		//VerVector.normalize();
-
-		//CameraFlags |= ECAMF_MAT_VP_DIRTY;
+		// calculate hor and ver vector for billboard
+		HorVector	= CamDir.crossProduct(UpVector);
+		HorVector.normalize();
+		VerVector	= HorVector.crossProduct(CamDir);
+		VerVector.normalize();
 	}
 
 	void TNodeCamera::RecalculateProjectionMatrix()
 	{
 		ViewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixPerspectiveFov(Fovy, Aspect, ZNear, ZFar);
 		const matrix4& mat	= ViewArea.Matrices[ETS_PROJECTION];
-		CameraFlags |= ECAMF_MAT_VP_DIRTY;
 
 		ViewArea.setTransformState(ETS_PROJECTION);
 	}
@@ -210,9 +214,8 @@ namespace tix
 
 	void TNodeCamera::RecalculateViewArea()
 	{
-		TI_ASSERT(0);
-		//ViewArea.CameraPosition = GetAbsolutePosition();
-		//ViewArea.setFrom(ViewArea.Matrices[SViewFrustum::ETS_VIEW_PROJECTION_3]);
+		ViewArea.CameraPosition = GetAbsolutePosition();
+		ViewArea.setFrom(ViewArea.Matrices[SViewFrustum::ETS_VIEW_PROJECTION_3]);
 	}
 
 	void TNodeCamera::GetRayFrom2DPoint(const vector2di& pos, line3df &ray, float length)

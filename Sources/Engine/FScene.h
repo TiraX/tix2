@@ -12,7 +12,9 @@ namespace tix
 	public:
 		FScene();
 		~FScene();
-		
+
+		void SetViewProjection(const FViewProjectionInfo& Info);
+
 		void SetRootNode(FNode * Node);
 		void AddNode(FNode * Node, FNode * Parent);
 		void RemoveNode(FNode * Node);
@@ -30,5 +32,7 @@ namespace tix
 	protected:
 		FNode * RootNode;
 		TVector<FMeshRelevance> StaticDrawList;
+
+		FViewProjectionInfo ViewProjection;
 	};
 } // end namespace tix

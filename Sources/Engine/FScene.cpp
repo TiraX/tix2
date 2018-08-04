@@ -59,4 +59,9 @@ namespace tix
 			TranverseNode(Child);
 		}
 	}
+
+	void FScene::SetViewProjection(const FViewProjectionInfo& Info)
+	{
+		ViewProjection = Info;
+	}
 }

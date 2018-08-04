@@ -36,7 +36,7 @@ namespace tix
 		NodeRoot = TNodeFactory::CreateNode<TNodeSceneRoot>(nullptr);
 
 		// Create default camera, this camera can only deleted by render stage.
-		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(nullptr);
+		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(NodeRoot);
 		DefaultCamera->SetAspectRatio(1.f);
 		SetActiveCamera(DefaultCamera);
 	}
@@ -54,14 +54,14 @@ namespace tix
 	{
 		if (Root == nullptr)
 			Root = NodeRoot;
+	}
 
-		// Update Camera first
-		ActiveCamera->Update(Dt);
+	void TScene::UpdateAllNodesTransforms(TNode* Root)
+	{
+		if (Root == nullptr)
+			Root = NodeRoot;
 
-		// Update all nodes logic
-		Root->Update(Dt);
-
-		// Update all nodes transformations
+		TI_TODO("Use parallel transform update.");
 		Root->UpdateAllTransformation();
 	}
 
