@@ -17,6 +17,16 @@ namespace tix
 		void AddNode(FNode * Node, FNode * Parent);
 		void RemoveNode(FNode * Node);
 
+		const TVector<FMeshRelevance>& GetStaticDrawList() const
+		{
+			return StaticDrawList;
+		}
+
+		// Temp function, remove after refactor
+		void CollectAllMeshRelevance();
+		void TranverseNode(FNode * Node);
+
+
 	protected:
 		FNode * RootNode;
 		TVector<FMeshRelevance> StaticDrawList;

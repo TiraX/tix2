@@ -13,12 +13,23 @@ namespace tix
 
 	public:
 		virtual ~TNodeStaticMesh();
-		
-		virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) override;
+
+		struct TMeshDrawRelevance
+		{
+			TMeshBufferPtr MeshBuffer;
+			TPipelinePtr Pipeline;
+
+			// TODO: place holder REFACTOR
+			int32 Material;
+			int32 CastShadow;
+			int32 ReceiveShadow;
+		};
+
+		virtual void AddMeshToDraw(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterial, int32 InCastShadow, int32 InReceiveShadow);
 		virtual void CreateRenderThreadNode() override;
 
 	protected:
-		TMeshBufferPtr MeshBuffer;
+		TMeshDrawRelevance DrawRelevance;
 	};
 
 } // end namespace tix

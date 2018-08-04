@@ -17,8 +17,18 @@ namespace tix
 	{
 	}
 
-	void FNodeStaticMesh::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	void FNodeStaticMesh::AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline)
 	{
 		MeshBuffer = InMeshBuffer;
+		Pipeline = InPipeline;
+	}
+
+	void FNodeStaticMesh::AddToStaticMeshList(TVector<FMeshRelevance>& List)
+	{
+		TI_TODO("Temp fucntion, remove after refactor");
+		FMeshRelevance Relevance;
+		Relevance.MeshBuffer = MeshBuffer;
+		Relevance.Pipeline = Pipeline;
+		List.push_back(Relevance);
 	}
 }

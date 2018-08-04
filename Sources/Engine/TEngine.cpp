@@ -89,6 +89,12 @@ namespace tix
 		return Device;
 	}
 
+	void TEngine::AddDefaultRenderer()
+	{
+		FRenderer * Renderer = ti_new FRenderer;
+		AddRenderer(Renderer);
+	}
+
 	void TEngine::AddRenderer(FRenderer* Renderer)
 	{
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddRendererInRenderThread, 

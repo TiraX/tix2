@@ -25,6 +25,11 @@ namespace tix
 			return Parent;
 		}
 
+		E_NODE_TYPE GetType() const
+		{
+			return Type;
+		}
+
 		uint32 GetFlag() const
 		{
 			return NodeFlag;
@@ -33,6 +38,12 @@ namespace tix
 		uint32	GetChildrenCount()
 		{
 			return (uint32)Children.size();
+		}
+
+		FNode* GetChild(int32 Index)
+		{
+			TI_ASSERT(Index >= 0 && Index <= (int32)Children.size());
+			return Children[Index];
 		}
 
 		virtual vector3df GetAbsolutePosition()
@@ -59,15 +70,16 @@ namespace tix
 
 	protected:
 
-		FNode*				Parent;
+		FNode* Parent;
 		typedef TVector<FNode*>	VecRenderElements;
-		VecRenderElements	Children;
+		VecRenderElements Children;
 
-		uint32				NodeFlag;
+		E_NODE_TYPE Type;
+		uint32 NodeFlag;
 
 		// Node in render thread only used for render thread frustum cull, only need absolute transform
 		// Absolute transformation is passed from game thread
-		matrix4				AbsoluteTransformation;
+		matrix4 AbsoluteTransformation;
 	};
 
 } // end namespace tix

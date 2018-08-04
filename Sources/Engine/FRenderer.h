@@ -8,6 +8,7 @@
 namespace tix
 {
 	class FRHI;
+	class FScene;
 
 	// Renderer interface
 	class TI_API FRenderer
@@ -16,8 +17,10 @@ namespace tix
 		FRenderer();
 		virtual ~FRenderer();
 
-		virtual void Render(FRHI* RHI) = 0;
+		virtual void PrepareViewUniforms();
+		virtual void Render(FRHI* RHI, FScene* Scene);
 
-	private:
+	protected:
+		virtual void DrawMeshBuffer(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline);
 	};
 }

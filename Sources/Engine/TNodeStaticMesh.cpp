@@ -22,20 +22,24 @@ namespace tix
 		CREATE_RENDER_THREAD_NODE(FNodeStaticMesh);
 	}
 
-	void TNodeStaticMesh::AddMeshBuffer(TMeshBufferPtr InMeshBuffer)
+	void TNodeStaticMesh::AddMeshToDraw(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterial, int32 InCastShadow, int32 InReceiveShadow)
 	{
 		TI_TODO("Support multi mesh buffer in one node.");
-		MeshBuffer = InMeshBuffer;
+		DrawRelevance.MeshBuffer = InMesh;
+		DrawRelevance.Pipeline = InPipeline;
+		DrawRelevance.Material = InMaterial;
+		DrawRelevance.CastShadow = InCastShadow;
+		DrawRelevance.ReceiveShadow = InReceiveShadow;
 
 		// send to render thread node to get mesh buffer render resource
 		TI_ASSERT(Node_RenderThread);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(SetMeshBufferRenderThread,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddMeshToDrawRenderThread,
 			FNode *, Node_RT, Node_RenderThread,
-			TMeshBufferPtr, MeshBuffer, InMeshBuffer,
+			TNodeStaticMesh::TMeshDrawRelevance, Relevance, DrawRelevance,
 			{
 				FNodeStaticMesh * NodeMesh = static_cast<FNodeStaticMesh*>(Node_RT);
-				NodeMesh->SetMeshBuffer(MeshBuffer->MeshBufferResource);
+				NodeMesh->AddMeshToDraw(Relevance.MeshBuffer->MeshBufferResource, Relevance.Pipeline->PipelineResource);
 			});
 	}
 }

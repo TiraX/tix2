@@ -25,6 +25,7 @@ namespace tix
 			return Scene;
 		}
 
+		TI_API void AddDefaultRenderer();
 		TI_API void AddRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);
 	private:

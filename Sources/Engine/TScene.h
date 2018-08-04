@@ -69,6 +69,9 @@ namespace tix
 		TI_API void SetActiveCamera(TNodeCamera* camera);
 		TI_API TNodeCamera* GetActiveCamera();
 
+		// Temp method to test rendering, scene management will be in Scene Loading
+		TI_API void AddMeshToScene(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterialInFuture);
+
 	protected:
 
 

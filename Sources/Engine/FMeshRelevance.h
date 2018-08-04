@@ -12,6 +12,7 @@ namespace tix
 		// Mesh buffer
 		FMeshBufferPtr MeshBuffer;
 
-		// Material
+		// Pipeline
+		FPipelinePtr Pipeline;
 	};
 }

@@ -101,7 +101,7 @@ namespace tix
 		// Go through each renderer
 		for (auto Renderer : Renderers)
 		{
-			Renderer->Render(RHI);
+			Renderer->Render(RHI, RenderScene);
 		}
 		RHI->EndFrame();
 	}

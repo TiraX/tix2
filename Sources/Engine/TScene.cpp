@@ -74,4 +74,11 @@ namespace tix
 	{
 		return ActiveCamera;
 	}
+
+	void TScene::AddMeshToScene(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterialInFuture)
+	{
+		// Create a static mesh node to hold mesh resource
+		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
+		StaticMesh->AddMeshToDraw(InMesh, InPipeline, InMaterialInFuture, 0, 0);
+	}
 }

@@ -10,6 +10,7 @@ namespace tix
 {
 	FNode::FNode(E_NODE_TYPE type, FNode* parent)
 		: Parent(nullptr)
+		, Type(type)
 		, NodeFlag(ENF_VISIBLE | ENF_DIRTY_POS)
 	{
 		if (parent)
