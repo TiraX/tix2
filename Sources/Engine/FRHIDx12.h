@@ -46,7 +46,7 @@ namespace tix
 			uint32 StartInstanceLocation) override;
 
 		// DirectX 12 specified methods
-		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);
+		void RecallDescriptor(uint32 HeapIndex);
 
 	protected: 
 		FRHIDx12();
@@ -88,7 +88,9 @@ namespace tix
 		void FlushResourceBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptorHandle();
+		uint32 AllocateDescriptorSlot();
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(uint32 Index);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(uint32 Index);
 
 	private:
 		ComPtr<ID3D12Device> D3dDevice;
@@ -123,9 +125,9 @@ namespace tix
 
 		// Descriptor heaps
 		ComPtr<ID3D12DescriptorHeap> DescriptorHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapHandle;
 		uint32 DescriptorIncSize;
-		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> AvaibleDescriptorHeapHandles;
+		TVector<uint32> AvaibleDescriptorHeapSlots;
+		uint32 DescriptorAllocated;
 
 		friend class FRHI;
 	};

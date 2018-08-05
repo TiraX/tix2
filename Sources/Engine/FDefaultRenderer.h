@@ -23,7 +23,7 @@ namespace tix
 		virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 	protected:
-		virtual void DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline);
+		virtual void DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer);
 
 	protected:
 		FViewUniformBufferPtr ViewUniformBuffer;

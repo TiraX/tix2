@@ -14,5 +14,8 @@ namespace tix
 
 		// Pipeline
 		FPipelinePtr Pipeline;
+
+		// Uniform buffer
+		FUniformBufferPtr UniformBuffer;
 	};
 }

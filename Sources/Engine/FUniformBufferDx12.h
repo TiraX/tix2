@@ -20,7 +20,7 @@ namespace tix
 
 	private:
 		ComPtr<ID3D12Resource> ConstantBuffer;
-		D3D12_CPU_DESCRIPTOR_HANDLE CbvDescriptor;
+		uint32 CbvDescriptor;
 		friend class FRHIDx12;
 	};
 }

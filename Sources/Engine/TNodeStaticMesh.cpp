@@ -39,7 +39,7 @@ namespace tix
 			TNodeStaticMesh::TMeshDrawRelevance, Relevance, DrawRelevance,
 			{
 				FNodeStaticMesh * NodeMesh = static_cast<FNodeStaticMesh*>(Node_RT);
-				NodeMesh->AddMeshToDraw(Relevance.MeshBuffer->MeshBufferResource, Relevance.Pipeline->PipelineResource);
+				NodeMesh->AddMeshToDraw(Relevance.MeshBuffer->MeshBufferResource, Relevance.Pipeline->PipelineResource, nullptr);
 			});
 	}
 }

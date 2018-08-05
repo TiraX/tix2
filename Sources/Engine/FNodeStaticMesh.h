@@ -13,7 +13,7 @@ namespace tix
 		FNodeStaticMesh(E_NODE_TYPE Type, FNode* parent);
 		virtual ~FNodeStaticMesh();
 
-		void AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline);
+		void AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer);
 
 		void AddToStaticMeshList(TVector<FMeshRelevance>& List);
 	protected:
@@ -21,6 +21,7 @@ namespace tix
 	protected:
 		FMeshBufferPtr MeshBuffer;
 		FPipelinePtr Pipeline;
+		FUniformBufferPtr UniformBuffer;
 	};
 } // end namespace tix
 

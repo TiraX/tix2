@@ -17,10 +17,11 @@ namespace tix
 	{
 	}
 
-	void FNodeStaticMesh::AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline)
+	void FNodeStaticMesh::AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer)
 	{
 		MeshBuffer = InMeshBuffer;
 		Pipeline = InPipeline;
+		UniformBuffer = InUniformBuffer;
 	}
 
 	void FNodeStaticMesh::AddToStaticMeshList(TVector<FMeshRelevance>& List)
@@ -29,6 +30,7 @@ namespace tix
 		FMeshRelevance Relevance;
 		Relevance.MeshBuffer = MeshBuffer;
 		Relevance.Pipeline = Pipeline;
+		Relevance.UniformBuffer = UniformBuffer;
 		List.push_back(Relevance);
 	}
 }

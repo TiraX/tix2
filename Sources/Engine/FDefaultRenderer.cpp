@@ -28,6 +28,7 @@ namespace tix
 		ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
 
 		ViewUniformBuffer->InitUniformBuffer();
+		TI_TODO("Do not update this every frame, only when it changed.");
 	}
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -39,15 +40,15 @@ namespace tix
 		const TVector<FMeshRelevance>& Meshes = Scene->GetStaticDrawList();
 		for (const auto& Relevance : Meshes)
 		{
-			DrawMeshBuffer(RHI, Relevance.MeshBuffer, Relevance.Pipeline);
+			DrawMeshBuffer(RHI, Relevance.MeshBuffer, Relevance.Pipeline, ViewUniformBuffer->UniformBuffer);
 		}
 	}
 
-	void FDefaultRenderer::DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline)
+	void FDefaultRenderer::DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline, FUniformBufferPtr InUniformBuffer)
 	{
 		RHI->SetMeshBuffer(InMeshBuffer);
 		RHI->SetPipeline(Pipeline);
-		//RHI->SetUniformBuffer(nullptr);
+		RHI->SetUniformBuffer(InUniformBuffer);
 
 		RHI->DrawPrimitiveIndexedInstanced(InMeshBuffer->GetIndicesCount(), 1, 0, 0, 0);
 	}

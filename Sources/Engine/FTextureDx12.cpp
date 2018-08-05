@@ -13,6 +13,7 @@ namespace tix
 {
 	FTextureDx12::FTextureDx12()
 		: FTexture(ERF_Dx12)
+		, TexDescriptor(uint32(-1))
 	{
 	}
 
@@ -29,8 +30,11 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 		TextureResource = nullptr;
-		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-		RHIDx12->RecallDescriptor(TexDescriptor);
+		if (TexDescriptor != uint32(-1))
+		{
+			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
+			RHIDx12->RecallDescriptor(TexDescriptor);
+		}
 	}
 }
 

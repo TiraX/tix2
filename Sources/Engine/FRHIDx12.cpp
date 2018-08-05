@@ -28,6 +28,7 @@ namespace tix
 		, CurrentFrame(0)
 		, NumBarriersToFlush(0)
 		, DescriptorIncSize(0)
+		, DescriptorAllocated(0)
 	{
 		Init();
 
@@ -149,7 +150,6 @@ namespace tix
 		DescriptorHeapDesc.NodeMask = 0;
 		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&DescriptorHeap)));
 
-		DescriptorHeapHandle = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		DescriptorIncSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		
 		// Create Default Command list
@@ -440,12 +440,12 @@ namespace tix
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{
+		// Remember the frame index to release holded reference.
+		const int32 FrameToRelease = CurrentFrame;
+
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
 		VALIDATE_HRESULT(CommandQueue->Signal(Fence.Get(), currentFenceValue));
-
-		// Release resources references
-		FrameResources[CurrentFrame]->RemoveAllReferences();
 
 		// Advance the frame index.
 		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
@@ -459,6 +459,9 @@ namespace tix
 
 		// Set the fence value for the next frame.
 		FenceValues[CurrentFrame] = currentFenceValue + 1;
+
+		// Release resources references
+		FrameResources[FrameToRelease]->RemoveAllReferences();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -630,7 +633,7 @@ namespace tix
 			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
 
-		const uint32 IndexBufferSize = sizeof(InMeshData->GetIndicesCount() * (InMeshData->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+		const uint32 IndexBufferSize = (InMeshData->GetIndicesCount() * (InMeshData->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
 
 		// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
@@ -704,22 +707,37 @@ namespace tix
 		return RequiredSize;
 	}
 
-	void FRHIDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle)
+	void FRHIDx12::RecallDescriptor(uint32 HeapIndex)
 	{
-		AvaibleDescriptorHeapHandles.push_back(Handle);
+		AvaibleDescriptorHeapSlots.push_back(HeapIndex);
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::AllocateDescriptorHandle()
+	uint32 FRHIDx12::AllocateDescriptorSlot()
 	{
-		if (AvaibleDescriptorHeapHandles.size() > 0)
+		if (AvaibleDescriptorHeapSlots.size() > 0)
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE ret = AvaibleDescriptorHeapHandles.back();
-			AvaibleDescriptorHeapHandles.pop_back();
-			return ret;
+			uint32 SlotIndex = AvaibleDescriptorHeapSlots.back();
+			AvaibleDescriptorHeapSlots.pop_back();
+			return SlotIndex;
 		}
-		D3D12_CPU_DESCRIPTOR_HANDLE ret = DescriptorHeapHandle;
-		DescriptorHeapHandle.ptr += DescriptorIncSize;
-		return ret;
+		uint32 Result = DescriptorAllocated;
+		++DescriptorAllocated;
+		TI_ASSERT(DescriptorAllocated < FRHIConfig::MaxDescriptorNum);
+		return Result;
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::GetCpuDescriptorHandle(uint32 Index)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE Result = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		Result.ptr += Index * DescriptorIncSize;
+		return Result;
+	}
+
+	D3D12_GPU_DESCRIPTOR_HANDLE FRHIDx12::GetGpuDescriptorHandle(uint32 Index)
+	{
+		D3D12_GPU_DESCRIPTOR_HANDLE Result = DescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+		Result.ptr += Index * DescriptorIncSize;
+		return Result;
 	}
 
 	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData)
@@ -789,13 +807,14 @@ namespace tix
 		ti_delete[] TextureDatas;
 
 		// Describe and create a SRV for the texture.
-		TexDx12->TexDescriptor = AllocateDescriptorHandle();
+		TexDx12->TexDescriptor = AllocateDescriptorSlot();
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
-		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &srvDesc, TexDx12->TexDescriptor);
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
+		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &srvDesc, Descriptor);
 
 		FlushResourceBarriers(CommandList.Get());
 		// Hold resources used here
@@ -893,11 +912,12 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&UniformBufferDx12->ConstantBuffer)));
 
-		UniformBufferDx12->CbvDescriptor = AllocateDescriptorHandle();
+		UniformBufferDx12->CbvDescriptor = AllocateDescriptorSlot();
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = AlignedDataSize;
-		D3dDevice->CreateConstantBufferView(&cbvDesc, UniformBufferDx12->CbvDescriptor);
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBufferDx12->CbvDescriptor);
+		D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
 
 		// Map the constant buffers.
 		uint8 * MappedConstantBuffer = nullptr;
@@ -931,7 +951,11 @@ namespace tix
 
 	void FRHIDx12::SetUniformBuffer(FUniformBufferPtr InUniformBuffer)
 	{
-		TI_ASSERT(0);
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
+
+		// Bind the current frame's constant buffer to the pipeline.
+		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(UBDx12->CbvDescriptor);
+		CommandList->SetGraphicsRootDescriptorTable(0, Descriptor);
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(
@@ -941,6 +965,13 @@ namespace tix
 		int32 BaseVertexLocation,
 		uint32 StartInstanceLocation)
 	{
+		// temp test
+		// Set the viewport and scissor rectangle.
+		D3D12_VIEWPORT Viewport = { 0.f, 0.f, 1280.f, 720.f, 0.f, 1.f };
+		CommandList->RSSetViewports(1, &Viewport);
+		D3D12_RECT ScissorRect = { 0, 0, 1280, 720 };
+		CommandList->RSSetScissorRects(1, &ScissorRect);
+
 		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
 }

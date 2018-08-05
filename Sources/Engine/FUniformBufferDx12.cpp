@@ -13,6 +13,7 @@ namespace tix
 {
 	FUniformBufferDx12::FUniformBufferDx12()
 		: FUniformBuffer(ERF_Dx12)
+		, CbvDescriptor(uint32(-1))
 	{
 	}
 
@@ -24,8 +25,11 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 		ConstantBuffer = nullptr;
-		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-		RHIDx12->RecallDescriptor(CbvDescriptor);
+		if (CbvDescriptor != uint32(-1))
+		{
+			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
+			RHIDx12->RecallDescriptor(CbvDescriptor);
+		}
 	}
 }
 
