@@ -22,6 +22,9 @@ namespace tix
 		ComPtr<ID3D12Resource> VertexBuffer;
 		ComPtr<ID3D12Resource> IndexBuffer;
 
+		D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
+		D3D12_INDEX_BUFFER_VIEW IndexBufferView;
+
 		friend class FRHIDx12;
 	};
 }

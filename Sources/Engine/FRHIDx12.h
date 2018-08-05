@@ -34,6 +34,17 @@ namespace tix
 		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
 
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
+		virtual void SetPipeline(FPipelinePtr InPipeline) override;
+		virtual void SetUniformBuffer(FUniformBufferPtr InUniformBuffer) override;
+
+		virtual void DrawPrimitiveIndexedInstanced(
+			uint32 IndexCountPerInstance,
+			uint32 InstanceCount,
+			uint32 StartIndexLocation,
+			int32 BaseVertexLocation,
+			uint32 StartInstanceLocation) override;
+
 		// DirectX 12 specified methods
 		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Handle);
 
@@ -84,7 +95,9 @@ namespace tix
 		ComPtr<IDXGIFactory4> DxgiFactory;
 		ComPtr<IDXGISwapChain3> SwapChain;
 		ComPtr<ID3D12Resource> BackBufferRTs[FRHIConfig::FrameBufferNum];
+		D3D12_CPU_DESCRIPTOR_HANDLE BackBufferDescriptors[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12Resource> DepthStencil;
+		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
 		ComPtr<ID3D12DescriptorHeap> RtvHeap;
 		ComPtr<ID3D12DescriptorHeap> DsvHeap;
 		ComPtr<ID3D12CommandQueue> CommandQueue;

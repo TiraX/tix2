@@ -39,6 +39,17 @@ namespace tix
 		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
 
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
+		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
+		virtual void SetUniformBuffer(FUniformBufferPtr InUniformBuffer) = 0;
+
+		virtual void DrawPrimitiveIndexedInstanced(
+			uint32 IndexCountPerInstance,
+			uint32 InstanceCount,
+			uint32 StartIndexLocation,
+			int32 BaseVertexLocation,
+			uint32 StartInstanceLocation) = 0;
+
 		E_RHI_TYPE GetRHIType() const
 		{
 			return RHIType;

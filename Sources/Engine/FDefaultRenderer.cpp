@@ -39,12 +39,16 @@ namespace tix
 		const TVector<FMeshRelevance>& Meshes = Scene->GetStaticDrawList();
 		for (const auto& Relevance : Meshes)
 		{
-			DrawMeshBuffer(Relevance.MeshBuffer, Relevance.Pipeline);
+			DrawMeshBuffer(RHI, Relevance.MeshBuffer, Relevance.Pipeline);
 		}
 	}
 
-	void FDefaultRenderer::DrawMeshBuffer(FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline)
+	void FDefaultRenderer::DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline)
 	{
-		TI_ASSERT(0);
+		RHI->SetMeshBuffer(InMeshBuffer);
+		RHI->SetPipeline(Pipeline);
+		//RHI->SetUniformBuffer(nullptr);
+
+		RHI->DrawPrimitiveIndexedInstanced(InMeshBuffer->GetIndicesCount(), 1, 0, 0, 0);
 	}
 }

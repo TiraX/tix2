@@ -14,6 +14,7 @@
 #include "FTextureDx12.h"
 #include "FPipelineDx12.h"
 #include "FUniformBufferDx12.h"
+#include <DirectXColors.h>
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
@@ -141,12 +142,12 @@ namespace tix
 		CreateWindowsSizeDependentResources();
 
 		// Describe and create a shader resource view (SRV) heap for the texture.
-		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-		srvHeapDesc.NumDescriptors = FRHIConfig::MaxDescriptorNum;
-		srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		srvHeapDesc.NodeMask = 0;
-		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&DescriptorHeap)));
+		D3D12_DESCRIPTOR_HEAP_DESC DescriptorHeapDesc = {};
+		DescriptorHeapDesc.NumDescriptors = FRHIConfig::MaxDescriptorNum;
+		DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		DescriptorHeapDesc.NodeMask = 0;
+		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&DescriptorHeap)));
 
 		DescriptorHeapHandle = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		DescriptorIncSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -278,14 +279,14 @@ namespace tix
 		// Create render target views of the swap chain back buffer.
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
-			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvDescriptor(RtvHeap->GetCPUDescriptorHandleForHeapStart());
+			
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
+				BackBufferDescriptors[n] = RtvHeap->GetCPUDescriptorHandleForHeapStart();
+				BackBufferDescriptors[n].ptr += n * RtvDescriptorSize;
 				hr = SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n]));
 				VALIDATE_HRESULT(hr);
-				D3dDevice->CreateRenderTargetView(BackBufferRTs[n].Get(), nullptr, rtvDescriptor);
-
-				rtvDescriptor.Offset(RtvDescriptorSize);
+				D3dDevice->CreateRenderTargetView(BackBufferRTs[n].Get(), nullptr, BackBufferDescriptors[n]);
 
 				WCHAR name[32];
 				if (swprintf_s(name, L"BackBufferRTs[%u]", n) > 0)
@@ -321,7 +322,8 @@ namespace tix
 			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DsvHeap->GetCPUDescriptorHandleForHeapStart());
+			DepthStencilDescriptor = DsvHeap->GetCPUDescriptorHandleForHeapStart();
+			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
 
 		// Create a root signature with a single constant buffer slot.
@@ -356,14 +358,37 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
+		// Reset command allocator
 		VALIDATE_HRESULT(CommandAllocators[CurrentFrame]->Reset());
 		TI_ASSERT(NumBarriersToFlush == 0);
 
+		// Reset command list
 		VALIDATE_HRESULT(CommandList->Reset(CommandAllocators[CurrentFrame].Get(), nullptr));
+
+		// Set the graphics root signature and descriptor heaps to be used by this frame.
+		CommandList->SetGraphicsRootSignature(RootSignature.Get());
+		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeap.Get() };
+		CommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+		// Indicate this resource will be in use as a render target.
+		TI_TODO("Refactor this operation to render target related");
+		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		FlushResourceBarriers(CommandList.Get());
+
+		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
+		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
+		CommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
+		CommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+		CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 	}
 
 	void FRHIDx12::EndFrame()
 	{
+		// Indicate that the render target will now be used to present when the command list is done executing.
+		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		FlushResourceBarriers(CommandList.Get());
+
 		// Execute the command list.
 		VALIDATE_HRESULT(CommandList->Close());
 		ID3D12CommandList* ppCommandLists[] = { CommandList.Get() };
@@ -571,7 +596,7 @@ namespace tix
 		// The upload resource must not be released until after the GPU has finished using it.
 		ComPtr<ID3D12Resource> VertexBufferUpload;
 
-		int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
+		const int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -643,6 +668,15 @@ namespace tix
 		}
 
 		FlushResourceBarriers(CommandList.Get());
+
+		// Create vertex/index buffer views.
+		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer->GetGPUVirtualAddress();
+		MBDx12->VertexBufferView.StrideInBytes = InMeshData->GetStride();
+		MBDx12->VertexBufferView.SizeInBytes = BufferSize;
+
+		MBDx12->IndexBufferView.BufferLocation = MBDx12->IndexBuffer->GetGPUVirtualAddress();
+		MBDx12->IndexBufferView.SizeInBytes = IndexBufferSize;
+		MBDx12->IndexBufferView.Format = InMeshData->GetIndexType() == EIT_16BIT ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
 		// Hold resources used here
 		FrameResource->HoldReference(MeshBuffer);
@@ -822,7 +856,7 @@ namespace tix
 		MakeDx12BlendState(Desc, state.BlendState);
 		MakeDx12DepthStencilState(Desc, state.DepthStencilState);
 		state.SampleMask = UINT_MAX;
-		state.PrimitiveTopologyType = k_PRIMITIVE_TYPE_MAP[Desc.PrimitiveType];
+		state.PrimitiveTopologyType = k_PRIMITIVE_D3D12_TYPE_MAP[Desc.PrimitiveType];
 		TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
 		state.NumRenderTargets = 1;
 		state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[0]];
@@ -877,6 +911,37 @@ namespace tix
 		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
 
 		return true;
+	}
+
+	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	{
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+
+		CommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
+		CommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+		CommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+	}
+
+	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
+	{
+		FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
+
+		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+	}
+
+	void FRHIDx12::SetUniformBuffer(FUniformBufferPtr InUniformBuffer)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FRHIDx12::DrawPrimitiveIndexedInstanced(
+		uint32 IndexCountPerInstance,
+		uint32 InstanceCount,
+		uint32 StartIndexLocation,
+		int32 BaseVertexLocation,
+		uint32 StartInstanceLocation)
+	{
+		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12
