@@ -381,5 +381,8 @@
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\math\FMatrix.h">
+      <Filter>Sources\Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

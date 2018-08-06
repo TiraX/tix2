@@ -48,8 +48,9 @@ namespace tix
 		PipelineResource = nullptr;
 	}
 
-	TPipelinePtr TPipeline::CreatePipeline(const TString& VsPath, const TString& PsPath, const uint32 VsFormat)
+	TPipelinePtr TPipeline::CreatePipeline(const TString& VsPath, const TString& PsPath, const uint32 VsFormat, E_CULL_MODE CullMode)
 	{
+		TI_TODO("This is a test function, remove it in future.");
 		TPipelinePtr Pipeline = ti_new TPipeline;
 
 		TString VsName, PsName;
@@ -76,6 +77,7 @@ namespace tix
 			Pipeline->ShaderCode[ESS_PIXEL_SHADER].Put(fps);
 		}
 		Pipeline->Desc.VsFormat = VsFormat;
+		Pipeline->Desc.RasterizerDesc.CullMode = CullMode;
 		Pipeline->InitRenderThreadResource();
 
 		return Pipeline;

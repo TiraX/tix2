@@ -9,6 +9,6 @@
 namespace tix
 {
 	BEGIN_UNIFORM_BUFFER_STRUCT(FViewUniformBuffer)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(matrix4, ViewProjection)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, ViewProjection)
 	END_UNIFORM_BUFFER_STRUCT(FViewUniformBuffer)
 }

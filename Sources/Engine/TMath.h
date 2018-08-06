@@ -273,3 +273,4 @@ inline int32 ti_align16(int32 n)
 #include "math/Quaternion.h"
 #include "math/SViewFrustum.h"
 #include "math/Triangle3d.h"
+#include "math/FMatrix.h"
