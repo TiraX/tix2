@@ -15,9 +15,9 @@ namespace tix
 		, ZNear(1.0f)
 		, ZFar(3000.0f)
 		, Fovy(PI / 2.0f)
-		, Aspect(4.0f / 3.0f)
+		, Aspect(1280.f / 720.f)
 	{
-		SetPosition(vector3df(-2, 0, 0));
+		SetPosition(vector3df(-1, 2, 0));
 	}
 
 	TNodeCamera::~TNodeCamera()

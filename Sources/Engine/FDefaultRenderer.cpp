@@ -25,7 +25,7 @@ namespace tix
 			ViewUniformBuffer = ti_new FViewUniformBuffer();
 
 		const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
-		ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
+		ViewUniformBuffer->UniformBufferData.ViewProjection = (VPInfo.MatProj * VPInfo.MatView).getTransposed();
 
 		ViewUniformBuffer->InitUniformBuffer();
 		TI_TODO("Do not update this every frame, only when it changed.");
