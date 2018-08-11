@@ -149,11 +149,8 @@ namespace tix
 		, PosRead(0)
 		, CurvePos(0)
 		, LastClickTime(0)
-		, EnableImmediate(false)
+		, EnableImmediate(true)
 	{
-#ifdef _XY_EDITOR_
-		EnableImmediateSend(true);
-#endif // _XY_EDITOR_
 	}
 
 	TInput::~TInput()

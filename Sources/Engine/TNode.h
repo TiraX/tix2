@@ -51,7 +51,7 @@ namespace tix
 		}
 		virtual void SetId(const char* name)
 		{
-			NodeId		= name;
+			NodeId = name;
 		}
 
 		virtual void AddChild(TNode* child);		// add child at the end of children
@@ -62,18 +62,19 @@ namespace tix
 		virtual void SetRotate(const quaternion& rotate);
 		
 		virtual TNode* GetNodeById(const TString& uid);
-		
 		virtual void GetNodesByType(E_NODE_TYPE type, TVector<TNode*>& elements);
 
 		virtual void SetFlag(E_NODE_FLAG flag, bool enable)
 		{
 			if (enable)
-				NodeFlag	|= flag;
+				NodeFlag |= flag;
 			else
-				NodeFlag	&= ~flag;
+				NodeFlag &= ~flag;
 		}
 		virtual TNode* IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection);
 		virtual TNode* IsIntersectWithPoint(const vector3df& p, aabbox3df& outBBox, vector3df& outIntersection);
+
+		virtual void Tick(float Dt);
 
 		// Update all note's transformation in game thread, since some tick need that
 		virtual void UpdateAllTransformation();

@@ -142,6 +142,9 @@
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNodeCameraNav.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -383,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\FMatrix.h">
       <Filter>Sources\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNodeCameraNav.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

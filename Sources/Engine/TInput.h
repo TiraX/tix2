@@ -301,52 +301,52 @@ namespace tix
 		TInput();
 		virtual ~TInput();
 
-				void	UpdateEvents(float dt);
+		void UpdateEvents(float dt);
 
-		TI_API	void	RegisterHandler(TEventHandler * handler);
-				void	UnRegister(TEventHandler * handler);
+		TI_API void	RegisterHandler(TEventHandler * handler);
+		void UnRegister(TEventHandler * handler);
 
-		TI_API	void	EnableImmediateSend(bool enable);
-        TI_API  void    IncreaseInputCount(int c);
-        TI_API  void    DecreaseInputCount(int c);
+		TI_API void	EnableImmediateSend(bool enable);
+		TI_API void IncreaseInputCount(int c);
+		TI_API void DecreaseInputCount(int c);
 #ifdef TI_PLATFORM_WIN32
-		TI_API	void	ResetInputCount() {InputCount = 0;};
+		TI_API void	ResetInputCount() { InputCount = 0; };
 #endif
-		TI_API	void	PutEvent(E_EVENT_TYPE type, int touch_id,  long long time_stamp, float force, unsigned int param, int posX, int posY);
-				void	SetFlag(uint32 f, bool enable)
-				{
-					if (enable)
-						InputFlag		|= f;
-					else
-						InputFlag		&= ~f;
-				}
+		TI_API void	PutEvent(E_EVENT_TYPE type, int touch_id, long long time_stamp, float force, unsigned int param, int posX, int posY);
+		void	SetFlag(uint32 f, bool enable)
+		{
+			if (enable)
+				InputFlag |= f;
+			else
+				InputFlag &= ~f;
+		}
 
 	protected:
-		void			SendEvent(TEvent& e);
-		void			AddEventToQuene(const _DeviceEvent& e);
-		void			SendImmediate();
-		void			SendImmediate(_DeviceEvent& e);
-		void			AnalysisCurve();
-		_InputCurve&	GetNextCurve();
-		_InputCurve&	GetCurrentCurve();
+		void SendEvent(TEvent& e);
+		void AddEventToQuene(const _DeviceEvent& e);
+		void SendImmediate();
+		void SendImmediate(_DeviceEvent& e);
+		void AnalysisCurve();
+		_InputCurve& GetNextCurve();
+		_InputCurve& GetCurrentCurve();
 		
 	protected:
-		uint32					InputFlag;
-        int                     InputCount;
-		bool					EnableImmediate;
+		uint32 InputFlag;
+        int32 InputCount;
+		bool EnableImmediate;
 
-		static const int		k_max_curve_queue			= 4;
-		_InputCurve				CurveQueue[k_max_curve_queue];
-		int						CurvePos;
+		static const int32 k_max_curve_queue = 4;
+		_InputCurve CurveQueue[k_max_curve_queue];
+		int32 CurvePos;
 
 		typedef TVector< TEventHandler * > VecEventHandlers;
-		VecEventHandlers		EventHandlers;
+		VecEventHandlers EventHandlers;
 
-		static const int		k_max_immediate_queue		= 16;
-		_DeviceEvent			ImmediateEvents[k_max_immediate_queue];
-		int						PosRead;
-		vector2di				Cursor;
+		static const int32 k_max_immediate_queue = 16;
+		_DeviceEvent ImmediateEvents[k_max_immediate_queue];
+		int32 PosRead;
+		vector2di Cursor;
 
-		long long				LastClickTime;
+		long long LastClickTime;
 	};
 }

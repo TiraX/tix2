@@ -42,7 +42,7 @@ namespace tix
 
 	TDevice::~TDevice()
 	{
-		ti_delete	Input;
+		ti_delete Input;
 	}
 
 	void TDevice::Resize(int w, int h)

@@ -197,6 +197,14 @@ namespace tix
 		return RelativeTransformation;
 	}
 
+	void TNode::Tick(float Dt)
+	{
+		for (auto* Child : Children)
+		{
+			Child->Tick(Dt);
+		}
+	}
+
 	void TNode::UpdateAllTransformation()
 	{
 		UpdateAbsoluteTransformation();

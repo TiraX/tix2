@@ -13,6 +13,7 @@ namespace tix
 		ENT_SceneRoot = TI_MAKE_IDENTIFIER('R', 'O', 'O', 'T'),
 		ENT_StaticMesh = TI_MAKE_IDENTIFIER('M', 'E', 'S', 'H'),
 		ENT_Camera = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'A'),
+		ENT_CameraNav = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'N'),
 		//ENT_GEOMETRY		= TI_MAKE_IDENTIFIER('G', 'E', 'O', 'M'),
 		//ENT_MESHGROUP		= TI_MAKE_IDENTIFIER('M', 'G', 'R', 'P'),
 		//ENT_SKINMESH		= TI_MAKE_IDENTIFIER('S', 'K', 'M', 'S'),

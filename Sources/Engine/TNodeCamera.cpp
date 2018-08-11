@@ -14,10 +14,11 @@ namespace tix
 		, UpVector(0.0f, 0.0f, 1.0f)
 		, ZNear(1.0f)
 		, ZFar(3000.0f)
-		, Fovy(PI / 2.0f)
+		, Fovy(PI / 4.0f)
 		, Aspect(1280.f / 720.f)
 	{
-		SetPosition(vector3df(-1, 2, 0));
+		SetPosition(vector3df(-1, 2, 1.0));
+		SetTarget(vector3df(0, 0, 0.25f));
 	}
 
 	TNodeCamera::~TNodeCamera()

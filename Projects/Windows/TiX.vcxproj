@@ -51,6 +51,7 @@
     <ClCompile Include="..\..\Sources\Engine\TMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TNodeCameraNav.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResFile.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="..\..\Sources\Engine\TMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\TNode.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h" />
+    <ClInclude Include="..\..\Sources\Engine\TNodeCameraNav.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />

@@ -49,6 +49,7 @@ using namespace std;
 #include "TResFile.h"
 #include "TNode.h"
 #include "TNodeCamera.h"
+#include "TNodeCameraNav.h"
 #include "TNodeStaticMesh.h"
 #include "TScene.h"
 

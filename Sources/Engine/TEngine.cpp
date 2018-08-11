@@ -131,6 +131,11 @@ namespace tix
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 		float  Dt = Delta * 0.001f;
 
+		// update inputs
+		Device->GetInput()->UpdateEvents(Dt);
+
+		Scene->TickAllNodes(Dt);
+
 		for (auto T : Tickers)
 		{
 			T->Tick(Dt);
