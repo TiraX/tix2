@@ -723,7 +723,6 @@ namespace tix
 		uint32 Result = DescriptorAllocated;
 		++DescriptorAllocated;
 		TI_ASSERT(DescriptorAllocated < FRHIConfig::MaxDescriptorNum);
-		TI_TODO("Temp cbv not get back");
 		return Result;
 	}
 

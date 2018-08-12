@@ -24,6 +24,7 @@ namespace tix
 
 	FTextureDx12::~FTextureDx12()
 	{
+		Destroy();
 	}
 
 	void FTextureDx12::Destroy()
@@ -34,6 +35,7 @@ namespace tix
 		{
 			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
 			RHIDx12->RecallDescriptor(TexDescriptor);
+			TexDescriptor = uint32(-1);
 		}
 	}
 }

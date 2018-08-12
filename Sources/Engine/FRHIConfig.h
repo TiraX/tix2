@@ -13,7 +13,7 @@ namespace tix
 		static const int32 FrameBufferNum = 3;	// Use triple buffers
 		static const int32 MultiRTMax = 4;	// max multi-render targets count
 
-		static const int32 MaxDescriptorNum = 128;
+		static const int32 MaxDescriptorNum = 1024;
 
 		static const E_PIXEL_FORMAT DefaultBackBufferFormat = EPF_BGRA8;
 		static const E_PIXEL_FORMAT DefaultDepthBufferFormat = EPF_DEPTH24_STENCIL8;

@@ -19,6 +19,7 @@ namespace tix
 
 	FUniformBufferDx12::~FUniformBufferDx12()
 	{
+		Destroy();
 	}
 
 	void FUniformBufferDx12::Destroy()
@@ -29,6 +30,7 @@ namespace tix
 		{
 			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
 			RHIDx12->RecallDescriptor(CbvDescriptor);
+			CbvDescriptor = uint32(-1);
 		}
 	}
 }
