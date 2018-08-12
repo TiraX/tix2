@@ -41,7 +41,6 @@ namespace tix
 #else
 		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(NodeRoot);
 #endif
-		DefaultCamera->SetAspectRatio(1.f);
 		SetActiveCamera(DefaultCamera);
 	}
 
