@@ -28,6 +28,8 @@ namespace tix
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
+		virtual void WaitingForGpu() = 0;
+
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;

@@ -23,6 +23,8 @@ namespace tix
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
+		virtual void WaitingForGpu() override;
+
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;

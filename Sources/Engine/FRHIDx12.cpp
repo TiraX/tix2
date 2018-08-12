@@ -437,6 +437,20 @@ namespace tix
 		return ti_new FUniformBufferDx12();
 	}
 
+	// Wait for pending GPU work to complete.
+	void FRHIDx12::WaitingForGpu()
+	{
+		// Schedule a Signal command in the queue.
+		VALIDATE_HRESULT(CommandQueue->Signal(Fence.Get(), FenceValues[CurrentFrame]));
+
+		// Wait until the fence has been crossed.
+		VALIDATE_HRESULT(Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+		WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
+
+		// Increment the fence value for the current frame.
+		FenceValues[CurrentFrame]++;
+	}
+
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{

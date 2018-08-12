@@ -22,8 +22,6 @@ namespace tix
 
 	void FRenderThread::DestroyRenderThread()
 	{
-		TI_TODO("Make sure every frames rendered. and hold resources safe released.");
-
 		TI_ASSERT(RenderThread != nullptr);
 		RenderThread->Stop();
 		ti_delete RenderThread;
@@ -77,6 +75,9 @@ namespace tix
 		{
 			DoRenderTasks();
 		}
+
+		// Finish all on the fly rendering
+		RHI->WaitingForGpu();
 
 		// Release all renderers
 		for (auto Renderer : Renderers)
