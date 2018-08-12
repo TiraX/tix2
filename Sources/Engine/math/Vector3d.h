@@ -139,7 +139,7 @@ namespace tix
 			\return Crossproduct of this vector with p. */
 		vector3d<T> crossProduct(const vector3d<T>& p) const
 		{
-	#ifdef TI_USE_RH
+	#if TI_USE_RH
 			return vector3d<T>(-Y * p.Z + Z * p.Y, -Z * p.X + X * p.Z, -X * p.Y + Y * p.X);
 	#else
 			return vector3d<T>(Y * p.Z - Z * p.Y, Z * p.X - X * p.Z, X * p.Y - Y * p.X);

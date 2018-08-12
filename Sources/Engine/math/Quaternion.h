@@ -316,7 +316,7 @@ namespace tix
 	//		Y = (m(1,2) + m(2,1)) * scale;
 	//		W = (m(1,0) - m(0,1)) * scale;
 	//	}
-	//#ifndef TI_USE_RH
+	//#if !(TI_USE_RH)
 	//	makeInverse();
 	//#endif
 
@@ -328,7 +328,7 @@ namespace tix
 	inline quaternion quaternion::operator*(const quaternion& other) const
 	{
 		quaternion tmp;
-	#ifdef TI_USE_RH
+	#if TI_USE_RH
 		tmp.W = (other.getW() * W) - (other.getX() * X) - (other.getY() * Y) - (other.getZ() * Z);
 		tmp.X = (other.getW() * X) + (other.getX() * W) + (other.getY() * Z) - (other.getZ() * Y);
 		tmp.Y = (other.getW() * Y) + (other.getY() * W) + (other.getZ() * X) - (other.getX() * Z);
@@ -376,7 +376,7 @@ namespace tix
 	inline matrix4 quaternion::getMatrix() const
 	{
 		matrix4 m(matrix4::EM4CONST_NOTHING);
-	#ifdef TI_USE_RH
+	#if TI_USE_RH
 		getMatrix_transposed(m);
 	#else
 		getMatrix(m);

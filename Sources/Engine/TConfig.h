@@ -23,16 +23,8 @@
 #define COMPILE_WITH_RHI_METAL 1
 #endif
 
-//#if (COMPILE_WITH_RHI_DX12)
-//#define USE_MATRIX_LH	1
-//#else
-//#define USE_MATRIX_LH	0
-//#endif
-//
-//#if (COMPILE_WITH_RENDERER_GL)
-//#	define TI_USE_RH
-//#endif
-
+// We use right hand coordinate
+#define TI_USE_RH 1
 
 #if defined (TI_PLATFORM_WIN32)
 #	include <Windows.h>

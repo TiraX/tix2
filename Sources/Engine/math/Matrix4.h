@@ -672,12 +672,12 @@ namespace tix
 
 		CMatrix4<T> m3 ( EM4CONST_NOTHING );
 
-#if USE_MATRIX_LH
-		const T *m2 = M;
-		const T *m1 = m.M;
-#else
+#if TI_USE_RH
 		const T *m1 = M;
 		const T *m2 = m.M;
+#else
+		const T *m2 = M;
+		const T *m1 = m.M;
 #endif
 
 		m3[0] = m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3];
@@ -730,12 +730,12 @@ namespace tix
 			return out;
 		}
 
-#if USE_MATRIX_LH
-		const T *m2 = M;
-		const T *m1 = m.M;
-#else
+#if TI_USE_RH
 		const T *m1 = M;
 		const T *m2 = m.M;
+#else
+		const T *m2 = M;
+		const T *m1 = m.M;
 #endif
 
 		out.M[0] = m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2];
