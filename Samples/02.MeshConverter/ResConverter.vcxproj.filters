@@ -25,7 +25,7 @@
     <ClInclude Include="dds.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResPipelineHelper.h">
+    <ClInclude Include="ResMaterialInstanceHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,7 +51,7 @@
     <ClCompile Include="ResTextureHelperDds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResPipelineHelper.cpp">
+    <ClCompile Include="ResMaterialInstanceHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
