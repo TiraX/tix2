@@ -28,6 +28,7 @@ namespace tix
 		{
 			const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
 			ViewUniformBuffer->UniformBufferData.ViewProjection = (VPInfo.MatProj * VPInfo.MatView).getTransposed();
+			TI_TODO("Matrix LH RH. Do it more wisely.");
 
 			ViewUniformBuffer->InitUniformBuffer();
 
