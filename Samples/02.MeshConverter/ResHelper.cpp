@@ -38,7 +38,7 @@ namespace tix
 			}
 		}
 		HeaderResfile.ChunkCount = Chunks;
-		HeaderResfile.FileSize = ti_align8((int32)sizeof(TResfileHeader));
+		HeaderResfile.FileSize = ti_align4((int32)sizeof(TResfileHeader));
 		for (int32 c = 0; c < ECL_COUNT ; ++ c)
 		{
 			if (ChunkStreams[c].GetLength() > 0)
@@ -56,7 +56,7 @@ namespace tix
 
 		TStream ChunkHeaderStream;
 		ChunkHeaderStream.Put(&HeaderResfile, sizeof(TResfileHeader));
-		FillZero8(ChunkHeaderStream);
+		FillZero4(ChunkHeaderStream);
 
 		// Write to file
 		TFile file;

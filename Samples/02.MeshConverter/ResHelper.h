@@ -138,14 +138,6 @@ namespace tix
 		Stream.Put(zero, bytes);
 	}
 
-	inline void FillZero8(TStream& Stream)
-	{
-		char zero[64] = { 0 };
-		int32 bytes = ti_align8(Stream.GetLength()) - Stream.GetLength();
-		TI_ASSERT(bytes <= 64);
-		Stream.Put(zero, bytes);
-	}
-
 	inline int32 AddStringToList(TVector<TString>& Strings, const TString& String)
 	{
 		for (int32 s = 0 ; s < (int32)Strings.size() ; ++ s)

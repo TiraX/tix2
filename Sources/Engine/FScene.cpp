@@ -62,6 +62,7 @@ namespace tix
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)
 	{
+		TI_ASSERT(IsRenderThread());
 		ViewProjection = Info;
 	}
 }

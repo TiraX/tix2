@@ -23,6 +23,7 @@ namespace tix
 		//TNodeStaticMesh* CreateStaticMesh(TNode* ParentNode = nullptr);
 		TMeshBufferPtr CreateMeshBuffer();
 		TTexturePtr CreateTexture();
+		TMaterialInstancePtr CreateMaterialInstance();
 
 		const TString& GetFilename()
 		{

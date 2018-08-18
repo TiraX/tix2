@@ -162,7 +162,7 @@ namespace tix
 
 			// 8 bytes align
 			TI_ASSERT((VertexEnd - VertexStart) % 4 == 0);
-			FillZero8(DataStream);
+			FillZero4(DataStream);
 
 			// - Indices
 			const int32 IndexStart = DataStream.GetLength();
@@ -184,18 +184,18 @@ namespace tix
 				}
 			}
 			const int32 IndexEnd = DataStream.GetLength();
-			FillZero8(DataStream);
+			FillZero4(DataStream);
 
 			// Fill header
 			const int32 HeaderStart = HeaderStream.GetLength();
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
 			const int32 HeaderEnd = HeaderStream.GetLength();
-			FillZero8(HeaderStream);
+			FillZero4(HeaderStream);
 		}
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
 		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
-		FillZero8(OutStream);
+		FillZero4(OutStream);
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}

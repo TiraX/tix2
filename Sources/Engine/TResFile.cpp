@@ -66,7 +66,7 @@ namespace tix
 			_LOG(Error, "Wrong file version. [%s]\n", Filename.c_str());
 			return false;
 		}
-		pos += ti_align8((int32)sizeof(TResfileHeader));
+		pos += ti_align4((int32)sizeof(TResfileHeader));
 
 		LoadStringList();
 

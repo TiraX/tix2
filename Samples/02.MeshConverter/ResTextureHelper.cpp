@@ -45,7 +45,7 @@ namespace tix
 			TextureHeader.Desc = Define->Desc;
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
-			FillZero8(HeaderStream);
+			FillZero4(HeaderStream);
 
 			const TVector<TResSurfaceData>& Surfaces = Define->Surfaces;
 			for (const auto& Surface : Surfaces)
@@ -63,7 +63,7 @@ namespace tix
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
 		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
-		FillZero8(OutStream);
+		FillZero4(OutStream);
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
