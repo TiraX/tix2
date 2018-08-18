@@ -17,86 +17,146 @@ namespace tix
 	{
 	}
 
+	void TResMaterialInstanceHelper::SetMaterialInstanceName(const TString& InInstanceName)
+	{
+		InstanceName = InInstanceName;
+	}
+
 	void TResMaterialInstanceHelper::SetMaterialRes(const TString& MaterialName)
 	{
 		LinkedMaterial = MaterialName;
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& ParamName, int32 Value)
+	bool TResMaterialInstanceHelper::IsParamExisted(const TString& InParamName)
 	{
-		TVariantValue V;
-		V.ValueInt = Value;
-		Parameters[ParamName] = V;
+		for (const auto& Param : Parameters)
+		{
+			if (Param.ParamName == InParamName)
+			{
+				printf("Duplicated param [%s] in %s.\n", InParamName.c_str(), InstanceName.c_str());
+				return true;
+			}
+		}
+		return false;
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& ParamName, float Value)
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, int32 Value)
 	{
-		TVariantValue V;
-		V.ValueFloat = Value;
-		Parameters[ParamName] = V;
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueInt = Value;
+		V.ParamType = MIPT_INT;
+		Parameters.push_back(V);
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& ParamName, const vector3df& Value)
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, float Value)
 	{
-		TVariantValue V;
-		V.ValueVec = Value;
-		Parameters[ParamName] = V;
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueFloat = Value;
+		V.ParamType = MIPT_FLOAT;
+		Parameters.push_back(V);
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& ParamName, const quaternion& Value)
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const vector3df& Value)
 	{
-		TVariantValue V;
-		V.ValueQuat = Value;
-		Parameters[ParamName] = V;
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueVec = Value;
+		V.ParamType = MIPT_FLOAT4;
+		Parameters.push_back(V);
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& ParamName, const SColorf& Value)
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const quaternion& Value)
 	{
-		TVariantValue V;
-		V.ValueClr = Value;
-		Parameters[ParamName] = V;
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueQuat = Value;
+		V.ParamType = MIPT_FLOAT4;
+		Parameters.push_back(V);
+	}
+
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const SColorf& Value)
+	{
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueClr = Value;
+		V.ParamType = MIPT_FLOAT4;
+		Parameters.push_back(V);
+	}
+
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const TString& Value)
+	{
+		if (IsParamExisted(InParamName))
+			return;
+		TMIParam V(InParamName);
+		V.ParamValue.ValueString = Value;
+		V.ParamType = MIPT_TEXTURE;
+		Parameters.push_back(V);
 	}
 	
 	void TResMaterialInstanceHelper::OutputMaterialInstance(TStream& OutStream, TVector<TString>& OutStrings)
 	{
-		/*
 		TResfileChunkHeader ChunkHeader;
-		ChunkHeader.ID = TIRES_ID_CHUNK_TEXTURE;
-		ChunkHeader.Version = TIRES_VERSION_CHUNK_TEXTURE;
-		ChunkHeader.ElementCount = (int32)Textures.size();
+		ChunkHeader.ID = TIRES_ID_CHUNK_MINSTANCE;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_MINSTANCE;
+		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);
 		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
 		{
-			TResTextureDefine* Define = Textures[t];
+			THeaderMaterialInstance Define;
+			Define.NameIndex = AddStringToList(OutStrings, InstanceName);
+			Define.LinkedMaterialIndex = AddStringToList(OutStrings, LinkedMaterial);
+			Define.ParamCount = (int32)Parameters.size();
+			
+			// Save header
+			HeaderStream.Put(&Define, sizeof(THeaderMaterialInstance));
 
-			// init header
-			THeaderTexture TextureHeader;
-			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define->Name);
-			TextureHeader.Desc = Define->Desc;
-
-			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
-			FillZero8(HeaderStream);
-
-			const TVector<TResSurfaceData>& Surfaces = Define->Surfaces;
-			for (const auto& Surface : Surfaces)
+			// Save Parameters formats
+			TStream SName, SType, SValue;
+			for (const auto& Param : Parameters)
 			{
-				int32 DataLength = ti_align4(Surface.Data.GetLength());
-				DataStream.Put(&Surface.W, sizeof(int32));
-				DataStream.Put(&Surface.H, sizeof(int32));
-				DataStream.Put(&Surface.RowPitch, sizeof(int32));
-				DataStream.Put(&DataLength, sizeof(int32));
-
-				DataStream.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());
-				FillZero4(DataStream);
+				int32 ParamNameIndex = AddStringToList(OutStrings, Param.ParamName);
+				SName.Put(&ParamNameIndex, sizeof(int32));
+				SType.Put(&Param.ParamType, sizeof(uint8));
+				switch (Param.ParamType)
+				{
+				case MIPT_INT:
+				case MIPT_FLOAT:
+					SValue.Put(&Param.ParamValue.ValueFloat, sizeof(float));
+					break;
+				case MIPT_INT4:
+				case MIPT_FLOAT4:
+					SValue.Put(&Param.ParamValue.ValueQuat, sizeof(float) * 4);
+					break;
+				case MIPT_TEXTURE:
+				{
+					int32 TextureNameIndex = AddStringToList(OutStrings, Param.ParamValue.ValueString);
+					SValue.Put(&TextureNameIndex, sizeof(int32));
+				}
+					break;
+				default:
+					printf("Invalid param type %d for %s.\n", Param.ParamType, InstanceName.c_str());
+					break;
+				}
 			}
+			FillZero4(SType);
+			DataStream.Put(SName.GetBuffer(), SName.GetLength());
+			DataStream.Put(SType.GetBuffer(), SType.GetLength());
+			DataStream.Put(SValue.GetBuffer(), SValue.GetLength());
 		}
+
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
 		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
-		FillZero8(OutStream);
+		FillZero4(OutStream);
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
-		*/
 	}
 }

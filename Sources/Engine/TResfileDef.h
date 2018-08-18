@@ -7,13 +7,14 @@
 
 namespace tix
 {
-	enum 
+	enum
 	{
-		TIRES_VERSION_MAINFILE		= 1,
-		TIRES_VERSION_CHUNK_MESH	= 1,
+		TIRES_VERSION_MAINFILE = 1,
+		TIRES_VERSION_CHUNK_MESH = 1,
 		//TIRES_VERSION_CHUNK_SCEN	= 4,	// add TiMaterial in DAE converting, remove Material, use default TiMaterial instead;added trigger node
-		TIRES_VERSION_CHUNK_TEXTURE	= 1,
-		TIRES_VERSION_CHUNK_PIPELINE = 1,
+		TIRES_VERSION_CHUNK_TEXTURE = 1,
+		TIRES_VERSION_CHUNK_MATERIAL = 1,
+		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -48,7 +49,8 @@ namespace tix
 		TIRES_ID_RESFILE			= TI_MAKE_IDENTIFIER('T', 'I', 'R', 'S'),
 		TIRES_ID_CHUNK_MESH			= TI_MAKE_IDENTIFIER('M', 'E', 'S', 'H'),
 		TIRES_ID_CHUNK_TEXTURE		= TI_MAKE_IDENTIFIER('T', 'E', 'X', 'E'),
-		TIRES_ID_CHUNK_PIPELINE		= TI_MAKE_IDENTIFIER('P', 'I', 'P', 'L'),
+		TIRES_ID_CHUNK_MATERIAL		= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'R'),
+		TIRES_ID_CHUNK_MINSTANCE	= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'I'),
 		//TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
@@ -158,5 +160,12 @@ namespace tix
 	{
 		int32 StrId_Name;
 		TTextureDesc Desc;
+	};
+
+	struct THeaderMaterialInstance
+	{
+		int32 NameIndex;
+		int32 LinkedMaterialIndex;
+		int32 ParamCount;
 	};
 }

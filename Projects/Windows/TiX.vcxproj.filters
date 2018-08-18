@@ -145,6 +145,12 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeCameraNav.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TMaterial.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TMaterialInstance.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -389,6 +395,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TNodeCameraNav.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TMaterial.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TMaterialInstance.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

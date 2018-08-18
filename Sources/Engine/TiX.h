@@ -45,6 +45,8 @@ using namespace std;
 #include "TTexture.h"
 #include "TMeshBuffer.h"
 #include "TPipeline.h"
+#include "TMaterial.h"
+#include "TMaterialInstance.h"
 #include "TResfileDef.h"
 #include "TResFile.h"
 #include "TNode.h"

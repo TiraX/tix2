@@ -14,12 +14,20 @@ namespace tix
 			: BufferSize(buf_size)
 			, Pos(0)
 		{
-			Buffer = ti_new char[BufferSize];
+			if (buf_size > 0)
+			{
+				Buffer = ti_new char[BufferSize];
+			}
+			else
+			{
+				Buffer = nullptr;
+			}
 		}
 
 		TStream(void* buf, int32 buf_size)
 			: Pos(buf_size)
 		{
+			TI_ASSERT(buf_size != 0);
 			BufferSize = (buf_size + 3) & (~3);
 			Buffer = ti_new char[BufferSize];
 

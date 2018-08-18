@@ -25,14 +25,6 @@
 #	define	TI_BREAK	TI_ASSERT(0)
 #endif
 
-#ifndef TI_DEBUG
-#	ifdef TIX_DEBUG
-#		define TI_DEBUG(cond) {int r = cond; TI_ASSERT(r == 0);}
-#	else
-#		define TI_DEBUG(cond) cond
-#	endif
-#endif
-
 #define DO_STRINGIZE(x) #x
 #define STRINGIZE(x) DO_STRINGIZE(x)
 #define TODO_MESSAGE_STRING(msg) __FILE__ "(" STRINGIZE( __LINE__ ) ") : TODO - " ##msg " - [ " __FUNCTION__ " ]"

@@ -7,7 +7,7 @@
 
 namespace tix
 {
-	struct TVariantValue
+	struct TMIParamValue
 	{
 		union
 		{
@@ -19,38 +19,59 @@ namespace tix
 		};
 		TString ValueString;
 
-		TVariantValue()
+		TMIParamValue()
 		{
 			memset(&ValueClr, 0, sizeof(SColorf));
 		}
 
-		TVariantValue& operator = (const TVariantValue& Other)
+		TMIParamValue(const TMIParamValue& Other)
 		{
-			ValueClr = Other.ValueClr;
+			memcpy(&ValueClr, &Other.ValueClr, sizeof(SColorf));
 			ValueString = Other.ValueString;
-			return *this;
 		}
 	};
+	struct TMIParam
+	{
+		TString ParamName;
+		uint8 ParamType;
+		TMIParamValue ParamValue;
+
+		TMIParam()
+			: ParamName("None")
+			, ParamType(MIPT_UNKNOWN)
+		{
+		}
+
+		TMIParam(const TString& InParamName)
+			: ParamName(InParamName)
+			, ParamType(MIPT_UNKNOWN)
+		{
+		}
+	};
+
 	class TResMaterialInstanceHelper
 	{
 	public:
 		TResMaterialInstanceHelper();
 		~TResMaterialInstanceHelper();
 
+		void SetMaterialInstanceName(const TString& InstanceName);
 		void SetMaterialRes(const TString& MaterialName);
 
-		void AddParameter(const TString& ParamName, int32 Value);
-		void AddParameter(const TString& ParamName, float Value);
-		void AddParameter(const TString& ParamName, const vector3df& Value);
-		void AddParameter(const TString& ParamName, const quaternion& Value);
-		void AddParameter(const TString& ParamName, const SColorf& Value);
+		void AddParameter(const TString& InParamName, int32 Value);
+		void AddParameter(const TString& InParamName, float Value);
+		void AddParameter(const TString& InParamName, const vector3df& Value);
+		void AddParameter(const TString& InParamName, const quaternion& Value);
+		void AddParameter(const TString& InParamName, const SColorf& Value);
+		void AddParameter(const TString& InParamName, const TString& Value);
 
 		void OutputMaterialInstance(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:
-
+		bool IsParamExisted(const TString& InParamName);
 	private:
+		TString InstanceName;
 		TString LinkedMaterial;
-		TMap<TString, TVariantValue> Parameters;
+		TVector<TMIParam> Parameters;
 	};
 }

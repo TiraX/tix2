@@ -12,6 +12,8 @@ namespace tix
 		ERES_MESH,
 		ERES_TEXTURE,
 		ERES_PIPELINE,
+		ERES_MATERIAL,
+		ERES_MATERIAL_INSTANCE,
 
 		ERES_COUNT,
 	};
@@ -29,7 +31,7 @@ namespace tix
 
 	protected:
 		E_RESOURCE_TYPE ResType;
-#ifdef TI_DEBUG
+#ifdef TIX_DEBUG
 		TString ResourceName;
 #endif
 		friend class TResFile;
