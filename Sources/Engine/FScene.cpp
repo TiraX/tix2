@@ -10,6 +10,7 @@ namespace tix
 {
 	FScene::FScene()
 		: RootNode(nullptr)
+		, SceneFlags(0)
 	{
 	}
 
@@ -64,5 +65,6 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 		ViewProjection = Info;
+		SetSceneFlag(ViewProjectionDirty, true);
 	}
 }

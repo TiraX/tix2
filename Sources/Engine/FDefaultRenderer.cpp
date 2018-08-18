@@ -24,11 +24,16 @@ namespace tix
 		if (ViewUniformBuffer == nullptr)
 			ViewUniformBuffer = ti_new FViewUniformBuffer();
 
-		const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
-		ViewUniformBuffer->UniformBufferData.ViewProjection = (VPInfo.MatProj * VPInfo.MatView).getTransposed();
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
+		{
+			const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
+			ViewUniformBuffer->UniformBufferData.ViewProjection = (VPInfo.MatProj * VPInfo.MatView).getTransposed();
 
-		ViewUniformBuffer->InitUniformBuffer();
-		TI_TODO("Do not update this every frame, only when it changed.");
+			ViewUniformBuffer->InitUniformBuffer();
+
+			// remove vp dirty flag
+			Scene->SetSceneFlag(FScene::ViewProjectionDirty, false);
+		}
 	}
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)

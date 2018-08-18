@@ -13,15 +13,32 @@ namespace tix
 		FScene();
 		~FScene();
 
+		enum SceneFlag
+		{
+			ViewProjectionDirty = 1 << 0,
+		};
+
 		void SetViewProjection(const FViewProjectionInfo& Info);
 
 		void SetRootNode(FNode * Node);
 		void AddNode(FNode * Node, FNode * Parent);
 		void RemoveNode(FNode * Node);
 
-		const TVector<FMeshRelevance>& GetStaticDrawList() const
+		bool HasSceneFlag(SceneFlag Flag) const
 		{
-			return StaticDrawList;
+			return (SceneFlags & Flag) != 0;
+		}
+
+		void SetSceneFlag(SceneFlag Flag, bool Enable)
+		{
+			if (Enable)
+			{
+				SceneFlags |= Flag;
+			}
+			else
+			{
+				SceneFlags &= ~Flag;
+			}
 		}
 
 		// Temp function, remove after refactor
@@ -32,9 +49,16 @@ namespace tix
 		{
 			return ViewProjection;
 		}
+
+		const TVector<FMeshRelevance>& GetStaticDrawList() const
+		{
+			return StaticDrawList;
+		}
 	protected:
 		FNode * RootNode;
 		TVector<FMeshRelevance> StaticDrawList;
+
+		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;
 	};
