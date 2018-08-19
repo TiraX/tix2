@@ -125,6 +125,4 @@ namespace tix
 		int32 Pos;
 		int32 BufferSize;
 	};
-
-	typedef TI_INTRUSIVE_PTR(TStream)	TStreamPtr;
 }

@@ -8,29 +8,29 @@
 
 namespace tix
 {
-	FNodeStaticMesh::FNodeStaticMesh(E_NODE_TYPE Type, FNode* parent)
-		: FNode(Type, parent)
-	{
-	}
+	//FNodeStaticMesh::FNodeStaticMesh(E_NODE_TYPE Type, FNode* parent)
+	//	: FNode(Type, parent)
+	//{
+	//}
 
-	FNodeStaticMesh::~FNodeStaticMesh()
-	{
-	}
+	//FNodeStaticMesh::~FNodeStaticMesh()
+	//{
+	//}
 
-	void FNodeStaticMesh::AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer)
-	{
-		MeshBuffer = InMeshBuffer;
-		Pipeline = InPipeline;
-		UniformBuffer = InUniformBuffer;
-	}
+	//void FNodeStaticMesh::AddMeshToDraw(FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer)
+	//{
+	//	MeshBuffer = InMeshBuffer;
+	//	Pipeline = InPipeline;
+	//	UniformBuffer = InUniformBuffer;
+	//}
 
-	void FNodeStaticMesh::AddToStaticMeshList(TVector<FMeshRelevance>& List)
-	{
-		TI_TODO("Temp fucntion, remove after refactor");
-		FMeshRelevance Relevance;
-		Relevance.MeshBuffer = MeshBuffer;
-		Relevance.Pipeline = Pipeline;
-		Relevance.UniformBuffer = UniformBuffer;
-		List.push_back(Relevance);
-	}
+	//void FNodeStaticMesh::AddToStaticMeshList(TVector<FMeshRelevance>& List)
+	//{
+	//	TI_TODO("Temp fucntion, remove after refactor");
+	//	FMeshRelevance Relevance;
+	//	Relevance.MeshBuffer = MeshBuffer;
+	//	Relevance.Pipeline = Pipeline;
+	//	Relevance.UniformBuffer = UniformBuffer;
+	//	List.push_back(Relevance);
+	//}
 }

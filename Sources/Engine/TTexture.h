@@ -82,9 +82,6 @@ namespace tix
 		uint32 Mips;
 	};
 
-	class FTexture;
-	typedef TI_INTRUSIVE_PTR(FTexture) FTexturePtr;
-
 	class TTexture : public TResource
 	{
 	public:
@@ -130,7 +127,4 @@ namespace tix
 	protected:
 		TVector<TSurface*> Surfaces;
 	};
-
-	typedef TI_INTRUSIVE_PTR(TTexture) TTexturePtr;
-
 }

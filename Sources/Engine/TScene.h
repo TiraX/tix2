@@ -35,8 +35,6 @@ namespace tix
 		DECLARE_NODE_WITH_CONSTRUCTOR(SceneRoot);
 	public:
 		virtual ~TNodeSceneRoot();
-
-		virtual void CreateRenderThreadNode() override;
 	};
 
 	class TNodeCamera;
@@ -70,8 +68,7 @@ namespace tix
 		TI_API void SetActiveCamera(TNodeCamera* camera);
 		TI_API TNodeCamera* GetActiveCamera();
 
-		// Temp method to test rendering, scene management will be in Scene Loading
-		TI_API void AddMeshToScene(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterialInFuture);
+		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialPtr InMaterial, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
 
 	protected:
 

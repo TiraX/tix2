@@ -62,5 +62,4 @@ namespace tix
 
 	protected:
 	};
-	typedef TI_INTRUSIVE_PTR(FUniformBuffer) FUniformBufferPtr;
 }

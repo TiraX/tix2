@@ -35,8 +35,6 @@ namespace tix
 	public:
 		virtual ~TNodeCamera();
 
-		virtual void CreateRenderThreadNode() override {};
-
 		virtual void SetPosition(const vector3df& pos) override;
 		virtual void UpdateAllTransformation() override;
 

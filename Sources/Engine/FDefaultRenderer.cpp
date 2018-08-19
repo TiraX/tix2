@@ -39,8 +39,6 @@ namespace tix
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
-		Scene->CollectAllMeshRelevance();
-
 		PrepareViewUniforms(Scene);
 
 		const TVector<FMeshRelevance>& Meshes = Scene->GetStaticDrawList();

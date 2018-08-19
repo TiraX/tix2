@@ -48,5 +48,4 @@ namespace tix
 
 		friend class TResourceLibrary;
 	};
-	typedef TI_INTRUSIVE_PTR(TResFile) TResFilePtr;
 }

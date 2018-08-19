@@ -42,7 +42,4 @@ namespace tix
 	protected:
 		friend class TResFile;
 	};
-
-	typedef TI_INTRUSIVE_PTR(TMaterialInstance) TMaterialInstancePtr;
-
 }

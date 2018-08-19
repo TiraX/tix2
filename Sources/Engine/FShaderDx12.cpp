@@ -11,14 +11,14 @@
 
 namespace tix
 {
-	FShaderDx12::FShaderDx12()
-		: FShader(ERF_Dx12)
-	{
-	}
+	//FShaderDx12::FShaderDx12()
+	//	: FShader(ERF_Dx12)
+	//{
+	//}
 
-	FShaderDx12::~FShaderDx12()
-	{
-	}
+	//FShaderDx12::~FShaderDx12()
+	//{
+	//}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

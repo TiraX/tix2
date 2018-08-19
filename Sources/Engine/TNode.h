@@ -17,7 +17,6 @@ namespace tix
 		static T* CreateNode(TNode* Parent)
 		{
 			T* Node = ti_new T(Parent);
-			Node->CreateRenderThreadNode();
 			return Node;
 		}
 	};
@@ -28,12 +27,6 @@ namespace tix
 		TNode##NodeName(TNode * Parent); \
 	public: \
 		static const E_NODE_TYPE NODE_TYPE = ENT_##NodeName;
-
-#define CREATE_RENDER_THREAD_NODE(ClassType) \
-	TI_ASSERT(Parent && Parent->GetRenderThreadNode()); \
-	TI_ASSERT(Node_RenderThread == nullptr); \
-	Node_RenderThread = ti_new ClassType(NodeType, nullptr); \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddNodeToFScene, FNode*, Node, Node_RenderThread, FNode*, Parent, Parent->GetRenderThreadNode(), { FScene * scene = RenderThread->GetRenderScene(); scene->AddNode(Node, Parent); })
 
 	class TNode 
 	{
@@ -140,14 +133,6 @@ namespace tix
 		}
 		
 		virtual void RemoveAndDeleteAll();
-
-		virtual void CreateRenderThreadNode();
-
-		// GetRenderThreadNode only be called from CREATE_RENDER_THREAD_NODE
-		FNode * GetRenderThreadNode()
-		{
-			return Node_RenderThread;
-		}
 
 		// interfaces for different nodes
 		//virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) {};

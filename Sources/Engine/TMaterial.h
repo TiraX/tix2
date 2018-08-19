@@ -7,9 +7,6 @@
 
 namespace tix
 {
-	//class FMaterial;
-	//typedef TI_INTRUSIVE_PTR(FMaterial) FMaterialPtr;
-
 	class TMaterial : public TResource
 	{
 	public:
@@ -26,7 +23,4 @@ namespace tix
 
 	protected:
 	};
-
-	typedef TI_INTRUSIVE_PTR(TMaterial) TMaterialPtr;
-
 }

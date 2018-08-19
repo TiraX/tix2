@@ -214,11 +214,6 @@ namespace tix
 		}
 	};
 
-	class FPipeline;
-	typedef TI_INTRUSIVE_PTR(FPipeline) FPipelinePtr;
-	class TPipeline;
-	typedef TI_INTRUSIVE_PTR(TPipeline) TPipelinePtr;
-
 	class TPipeline : public TResource
 	{
 	public:

@@ -9,19 +9,19 @@
 
 namespace tix
 {
-	class FShaderDx12 : public FShader
-	{
-	public:
-		FShaderDx12();
-		virtual ~FShaderDx12();
+	//class FShaderDx12 : public FShader
+	//{
+	//public:
+	//	FShaderDx12();
+	//	virtual ~FShaderDx12();
 
-	protected:
+	//protected:
 
-	private:
-		TStream Shader;
+	//private:
+	//	TStream Shader;
 
-		friend class FRHIDx12;
-	};
+	//	friend class FRHIDx12;
+	//};
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

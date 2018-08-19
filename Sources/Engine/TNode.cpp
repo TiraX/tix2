@@ -236,9 +236,4 @@ namespace tix
 			}
 		}
 	}
-
-	void TNode::CreateRenderThreadNode()
-	{
-		CREATE_RENDER_THREAD_NODE(FNode);
-	}
 }

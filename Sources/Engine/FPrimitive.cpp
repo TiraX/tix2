@@ -4,7 +4,15 @@
 */
 
 #include "stdafx.h"
+#include "FPrimitive.h"
 
 namespace tix
 {
+	FPrimitive::FPrimitive()
+	{
+	}
+
+	FPrimitive::~FPrimitive()
+	{
+	}
 }

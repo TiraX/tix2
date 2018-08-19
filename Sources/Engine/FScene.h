@@ -41,10 +41,6 @@ namespace tix
 			}
 		}
 
-		// Temp function, remove after refactor
-		void CollectAllMeshRelevance();
-		void TranverseNode(FNode * Node);
-
 		const FViewProjectionInfo& GetViewProjection() const
 		{
 			return ViewProjection;

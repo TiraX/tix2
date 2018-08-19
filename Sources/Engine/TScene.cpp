@@ -15,19 +15,6 @@ namespace tix
 	TNodeSceneRoot::~TNodeSceneRoot()
 	{
 	}
-
-	void TNodeSceneRoot::CreateRenderThreadNode()
-	{
-		TI_ASSERT(Node_RenderThread == nullptr);
-		// Create render thread node and add it to FScene
-		Node_RenderThread = ti_new FNode(ENT_SceneRoot, nullptr);
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(SetFSceneRootNode,
-			FNode*, Node, Node_RenderThread,
-			{
-				FScene * scene = RenderThread->GetRenderScene();
-				scene->SetRootNode(Node);
-			});
-	}
 	////////////////////////////////////////////////////////////////////////////
 	TScene::TScene()
 		: Flag(0)
@@ -83,10 +70,16 @@ namespace tix
 		return ActiveCamera;
 	}
 
-	void TScene::AddMeshToScene(TMeshBufferPtr InMesh, TPipelinePtr InPipeline, int32 InMaterialInFuture)
+	TNodeStaticMesh* TScene::AddStaticMesh(TMeshBufferPtr InMesh, TMaterialPtr InMaterial, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
 	{
 		// Create a static mesh node to hold mesh resource
 		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
-		StaticMesh->AddMeshToDraw(InMesh, InPipeline, InMaterialInFuture, 0, 0);
+
+		//Create FPrimitive in FScene
+		//Create Pipeline from Material and Mesh Resource
+		Create
+		
+		TI_TODO("Support multi mesh buffer in one node.");
+		return StaticMesh;
 	}
 }

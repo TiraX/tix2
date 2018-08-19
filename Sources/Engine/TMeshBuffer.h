@@ -7,9 +7,6 @@
 
 namespace tix
 {
-	class FMeshBuffer;
-	typedef TI_INTRUSIVE_PTR(FMeshBuffer) FMeshBufferPtr;
-
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
 	class TMeshBuffer : public TResource
 	{
@@ -118,5 +115,4 @@ namespace tix
 		uint32				VsFormat;
 		uint32				Stride;
 	};
-	typedef TI_INTRUSIVE_PTR(TMeshBuffer) TMeshBufferPtr;
 }

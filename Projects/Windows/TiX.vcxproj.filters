@@ -151,6 +151,9 @@
     <ClCompile Include="..\..\Sources\Engine\TMaterialInstance.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -401,6 +404,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TMaterialInstance.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FPrimitive.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h">
+      <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

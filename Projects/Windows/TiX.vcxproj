@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\Sources\Engine\FNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="..\..\Sources\Engine\FNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FPrimitive.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
@@ -126,6 +128,7 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeCameraNav.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
+    <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
     <ClInclude Include="..\..\Sources\Engine\TResFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TResfileDef.h" />
