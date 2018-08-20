@@ -41,10 +41,17 @@ namespace tix
 	{
 		PrepareViewUniforms(Scene);
 
-		const TVector<FMeshRelevance>& Meshes = Scene->GetStaticDrawList();
-		for (const auto& Relevance : Meshes)
+		const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
+		for (const auto& Primitive : Primitives)
 		{
-			DrawMeshBuffer(RHI, Relevance.MeshBuffer, Relevance.Pipeline, ViewUniformBuffer->UniformBuffer);
+			for (int32 m = 0; m < (int32)Primitive->MeshBuffers.size(); ++m)
+			{
+				FMeshBufferPtr MB = Primitive->MeshBuffers[m];
+				FPipelinePtr PL = Primitive->Pipelines[m];
+				FUniformBufferPtr UB = Primitive->Uniforms[m];
+
+				DrawMeshBuffer(RHI, MB, PL, ViewUniformBuffer->UniformBuffer);
+			}
 		}
 	}
 

@@ -19,10 +19,7 @@ namespace tix
 		};
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
-
-		void SetRootNode(FNode * Node);
-		void AddNode(FNode * Node, FNode * Parent);
-		void RemoveNode(FNode * Node);
+		void AddPrimitive(FPrimitivePtr Primitive);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
@@ -46,13 +43,12 @@ namespace tix
 			return ViewProjection;
 		}
 
-		const TVector<FMeshRelevance>& GetStaticDrawList() const
+		const TVector<FPrimitivePtr>& GetStaticDrawList() const
 		{
 			return StaticDrawList;
 		}
 	protected:
-		FNode * RootNode;
-		TVector<FMeshRelevance> StaticDrawList;
+		TVector<FPrimitivePtr> StaticDrawList;
 
 		uint32 SceneFlags;
 

@@ -13,7 +13,11 @@ namespace tix
 		FPrimitive();
 		virtual ~FPrimitive();
 
-	protected:
+		void AddMesh(FMeshBufferPtr MeshBuffer, FPipelinePtr Pipeline, FUniformBufferPtr UniformBuffer);
+
+		TVector<FMeshBufferPtr> MeshBuffers;
+		TVector<FPipelinePtr> Pipelines;
+		TVector<FUniformBufferPtr> Uniforms;
 	};
 } // end namespace tix
 

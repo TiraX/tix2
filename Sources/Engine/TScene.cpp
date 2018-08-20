@@ -70,16 +70,29 @@ namespace tix
 		return ActiveCamera;
 	}
 
-	TNodeStaticMesh* TScene::AddStaticMesh(TMeshBufferPtr InMesh, TMaterialPtr InMaterial, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
+	TNodeStaticMesh* TScene::AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
 	{
 		// Create a static mesh node to hold mesh resource
 		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
 
-		//Create FPrimitive in FScene
-		//Create Pipeline from Material and Mesh Resource
-		Create
+		// Create Primitive
+		FPrimitivePtr Primitive = ti_new FPrimitive;
+		TMaterialPtr Material = InMInstance->LinkedMaterial;
+		TI_ASSERT((InMesh->MeshBufferResource != nullptr) 
+			&& (Material->Pipeline->PipelineResource != nullptr)
+			&& (InMInstance->UniformBuffer != nullptr));
+		Primitive->AddMesh(InMesh->MeshBufferResource, Material->Pipeline->PipelineResource, InMInstance->UniformBuffer);
+
+		// Add primitive to scene
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitveToScene,
+			FPrimitivePtr, Primitive, Primitive,
+			{
+				RenderThread->GetRenderScene()->AddPrimitive(Primitive);
+			});
+
+		// Link primitive to node
+		StaticMesh->LinkFPrimitive(Primitive);
 		
-		TI_TODO("Support multi mesh buffer in one node.");
 		return StaticMesh;
 	}
 }

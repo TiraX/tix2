@@ -25,9 +25,10 @@ typedef long long			int64;
 typedef float	float32;
 typedef double	float64;
 
-#define TVector		std::vector
-#define TList		std::list
-#define TMap		std::map
+#define TVector std::vector
+#define TList std::list
+#define TMap std::map
+#define TUnorderedMap std::unordered_map
 
 typedef std::string	TString;
 typedef std::wstring TWString;

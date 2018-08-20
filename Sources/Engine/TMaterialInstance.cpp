@@ -19,11 +19,13 @@ namespace tix
 	void TMaterialInstance::InitRenderThreadResource()
 	{
 		TI_TODO("Implement here.");
+		TI_ASSERT(0);
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()
 	{
 		TI_TODO("Implement here.");
+		TI_ASSERT(0);
 	}
 
 	static const int32 ParamTypeLength[MIPT_COUNT] =

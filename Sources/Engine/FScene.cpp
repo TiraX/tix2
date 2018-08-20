@@ -9,8 +9,7 @@
 namespace tix
 {
 	FScene::FScene()
-		: RootNode(nullptr)
-		, SceneFlags(0)
+		: SceneFlags(0)
 	{
 	}
 
@@ -18,16 +17,16 @@ namespace tix
 	{
 	}
 
-	void FScene::SetRootNode(FNode * Node)
-	{
-		TI_ASSERT(RootNode == nullptr);
-		RootNode = Node;
-	}
-
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)
 	{
 		TI_ASSERT(IsRenderThread());
 		ViewProjection = Info;
 		SetSceneFlag(ViewProjectionDirty, true);
+	}
+
+	void FScene::AddPrimitive(FPrimitivePtr InPrimitive)
+	{
+		TI_ASSERT(IsRenderThread());
+		StaticDrawList.push_back(InPrimitive);
 	}
 }

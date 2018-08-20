@@ -16,8 +16,7 @@ namespace tix
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-		//TMaterialDesc Desc;
-		//FMaterialPtr TextureResource;
+		TPipelinePtr Pipeline;
 
 	protected:
 

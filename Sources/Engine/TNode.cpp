@@ -14,7 +14,6 @@ namespace tix
 		, NodeFlag(ENF_VISIBLE | ENF_DIRTY_POS)
 		, RelativeRotate(0.f, 0.f, 0.f, 1.f)
 		, RelativeScale(1.f, 1.f, 1.f)
-		, Node_RenderThread(nullptr)
 	{
 		if (parent)
 			parent->AddChild(this);
@@ -25,18 +24,6 @@ namespace tix
 		// Remove and delete all children
 		Remove();
 		RemoveAndDeleteAll();
-
-		// Remove render thread node
-		if (Node_RenderThread)
-		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveNodeFromFScene,
-				FNode*, Node, Node_RenderThread,
-				{
-					FScene * scene = RenderThread->GetRenderScene();
-					scene->RemoveNode(Node);
-				});
-			Node_RenderThread = nullptr;
-		}
 	}
 
 	void TNode::AddChild(TNode* child)

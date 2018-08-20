@@ -105,6 +105,10 @@ namespace tix
 				ChunkHeader[ECL_TEXTURES] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_TEXTURE);
 				break;
+			case TIRES_ID_CHUNK_MATERIAL:
+				ChunkHeader[ECL_MATERIAL] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_MATERIAL);
+				break;
 			case TIRES_ID_CHUNK_MINSTANCE:
 				ChunkHeader[ECL_MATERIAL_INSTANCE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_MINSTANCE);
@@ -126,6 +130,9 @@ namespace tix
 
 		if (ChunkHeader[ECL_TEXTURES] != nullptr)
 			Resource = CreateTexture();
+
+		if (ChunkHeader[ECL_MATERIAL] != nullptr)
+			Resource = CreateMaterial();
 
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] != nullptr)
 			Resource = CreateMaterialInstance();
@@ -214,6 +221,63 @@ namespace tix
 		return Result;
 	}
 
+	TMaterialPtr TResFile::CreateMaterial()
+	{
+		if (ChunkHeader[ECL_MATERIAL] == nullptr)
+			return nullptr;
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_MATERIAL];
+		const int32 MaterialCount = ChunkHeader[ECL_MATERIAL]->ElementCount;
+		if (MaterialCount == 0)
+		{
+			return nullptr;
+		}
+		TI_ASSERT(0);
+		return nullptr;
+
+		//const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		//const uint8* MIDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * MICount;
+
+		//TMaterialInstancePtr Result;
+		//// each ResFile should have only 1 resource
+		//for (int32 i = 0; i < MICount; ++i)
+		//{
+		//	const THeaderMaterialInstance* Header = (const THeaderMaterialInstance*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * i);
+		//	TMaterialInstancePtr MInstance = ti_new TMaterialInstance;
+
+		//	MInstance->ParamNames.reserve(Header->ParamCount);
+		//	MInstance->ParamTypes.reserve(Header->ParamCount);
+
+		//	const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
+		//	const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount);
+		//	const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount + ti_align4(Header->ParamCount));
+
+		//	// Load param names and types
+		//	for (int32 p = 0; p < Header->ParamCount; ++p)
+		//	{
+		//		MInstance->ParamNames.push_back(GetString(ParamNameOffset[p]));
+		//		MInstance->ParamTypes.push_back((int32)(ParamTypeOffset[p]));
+		//	}
+
+		//	// Load param values
+		//	const int32 ValueBufferLength = MInstance->GetValueBufferLength();
+		//	MInstance->ParamValueBuffer.Reset();
+		//	MInstance->ParamValueBuffer.Put(ParamValueOffset, ValueBufferLength);
+
+		//	// Link material
+		//	const TString& MaterialResName = GetString(Header->LinkedMaterialIndex);
+		//	TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
+		//	if (Material == nullptr)
+		//	{
+		//		_LOG(Error, "Failed to load material [%s] for Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
+		//	}
+		//	MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
+
+		//	Result = MInstance;
+		//}
+		//return Result;
+	}
+
 	TMaterialInstancePtr TResFile::CreateMaterialInstance()
 	{
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] == nullptr)
@@ -254,6 +318,15 @@ namespace tix
 			const int32 ValueBufferLength = MInstance->GetValueBufferLength();
 			MInstance->ParamValueBuffer.Reset();
 			MInstance->ParamValueBuffer.Put(ParamValueOffset, ValueBufferLength);
+
+			// Link material
+			const TString& MaterialResName = GetString(Header->LinkedMaterialIndex);
+			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			if (Material == nullptr)
+			{
+				_LOG(Error, "Failed to load material [%s] for Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
+			}
+			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
 
 			Result = MInstance;
 		}

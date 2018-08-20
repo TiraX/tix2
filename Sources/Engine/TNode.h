@@ -8,7 +8,6 @@
 namespace tix
 {
 	class TNode;
-	class FNode;
 
 	class TNodeFactory
 	{
@@ -161,9 +160,6 @@ namespace tix
 
 		matrix4 AbsoluteTransformation;
 		matrix4 RelativeTransformation;
-
-		// Hold a reference in render thread
-		FNode * Node_RenderThread;
 	};
 
 } // end namespace tix

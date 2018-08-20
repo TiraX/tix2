@@ -18,8 +18,6 @@ namespace tix
 
 		MIPT_COUNT,
 	};
-	//class FMaterial;
-	//typedef TI_INTRUSIVE_PTR(FMaterial) FMaterialPtr;
 
 	class TMaterialInstance : public TResource
 	{
@@ -31,10 +29,11 @@ namespace tix
 		virtual void DestroyRenderThreadResource() override;
 
 		int32 GetValueBufferLength() const;
-		//TMaterialDesc Desc;
-		//FMaterialPtr TextureResource;
 
+		TMaterialPtr LinkedMaterial;
+		FUniformBufferPtr UniformBuffer;
 	protected:
+
 		TVector<TString> ParamNames;
 		TVector<int32> ParamTypes;
 		TStream ParamValueBuffer;

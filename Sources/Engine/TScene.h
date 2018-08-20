@@ -68,7 +68,7 @@ namespace tix
 		TI_API void SetActiveCamera(TNodeCamera* camera);
 		TI_API TNodeCamera* GetActiveCamera();
 
-		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialPtr InMaterial, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
+		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
 
 	protected:
 
