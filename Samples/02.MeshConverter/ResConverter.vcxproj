@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="dds.h" />
     <ClInclude Include="ResHelper.h" />
+    <ClInclude Include="ResMaterialHelper.h" />
     <ClInclude Include="ResMaterialInstanceHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />
@@ -160,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
+    <ClCompile Include="ResMaterialHelper.cpp" />
     <ClCompile Include="ResMaterialInstanceHelper.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
     <ClCompile Include="ResMeshHelperObj.cpp" />

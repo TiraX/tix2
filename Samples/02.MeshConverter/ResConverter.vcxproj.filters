@@ -28,6 +28,9 @@
     <ClInclude Include="ResMaterialInstanceHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResMaterialHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -52,6 +55,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResMaterialInstanceHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResMaterialHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

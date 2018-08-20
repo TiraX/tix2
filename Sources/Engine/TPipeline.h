@@ -208,6 +208,16 @@ namespace tix
 			DepthFormat = FRHIConfig::DefaultDepthBufferFormat;
 		}
 
+		void Enable(E_PIPELINE_STATES_OPTION Option)
+		{
+			Flags |= Option;
+		}
+
+		void Disable(E_PIPELINE_STATES_OPTION Option)
+		{
+			Flags &= ~Option;
+		}
+
 		bool IsEnabled(E_PIPELINE_STATES_OPTION Option) const
 		{
 			return (Flags & Option) != 0;
@@ -218,6 +228,7 @@ namespace tix
 	{
 	public:
 		TPipeline();
+		TPipeline(const TMaterial& Material);
 		virtual ~TPipeline();
 
 		// a test interface.

@@ -162,6 +162,16 @@ namespace tix
 		TTextureDesc Desc;
 	};
 
+	struct THeaderMaterial
+	{
+		int32 ShaderNames[ESS_COUNT];
+		uint32 VsFormat;
+		uint8 BlendMode;
+		uint8 bDepthWrite;
+		uint8 bDepthTest;
+		uint8 bTwoSides;
+	};
+
 	struct THeaderMaterialInstance
 	{
 		int32 NameIndex;

@@ -17,9 +17,31 @@ namespace tix
 		virtual void DestroyRenderThreadResource() override;
 
 		TPipelinePtr Pipeline;
+		
+		enum E_BLEND_MODE
+		{
+			MATERIAL_BLEND_OPAQUE,
+			MATERIAL_BLEND_TRANSLUCENT,
+			MATERIAL_BLEND_MASK,
+			MATERIAL_BLEND_ADDITIVE,
+		};
+		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
+		void SetShaderCode(E_SHADER_STAGE Stage, const int8* CodeBuffer, int32 Length);
+		void SetBlendMode(E_BLEND_MODE InBlendMode);
+		void SetShaderVsFormat(uint32 InVsFormat);
+		void EnableDepthWrite(bool bEnable);
+		void EnableDepthTest(bool bEnable);
+		void EnableTwoSides(bool bEnable);
+	private:
+		TString ShaderNames[ESS_COUNT];
+		E_BLEND_MODE BlendMode;
+		uint32 VsFormat;
+		bool bDepthWrite;
+		bool bDepthTest;
+		bool bTwoSides;
 
-	protected:
+		TStream ShaderCodes[ESS_COUNT];
 
-	protected:
+		friend class TPipeline;
 	};
 }

@@ -13,6 +13,42 @@ namespace tix
 	{
 	}
 
+	TPipeline::TPipeline(const TMaterial& InMaterial)
+		: TResource(ERES_PIPELINE)
+	{
+		// Change pipeline desc from InMaterial and InMesh
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			Desc.ShaderName[s] = InMaterial.ShaderNames[s];
+			ShaderCode[s].Put(InMaterial.ShaderCodes[s].GetBuffer(), InMaterial.ShaderCodes[s].GetLength());
+		}
+		switch (InMaterial.BlendMode)
+		{
+		case TMaterial::MATERIAL_BLEND_OPAQUE:
+			break;
+		case TMaterial::MATERIAL_BLEND_TRANSLUCENT:
+			Desc.Enable(EPSO_BLEND);
+			break;
+		case TMaterial::MATERIAL_BLEND_MASK:
+			break;
+		case TMaterial::MATERIAL_BLEND_ADDITIVE:
+			Desc.Enable(EPSO_BLEND);
+			Desc.BlendState.DestBlend = EBF_ONE;
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+		if (!InMaterial.bDepthWrite)
+			Desc.Disable(EPSO_DEPTH);
+		if (!InMaterial.bDepthTest)
+			Desc.Disable(EPSO_DEPTH_TEST);
+		if (InMaterial.bTwoSides)
+			Desc.RasterizerDesc.CullMode = ECM_NONE;
+
+		Desc.VsFormat = InMaterial.VsFormat;
+	}
+
 	TPipeline::~TPipeline()
 	{
 	}
