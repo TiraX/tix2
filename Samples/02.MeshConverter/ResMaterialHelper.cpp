@@ -67,6 +67,7 @@ namespace tix
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
 				Define.ShaderNames[s] = AddStringToList(OutStrings, Shaders[s]);
+				Define.ShaderCodeLength[s] = ShaderCodes[s].GetLength();
 			}
 
 			Define.VsFormat = VsFormat;
@@ -77,6 +78,17 @@ namespace tix
 			
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderMaterial));
+
+			// Write codes
+			for (int32 s = 0; s < ESS_COUNT; ++s)
+			{
+				if (ShaderCodes[s].GetLength() > 0)
+				{
+					int32 write_len = ti_align4(ShaderCodes[s].GetLength());
+					DataStream.Put(ShaderCodes[s].GetBuffer(), ShaderCodes[s].GetLength());
+					FillZero4(DataStream);
+				}
+			}
 		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();

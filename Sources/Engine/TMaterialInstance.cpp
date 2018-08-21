@@ -19,13 +19,14 @@ namespace tix
 	void TMaterialInstance::InitRenderThreadResource()
 	{
 		TI_TODO("Implement here.");
-		TI_ASSERT(0);
+		TI_ASSERT(UniformBuffer == nullptr);
+		UniformBuffer = FRHI::Get()->CreateUniformBuffer();
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()
 	{
 		TI_TODO("Implement here.");
-		TI_ASSERT(0);
+		UniformBuffer = nullptr;
 	}
 
 	static const int32 ParamTypeLength[MIPT_COUNT] =

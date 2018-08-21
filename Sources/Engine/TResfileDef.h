@@ -170,6 +170,7 @@ namespace tix
 		uint8 bDepthWrite;
 		uint8 bDepthTest;
 		uint8 bTwoSides;
+		int32 ShaderCodeLength[ESS_COUNT];
 	};
 
 	struct THeaderMaterialInstance

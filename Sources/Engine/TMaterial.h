@@ -26,7 +26,7 @@ namespace tix
 			MATERIAL_BLEND_ADDITIVE,
 		};
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
-		void SetShaderCode(E_SHADER_STAGE Stage, const int8* CodeBuffer, int32 Length);
+		void SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
 		void EnableDepthWrite(bool bEnable);
@@ -43,5 +43,6 @@ namespace tix
 		TStream ShaderCodes[ESS_COUNT];
 
 		friend class TPipeline;
+		friend class TResFile;
 	};
 }

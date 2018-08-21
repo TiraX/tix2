@@ -57,7 +57,8 @@ namespace tix
 				{
 					TVector<TString> TriangleStr = ReadStringArray(line.c_str() + 2);
 					TI_ASSERT(TriangleStr.size() == 3);
-					for (int f = 0; f < 3; ++f)
+					// turn indices revert, it seems different back face order with dx12
+					for (int f = 2; f >= 0; --f)
 					{
 						TVector<int> face = ReadIntArray(TriangleStr[f].c_str(), '/');
 						TI_ASSERT(face.size() == 3);

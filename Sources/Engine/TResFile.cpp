@@ -232,50 +232,64 @@ namespace tix
 		{
 			return nullptr;
 		}
-		TI_ASSERT(0);
-		return nullptr;
 
-		//const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		//const uint8* MIDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * MICount;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* CodeDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
+		
+		TMaterialPtr Result;
+		for (int32 i = 0; i < MaterialCount; ++i)
+		{
+			const THeaderMaterial* Header = (const THeaderMaterial*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * i);
+			TMaterialPtr Material = ti_new TMaterial;
 
-		//TMaterialInstancePtr Result;
-		//// each ResFile should have only 1 resource
-		//for (int32 i = 0; i < MICount; ++i)
-		//{
-		//	const THeaderMaterialInstance* Header = (const THeaderMaterialInstance*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * i);
-		//	TMaterialInstancePtr MInstance = ti_new TMaterialInstance;
+			// Load material
+			for (int32 s = 0; s < ESS_COUNT; ++s)
+			{
+				Material->SetShaderName((E_SHADER_STAGE)s, GetString(Header->ShaderNames[s]));
+			}
+			Material->SetShaderVsFormat(Header->VsFormat);
+			Material->SetBlendMode((TMaterial::E_BLEND_MODE)Header->BlendMode);
+			Material->EnableDepthWrite(Header->bDepthWrite != 0);
+			Material->EnableDepthTest(Header->bDepthTest != 0);
+			Material->EnableTwoSides(Header->bTwoSides != 0);
 
-		//	MInstance->ParamNames.reserve(Header->ParamCount);
-		//	MInstance->ParamTypes.reserve(Header->ParamCount);
+			// Load Shader code
+			int32 CodeOffset = 0;
+			for (int32 s = 0; s < ESS_COUNT; ++s)
+			{
+				if (Header->ShaderCodeLength[s] > 0)
+				{
+					// Load from res file
+					Material->SetShaderCode((E_SHADER_STAGE)s, CodeDataStart + CodeOffset, Header->ShaderCodeLength[s]);
+					CodeOffset += ti_align4(Header->ShaderCodeLength[s]);
+				}
+				else
+				{
+					// Load from single file
+					TI_TODO("Work path system, remove this temp code.");
+					if (!Material->ShaderNames[s].empty())
+					{
+						TString _prefix = "../../Content/";
+						TString ShaderPath = _prefix + Material->ShaderNames[s];
 
-		//	const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
-		//	const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount);
-		//	const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount + ti_align4(Header->ParamCount));
+						TFile f;
+						if (f.Open(ShaderPath, EFA_READ))
+						{
+							Material->ShaderCodes[s].Reset();
+							Material->ShaderCodes[s].Put(f);
+							f.Close();
+						}
+						else
+						{
+							_LOG(Error, "Failed to load shader [%s].\n", ShaderPath.c_str());
+						}
+					}
+				}
+			}
 
-		//	// Load param names and types
-		//	for (int32 p = 0; p < Header->ParamCount; ++p)
-		//	{
-		//		MInstance->ParamNames.push_back(GetString(ParamNameOffset[p]));
-		//		MInstance->ParamTypes.push_back((int32)(ParamTypeOffset[p]));
-		//	}
-
-		//	// Load param values
-		//	const int32 ValueBufferLength = MInstance->GetValueBufferLength();
-		//	MInstance->ParamValueBuffer.Reset();
-		//	MInstance->ParamValueBuffer.Put(ParamValueOffset, ValueBufferLength);
-
-		//	// Link material
-		//	const TString& MaterialResName = GetString(Header->LinkedMaterialIndex);
-		//	TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
-		//	if (Material == nullptr)
-		//	{
-		//		_LOG(Error, "Failed to load material [%s] for Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
-		//	}
-		//	MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
-
-		//	Result = MInstance;
-		//}
-		//return Result;
+			Result = Material;
+		}
+		return Result;
 	}
 
 	TMaterialInstancePtr TResFile::CreateMaterialInstance()
@@ -320,7 +334,11 @@ namespace tix
 			MInstance->ParamValueBuffer.Put(ParamValueOffset, ValueBufferLength);
 
 			// Link material
-			const TString& MaterialResName = GetString(Header->LinkedMaterialIndex);
+			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
+			TI_TODO("Create work space system. remove this temp code.");
+			// temp
+			TString  _prefix = "../../Content/";
+			MaterialResName = _prefix + MaterialResName;
 			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{

@@ -31,5 +31,6 @@ namespace tix
 		bool bDepthWrite;
 		bool bDepthTest;
 		bool bTwoSides;
+		TStream ShaderCodes[ESS_COUNT];
 	};
 }

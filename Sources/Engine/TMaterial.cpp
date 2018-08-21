@@ -44,7 +44,7 @@ namespace tix
 		ShaderNames[Stage] = Name;
 	}
 
-	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, const int8* CodeBuffer, int32 Length)
+	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length)
 	{
 		ShaderCodes[Stage].Reset();
 		ShaderCodes[Stage].Put(CodeBuffer, Length);
