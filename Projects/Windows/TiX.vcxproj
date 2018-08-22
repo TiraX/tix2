@@ -42,11 +42,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TConsoleVariable.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDevice.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TINIParser.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMaterial.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMaterialInstance.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMeshBuffer.cpp" />
@@ -109,6 +111,7 @@
     <ClInclude Include="..\..\Sources\Engine\math\Vector4d.h" />
     <ClInclude Include="..\..\Sources\Engine\stdafx.h" />
     <ClInclude Include="..\..\Sources\Engine\TConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\TConsoleVariable.h" />
     <ClInclude Include="..\..\Sources\Engine\TDefines.h" />
     <ClInclude Include="..\..\Sources\Engine\TEngine.h" />
     <ClInclude Include="..\..\Sources\Engine\TDevice.h" />
@@ -116,6 +119,7 @@
     <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
+    <ClInclude Include="..\..\Sources\Engine\TINIParser.h" />
     <ClInclude Include="..\..\Sources\Engine\TMaterial.h" />
     <ClInclude Include="..\..\Sources\Engine\TMaterialInstance.h" />
     <ClInclude Include="..\..\Sources\Engine\TMeshBuffer.h" />

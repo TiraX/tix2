@@ -7,11 +7,13 @@
 
 #include "TEngine.h"
 #include "TVersion.h"
+#include "TConsoleVariable.h"
 #include "FRenderThread.h"
 
 namespace tix
 {
 	TEngine* TEngine::s_engine = nullptr;
+	E_Platform TEngine::CurrentPlatform = EP_Unknown;
 
 	void TEngine::InitEngine(const TEngineConfiguration& Config)
 	{
@@ -27,9 +29,23 @@ namespace tix
 	{
 		TThread::IndicateGameThread();
 
+		// Init CVar system and load ini configuration
+		TConsoleVariables::Init();
+
 		// Create device
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
+
+#ifdef TI_PLATFORM_WIN32
+		CurrentPlatform = EP_Windows;
+#elif defined (TI_PLATFORM_IOS)
+		CurrentPlatform = EP_IOS;
+#elif defined (TI_PLATFORM_ANDROID)
+		CurrentPlatform = EP_Android;
+#else
+		_LOG(Error, "Unknown platform.");
+		TI_ASSERT(0);
+#endif
 
 		// Create Render Thread
 		FRenderThread::CreateRenderThread();
@@ -50,6 +66,7 @@ namespace tix
 	{
 		TI_ASSERT(s_engine);
 		SAFE_DELETE(s_engine);
+		TConsoleVariables::Destroy();
 	}
 
 	TEngine* TEngine::Get()

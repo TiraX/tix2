@@ -148,6 +148,12 @@
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TINIParser.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TConsoleVariable.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -398,6 +404,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h">
       <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TINIParser.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TConsoleVariable.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -73,6 +73,7 @@ using namespace std;
 
 #include "TResourceLibrary.h"
 #include "TEngineConfig.h"
+#include "TConsoleVariable.h"
 #include "TEngine.h"
 
 using namespace tix;
