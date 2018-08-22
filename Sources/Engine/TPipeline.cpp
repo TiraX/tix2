@@ -83,39 +83,4 @@ namespace tix
 			});
 		PipelineResource = nullptr;
 	}
-
-	TPipelinePtr TPipeline::CreatePipeline(const TString& VsPath, const TString& PsPath, const uint32 VsFormat, E_CULL_MODE CullMode)
-	{
-		TI_TODO("This is a test function, remove it in future.");
-		TPipelinePtr Pipeline = ti_new TPipeline;
-
-		TString VsName, PsName;
-		size_t VsStart = VsPath.rfind('/');
-		if (VsStart == TString::npos)
-			VsStart = -1;
-		VsName = VsPath.substr(VsStart + 1);
-		size_t PsStart = PsPath.rfind('/');
-		if (PsStart == TString::npos)
-			PsStart = -1;
-		PsName = PsPath.substr(PsStart + 1);
-
-		// Load shader code
-		TFile fvs, fps;
-		if (fvs.Open(VsPath, EFA_READ))
-		{
-			Pipeline->Desc.ShaderName[ESS_VERTEX_SHADER] = VsName;
-			Pipeline->ShaderCode[ESS_VERTEX_SHADER].Put(fvs);
-			fvs.Close();
-		}
-		if (fps.Open(PsPath, EFA_READ))
-		{
-			Pipeline->Desc.ShaderName[ESS_PIXEL_SHADER] = PsName;
-			Pipeline->ShaderCode[ESS_PIXEL_SHADER].Put(fps);
-		}
-		Pipeline->Desc.VsFormat = VsFormat;
-		Pipeline->Desc.RasterizerDesc.CullMode = CullMode;
-		Pipeline->InitRenderThreadResource();
-
-		return Pipeline;
-	}
 }

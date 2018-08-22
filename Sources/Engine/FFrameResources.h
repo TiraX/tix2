@@ -18,10 +18,8 @@ namespace tix
 
 		virtual void RemoveAllReferences();
 
-		void HoldReference(FMeshBufferPtr MeshBuffer);
-		void HoldReference(FTexturePtr Texture);
+		void HoldReference(FRenderResourcePtr InResource);
 	private:
-		TVector<FMeshBufferPtr> MeshBuffers;
-		TVector<FTexturePtr> Textures;
+		TVector<FRenderResourcePtr> Resources;
 	};
 }

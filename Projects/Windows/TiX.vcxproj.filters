@@ -91,9 +91,6 @@
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FNode.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
@@ -104,9 +101,6 @@
       <Filter>Sources\Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp">
-      <Filter>Sources\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FNodeStaticMesh.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp">
@@ -324,9 +318,6 @@
     <ClInclude Include="..\..\Sources\Engine\TNode.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FNode.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TScene.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
@@ -340,9 +331,6 @@
       <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FNodeStaticMesh.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TResourceLibrary.h">

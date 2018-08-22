@@ -40,6 +40,7 @@ namespace tix
 
 	FMeshBufferDx12::~FMeshBufferDx12()
 	{
+		Destroy();
 	}
 
 	void FMeshBufferDx12::Destroy()

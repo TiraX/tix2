@@ -13,6 +13,7 @@ using namespace Microsoft::WRL;
 
 namespace tix
 {
+	class FFrameResourcesDx12;
 	// Render hardware interface use DirectX 12
 	class FRHIDx12 : public FRHI
 	{
@@ -59,6 +60,8 @@ namespace tix
 		void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);
 		void CreateWindowsSizeDependentResources();
 		void MoveToNextFrame();
+		void HoldResourceReference(FRenderResourcePtr InResource);
+		void HoldResourceReference(ComPtr<ID3D12Resource> InDxResource);
 
 		uint64 UpdateSubresources(
 			_In_ ID3D12GraphicsCommandList* pCmdList,
@@ -130,6 +133,9 @@ namespace tix
 		uint32 DescriptorIncSize;
 		TVector<uint32> AvaibleDescriptorHeapSlots;
 		uint32 DescriptorAllocated;
+
+		// Frame on the fly Resource holders
+		FFrameResourcesDx12 * ResHolders[FRHIConfig::FrameBufferNum];
 
 		friend class FRHI;
 	};

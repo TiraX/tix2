@@ -15,6 +15,16 @@ namespace tix
 
 	TNodeStaticMesh::~TNodeStaticMesh()
 	{
+		// Remove Primitive from scene
+		if (LinkedPrimitive != nullptr)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
+				FPrimitivePtr, Primitive, LinkedPrimitive,
+				{
+					RenderThread->GetRenderScene()->RemovePrimitive(Primitive);
+				});
+			LinkedPrimitive = nullptr;
+		}
 	}
 
 	void TNodeStaticMesh::LinkFPrimitive(FPrimitivePtr Primitive)

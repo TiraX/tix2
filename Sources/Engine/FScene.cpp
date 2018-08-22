@@ -29,4 +29,16 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 		StaticDrawList.push_back(InPrimitive);
 	}
+
+	void FScene::RemovePrimitive(FPrimitivePtr InPrimitive)
+	{
+		TI_ASSERT(IsRenderThread());
+		TI_TODO("Find a fast way to locate Primitive in draw list.");
+
+		TVector<FPrimitivePtr>::iterator it = tix_find(StaticDrawList.begin(), StaticDrawList.end(), InPrimitive);
+		if (it != StaticDrawList.end())
+		{
+			StaticDrawList.erase(it);
+		}
+	}
 }

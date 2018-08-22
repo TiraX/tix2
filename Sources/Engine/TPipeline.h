@@ -231,9 +231,6 @@ namespace tix
 		TPipeline(const TMaterial& Material);
 		virtual ~TPipeline();
 
-		// a test interface.
-		static TI_API TPipelinePtr CreatePipeline(const TString& VsPath, const TString& PsPath, const uint32 VsFormat, E_CULL_MODE CullMode);
-
 		void SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength);
 
 		virtual void InitRenderThreadResource() override;

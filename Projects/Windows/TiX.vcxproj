@@ -24,8 +24,6 @@
     <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FNode.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
@@ -75,8 +73,6 @@
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
-    <ClInclude Include="..\..\Sources\Engine\FNode.h" />
-    <ClInclude Include="..\..\Sources\Engine\FNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipelineDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FPrimitive.h" />

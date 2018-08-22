@@ -20,6 +20,7 @@ namespace tix
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
 		void AddPrimitive(FPrimitivePtr Primitive);
+		void RemovePrimitive(FPrimitivePtr Primitive);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{

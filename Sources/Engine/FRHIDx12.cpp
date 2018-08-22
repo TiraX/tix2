@@ -35,7 +35,8 @@ namespace tix
 		// Create frame resource holders
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
-			FrameResources[i] = ti_new FFrameResourcesDx12;
+			ResHolders[i] = ti_new FFrameResourcesDx12;
+			FrameResources[i] = ResHolders[i];
 		}
 	}
 
@@ -44,7 +45,8 @@ namespace tix
 		// delete frame resource holders
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
-			ti_delete FrameResources[i];
+			ti_delete ResHolders[i];
+			ResHolders[i] = nullptr;
 			FrameResources[i] = nullptr;
 		}
 	}
@@ -478,6 +480,16 @@ namespace tix
 		FrameResources[FrameToRelease]->RemoveAllReferences();
 	}
 
+	void FRHIDx12::HoldResourceReference(FRenderResourcePtr InResource)
+	{
+		ResHolders[CurrentFrame]->HoldReference(InResource);
+	}
+
+	void FRHIDx12::HoldResourceReference(ComPtr<ID3D12Resource> InDxResource)
+	{
+		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
+	}
+
 	//------------------------------------------------------------------------------------------------
 	// All arrays must be populated (e.g. by calling GetCopyableFootprints)
 	uint64 FRHIDx12::UpdateSubresources(
@@ -607,8 +619,6 @@ namespace tix
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
 		MeshBuffer->SetFromTMeshBuffer(InMeshData);
 
-		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
-
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
 		ComPtr<ID3D12Resource> VertexBufferUpload;
@@ -696,9 +706,9 @@ namespace tix
 		MBDx12->IndexBufferView.Format = InMeshData->GetIndexType() == EIT_16BIT ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
 		// Hold resources used here
-		FrameResource->HoldReference(MeshBuffer);
-		FrameResource->HoldDxReference(VertexBufferUpload);
-		FrameResource->HoldDxReference(IndexBufferUpload);
+		HoldResourceReference(MeshBuffer);
+		HoldResourceReference(VertexBufferUpload);
+		HoldResourceReference(IndexBufferUpload);
 
 		return true;
 	}
@@ -760,8 +770,6 @@ namespace tix
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		Texture->InitTextureInfo(InTexData);
 		const TTextureDesc& Desc = InTexData->Desc;
-
-		FFrameResourcesDx12 * FrameResource = static_cast<FFrameResourcesDx12*>(FrameResources[CurrentFrame]);
 
 		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
 		// the command list that references it has finished executing on the GPU.
@@ -832,8 +840,8 @@ namespace tix
 
 		FlushResourceBarriers(CommandList.Get());
 		// Hold resources used here
-		FrameResource->HoldReference(Texture);
-		FrameResource->HoldDxReference(TextureUploadHeap);
+		HoldResourceReference(Texture);
+		HoldResourceReference(TextureUploadHeap);
 
 		return true;
 	}
@@ -905,6 +913,7 @@ namespace tix
 		//	InPipelineDesc->.ShaderCode[s].Destroy();
 		//}
 		TI_TODO("Release shader code data");
+		HoldResourceReference(Pipeline);
 
 		return true;
 	}
@@ -943,6 +952,7 @@ namespace tix
 			memset(MappedConstantBuffer + InDataSize, 0, AlignedDataSize - InDataSize);
 		}
 		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
+		HoldResourceReference(UniformBuffer);
 
 		return true;
 	}
@@ -954,6 +964,8 @@ namespace tix
 		CommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
 		CommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
 		CommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+
+		HoldResourceReference(InMeshBuffer);
 	}
 
 	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
@@ -961,6 +973,8 @@ namespace tix
 		FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
 
 		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+
+		HoldResourceReference(InPipeline);
 	}
 
 	void FRHIDx12::SetUniformBuffer(FUniformBufferPtr InUniformBuffer)
@@ -970,6 +984,8 @@ namespace tix
 		// Bind the current frame's constant buffer to the pipeline.
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(UBDx12->CbvDescriptor);
 		CommandList->SetGraphicsRootDescriptorTable(0, Descriptor);
+
+		HoldResourceReference(InUniformBuffer);
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(
@@ -985,6 +1001,7 @@ namespace tix
 		CommandList->RSSetViewports(1, &Viewport);
 		D3D12_RECT ScissorRect = { 0, 0, 1280, 720 };
 		CommandList->RSSetScissorRects(1, &ScissorRect);
+		TI_TODO("Move Set Viewport and Set ScissorRect to right place.");
 
 		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
