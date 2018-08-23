@@ -68,21 +68,21 @@ namespace tix
 		TConsoleVariables();
 		~TConsoleVariables();
 		static TConsoleVariables* s_cvar_instance;
-		static void AddCVar(const TString& VarName, int32* VarInt)
+		void AddCVar(const TString& VarName, int32* VarInt)
 		{
 			TVarMapping M;
 			M.VarInt = VarInt;
 			M.VType = VAR_INT;
 			VarMap[VarName] = M;
 		}
-		static void AddCVar(const TString& VarName, float* VarFloat)
+		void AddCVar(const TString& VarName, float* VarFloat)
 		{
 			TVarMapping M;
 			M.VarFloat = VarFloat;
 			M.VType = VAR_FLOAT;
 			VarMap[VarName] = M;
 		}
-		static void AddCVar(const TString& VarName, TString* VarString)
+		void AddCVar(const TString& VarName, TString* VarString)
 		{
 			TVarMapping M;
 			M.VarString = VarString;
@@ -92,7 +92,7 @@ namespace tix
 
 		void InitFromIni();
 	private:
-		static THMap<TString, TVarMapping> VarMap;
+		THMap<TString, TVarMapping> VarMap;
 		friend class TCVar;
 	};
 }

@@ -27,7 +27,7 @@ namespace tix
 		value = trim(value);
 
 		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
+		char* str_cpy = ti_new char[str_len];
 		strcpy_s(str_cpy, str_len, value.c_str());
 		char *start, *end;
 		start = str_cpy;
@@ -64,7 +64,7 @@ namespace tix
 		value = trim(value);
 
 		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
+		char* str_cpy = ti_new char[str_len];
 		strcpy_s(str_cpy, str_len, value.c_str());
 		char *start, *end;
 		start = str_cpy;
@@ -101,7 +101,7 @@ namespace tix
 		value = trim(value);
 
 		int str_len = (int)strlen(value.c_str()) + 1;
-		char* str_cpy = new char[str_len];
+		char* str_cpy = ti_new char[str_len];
 		strcpy_s(str_cpy, str_len, value.c_str());
 		char *start, *end;
 		start = str_cpy;

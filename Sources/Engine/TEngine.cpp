@@ -10,6 +10,14 @@
 #include "TConsoleVariable.h"
 #include "FRenderThread.h"
 
+#if DEBUG_OPERATOR_NEW
+void * operator new (std::size_t count)
+{
+	void* a = malloc(count);
+	return a;
+}
+#endif
+
 namespace tix
 {
 	TEngine* TEngine::s_engine = nullptr;

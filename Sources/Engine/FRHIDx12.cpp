@@ -975,6 +975,7 @@ namespace tix
 		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 
 		HoldResourceReference(InPipeline);
+		TI_TODO("Check the reference hold here.");
 	}
 
 	void FRHIDx12::SetUniformBuffer(FUniformBufferPtr InUniformBuffer)

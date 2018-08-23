@@ -11,20 +11,19 @@ namespace tix
 {
 	TCVar::TCVar(const TString& VarName, int32& VarInt)
 	{
-		TConsoleVariables::AddCVar(VarName, &VarInt);
+		TConsoleVariables::Get()->AddCVar(VarName, &VarInt);
 	}
 	TCVar::TCVar(const TString& VarName, float& VarFloat)
 	{
-		TConsoleVariables::AddCVar(VarName, &VarFloat);
+		TConsoleVariables::Get()->AddCVar(VarName, &VarFloat);
 	}
 	TCVar::TCVar(const TString& VarName, TString& VarString)
 	{
-		TConsoleVariables::AddCVar(VarName, &VarString);
+		TConsoleVariables::Get()->AddCVar(VarName, &VarString);
 	}
 
 	///////////////////////////////////////////////////////////////////////
 	TConsoleVariables* TConsoleVariables::s_cvar_instance = nullptr;
-	THMap<TString, TVarMapping> TConsoleVariables::VarMap;
 
 	void TConsoleVariables::Init()
 	{
@@ -37,8 +36,6 @@ namespace tix
 
 	void TConsoleVariables::Destroy()
 	{
-		VarMap.clear();
-
 		TI_ASSERT(s_cvar_instance);
 		SAFE_DELETE(s_cvar_instance);
 	}

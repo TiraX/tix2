@@ -10,8 +10,21 @@
 #	define TIX_DEBUG
 #endif
 
-#define ti_new new
-#define ti_delete delete
+// overload operator new to debug.
+#define DEBUG_OPERATOR_NEW 0
+#if DEBUG_OPERATOR_NEW
+void * operator new (std::size_t count);
+#endif
+
+#ifdef TIX_DEBUG
+#	define ti_new new( _NORMAL_BLOCK, __FILE__, __LINE__)
+// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+//allocations to be of _CLIENT_BLOCK type
+#	define ti_delete delete
+#else
+#	define ti_new   new
+#	define ti_delete delete
+#endif // _DEBUG
 
 #ifndef TI_ASSERT
 #	ifdef TIX_DEBUG 
