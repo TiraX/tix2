@@ -154,6 +154,12 @@
     <ClCompile Include="..\..\Sources\Engine\TConsoleVariable.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCVars.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TPath.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -409,6 +415,12 @@
       <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TConsoleVariable.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TPath.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TStringExt.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>

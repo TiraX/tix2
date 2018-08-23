@@ -30,6 +30,7 @@ using namespace std;
 #include "IReferenceCounted.h"
 #include "TTypes.h"
 #include "TPtrTypes.h"
+#include "TStringExt.h"
 #include "TMath.h"
 #include "TUtils.h"
 #include "TThread.h"
@@ -74,6 +75,7 @@ using namespace std;
 #include "TResourceLibrary.h"
 #include "TEngineConfig.h"
 #include "TConsoleVariable.h"
+#include "TPath.h"
 #include "TEngine.h"
 
 using namespace tix;

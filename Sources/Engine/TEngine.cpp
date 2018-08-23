@@ -37,13 +37,6 @@ namespace tix
 	{
 		TThread::IndicateGameThread();
 
-		// Init CVar system and load ini configuration
-		TConsoleVariables::Init();
-
-		// Create device
-		TI_ASSERT(Device == nullptr);
-		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
-
 #ifdef TI_PLATFORM_WIN32
 		CurrentPlatform = EP_Windows;
 #elif defined (TI_PLATFORM_IOS)
@@ -55,6 +48,13 @@ namespace tix
 		TI_ASSERT(0);
 #endif
 
+		// Init CVar system and load ini configuration
+		TConsoleVariables::Init();
+
+		// Create device
+		TI_ASSERT(Device == nullptr);
+		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
+		
 		// Create Render Thread
 		FRenderThread::CreateRenderThread();
 

@@ -17,17 +17,47 @@ namespace tix
 	{
 	}
 
-	inline TString& Trim(TString& text)
+	inline bool IsNum(int8 C)
 	{
-		if (!text.empty())
-		{
-			text.erase(0, text.find_first_not_of(" \r"));
-			text.erase(text.find_last_not_of(" \r") + 1);
-		}
-		return text;
+		return C >= '0' && C <= '9';
 	}
 
-	bool TINIParser::Parse()
+	inline TVarValue ParseValue(const TString& VString)
+	{
+		int32 VType = VAR_INT;
+		const int8* P = VString.c_str();
+		// Check value type
+		for (int32 i = 0; i < VString.size(); ++i)
+		{
+			if (VType == VAR_INT && *P == '.')
+			{
+				VType = VAR_FLOAT;
+			}
+			else if (!IsNum(*P))
+			{
+				VType = VAR_STRING;
+				break;
+			}
+			++P;
+		}
+		TVarValue V;
+		V.VType = VType;
+		switch (VType)
+		{
+		case VAR_INT:
+			V.VInt = atoi(VString.c_str());
+			break;
+		case VAR_FLOAT:
+			V.VFloat = (float)atof(VString.c_str());
+			break;
+		default:
+			V.VString = VString;
+			break;
+		}
+		return V;
+	}
+
+	bool TINIParser::Parse(TINIData& OutData)
 	{
 		TFile IniFile;
 		if (IniFile.Open(FileName, EFA_READ))
@@ -49,12 +79,17 @@ namespace tix
 
 				*Cursor = '\0';
 				TString Line = Start;
-				Trim(Line);
+				TStringTrim(Line);
 
 				if (!Line.empty())
 				{
 					TString Key, Value;
-					ParseLine(Line, CurrentGroup, Key, Value);
+					int32 LineResult = ParseLine(Line, CurrentGroup, Key, Value);
+					if (LineResult == LINE_KEYVALUE)
+					{
+						THMap<TString, TVarValue>& Values = OutData[CurrentGroup];
+						Values[Key] = ParseValue(Value);
+					}
 				}
 
 				++Cursor;
@@ -63,12 +98,17 @@ namespace tix
 
 			// Parse Left things
 			TString Line = Start;
-			Trim(Line);
+			TStringTrim(Line);
 
 			if (!Line.empty())
 			{
 				TString Key, Value;
-				ParseLine(Line, CurrentGroup, Key, Value);
+				int32 LineResult = ParseLine(Line, CurrentGroup, Key, Value);
+				if (LineResult == LINE_KEYVALUE)
+				{
+					THMap<TString, TVarValue>& Values = OutData[CurrentGroup];
+					Values[Key] = ParseValue(Value);
+				}
 			}
 
 			ti_delete[] FileBuffer;
@@ -78,12 +118,13 @@ namespace tix
 		return false;
 	}
 
-	void TINIParser::ParseLine(const TString& Line, TString& Group, TString& Key, TString& Value)
+	int32 TINIParser::ParseLine(const TString& Line, TString& Group, TString& Key, TString& Value)
 	{
 		// Find key and value
 		if (Line[0] == '[')
 		{
 			Group = Line.substr(1, Line.size() - 2);
+			return LINE_GROUP;
 		}
 		else
 		{
@@ -96,14 +137,15 @@ namespace tix
 			{
 				Key = Line.substr(0, Pos);
 				Value = Line.substr(Pos + 1);
-				Trim(Key);
-				Trim(Value);
+				TStringTrim(Key);
+				TStringTrim(Value);
 			}
 			else
 			{
 				Key = Line;
-				Trim(Key);
+				TStringTrim(Key);
 			}
+			return LINE_KEYVALUE;
 		}
 	}
 }

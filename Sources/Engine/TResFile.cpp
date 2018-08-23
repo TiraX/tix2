@@ -41,7 +41,8 @@ namespace tix
 
 	bool TResFile::Load(const TString& Filename)
 	{
-		TFile* file = OpenResFile(Filename);
+		TString Path = TPath::GetAbsolutePath(Filename);
+		TFile* file = OpenResFile(Path);
 		if (file == nullptr)
 			return false;
 
@@ -266,11 +267,9 @@ namespace tix
 				else
 				{
 					// Load from single file
-					TI_TODO("Work path system, remove this temp code.");
 					if (!Material->ShaderNames[s].empty())
 					{
-						TString _prefix = "../../Content/";
-						TString ShaderPath = _prefix + Material->ShaderNames[s];
+						TString ShaderPath = TPath::GetAbsolutePath(Material->ShaderNames[s]);
 
 						TFile f;
 						if (f.Open(ShaderPath, EFA_READ))
@@ -335,10 +334,6 @@ namespace tix
 
 			// Link material
 			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
-			TI_TODO("Create work space system. remove this temp code.");
-			// temp
-			TString  _prefix = "../../Content/";
-			MaterialResName = _prefix + MaterialResName;
 			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{
