@@ -8,35 +8,12 @@
 #if COMPILE_WITH_RHI_DX12
 
 #include "dx12/d3dx12.h"
+#include "FRHIDescriptorHeapDx12.h"
 
 using namespace Microsoft::WRL;
 
 namespace tix
 {
-	enum E_HEAP_TYPE
-	{
-		EHT_CBV_SRV_UAV,
-		EHT_SAMPLER,
-		EHT_RTV,
-		EHT_DSV,
-
-		EHT_COUNT,
-	};
-
-	class FDescriptorHeapDx12
-	{
-	public:
-		ComPtr<ID3D12DescriptorHeap> DescriptorHeap;
-		uint32 DescriptorIncSize;
-		TVector<uint32> AvaibleDescriptorHeapSlots;
-		uint32 DescriptorAllocated;
-
-		FDescriptorHeapDx12()
-			: DescriptorIncSize(0)
-			, DescriptorAllocated(0)
-		{}
-	};
-
 	class FFrameResourcesDx12;
 	// Render hardware interface use DirectX 12
 	class FRHIDx12 : public FRHI
@@ -74,9 +51,7 @@ namespace tix
 			int32 BaseVertexLocation,
 			uint32 StartInstanceLocation) override;
 
-		// DirectX 12 specified methods
-		void RecallDescriptor(uint32 HeapIndex);
-
+		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex);
 	protected: 
 		FRHIDx12();
 
@@ -118,28 +93,28 @@ namespace tix
 
 		void FlushResourceBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
-
-		uint32 AllocateDescriptorSlot();
-		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(uint32 Index);
-		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(uint32 Index);
-
+		
 	private:
 		ComPtr<ID3D12Device> D3dDevice;
 		ComPtr<IDXGIFactory4> DxgiFactory;
 		ComPtr<IDXGISwapChain3> SwapChain;
+		
+		// Back buffers and Depth Stencil buffers
 		ComPtr<ID3D12Resource> BackBufferRTs[FRHIConfig::FrameBufferNum];
+		uint32 BackBufferDescriptorIndex[FRHIConfig::FrameBufferNum];
 		D3D12_CPU_DESCRIPTOR_HANDLE BackBufferDescriptors[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12Resource> DepthStencil;
+		uint32 DepthStencilDescriptorIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
-		ComPtr<ID3D12DescriptorHeap> RtvHeap;
-		ComPtr<ID3D12DescriptorHeap> DsvHeap;
+
+		// Commands
 		ComPtr<ID3D12CommandQueue> CommandQueue;
 		ComPtr<ID3D12CommandAllocator> CommandAllocators[FRHIConfig::FrameBufferNum];
-
-		ComPtr<ID3D12PipelineState> DefaultPipelineState;
 		ComPtr<ID3D12GraphicsCommandList> CommandList;
-
 		ComPtr<ID3D12RootSignature> RootSignature;
+
+		// Descriptor heaps
+		FDescriptorHeapDx12 DescriptorHeaps[EHT_COUNT];
 
 		// CPU/GPU Synchronization.
 		ComPtr<ID3D12Fence> Fence;
@@ -147,18 +122,10 @@ namespace tix
 		HANDLE FenceEvent;
 		uint32 CurrentFrame;
 
-		uint32 RtvDescriptorSize;
-
 		// Barriers
 		static const uint32 MaxResourceBarrierBuffers = 16;
 		D3D12_RESOURCE_BARRIER ResourceBarrierBuffers[MaxResourceBarrierBuffers];
 		uint32 NumBarriersToFlush;
-
-		// Descriptor heaps
-		ComPtr<ID3D12DescriptorHeap> DescriptorHeap;
-		uint32 DescriptorIncSize;
-		TVector<uint32> AvaibleDescriptorHeapSlots;
-		uint32 DescriptorAllocated;
 
 		// Frame on the fly Resource holders
 		FFrameResourcesDx12 * ResHolders[FRHIConfig::FrameBufferNum];

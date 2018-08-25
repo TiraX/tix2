@@ -28,8 +28,6 @@ namespace tix
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
 		, NumBarriersToFlush(0)
-		, DescriptorIncSize(0)
-		, DescriptorAllocated(0)
 	{
 		Init();
 
@@ -102,28 +100,12 @@ namespace tix
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-		hr = D3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&CommandQueue));
-		VALIDATE_HRESULT(hr);
+		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&CommandQueue)));
 		CommandQueue->SetName(L"CommandQueue");
 
 		// Create descriptor heaps for render target views and depth stencil views.
-		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors = FRHIConfig::FrameBufferNum;
-		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		hr = D3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&RtvHeap));
-		VALIDATE_HRESULT(hr);
-		RtvHeap->SetName(L"RtvHeap");
-
-		RtvDescriptorSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-		dsvHeapDesc.NumDescriptors = 1;
-		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		hr = D3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&DsvHeap));
-		VALIDATE_HRESULT(hr);
-		DsvHeap->SetName(L"DsvHeap");
+		DescriptorHeaps[EHT_RTV].Create(D3dDevice.Get(), EHT_RTV);
+		DescriptorHeaps[EHT_DSV].Create(D3dDevice.Get(), EHT_DSV);
 
 		// Create command allocator and command list.
 		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
@@ -146,17 +128,10 @@ namespace tix
 		CreateWindowsSizeDependentResources();
 
 		// Describe and create a shader resource view (SRV) heap for the texture.
-		D3D12_DESCRIPTOR_HEAP_DESC DescriptorHeapDesc = {};
-		DescriptorHeapDesc.NumDescriptors = FRHIConfig::MaxDescriptorNum;
-		DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		DescriptorHeapDesc.NodeMask = 0;
-		VALIDATE_HRESULT(D3dDevice->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&DescriptorHeap)));
-
-		DescriptorIncSize = D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		DescriptorHeaps[EHT_CBV_SRV_UAV].Create(D3dDevice.Get(), EHT_CBV_SRV_UAV);
 		
 		// Create Default Command list
-		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), DefaultPipelineState.Get(), IID_PPV_ARGS(&CommandList)));
+		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&CommandList)));
 		VALIDATE_HRESULT(CommandList->Close());
 
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
@@ -285,10 +260,9 @@ namespace tix
 			
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
-				BackBufferDescriptors[n] = RtvHeap->GetCPUDescriptorHandleForHeapStart();
-				BackBufferDescriptors[n].ptr += n * RtvDescriptorSize;
-				hr = SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n]));
-				VALIDATE_HRESULT(hr);
+				BackBufferDescriptorIndex[n] = DescriptorHeaps[EHT_RTV].AllocateDescriptorSlot();
+				BackBufferDescriptors[n] = DescriptorHeaps[EHT_RTV].GetCpuDescriptorHandle(BackBufferDescriptorIndex[n]);
+				VALIDATE_HRESULT(SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n])));
 				D3dDevice->CreateRenderTargetView(BackBufferRTs[n].Get(), nullptr, BackBufferDescriptors[n]);
 
 				WCHAR name[32];
@@ -325,7 +299,8 @@ namespace tix
 			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-			DepthStencilDescriptor = DsvHeap->GetCPUDescriptorHandleForHeapStart();
+			DepthStencilDescriptorIndex = DescriptorHeaps[EHT_DSV].AllocateDescriptorSlot();
+			DepthStencilDescriptor = DescriptorHeaps[EHT_DSV].GetCpuDescriptorHandle(DepthStencilDescriptorIndex);
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
 
@@ -370,7 +345,7 @@ namespace tix
 
 		// Set the graphics root signature and descriptor heaps to be used by this frame.
 		CommandList->SetGraphicsRootSignature(RootSignature.Get());
-		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeap.Get() };
+		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[EHT_CBV_SRV_UAV].GetHeap() };
 		CommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		// Indicate this resource will be in use as a render target.
@@ -494,6 +469,11 @@ namespace tix
 	void FRHIDx12::HoldResourceReference(ComPtr<ID3D12Resource> InDxResource)
 	{
 		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
+	}
+
+	void FRHIDx12::RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex)
+	{
+		DescriptorHeaps[HeapType].RecallDescriptor(DescriptorIndex);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -736,39 +716,6 @@ namespace tix
 		return RequiredSize;
 	}
 
-	void FRHIDx12::RecallDescriptor(uint32 HeapIndex)
-	{
-		AvaibleDescriptorHeapSlots.push_back(HeapIndex);
-	}
-
-	uint32 FRHIDx12::AllocateDescriptorSlot()
-	{
-		if (AvaibleDescriptorHeapSlots.size() > 0)
-		{
-			uint32 SlotIndex = AvaibleDescriptorHeapSlots.back();
-			AvaibleDescriptorHeapSlots.pop_back();
-			return SlotIndex;
-		}
-		uint32 Result = DescriptorAllocated;
-		++DescriptorAllocated;
-		TI_ASSERT(DescriptorAllocated < FRHIConfig::MaxDescriptorNum);
-		return Result;
-	}
-
-	D3D12_CPU_DESCRIPTOR_HANDLE FRHIDx12::GetCpuDescriptorHandle(uint32 Index)
-	{
-		D3D12_CPU_DESCRIPTOR_HANDLE Result = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		Result.ptr += Index * DescriptorIncSize;
-		return Result;
-	}
-
-	D3D12_GPU_DESCRIPTOR_HANDLE FRHIDx12::GetGpuDescriptorHandle(uint32 Index)
-	{
-		D3D12_GPU_DESCRIPTOR_HANDLE Result = DescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-		Result.ptr += Index * DescriptorIncSize;
-		return Result;
-	}
-
 	inline DXGI_FORMAT GetBaseFormat(DXGI_FORMAT defaultFormat)
 	{
 		switch (defaultFormat)
@@ -885,13 +832,13 @@ namespace tix
 
 			// Describe and create a SRV for the texture.
 			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
-			TexDx12->TexDescriptor = AllocateDescriptorSlot();
+			TexDx12->TexDescriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].AllocateDescriptorSlot();
 			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			SRVDesc.Format = TextureDx12Desc.Format;
 			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			SRVDesc.Texture2D.MipLevels = 1;
-			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(TexDx12->TexDescriptor);
 			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, Descriptor);
 
 			FlushResourceBarriers(CommandList.Get());
@@ -932,7 +879,7 @@ namespace tix
 
 			// Describe and create a SRV for the texture.
 			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
-			TexDx12->TexDescriptor = AllocateDescriptorSlot();
+			TexDx12->TexDescriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].AllocateDescriptorSlot();
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 
@@ -942,7 +889,7 @@ namespace tix
 			SRVDesc.Texture2D.MipLevels = Desc.Mips;
 			SRVDesc.Texture2D.MostDetailedMip = 0;
 
-			D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
+			D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(TexDx12->TexDescriptor);
 			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, SrvDescriptor);
 			
 			HoldResourceReference(Texture);
@@ -1040,11 +987,11 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&UniformBufferDx12->ConstantBuffer)));
 
-		UniformBufferDx12->CbvDescriptor = AllocateDescriptorSlot();
+		UniformBufferDx12->CbvDescriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].AllocateDescriptorSlot();
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = AlignedDataSize;
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBufferDx12->CbvDescriptor);
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(UniformBufferDx12->CbvDescriptor);
 		D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
 
 		// Map the constant buffers.
@@ -1118,7 +1065,7 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(UBDx12->CbvDescriptor);
+		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetGpuDescriptorHandle(UBDx12->CbvDescriptor);
 		CommandList->SetGraphicsRootDescriptorTable(0, Descriptor);
 
 		HoldResourceReference(InUniformBuffer);

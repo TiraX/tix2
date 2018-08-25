@@ -29,7 +29,7 @@ namespace tix
 		if (CbvDescriptor != uint32(-1))
 		{
 			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-			RHIDx12->RecallDescriptor(CbvDescriptor);
+			RHIDx12->RecallDescriptor(EHT_CBV_SRV_UAV, CbvDescriptor);
 			CbvDescriptor = uint32(-1);
 		}
 	}

@@ -31,6 +31,7 @@
     <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderTargetDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRenderTargetDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />

@@ -34,7 +34,7 @@ namespace tix
 		if (TexDescriptor != uint32(-1))
 		{
 			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-			RHIDx12->RecallDescriptor(TexDescriptor);
+			RHIDx12->RecallDescriptor(EHT_CBV_SRV_UAV, TexDescriptor);
 			TexDescriptor = uint32(-1);
 		}
 	}
