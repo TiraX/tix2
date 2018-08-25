@@ -23,7 +23,7 @@ namespace tix
 	public:      
         
 		TI_API static TEngine* Get();
-		TI_API static void	InitEngine(const TEngineConfiguration& Config);
+		TI_API static void	InitEngine(const TEngineDesc& Config);
 		TI_API static void	Destroy();
 
 		static E_Platform GetPlatform()
@@ -51,7 +51,7 @@ namespace tix
 
 	protected:
 		// Init every thing for engine
-		void Init(const TEngineConfiguration& Config);
+		void Init(const TEngineDesc& Config);
 		void Tick();
 		void TickFinished();
 

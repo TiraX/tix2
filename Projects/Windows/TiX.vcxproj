@@ -118,7 +118,7 @@
     <ClInclude Include="..\..\Sources\Engine\TEngine.h" />
     <ClInclude Include="..\..\Sources\Engine\TDevice.h" />
     <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h" />
-    <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\TEngineDesc.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TINIParser.h" />

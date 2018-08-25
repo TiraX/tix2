@@ -73,7 +73,7 @@ using namespace std;
 #include "FRenderThread.h"
 
 #include "TResourceLibrary.h"
-#include "TEngineConfig.h"
+#include "TEngineDesc.h"
 #include "TConsoleVariable.h"
 #include "TPath.h"
 #include "TEngine.h"

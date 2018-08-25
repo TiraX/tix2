@@ -70,14 +70,14 @@ namespace tix
 
 	void FRenderThread::DestroyRenderComponents()
 	{
+		// Finish all in-flight rendering
+		RHI->WaitingForGpu();
+
 		// Finish all un-finished tasks
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; i++)
 		{
 			DoRenderTasks();
 		}
-
-		// Finish all on the fly rendering
-		RHI->WaitingForGpu();
 
 		// Release all renderers
 		for (auto Renderer : Renderers)

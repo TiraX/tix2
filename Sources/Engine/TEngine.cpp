@@ -23,7 +23,7 @@ namespace tix
 	TEngine* TEngine::s_engine = nullptr;
 	E_Platform TEngine::CurrentPlatform = EP_Unknown;
 
-	void TEngine::InitEngine(const TEngineConfiguration& Config)
+	void TEngine::InitEngine(const TEngineDesc& Config)
 	{
 		if (s_engine == nullptr)
 		{
@@ -33,7 +33,7 @@ namespace tix
 		}
 	}
 
-	void TEngine::Init(const TEngineConfiguration& Config)
+	void TEngine::Init(const TEngineDesc& Config)
 	{
 		TThread::IndicateGameThread();
 

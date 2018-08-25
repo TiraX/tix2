@@ -11,7 +11,7 @@ namespace tix
 	* Engine configuration. Used to load default configuration from ini.
 	* 
 	*/
-	struct TEngineConfiguration
+	struct TEngineDesc
 	{
 		int Width;
 		int Height;

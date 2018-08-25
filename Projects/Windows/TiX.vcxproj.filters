@@ -219,9 +219,6 @@
     <ClInclude Include="..\..\Sources\Engine\math\Vector4d.h">
       <Filter>Sources\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TEngineConfig.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TDevice.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
@@ -422,6 +419,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TStringExt.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TEngineDesc.h">
+      <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

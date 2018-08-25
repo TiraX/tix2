@@ -996,7 +996,6 @@ namespace tix
 		int32 BaseVertexLocation,
 		uint32 StartInstanceLocation)
 	{
-		// temp test
 		// Set the viewport and scissor rectangle.
 		D3D12_VIEWPORT Viewport = { 0.f, 0.f, 1280.f, 720.f, 0.f, 1.f };
 		CommandList->RSSetViewports(1, &Viewport);
