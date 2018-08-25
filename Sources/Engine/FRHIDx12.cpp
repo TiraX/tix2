@@ -14,6 +14,7 @@
 #include "FTextureDx12.h"
 #include "FPipelineDx12.h"
 #include "FUniformBufferDx12.h"
+#include "FRenderTargetDx12.h"
 #include <DirectXColors.h>
 
 // link libraries
@@ -438,6 +439,11 @@ namespace tix
 	{
 		return ti_new FUniformBufferDx12();
 	}
+	
+	FRenderTargetPtr FRHIDx12::CreateRenderTarget()
+	{
+		return ti_new FRenderTargetDx12();
+	}
 
 	// Wait for pending GPU work to complete.
 	void FRHIDx12::WaitingForGpu()
@@ -613,7 +619,7 @@ namespace tix
 		}
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
+	bool FRHIDx12::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
 		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
@@ -764,89 +770,190 @@ namespace tix
 		return Result;
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData)
+	inline DXGI_FORMAT GetBaseFormat(DXGI_FORMAT defaultFormat)
+	{
+		switch (defaultFormat)
+		{
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+			return DXGI_FORMAT_B8G8R8A8_TYPELESS;
+
+		case DXGI_FORMAT_B8G8R8X8_UNORM:
+		case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+			return DXGI_FORMAT_B8G8R8X8_TYPELESS;
+
+			// 32-bit Z w/ Stencil
+		case DXGI_FORMAT_R32G8X24_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+			return DXGI_FORMAT_R32G8X24_TYPELESS;
+
+			// No Stencil
+		case DXGI_FORMAT_R32_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT:
+		case DXGI_FORMAT_R32_FLOAT:
+			return DXGI_FORMAT_R32_TYPELESS;
+
+			// 24-bit Z
+		case DXGI_FORMAT_R24G8_TYPELESS:
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+		case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+			return DXGI_FORMAT_R24G8_TYPELESS;
+
+			// 16-bit Z w/o Stencil
+		case DXGI_FORMAT_R16_TYPELESS:
+		case DXGI_FORMAT_D16_UNORM:
+		case DXGI_FORMAT_R16_UNORM:
+			return DXGI_FORMAT_R16_TYPELESS;
+
+		default:
+			return defaultFormat;
+		}
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		Texture->InitTextureInfo(InTexData);
-		const TTextureDesc& Desc = InTexData->Desc;
-
-		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
-		// the command list that references it has finished executing on the GPU.
-		// We will flush the GPU at the end of this method to ensure the resource is not
-		// prematurely destroyed.
-		ComPtr<ID3D12Resource> TextureUploadHeap;
-
+		const TTextureDesc& Desc = InTexData->GetDesc();
 		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
-		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-		// Describe and create a Texture2D.
-		D3D12_RESOURCE_DESC textureDesc = {};
-		textureDesc.MipLevels = Desc.Mips;
-		textureDesc.Format = DxgiFormat;
-		textureDesc.Width = Texture->GetWidth();
-		textureDesc.Height = Texture->GetHeight();
-		textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-		textureDesc.DepthOrArraySize = 1;
-		textureDesc.SampleDesc.Count = 1;
-		textureDesc.SampleDesc.Quality = 0;
-		textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&textureDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&TexDx12->TextureResource)));
-
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, Desc.Mips);
-
-		// Create the GPU upload buffer.
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&TextureUploadHeap)));
-
-		// Copy data to the intermediate upload heap and then schedule a copy 
-		// from the upload heap to the Texture2D.
-		D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[Desc.Mips];
-		const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
-		for (uint32 m = 0; m < Desc.Mips; ++m)
+		if (InTexData->GetSurfaces().size() > 0)
 		{
-			D3D12_SUBRESOURCE_DATA& texData = TextureDatas[m];
-			const TTexture::TSurface* Surface = TextureSurfaces[m];
-			texData.pData = Surface->Data;
-			texData.RowPitch = Surface->RowPitch;
-			texData.SlicePitch = Surface->DataSize;
+			// Create texture resource and fill with texture data.
+
+			// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
+			// the command list that references it has finished executing on the GPU.
+			// We will flush the GPU at the end of this method to ensure the resource is not
+			// prematurely destroyed.
+			ComPtr<ID3D12Resource> TextureUploadHeap;
+
+			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+			// Describe and create a Texture2D.
+			D3D12_RESOURCE_DESC TextureDx12Desc = {};
+			TextureDx12Desc.MipLevels = Desc.Mips;
+			TextureDx12Desc.Format = DxgiFormat;
+			TextureDx12Desc.Width = Desc.Width;
+			TextureDx12Desc.Height = Desc.Height;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+			TextureDx12Desc.DepthOrArraySize = 1;
+			TextureDx12Desc.SampleDesc.Count = 1;
+			TextureDx12Desc.SampleDesc.Quality = 0;
+			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&TextureDx12Desc,
+				D3D12_RESOURCE_STATE_COPY_DEST,
+				nullptr,
+				IID_PPV_ARGS(&TexDx12->TextureResource)));
+
+			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, Desc.Mips);
+
+			// Create the GPU upload buffer.
+			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&TextureUploadHeap)));
+
+			// Copy data to the intermediate upload heap and then schedule a copy 
+			// from the upload heap to the Texture2D.
+			D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[Desc.Mips];
+			const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
+			for (uint32 m = 0; m < Desc.Mips; ++m)
+			{
+				D3D12_SUBRESOURCE_DATA& texData = TextureDatas[m];
+				const TTexture::TSurface* Surface = TextureSurfaces[m];
+				texData.pData = Surface->Data;
+				texData.RowPitch = Surface->RowPitch;
+				texData.SlicePitch = Surface->DataSize;
+			}
+
+			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
+			Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+			ti_delete[] TextureDatas;
+
+			// Describe and create a SRV for the texture.
+			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
+			TexDx12->TexDescriptor = AllocateDescriptorSlot();
+			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SRVDesc.Format = TextureDx12Desc.Format;
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SRVDesc.Texture2D.MipLevels = 1;
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
+			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, Descriptor);
+
+			FlushResourceBarriers(CommandList.Get());
+			// Hold resources used here
+			HoldResourceReference(Texture);
+			HoldResourceReference(TextureUploadHeap);
 		}
+		else
+		{
+			// do not have texture data, Create a empty texture (used for render target usually).
+			D3D12_RESOURCE_DESC TextureDx12Desc = {};
+			TextureDx12Desc.Alignment = 0;
+			TextureDx12Desc.DepthOrArraySize = 1;
+			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
+			TextureDx12Desc.Width = Desc.Width;
+			TextureDx12Desc.Height = Desc.Height;
+			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+			TextureDx12Desc.MipLevels = Desc.Mips;
+			TextureDx12Desc.SampleDesc.Count = 1;
+			TextureDx12Desc.SampleDesc.Quality = 0;
 
-		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
-		Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			D3D12_CLEAR_VALUE ClearValue = {};
+			ClearValue.Format = DxgiFormat;
+			ClearValue.Color[0] = 0.0;
+			ClearValue.Color[1] = 0.0;
+			ClearValue.Color[2] = 0.0;
+			ClearValue.Color[3] = 1.0;
 
-		ti_delete[] TextureDatas;
+			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&TextureDx12Desc,
+				D3D12_RESOURCE_STATE_COMMON, 
+				&ClearValue,
+				IID_PPV_ARGS(&TexDx12->TextureResource)));
 
-		// Describe and create a SRV for the texture.
-		TexDx12->TexDescriptor = AllocateDescriptorSlot();
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Format = textureDesc.Format;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = 1;
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
-		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &srvDesc, Descriptor);
+			// Describe and create a SRV for the texture.
+			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
+			TexDx12->TexDescriptor = AllocateDescriptorSlot();
 
-		FlushResourceBarriers(CommandList.Get());
-		// Hold resources used here
-		HoldResourceReference(Texture);
-		HoldResourceReference(TextureUploadHeap);
+			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+
+			SRVDesc.Format = DxgiFormat;
+			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SRVDesc.Texture2D.MipLevels = Desc.Mips;
+			SRVDesc.Texture2D.MostDetailedMip = 0;
+
+			D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = GetCpuDescriptorHandle(TexDx12->TexDescriptor);
+			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, SrvDescriptor);
+			
+			HoldResourceReference(Texture);
+		}
 
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
+	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
 		TI_ASSERT(Pipeline->GetResourceFamily() == ERF_Dx12);
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
@@ -918,7 +1025,7 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize)
+	bool FRHIDx12::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize)
 	{
 		TI_ASSERT(UniformBuffer->GetResourceFamily() == ERF_Dx12);
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
@@ -954,6 +1061,28 @@ namespace tix
 		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
 		HoldResourceReference(UniformBuffer);
 
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTargetDesc)
+	{
+		TI_ASSERT(RenderTarget->GetResourceFamily() == ERF_Dx12);
+		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
+
+		TI_ASSERT(0);
+		// Create Render target view
+		//D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
+		//RTVDesc.Format = DxgiFormat;
+		//RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		//RTVDesc.Texture2D.MipSlice = 0;
+
+		//if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+		//{
+		//	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		//	m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		//}
+
+		//D3dDevice->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
 		return true;
 	}
 

@@ -80,18 +80,27 @@ namespace tix
 		E_TEXTURE_CLAMP WrapMode;
 		uint32 SRGB;
 		uint32 Mips;
+
+		TTextureDesc()
+			: Type(ETT_TEXTURE_2D)
+			, Format(EPF_UNKNOWN)
+			, Width(0)
+			, Height(0)
+			, WrapMode(ETC_REPEAT)
+			, SRGB(0)
+			, Mips(1)
+		{}
 	};
 
 	class TTexture : public TResource
 	{
 	public:
-		TTexture();
+		TTexture(const TTextureDesc& InDesc);
 		virtual ~TTexture();
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-		TTextureDesc Desc;
 		FTexturePtr TextureResource;
 
 		class TSurface
@@ -117,6 +126,10 @@ namespace tix
 			uint32 RowPitch;
 		};
 		TI_API void AddSurface(int32 Width, int32 Height, const uint8* Data, int32 RowPitch, int32 DataSize);
+		TI_API const TTextureDesc& GetDesc() const
+		{
+			return Desc;
+		}
 		TI_API const TVector<TSurface*>& GetSurfaces() const
 		{
 			return  Surfaces;
@@ -125,6 +138,7 @@ namespace tix
 	protected:
 
 	protected:
+		TTextureDesc Desc;
 		TVector<TSurface*> Surfaces;
 	};
 }

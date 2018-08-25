@@ -44,7 +44,7 @@ namespace tix
 		{ \
 			FRHI * RHI = FRHI::Get(); \
 			UniformBuffer = RHI->CreateUniformBuffer(); \
-			RHI->UpdateHardwareBuffer(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct)); \
+			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct)); \
 			return UniformBuffer; \
 		} \
 	}; \

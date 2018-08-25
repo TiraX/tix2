@@ -7,8 +7,9 @@
 
 namespace tix
 {
-	TTexture::TTexture()
+	TTexture::TTexture(const TTextureDesc& InDesc)
 		: TResource(ERES_TEXTURE)
+		, Desc(InDesc)
 	{}
 
 	TTexture::~TTexture()
@@ -48,19 +49,20 @@ namespace tix
 			FTexturePtr, Texture_RT, TextureResource,
 			TTexturePtr, TextureData, this,
 			{
-				RHI->UpdateHardwareBuffer(Texture_RT, TextureData);
+				RHI->UpdateHardwareResource(Texture_RT, TextureData);
 			});
 	}
 
 	void TTexture::DestroyRenderThreadResource()
 	{
-		TI_ASSERT(TextureResource != nullptr);
-
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
-			FTexturePtr, Texture_RT, TextureResource,
-			{
-				Texture_RT->Destroy();
-			});
-		TextureResource = nullptr;
+		if (TextureResource != nullptr)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
+				FTexturePtr, Texture_RT, TextureResource,
+				{
+					Texture_RT->Destroy();
+				});
+			TextureResource = nullptr;
+		}
 	}
 }

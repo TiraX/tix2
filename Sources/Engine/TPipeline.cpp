@@ -68,7 +68,7 @@ namespace tix
 			FPipelinePtr, Pipeline_RT, PipelineResource,
 			TPipelinePtr, PipeDesc, this,
 			{
-				RHI->UpdateHardwareBuffer(Pipeline_RT, PipeDesc);
+				RHI->UpdateHardwareResource(Pipeline_RT, PipeDesc);
 			});
 	}
 

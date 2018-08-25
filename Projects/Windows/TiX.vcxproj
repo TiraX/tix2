@@ -28,6 +28,8 @@
     <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRenderTargetDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
@@ -59,6 +61,7 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPath.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TRenderTarget.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp" />
@@ -82,6 +85,8 @@
     <ClInclude Include="..\..\Sources\Engine\FPrimitive.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRenderTarget.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRenderTargetDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
@@ -133,6 +138,7 @@
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
+    <ClInclude Include="..\..\Sources\Engine\TRenderTarget.h" />
     <ClInclude Include="..\..\Sources\Engine\TResFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TResfileDef.h" />
     <ClInclude Include="..\..\Sources\Engine\TResource.h" />

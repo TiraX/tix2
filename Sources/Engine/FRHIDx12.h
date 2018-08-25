@@ -31,11 +31,13 @@ namespace tix
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		virtual FUniformBufferPtr CreateUniformBuffer() override;
+		virtual FRenderTargetPtr CreateRenderTarget() override;
 
-		virtual bool UpdateHardwareBuffer(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
-		virtual bool UpdateHardwareBuffer(FTexturePtr Texture, TTexturePtr InTexData) override;
-		virtual bool UpdateHardwareBuffer(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareBuffer(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
+		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
+		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
+		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTargetDesc) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;

@@ -26,6 +26,6 @@ namespace tix
 
 	void FTexture::InitTextureInfo(TTexturePtr InTexture)
 	{
-		TextureDesc = InTexture->Desc;
+		TextureDesc = InTexture->GetDesc();
 	}
 }

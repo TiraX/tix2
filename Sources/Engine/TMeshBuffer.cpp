@@ -89,7 +89,7 @@ namespace tix
 			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
 			TMeshBufferPtr, InMeshData, this,
 			{
-				RHI->UpdateHardwareBuffer(MeshBuffer, InMeshData);
+				RHI->UpdateHardwareResource(MeshBuffer, InMeshData);
 			});
 	}
 
