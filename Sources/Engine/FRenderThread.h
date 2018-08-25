@@ -18,6 +18,7 @@ namespace tix
 		Code; \
 	}
 
+	// One parameters
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
 	class FRTTask_##TypeName : public TTask \
 	{ \
@@ -32,7 +33,7 @@ namespace tix
 	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1); \
 	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
 
-
+	// Two parameters
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
 	class FRTTask_##TypeName : public TTask \
 	{ \
@@ -48,6 +49,23 @@ namespace tix
 	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2); \
 	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
 
+	// Three parameters
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
+	class FRTTask_##TypeName : public TTask \
+	{ \
+	public: \
+		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3) {} \
+		RENDERTHREAD_TASK_FUNCTION(Code) \
+	private: \
+		ParamType1 ParamName1; \
+		ParamType2 ParamName2; \
+		ParamType3 ParamName3; \
+	};
+
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3) \
+	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2, ParamValue3); \
+	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
+
 /* Add a task to run in Render thread with ONE parameter.
  * RenderThread is built in parameter.
  * RHI is built in parameter.
@@ -59,6 +77,10 @@ namespace tix
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2)
+
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3)
 
 	struct FRenderFrame
 	{

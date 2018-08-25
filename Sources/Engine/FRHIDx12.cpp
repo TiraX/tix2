@@ -1015,28 +1015,34 @@ namespace tix
 		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 
 		// Create Render target view
+		int32 ValidColorBuffers = 0;
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
 			const TRenderTarget::RTBuffer& ColorBuffer = InRenderTarget->GetColorBuffer(i);
-			FTexturePtr ColorBufferTexture = ColorBuffer.Texture->TextureResource;
-			TI_ASSERT(ColorBufferTexture != nullptr);
+			if (ColorBuffer.BufferIndex != ERTC_INVALID)
+			{
+				FTexturePtr ColorBufferTexture = ColorBuffer.Texture->TextureResource;
+				TI_ASSERT(ColorBufferTexture != nullptr);
+				FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(ColorBufferTexture.get());
+				TI_ASSERT(TexDx12->TextureResource != nullptr);
 
-			D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
-			RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
-			RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RTVDesc.Texture2D.MipSlice = 0;
-			RTVDesc.Texture2D.PlaneSlice = 0;
+				D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
+				RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
+				TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
+				RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+				RTVDesc.Texture2D.MipSlice = 0;
+				RTVDesc.Texture2D.PlaneSlice = 0;
 
-			TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i] == uint32(-1));
-			//RenderTargetDx12->RTColorDescriptor[i] = AllocateDescriptorSlot();
-			//if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-			//{
-			//	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-			//	m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			//}
+				TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i] == uint32(-1));
+				RenderTargetDx12->RTColorDescriptor[i] = DescriptorHeaps[EHT_RTV].AllocateDescriptorSlot();
+				D3D12_CPU_DESCRIPTOR_HANDLE RtvDescriptor = 
+					DescriptorHeaps[EHT_RTV].GetCpuDescriptorHandle(RenderTargetDx12->RTColorDescriptor[i]);
+				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.Get(), &RTVDesc, RtvDescriptor);
 
-			//D3dDevice->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
+				++ValidColorBuffers;
+			}
 		}
+		TI_ASSERT(ValidColorBuffers == RenderTarget->GetColorBufferCount());
 		return true;
 	}
 

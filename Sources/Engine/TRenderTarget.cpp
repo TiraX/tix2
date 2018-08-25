@@ -28,6 +28,7 @@ namespace tix
 		RTResource = FRHI::Get()->CreateRenderTarget();
 
 		// Init RT render resource
+		int32 ValidColorBuffers = 0;
 		for (int32 i = 0 ; i < ERTC_COUNT ; ++ i)
 		{
 			const RTBuffer& ColorBuffer = RTColorBuffers[i];
@@ -38,8 +39,10 @@ namespace tix
 			if (ColorBuffer.BufferType == ERTAT_TEXTURE)
 			{
 				ColorBuffer.Texture->InitRenderThreadResource();
+				++ValidColorBuffers;
 			}
 		}
+		RTResource->SetValidColorBufferCount(ValidColorBuffers);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TRenderTargetUpdateFRT,
 			FRenderTargetPtr, RenderTarget_RT, RTResource,

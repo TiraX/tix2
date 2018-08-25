@@ -29,17 +29,20 @@ namespace tix
 	void FRenderTargetDx12::Destroy()
 	{
 		TI_ASSERT(IsRenderThread());
+		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
 			if (RTColorDescriptor[i] != uint32(-1))
 			{
-				TI_ASSERT(0);
-				TI_TODO("Recall rtv descriptor");
+				RHIDx12->RecallDescriptor(EHT_RTV, RTColorDescriptor[i]);
 				RTColorDescriptor[i] = uint32(-1);
 			}
 		}
-		TI_TODO("Recall dsv descriptor");
-		RTDSDescriptor = uint32(-1);
+		if (RTDSDescriptor != uint32(-1))
+		{
+			RHIDx12->RecallDescriptor(EHT_DSV, RTDSDescriptor);
+			RTDSDescriptor = uint32(-1);
+		}
 	}
 }
 

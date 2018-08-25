@@ -10,6 +10,7 @@ namespace tix
 {
 	FRenderTarget::FRenderTarget(E_RESOURCE_FAMILY InFamily)
 		: FRenderResource(InFamily)
+		, ColorBuffers(0)
 	{
 		TI_TODO("Refactor all FResource construct with TResource?");
 	}

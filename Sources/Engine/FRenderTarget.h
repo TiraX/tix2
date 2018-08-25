@@ -13,8 +13,18 @@ namespace tix
 		FRenderTarget(E_RESOURCE_FAMILY InFamily);
 		virtual ~FRenderTarget();
 
+		void SetValidColorBufferCount(int32 N)
+		{
+			ColorBuffers = N;
+		}
+
+		int32 GetColorBufferCount()
+		{
+			return ColorBuffers;
+		}
 	protected:
 
 	protected:
+		int32 ColorBuffers;
 	};
 }
