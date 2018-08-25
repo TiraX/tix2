@@ -36,7 +36,7 @@ PixelShaderInput main(VertexShaderInput input)
 	output.pos = pos;
 
 	// Pass the color through without modification.
-	output.color = input.normal * 0.5 + float3(0.5, 0.5, 0.5);
+	output.color = input.normal;// *0.5 + float3(0.5, 0.5, 0.5);
 
 	return output;
 }
