@@ -16,7 +16,12 @@ namespace tix
 
 		virtual void Destroy() override {};
 
-		void InitTextureInfo(TTexturePtr Image);
+		void InitTextureInfo(TTexturePtr Texture);
+
+		const TTextureDesc& GetDesc() const
+		{
+			return TextureDesc;
+		}
 
 		int32 GetWidth() const
 		{

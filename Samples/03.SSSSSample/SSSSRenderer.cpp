@@ -10,7 +10,7 @@ FSSSSRenderer::FSSSSRenderer()
 {
 	// Render target test case
 	TRenderTargetPtr RT = TRenderTarget::Create(1280, 720);
-	RT->AddTextureAttachment(EPF_RGBA8, ERTA_COLOR0);
+	RT->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
 	RT->Compile();
 }
 

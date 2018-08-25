@@ -623,7 +623,6 @@ namespace tix
 	{
 		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
-		MeshBuffer->SetFromTMeshBuffer(InMeshData);
 
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
@@ -821,8 +820,7 @@ namespace tix
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-		Texture->InitTextureInfo(InTexData);
-		const TTextureDesc& Desc = InTexData->GetDesc();
+		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
 
 		if (InTexData->GetSurfaces().size() > 0)
@@ -1064,25 +1062,34 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTargetDesc)
+	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget)
 	{
 		TI_ASSERT(RenderTarget->GetResourceFamily() == ERF_Dx12);
 		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 
-		TI_ASSERT(0);
 		// Create Render target view
-		//D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
-		//RTVDesc.Format = DxgiFormat;
-		//RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		//RTVDesc.Texture2D.MipSlice = 0;
+		for (int32 i = 0; i < ERTC_COUNT; ++i)
+		{
+			const TRenderTarget::RTBuffer& ColorBuffer = InRenderTarget->GetColorBuffer(i);
+			FTexturePtr ColorBufferTexture = ColorBuffer.Texture->TextureResource;
+			TI_ASSERT(ColorBufferTexture != nullptr);
 
-		//if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-		//{
-		//	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		//	m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		//}
+			D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
+			RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
+			RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			RTVDesc.Texture2D.MipSlice = 0;
+			RTVDesc.Texture2D.PlaneSlice = 0;
 
-		//D3dDevice->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
+			TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i] == uint32(-1));
+			//RenderTargetDx12->RTColorDescriptor[i] = AllocateDescriptorSlot();
+			//if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+			//{
+			//	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			//	m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			//}
+
+			//D3dDevice->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
+		}
 		return true;
 	}
 

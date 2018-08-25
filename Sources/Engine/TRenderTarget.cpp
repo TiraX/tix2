@@ -28,11 +28,16 @@ namespace tix
 		RTResource = FRHI::Get()->CreateRenderTarget();
 
 		// Init RT render resource
-		for (auto& Attachment : RtAttachments)
+		for (int32 i = 0 ; i < ERTC_COUNT ; ++ i)
 		{
-			if (Attachment.AttachType == ERTAT_TEXTURE)
+			const RTBuffer& ColorBuffer = RTColorBuffers[i];
+			// Color buffer must be continous
+			if (ColorBuffer.BufferIndex == ERTC_INVALID)
+				break;
+
+			if (ColorBuffer.BufferType == ERTAT_TEXTURE)
 			{
-				Attachment.Texture->InitRenderThreadResource();
+				ColorBuffer.Texture->InitRenderThreadResource();
 			}
 		}
 
@@ -49,12 +54,12 @@ namespace tix
 		if (RTResource != nullptr)
 		{
 			// Release RTResource in render thread
-			for (auto& Attachment : RtAttachments)
+			for (auto& ColorBuffer : RTColorBuffers)
 			{
-				if (Attachment.AttachType == ERTAT_TEXTURE)
+				if (ColorBuffer.BufferType == ERTAT_TEXTURE)
 				{
-					Attachment.Texture->DestroyRenderThreadResource();
-					Attachment.Texture = nullptr;
+					ColorBuffer.Texture->DestroyRenderThreadResource();
+					ColorBuffer.Texture = nullptr;
 				}
 			}
 
@@ -68,7 +73,7 @@ namespace tix
 		}
 	}
 
-	void TRenderTarget::AddTextureAttachment(E_PIXEL_FORMAT Format, E_RT_ATTACH Attachment)
+	void TRenderTarget::AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex)
 	{
 		TTextureDesc Desc;
 		Desc.Format = Format;
@@ -77,18 +82,23 @@ namespace tix
 		Desc.WrapMode = ETC_CLAMP_TO_EDGE;
 
 		TTexturePtr Texture = ti_new TTexture(Desc);
-		AddAttachment(Texture, Attachment);
+		AddColorBuffer(Texture, ColorBufferIndex);
 	}
 
-	void TRenderTarget::AddAttachment(TTexturePtr Texture, E_RT_ATTACH Attachment)
+	void TRenderTarget::AddColorBuffer(TTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex)
 	{
-		RTAttachment att;
-		att.Texture = Texture;
-		att.Attachment = Attachment;
-		att.AttachType = ERTAT_TEXTURE;
-		att.Level = 0;
+		RTBuffer Buffer;
+		Buffer.Texture = Texture;
+		Buffer.BufferIndex = ColorBufferIndex;
+		Buffer.BufferType = ERTAT_TEXTURE;
+		Buffer.Level = 0;
 
-		RtAttachments.push_back(att);
+		RTColorBuffers[ColorBufferIndex] = Buffer;
+	}
+
+	void TRenderTarget::AddDepthStencilBuffer(E_PIXEL_FORMAT Format)
+	{
+		TI_ASSERT(0);
 	}
 
 	void TRenderTarget::Compile()

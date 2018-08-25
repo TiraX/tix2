@@ -41,7 +41,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTargetDesc) = 0;
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget) = 0;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;

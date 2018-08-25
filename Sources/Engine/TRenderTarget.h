@@ -7,19 +7,17 @@
 
 namespace tix
 {
-	enum E_RT_ATTACH
+	enum E_RT_COLOR_BUFFER
 	{
-		ERTA_COLOR0,
-		ERTA_COLOR1,
-		ERTA_COLOR2,
-		ERTA_COLOR3,
-		ERTA_DEPTH,
-		ERTA_STENCIL,
-		ERTA_DEPTH_STENCIL,
+		ERTC_INVALID = -1,
+		ERTC_COLOR0 = 0,
+		ERTC_COLOR1,
+		ERTC_COLOR2,
+		ERTC_COLOR3,
 
-		ERTA_COUNT,
+		ERTC_COUNT,
 
-		ERTA_COLOR_ATTACHMENT = ((1 << ERTA_COLOR0) | (1 << ERTA_COLOR1) | (1 << ERTA_COLOR2) | (1 << ERTA_COLOR3)),
+		ERTC_COLOR_ATTACHMENT = ((1 << ERTC_COLOR0) | (1 << ERTC_COLOR1) | (1 << ERTC_COLOR2) | (1 << ERTC_COLOR3)),
 	};
 
 	enum E_RT_ATTACH_TYPE
@@ -58,19 +56,32 @@ namespace tix
 		TRenderTarget(int32 W, int32 H);
 		virtual ~TRenderTarget();
 
-		struct RTAttachment
+		struct RTBuffer
 		{
 			TTexturePtr Texture;
-			E_RT_ATTACH Attachment;
-			E_RT_ATTACH_TYPE AttachType;
+			E_RT_COLOR_BUFFER BufferIndex;
+			E_RT_ATTACH_TYPE BufferType;
 			int32 Level;
+
+			RTBuffer()
+				: BufferIndex(ERTC_INVALID)
+				, BufferType(ERTAT_TEXTURE)
+				, Level(0)
+			{}
 		};
+
+		const RTBuffer& GetColorBuffer(int32 ColorBufferIndex)
+		{
+			TI_ASSERT(ColorBufferIndex >= ERTC_COLOR0 && ColorBufferIndex < ERTC_COUNT);
+			return RTColorBuffers[ColorBufferIndex];
+		}
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-		TI_API virtual void AddTextureAttachment(E_PIXEL_FORMAT Format, E_RT_ATTACH Attachment);
-		TI_API virtual void AddAttachment(TTexturePtr Texture, E_RT_ATTACH Attachment);
+		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex);
+		TI_API virtual void AddColorBuffer(TTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex);
+		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format);
 		TI_API virtual void Compile();
 
 		FRenderTargetPtr RTResource;
@@ -79,7 +90,7 @@ namespace tix
 	protected:
 		vector2di Demension;
 
-		typedef TVector<RTAttachment> VecRTAttachments;
-		VecRTAttachments RtAttachments;
+		RTBuffer RTColorBuffers[ERTC_COUNT];
+		RTBuffer RTDepthStencilBuffer;
 	};
 }

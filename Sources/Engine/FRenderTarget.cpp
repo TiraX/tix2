@@ -11,6 +11,7 @@ namespace tix
 	FRenderTarget::FRenderTarget(E_RESOURCE_FAMILY InFamily)
 		: FRenderResource(InFamily)
 	{
+		TI_TODO("Refactor all FResource construct with TResource?");
 	}
 
 	FRenderTarget::~FRenderTarget()

@@ -13,6 +13,30 @@ using namespace Microsoft::WRL;
 
 namespace tix
 {
+	enum E_HEAP_TYPE
+	{
+		EHT_CBV_SRV_UAV,
+		EHT_SAMPLER,
+		EHT_RTV,
+		EHT_DSV,
+
+		EHT_COUNT,
+	};
+
+	class FDescriptorHeapDx12
+	{
+	public:
+		ComPtr<ID3D12DescriptorHeap> DescriptorHeap;
+		uint32 DescriptorIncSize;
+		TVector<uint32> AvaibleDescriptorHeapSlots;
+		uint32 DescriptorAllocated;
+
+		FDescriptorHeapDx12()
+			: DescriptorIncSize(0)
+			, DescriptorAllocated(0)
+		{}
+	};
+
 	class FFrameResourcesDx12;
 	// Render hardware interface use DirectX 12
 	class FRHIDx12 : public FRHI
@@ -37,7 +61,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTargetDesc) override;
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
