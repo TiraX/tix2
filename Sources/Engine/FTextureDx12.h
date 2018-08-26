@@ -13,7 +13,7 @@ namespace tix
 	{
 	public:
 		FTextureDx12();
-		FTextureDx12(E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight);
+		FTextureDx12(const TTextureDesc& Desc);
 		virtual ~FTextureDx12();
 
 		virtual void Destroy() override;

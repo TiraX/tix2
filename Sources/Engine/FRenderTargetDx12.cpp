@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FRenderTargetDx12::FRenderTargetDx12()
-		: FRenderTarget(ERF_Dx12)
+	FRenderTargetDx12::FRenderTargetDx12(int32 W, int32 H)
+		: FRenderTarget(ERF_Dx12, W, H)
 	{
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{

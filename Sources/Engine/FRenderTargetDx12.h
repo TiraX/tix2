@@ -12,7 +12,7 @@ namespace tix
 	class FRenderTargetDx12 : public FRenderTarget
 	{
 	public:
-		FRenderTargetDx12();
+		FRenderTargetDx12(int32 W, int32 H);
 		virtual ~FRenderTargetDx12();
 
 		virtual void Destroy() override;

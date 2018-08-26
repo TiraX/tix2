@@ -19,8 +19,10 @@ namespace tix
 		FDefaultRenderer();
 		virtual ~FDefaultRenderer();
 
-		virtual void PrepareViewUniforms(FScene* Scene);
+		virtual void InitInRenderThread() override;
 		virtual void Render(FRHI* RHI, FScene* Scene) override;
+
+		virtual void PrepareViewUniforms(FScene* Scene);
 
 	protected:
 		virtual void DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer);

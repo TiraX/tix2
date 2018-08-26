@@ -11,7 +11,7 @@ namespace tix
 	{
 	public:
 		FTexture(E_RESOURCE_FAMILY InFamily);
-		FTexture(E_RESOURCE_FAMILY InFamily, E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight);
+		FTexture(E_RESOURCE_FAMILY InFamily, const TTextureDesc& Desc);
 		virtual ~FTexture();
 
 		virtual void Destroy() override {};

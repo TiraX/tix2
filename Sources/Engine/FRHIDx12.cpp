@@ -395,9 +395,9 @@ namespace tix
 		return ti_new FTextureDx12();
 	}
 
-	FTexturePtr FRHIDx12::CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height)
+	FTexturePtr FRHIDx12::CreateTexture(const TTextureDesc& Desc)
 	{
-		return ti_new FTextureDx12(Format, Width, Height);
+		return ti_new FTextureDx12(Desc);
 	}
 
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
@@ -415,9 +415,9 @@ namespace tix
 		return ti_new FUniformBufferDx12();
 	}
 	
-	FRenderTargetPtr FRHIDx12::CreateRenderTarget()
+	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
 	{
-		return ti_new FRenderTargetDx12();
+		return ti_new FRenderTargetDx12(W, H);
 	}
 
 	// Wait for pending GPU work to complete.
@@ -770,7 +770,7 @@ namespace tix
 		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
 
-		if (InTexData->GetSurfaces().size() > 0)
+		if (InTexData != nullptr && InTexData->GetSurfaces().size() > 0)
 		{
 			// Create texture resource and fill with texture data.
 
@@ -1009,7 +1009,7 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget)
+	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
 	{
 		TI_ASSERT(RenderTarget->GetResourceFamily() == ERF_Dx12);
 		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
@@ -1018,10 +1018,10 @@ namespace tix
 		int32 ValidColorBuffers = 0;
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
-			const TRenderTarget::RTBuffer& ColorBuffer = InRenderTarget->GetColorBuffer(i);
+			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
 			if (ColorBuffer.BufferIndex != ERTC_INVALID)
 			{
-				FTexturePtr ColorBufferTexture = ColorBuffer.Texture->TextureResource;
+				FTexturePtr ColorBufferTexture = ColorBuffer.Texture;
 				TI_ASSERT(ColorBufferTexture != nullptr);
 				FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(ColorBufferTexture.get());
 				TI_ASSERT(TexDx12->TextureResource != nullptr);
@@ -1042,7 +1042,6 @@ namespace tix
 				++ValidColorBuffers;
 			}
 		}
-		TI_ASSERT(ValidColorBuffers == RenderTarget->GetColorBufferCount());
 		return true;
 	}
 

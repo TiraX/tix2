@@ -17,6 +17,7 @@ namespace tix
 		FRenderer() {};
 		virtual ~FRenderer() {};
 
+		virtual void InitInRenderThread() = 0;
 		virtual void Render(FRHI* RHI, FScene* Scene) = 0;
 	};
 }

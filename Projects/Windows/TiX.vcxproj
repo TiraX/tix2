@@ -62,7 +62,6 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPath.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TRenderTarget.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp" />
@@ -140,7 +139,6 @@
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
-    <ClInclude Include="..\..\Sources\Engine\TRenderTarget.h" />
     <ClInclude Include="..\..\Sources\Engine\TResFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TResfileDef.h" />
     <ClInclude Include="..\..\Sources\Engine\TResource.h" />

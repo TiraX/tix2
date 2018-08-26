@@ -8,12 +8,17 @@
 
 FSSSSRenderer::FSSSSRenderer()
 {
-	// Render target test case
-	TRenderTargetPtr RT = TRenderTarget::Create(1280, 720);
-	RT->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
-	RT->Compile();
 }
 
 FSSSSRenderer::~FSSSSRenderer()
 {
+	RTTest = nullptr;
+}
+
+void FSSSSRenderer::InitInRenderThread()
+{
+	// Render target test case
+	RTTest = FRenderTarget::Create(1280, 720);
+	RTTest->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
+	RTTest->Compile();
 }

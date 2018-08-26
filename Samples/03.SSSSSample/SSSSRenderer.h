@@ -10,6 +10,9 @@ class FSSSSRenderer : public FDefaultRenderer
 public:
 	FSSSSRenderer();
 	virtual ~FSSSSRenderer();
+
+	virtual void InitInRenderThread() override;
 private:
 protected:
+	FRenderTargetPtr RTTest;
 };

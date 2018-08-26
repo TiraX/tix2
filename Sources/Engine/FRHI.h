@@ -31,17 +31,17 @@ namespace tix
 		virtual void WaitingForGpu() = 0;
 
 		virtual FTexturePtr CreateTexture() = 0;
-		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) = 0;
+		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FUniformBufferPtr CreateUniformBuffer() = 0;
-		virtual FRenderTargetPtr CreateRenderTarget() = 0;
+		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget) = 0;
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;

@@ -55,6 +55,7 @@ namespace tix
 	void FRenderThread::AddRenderer(FRenderer* Renderer)
 	{
 		TI_ASSERT(IsRenderThread());
+		Renderer->InitInRenderThread();
 		Renderers.push_back(Renderer);
 	}
 

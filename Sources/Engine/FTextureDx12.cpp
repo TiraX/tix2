@@ -17,8 +17,9 @@ namespace tix
 	{
 	}
 
-	FTextureDx12::FTextureDx12(E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight)
-		: FTexture(ERF_Dx12, InFormat, InWidth, InHeight)
+	FTextureDx12::FTextureDx12(const TTextureDesc& Desc)
+		: FTexture(ERF_Dx12, Desc)
+		, TexDescriptor(uint32(-1))
 	{
 	}
 

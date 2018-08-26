@@ -12,12 +12,10 @@ namespace tix
 	{
 	}
 
-	FTexture::FTexture(E_RESOURCE_FAMILY InFamily, E_PIXEL_FORMAT InFormat, int32 InWidth, int32 InHeight)
+	FTexture::FTexture(E_RESOURCE_FAMILY InFamily, const TTextureDesc& Desc)
 		: FRenderResource(InFamily)
 	{
-		TextureDesc.Format = InFormat;
-		TextureDesc.Width = InWidth;
-		TextureDesc.Height = InHeight;
+		TextureDesc = Desc;
 	}
 
 	FTexture::~FTexture()

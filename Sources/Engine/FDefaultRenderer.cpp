@@ -36,6 +36,10 @@ namespace tix
 		}
 	}
 
+	void FDefaultRenderer::InitInRenderThread()
+	{
+	}
+
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		PrepareViewUniforms(Scene);

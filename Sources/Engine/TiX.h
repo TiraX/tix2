@@ -50,7 +50,6 @@ using namespace std;
 #include "TPipeline.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
-#include "TRenderTarget.h"
 #include "TResfileDef.h"
 #include "TResFile.h"
 #include "TNode.h"

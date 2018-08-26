@@ -28,17 +28,17 @@ namespace tix
 		virtual void WaitingForGpu() override;
 
 		virtual FTexturePtr CreateTexture() override;
-		virtual FTexturePtr CreateTexture(E_PIXEL_FORMAT Format, int32 Width, int32 Height) override;
+		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		virtual FUniformBufferPtr CreateUniformBuffer() override;
-		virtual FRenderTargetPtr CreateRenderTarget() override;
+		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget, TRenderTargetPtr InRenderTarget) override;
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
