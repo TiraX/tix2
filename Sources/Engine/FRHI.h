@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FRHIConfig.h"
+#include "FViewport.h"
 
 namespace tix
 {
@@ -54,6 +55,8 @@ namespace tix
 			int32 BaseVertexLocation,
 			uint32 StartInstanceLocation) = 0;
 
+		virtual void SetViewport(const FViewport& InViewport);
+
 		E_RHI_TYPE GetRHIType() const
 		{
 			return RHIType;
@@ -66,6 +69,7 @@ namespace tix
 
 	protected:
 		E_RHI_TYPE RHIType;
+		FViewport Viewport;
 		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
 	};
 }

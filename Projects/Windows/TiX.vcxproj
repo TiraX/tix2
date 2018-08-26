@@ -100,6 +100,7 @@
     <ClInclude Include="..\..\Sources\Engine\FUniformBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBufferView.h" />
+    <ClInclude Include="..\..\Sources\Engine\FViewport.h" />
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />

@@ -45,4 +45,9 @@ namespace tix
 	FRHI::~FRHI()
 	{
 	}
+
+	void FRHI::SetViewport(const FViewport& InViewport)
+	{
+		Viewport = InViewport;
+	}
 }

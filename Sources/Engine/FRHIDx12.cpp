@@ -330,8 +330,7 @@ namespace tix
 		}
 
 		// Set the 3D rendering viewport to target the entire window.
-		//m_screenViewport = { 0.0f, 0.0f, m_d3dRenderTargetSize.Width, m_d3dRenderTargetSize.Height, 0.0f, 1.0f };
-
+		SetViewport(FViewport(0, 0, BackBufferWidth, BackBufferHeight));
 	}
 
 	void FRHIDx12::BeginFrame()
@@ -359,6 +358,12 @@ namespace tix
 		CommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 		CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+
+		// Set the viewport and scissor rectangle.
+		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+		CommandList->RSSetViewports(1, &ViewportDx);
+		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+		CommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
 	void FRHIDx12::EndFrame()
@@ -1189,13 +1194,6 @@ namespace tix
 		int32 BaseVertexLocation,
 		uint32 StartInstanceLocation)
 	{
-		// Set the viewport and scissor rectangle.
-		D3D12_VIEWPORT Viewport = { 0.f, 0.f, 1280.f, 720.f, 0.f, 1.f };
-		CommandList->RSSetViewports(1, &Viewport);
-		D3D12_RECT ScissorRect = { 0, 0, 1280, 720 };
-		CommandList->RSSetScissorRects(1, &ScissorRect);
-		TI_TODO("Move Set Viewport and Set ScissorRect to right place.");
-
 		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 	}
 }
