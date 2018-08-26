@@ -20,6 +20,12 @@ namespace tix
 		ERTC_COLOR_ATTACHMENT = ((1 << ERTC_COLOR0) | (1 << ERTC_COLOR1) | (1 << ERTC_COLOR2) | (1 << ERTC_COLOR3)),
 	};
 
+	enum E_RT_DEPTH_STENCIL_BUFFER
+	{
+		ERTDS_INVALID = -1,
+		ERTDS_DEPTH_STENCIL = 0,
+	};
+
 	enum E_RT_ATTACH_TYPE
 	{
 		ERTAT_TEXTURE,
@@ -78,6 +84,10 @@ namespace tix
 		{
 			TI_ASSERT(ColorBufferIndex >= ERTC_COLOR0 && ColorBufferIndex < ERTC_COUNT);
 			return RTColorBuffers[ColorBufferIndex];
+		}
+		const RTBuffer& GetDepthStencilBuffer()
+		{
+			return RTDepthStencilBuffer;
 		}
 
 		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex);

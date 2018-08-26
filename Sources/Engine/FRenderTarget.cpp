@@ -42,6 +42,7 @@ namespace tix
 	{
 		RTBuffer Buffer;
 		Buffer.Texture = Texture;
+		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);
 		Buffer.BufferIndex = ColorBufferIndex;
 		Buffer.BufferType = ERTAT_TEXTURE;
 		Buffer.Level = 0;
@@ -51,7 +52,19 @@ namespace tix
 
 	void FRenderTarget::AddDepthStencilBuffer(E_PIXEL_FORMAT Format)
 	{
-		TI_ASSERT(0);
+		TTextureDesc Desc;
+		Desc.Format = Format;
+		Desc.Width = Demension.X;
+		Desc.Height = Demension.Y;
+		Desc.WrapMode = ETC_CLAMP_TO_EDGE;
+		
+		FRHI * RHI = FRHI::Get();
+		FTexturePtr Texture = RHI->CreateTexture(Desc);
+		Texture->SetTextureFlag(ETF_RT_DSBUFFER, true);
+
+		RTDepthStencilBuffer.Texture = Texture;
+		RTDepthStencilBuffer.BufferType = ERTAT_TEXTURE;
+		RTDepthStencilBuffer.Level = 0;
 	}
 
 	void FRenderTarget::Compile()
@@ -71,6 +84,11 @@ namespace tix
 				TI_ASSERT(ColorBuffer.Texture != nullptr);
 				RHI->UpdateHardwareResource(ColorBuffer.Texture, nullptr);
 			}
+		}
+
+		if (RTDepthStencilBuffer.Texture != nullptr)
+		{
+			RHI->UpdateHardwareResource(RTDepthStencilBuffer.Texture, nullptr);
 		}
 
 		RHI->UpdateHardwareResource(this);

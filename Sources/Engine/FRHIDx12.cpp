@@ -763,6 +763,76 @@ namespace tix
 		}
 	}
 
+	inline DXGI_FORMAT GetDSVFormat(DXGI_FORMAT defaultFormat)
+	{
+		switch (defaultFormat)
+		{
+			// 32-bit Z w/ Stencil
+		case DXGI_FORMAT_R32G8X24_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+			return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+
+			// No Stencil
+		case DXGI_FORMAT_R32_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT:
+		case DXGI_FORMAT_R32_FLOAT:
+			return DXGI_FORMAT_D32_FLOAT;
+
+			// 24-bit Z
+		case DXGI_FORMAT_R24G8_TYPELESS:
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+		case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+			return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+			// 16-bit Z w/o Stencil
+		case DXGI_FORMAT_R16_TYPELESS:
+		case DXGI_FORMAT_D16_UNORM:
+		case DXGI_FORMAT_R16_UNORM:
+			return DXGI_FORMAT_D16_UNORM;
+
+		default:
+			return defaultFormat;
+		}
+	}
+
+	inline DXGI_FORMAT GetDepthFormat(DXGI_FORMAT defaultFormat)
+	{
+		switch (defaultFormat)
+		{
+			// 32-bit Z w/ Stencil
+		case DXGI_FORMAT_R32G8X24_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+			return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
+
+			// No Stencil
+		case DXGI_FORMAT_R32_TYPELESS:
+		case DXGI_FORMAT_D32_FLOAT:
+		case DXGI_FORMAT_R32_FLOAT:
+			return DXGI_FORMAT_R32_FLOAT;
+
+			// 24-bit Z
+		case DXGI_FORMAT_R24G8_TYPELESS:
+		case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+		case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+			return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+
+			// 16-bit Z w/o Stencil
+		case DXGI_FORMAT_R16_TYPELESS:
+		case DXGI_FORMAT_D16_UNORM:
+		case DXGI_FORMAT_R16_UNORM:
+			return DXGI_FORMAT_R16_UNORM;
+
+		default:
+			return DXGI_FORMAT_UNKNOWN;
+		}
+	}
+
 	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(Texture->GetResourceFamily() == ERF_Dx12);
@@ -853,7 +923,15 @@ namespace tix
 			TextureDx12Desc.Alignment = 0;
 			TextureDx12Desc.DepthOrArraySize = 1;
 			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+			if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
+			{
+				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			}
+			if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
+			{
+				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			}
 			TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
 			TextureDx12Desc.Width = Desc.Width;
 			TextureDx12Desc.Height = Desc.Height;
@@ -884,6 +962,10 @@ namespace tix
 			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 
 			SRVDesc.Format = DxgiFormat;
+			if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
+			{
+				SRVDesc.Format = GetDepthFormat(DxgiFormat);
+			}
 			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			SRVDesc.Texture2D.MipLevels = Desc.Mips;
@@ -1015,7 +1097,7 @@ namespace tix
 		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 
 		// Create Render target view
-		int32 ValidColorBuffers = 0;
+		// Color buffers
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
 			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
@@ -1038,8 +1120,32 @@ namespace tix
 				D3D12_CPU_DESCRIPTOR_HANDLE RtvDescriptor = 
 					DescriptorHeaps[EHT_RTV].GetCpuDescriptorHandle(RenderTargetDx12->RTColorDescriptor[i]);
 				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.Get(), &RTVDesc, RtvDescriptor);
+			}
+		}
 
-				++ValidColorBuffers;
+		// Depth stencil buffers
+		{
+			const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
+			FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
+			if (DSBufferTexture != nullptr)
+			{
+				FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(DSBufferTexture.get());
+				TI_ASSERT(TexDx12->TextureResource != nullptr);
+
+				DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[DSBufferTexture->GetDesc().Format];
+				TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
+
+				D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
+				DsvDesc.Format = GetDSVFormat(DxgiFormat);
+				DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+				DsvDesc.Texture2D.MipSlice = 0;
+				DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+				TI_ASSERT(RenderTargetDx12->RTDSDescriptor == uint32(-1));
+				RenderTargetDx12->RTDSDescriptor = DescriptorHeaps[EHT_DSV].AllocateDescriptorSlot();
+				D3D12_CPU_DESCRIPTOR_HANDLE DsvDescriptor =
+					DescriptorHeaps[EHT_DSV].GetCpuDescriptorHandle(RenderTargetDx12->RTDSDescriptor);
+				D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.Get(), &DsvDesc, DsvDescriptor);
 			}
 		}
 		return true;

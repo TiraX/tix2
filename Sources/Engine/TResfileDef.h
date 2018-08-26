@@ -159,7 +159,13 @@ namespace tix
 	struct THeaderTexture
 	{
 		int32 StrId_Name;
-		TTextureDesc Desc;
+		int32 Type;
+		int32 Format;
+		int32 Width;
+		int32 Height;
+		int32 WrapMode;
+		uint32 SRGB;
+		uint32 Mips;
 	};
 
 	struct THeaderMaterial

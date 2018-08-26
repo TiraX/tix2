@@ -71,6 +71,13 @@ namespace tix
 		ETP_COUNT,
 	};
 
+	enum E_TEXTURE_FLAG
+	{
+		ETF_NONE = 0,
+		ETF_RT_COLORBUFFER = 1 << 0,
+		ETF_RT_DSBUFFER = 1 << 1,
+	};
+
 	struct TTextureDesc
 	{
 		E_TEXTURE_TYPE Type;
@@ -80,6 +87,7 @@ namespace tix
 		E_TEXTURE_CLAMP WrapMode;
 		uint32 SRGB;
 		uint32 Mips;
+		uint32 Flags;
 
 		TTextureDesc()
 			: Type(ETT_TEXTURE_2D)
@@ -89,6 +97,7 @@ namespace tix
 			, WrapMode(ETC_REPEAT)
 			, SRGB(0)
 			, Mips(1)
+			, Flags(0)
 		{}
 	};
 
@@ -133,6 +142,17 @@ namespace tix
 		TI_API const TVector<TSurface*>& GetSurfaces() const
 		{
 			return  Surfaces;
+		}
+		TI_API void SetTextureFlag(E_TEXTURE_FLAG Flag, bool bEnable)
+		{
+			if (bEnable)
+			{
+				Desc.Flags |= Flag;
+			}
+			else
+			{
+				Desc.Flags &= ~Flag;
+			}
 		}
 		TI_API void ClearSurfaceData();
 	protected:

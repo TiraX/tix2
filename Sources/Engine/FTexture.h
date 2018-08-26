@@ -22,6 +22,18 @@ namespace tix
 		{
 			return TextureDesc;
 		}
+		
+		void SetTextureFlag(E_TEXTURE_FLAG Flag, bool bEnable)
+		{
+			if (bEnable)
+			{
+				TextureDesc.Flags |= Flag;
+			}
+			else
+			{
+				TextureDesc.Flags &= ~Flag;
+			}
+		}
 
 		int32 GetWidth() const
 		{

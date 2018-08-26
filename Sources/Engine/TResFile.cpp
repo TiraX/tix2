@@ -201,7 +201,17 @@ namespace tix
 		for (int32 i = 0; i < TextureCount; ++i)
 		{
 			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * i);
-			TTexturePtr Texture = ti_new TTexture(Header->Desc);
+
+			TTextureDesc Desc;
+			Desc.Type = (E_TEXTURE_TYPE)Header->Type;
+			Desc.Format = (E_PIXEL_FORMAT)Header->Format;
+			Desc.Width = Header->Width;
+			Desc.Height = Header->Height;
+			Desc.WrapMode = (E_TEXTURE_CLAMP)Header->WrapMode;
+			Desc.SRGB = Header->SRGB;
+			Desc.Mips = Header->Mips;
+
+			TTexturePtr Texture = ti_new TTexture(Desc);
 
 			int32 DataOffset = 0;
 			for (uint32 m = 0; m < Texture->GetDesc().Mips; ++m)

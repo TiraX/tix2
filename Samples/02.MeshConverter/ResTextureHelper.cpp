@@ -42,7 +42,13 @@ namespace tix
 			// init header
 			THeaderTexture TextureHeader;
 			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define->Name);
-			TextureHeader.Desc = Define->Desc;
+			TextureHeader.Type = Define->Desc.Type;
+			TextureHeader.Format = Define->Desc.Format;
+			TextureHeader.Width = Define->Desc.Width;
+			TextureHeader.Height = Define->Desc.Height;
+			TextureHeader.WrapMode = Define->Desc.WrapMode;
+			TextureHeader.SRGB = Define->Desc.SRGB;
+			TextureHeader.Mips = Define->Desc.Mips;
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
 			FillZero4(HeaderStream);

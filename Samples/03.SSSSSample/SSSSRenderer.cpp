@@ -20,5 +20,6 @@ void FSSSSRenderer::InitInRenderThread()
 	// Render target test case
 	RTTest = FRenderTarget::Create(1280, 720);
 	RTTest->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
+	RTTest->AddDepthStencilBuffer(EPF_DEPTH32);
 	RTTest->Compile();
 }
