@@ -51,6 +51,10 @@ namespace tix
 			int32 BaseVertexLocation,
 			uint32 StartInstanceLocation) override;
 
+		virtual void SetViewport(const FViewport& InViewport);
+		virtual void PushRenderTarget(FRenderTargetPtr RT);
+		virtual FRenderTargetPtr PopRenderTarget();
+
 		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex);
 	protected: 
 		FRHIDx12();

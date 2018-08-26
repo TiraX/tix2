@@ -80,6 +80,11 @@ namespace tix
 			}
 		};
 
+		const vector2di& GetDemension() const
+		{
+			return Demension;
+		}
+
 		const RTBuffer& GetColorBuffer(int32 ColorBufferIndex)
 		{
 			TI_ASSERT(ColorBufferIndex >= ERTC_COLOR0 && ColorBufferIndex < ERTC_COUNT);

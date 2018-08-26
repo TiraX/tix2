@@ -50,4 +50,28 @@ namespace tix
 	{
 		Viewport = InViewport;
 	}
+	
+	void FRHI::PushRenderTarget(FRenderTargetPtr RT)
+	{
+		RenderTargets.push_back(RT);
+		RtViewports.push_back(Viewport);
+
+		const vector2di& d = RT->GetDemension();
+		SetViewport(FViewport(0, 0, d.X, d.Y));
+	}
+
+	FRenderTargetPtr FRHI::PopRenderTarget()
+	{
+		TI_ASSERT(RenderTargets.size() > 0);
+
+		RenderTargets.pop_back();
+		const FViewport& vp = RtViewports.back();
+		SetViewport(vp);
+		RtViewports.pop_back();
+
+		if (RenderTargets.size() == 0)
+			return nullptr;
+		else
+			return RenderTargets.back();
+	}
 }

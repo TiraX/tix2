@@ -56,6 +56,8 @@ namespace tix
 			uint32 StartInstanceLocation) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
+		virtual void PushRenderTarget(FRenderTargetPtr RT);
+		virtual FRenderTargetPtr PopRenderTarget();
 
 		E_RHI_TYPE GetRHIType() const
 		{
@@ -71,5 +73,8 @@ namespace tix
 		E_RHI_TYPE RHIType;
 		FViewport Viewport;
 		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
+
+		TVector<FRenderTargetPtr> RenderTargets;
+		TVector<FViewport> RtViewports;
 	};
 }

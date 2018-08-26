@@ -23,3 +23,25 @@ void FSSSSRenderer::InitInRenderThread()
 	RTTest->AddDepthStencilBuffer(EPF_DEPTH32);
 	RTTest->Compile();
 }
+
+void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
+{
+	PrepareViewUniforms(Scene);
+
+	RHI->PushRenderTarget(RTTest);
+
+	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
+	for (const auto& Primitive : Primitives)
+	{
+		for (int32 m = 0; m < (int32)Primitive->MeshBuffers.size(); ++m)
+		{
+			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
+			FPipelinePtr PL = Primitive->Pipelines[m];
+			FUniformBufferPtr UB = Primitive->Uniforms[m];
+
+			DrawMeshBuffer(RHI, MB, PL, ViewUniformBuffer->UniformBuffer);
+		}
+	}
+
+	RHI->PopRenderTarget();
+}

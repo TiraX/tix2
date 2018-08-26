@@ -330,7 +330,7 @@ namespace tix
 		}
 
 		// Set the 3D rendering viewport to target the entire window.
-		SetViewport(FViewport(0, 0, BackBufferWidth, BackBufferHeight));
+		FRHI::SetViewport(FViewport(0, 0, BackBufferWidth, BackBufferHeight));
 	}
 
 	void FRHIDx12::BeginFrame()
@@ -1195,6 +1195,29 @@ namespace tix
 		uint32 StartInstanceLocation)
 	{
 		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+	}
+
+	void FRHIDx12::SetViewport(const FViewport& VP)
+	{
+		FRHI::SetViewport(VP);
+
+		D3D12_VIEWPORT ViewportDx = { float(VP.Left), float(VP.Top), float(VP.Width), float(VP.Height), 0.f, 1.f };
+		CommandList->RSSetViewports(1, &ViewportDx);
+	}
+
+	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT)
+	{
+		FRHI::PushRenderTarget(RT);
+
+		TI_ASSERT(0);
+	}
+
+	FRenderTargetPtr FRHIDx12::PopRenderTarget()
+	{
+		FRenderTargetPtr RT = FRHI::PopRenderTarget();
+
+		TI_ASSERT(0);
+		return RT;
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12
