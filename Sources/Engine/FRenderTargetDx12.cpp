@@ -16,9 +16,9 @@ namespace tix
 	{
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
-			RTColorDescriptor[i] = uint32(-1);
+			RTColorDescriptor[i].ptr = 0;
 		}
-		RTDSDescriptor = uint32(-1);
+		RTDSDescriptor.ptr = 0;
 	}
 
 	FRenderTargetDx12::~FRenderTargetDx12()
@@ -32,16 +32,16 @@ namespace tix
 		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
-			if (RTColorDescriptor[i] != uint32(-1))
+			if (RTColorDescriptor[i].ptr != 0)
 			{
 				RHIDx12->RecallDescriptor(EHT_RTV, RTColorDescriptor[i]);
-				RTColorDescriptor[i] = uint32(-1);
+				RTColorDescriptor[i].ptr = 0;
 			}
 		}
-		if (RTDSDescriptor != uint32(-1))
+		if (RTDSDescriptor.ptr != 0)
 		{
 			RHIDx12->RecallDescriptor(EHT_DSV, RTDSDescriptor);
-			RTDSDescriptor = uint32(-1);
+			RTDSDescriptor.ptr = 0;
 		}
 	}
 }

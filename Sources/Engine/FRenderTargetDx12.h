@@ -19,8 +19,8 @@ namespace tix
 	protected:
 
 	private:
-		uint32 RTColorDescriptor[ERTC_COUNT];
-		uint32 RTDSDescriptor;
+		D3D12_CPU_DESCRIPTOR_HANDLE RTColorDescriptor[ERTC_COUNT];
+		D3D12_CPU_DESCRIPTOR_HANDLE RTDSDescriptor;
 		friend class FRHIDx12;
 	};
 }

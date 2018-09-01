@@ -481,6 +481,11 @@ namespace tix
 		DescriptorHeaps[HeapType].RecallDescriptor(DescriptorIndex);
 	}
 
+	void FRHIDx12::RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
+	{
+		DescriptorHeaps[HeapType].RecallDescriptor(Descriptor);
+	}
+
 	//------------------------------------------------------------------------------------------------
 	// All arrays must be populated (e.g. by calling GetCopyableFootprints)
 	uint64 FRHIDx12::UpdateSubresources(
@@ -1103,6 +1108,7 @@ namespace tix
 
 		// Create Render target view
 		// Color buffers
+		int32 ColorBufferCount = 0;
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
 			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
@@ -1120,13 +1126,14 @@ namespace tix
 				RTVDesc.Texture2D.MipSlice = 0;
 				RTVDesc.Texture2D.PlaneSlice = 0;
 
-				TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i] == uint32(-1));
-				RenderTargetDx12->RTColorDescriptor[i] = DescriptorHeaps[EHT_RTV].AllocateDescriptorSlot();
-				D3D12_CPU_DESCRIPTOR_HANDLE RtvDescriptor = 
-					DescriptorHeaps[EHT_RTV].GetCpuDescriptorHandle(RenderTargetDx12->RTColorDescriptor[i]);
-				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.Get(), &RTVDesc, RtvDescriptor);
+				TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i].ptr == 0);
+				RenderTargetDx12->RTColorDescriptor[i] = DescriptorHeaps[EHT_RTV].AllocateDescriptor();
+				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.Get(), &RTVDesc, RenderTargetDx12->RTColorDescriptor[i]);
+
+				++ColorBufferCount;
 			}
 		}
+		TI_ASSERT(RenderTarget->GetColorBufferCount() == ColorBufferCount);
 
 		// Depth stencil buffers
 		{
@@ -1146,11 +1153,9 @@ namespace tix
 				DsvDesc.Texture2D.MipSlice = 0;
 				DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-				TI_ASSERT(RenderTargetDx12->RTDSDescriptor == uint32(-1));
-				RenderTargetDx12->RTDSDescriptor = DescriptorHeaps[EHT_DSV].AllocateDescriptorSlot();
-				D3D12_CPU_DESCRIPTOR_HANDLE DsvDescriptor =
-					DescriptorHeaps[EHT_DSV].GetCpuDescriptorHandle(RenderTargetDx12->RTDSDescriptor);
-				D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.Get(), &DsvDesc, DsvDescriptor);
+				TI_ASSERT(RenderTargetDx12->RTDSDescriptor.ptr == 0);
+				RenderTargetDx12->RTDSDescriptor = DescriptorHeaps[EHT_DSV].AllocateDescriptor();
+				D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.Get(), &DsvDesc, RenderTargetDx12->RTDSDescriptor);
 			}
 		}
 		return true;
@@ -1205,18 +1210,48 @@ namespace tix
 		CommandList->RSSetViewports(1, &ViewportDx);
 	}
 
+	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
+	{
+		FRenderTargetDx12* RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
+
+		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
+		if (RT->GetColorBufferCount() > 0)
+		{
+			Rtv = RTDx12->RTColorDescriptor;
+		}
+
+		const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv = nullptr;
+		if (RTDx12->RTDSDescriptor.ptr != 0)
+		{
+			Dsv = &RTDx12->RTDSDescriptor;
+		}
+
+		CommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
+		TI_TODO("May be need transition state.");
+	}
+
 	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT)
 	{
 		FRHI::PushRenderTarget(RT);
 
-		TI_ASSERT(0);
+		SetRenderTarget(RT);
 	}
 
 	FRenderTargetPtr FRHIDx12::PopRenderTarget()
 	{
 		FRenderTargetPtr RT = FRHI::PopRenderTarget();
 
-		TI_ASSERT(0);
+		if (RT == nullptr)
+		{
+			// Set back to frame buffer
+			D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
+			D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
+			CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+		}
+		else
+		{
+			SetRenderTarget(RT);
+		}
 		return RT;
 	}
 }

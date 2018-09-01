@@ -83,9 +83,24 @@ namespace tix
 		return Result;
 	}
 
+	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorHeapDx12::AllocateDescriptor()
+	{
+		uint32 SlotIndex = AllocateDescriptorSlot();
+		return GetCpuDescriptorHandle(SlotIndex);
+	}
+
 	void FDescriptorHeapDx12::RecallDescriptor(uint32 HeapIndex)
 	{
 		AvaibleDescriptorHeapSlots.push_back(HeapIndex);
+	}
+
+	void FDescriptorHeapDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE Start = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		int32 Offset = Descriptor.ptr - Start.ptr;
+		TI_ASSERT(Offset >= 0 && (Offset % DescriptorIncSize) == 0);
+		uint32 Index = Offset / DescriptorIncSize;
+		RecallDescriptor(Index);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorHeapDx12::GetCpuDescriptorHandle(uint32 Index)

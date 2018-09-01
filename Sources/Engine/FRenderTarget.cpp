@@ -40,6 +40,11 @@ namespace tix
 
 	void FRenderTarget::AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex)
 	{
+		if (RTColorBuffers[ColorBufferIndex].BufferIndex == ERTC_INVALID)
+		{
+			++ColorBuffers;
+		}
+
 		RTBuffer Buffer;
 		Buffer.Texture = Texture;
 		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);

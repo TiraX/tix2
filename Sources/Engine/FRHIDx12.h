@@ -56,6 +56,7 @@ namespace tix
 		virtual FRenderTargetPtr PopRenderTarget();
 
 		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex);
+		void RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor);
 	protected: 
 		FRHIDx12();
 
@@ -97,6 +98,8 @@ namespace tix
 
 		void FlushResourceBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
+
+		void SetRenderTarget(FRenderTargetPtr RT);
 		
 	private:
 		ComPtr<ID3D12Device> D3dDevice;

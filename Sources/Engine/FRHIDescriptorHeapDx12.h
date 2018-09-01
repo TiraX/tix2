@@ -33,7 +33,10 @@ namespace tix
 		void Destroy();
 
 		uint32 AllocateDescriptorSlot();
+		D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor();
 		void RecallDescriptor(uint32 InHeapIndex);
+		void RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE InHeapIndex);
+
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(uint32 Index);
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(uint32 Index);
 		
