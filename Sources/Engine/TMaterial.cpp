@@ -74,4 +74,19 @@ namespace tix
 	{
 		bTwoSides = bEnable;
 	}
+
+	void TMaterial::SetRTColorBufferCount(int32 Count)
+	{
+		RTInfo.NumRT = Count;
+	}
+
+	void TMaterial::SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer)
+	{
+		RTInfo.ColorRT[ColorBuffer] = Format;
+	}
+	
+	void TMaterial::SetRTDepth(E_PIXEL_FORMAT Format)
+	{
+		RTInfo.DepthRT = Format;
+	}
 }

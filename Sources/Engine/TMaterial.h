@@ -7,6 +7,24 @@
 
 namespace tix
 {
+	struct TMaterialRTInfo
+	{
+		int32 NumRT;
+		E_PIXEL_FORMAT ColorRT[ERTC_COUNT];
+		E_PIXEL_FORMAT DepthRT;
+
+		TMaterialRTInfo()
+			: NumRT(0)
+		{
+			ColorRT[ERTC_COLOR0] = EPF_UNKNOWN;
+			ColorRT[ERTC_COLOR1] = EPF_UNKNOWN;
+			ColorRT[ERTC_COLOR2] = EPF_UNKNOWN;
+			ColorRT[ERTC_COLOR3] = EPF_UNKNOWN;
+
+			DepthRT = EPF_UNKNOWN;
+		}
+	};
+
 	class TMaterial : public TResource
 	{
 	public:
@@ -32,6 +50,12 @@ namespace tix
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
+
+		// temp method
+		TI_API void SetRTColorBufferCount(int32 Count);
+		TI_API void SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer);
+		TI_API void SetRTDepth(E_PIXEL_FORMAT Format);
+
 	private:
 		TString ShaderNames[ESS_COUNT];
 		E_BLEND_MODE BlendMode;
@@ -39,6 +63,8 @@ namespace tix
 		bool bDepthWrite;
 		bool bDepthTest;
 		bool bTwoSides;
+
+		TMaterialRTInfo RTInfo;
 
 		TStream ShaderCodes[ESS_COUNT];
 

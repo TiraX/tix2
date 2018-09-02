@@ -169,6 +169,9 @@
     <ClCompile Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FGPUResourceDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -443,6 +446,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FViewport.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ using namespace Microsoft::WRL;
 namespace tix
 {
 	class FFrameResourcesDx12;
+	class FGPUResourceDx12;
 	// Render hardware interface use DirectX 12
 	class FRHIDx12 : public FRHI
 	{
@@ -57,6 +58,7 @@ namespace tix
 
 		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex);
 		void RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor);
+
 	protected: 
 		FRHIDx12();
 
@@ -88,6 +90,12 @@ namespace tix
 			_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
 			_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
 			_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData);
+
+		void Transition(
+			FGPUResourceDx12* GPUResource,
+			D3D12_RESOURCE_STATES stateAfter,
+			uint32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
 		void Transition(
 			_In_ ID3D12Resource* pResource,

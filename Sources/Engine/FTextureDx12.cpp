@@ -31,7 +31,6 @@ namespace tix
 	void FTextureDx12::Destroy()
 	{
 		TI_ASSERT(IsRenderThread());
-		TextureResource = nullptr;
 		if (TexDescriptor != uint32(-1))
 		{
 			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());

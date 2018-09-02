@@ -583,6 +583,19 @@ namespace tix
 	}
 
 	void FRHIDx12::Transition(
+		FGPUResourceDx12* GPUResource,
+		D3D12_RESOURCE_STATES stateAfter,
+		uint32 subresource,
+		D3D12_RESOURCE_BARRIER_FLAGS flags)
+	{
+		if (GPUResource->GetCurrentState() != stateAfter)
+		{
+			Transition(GPUResource->GetResource(), GPUResource->UsageState, stateAfter, subresource, flags);
+			GPUResource->UsageState = stateAfter;
+		}
+	}
+
+	void FRHIDx12::Transition(
 		_In_ ID3D12Resource* pResource,
 		D3D12_RESOURCE_STATES stateBefore,
 		D3D12_RESOURCE_STATES stateAfter,
@@ -873,15 +886,14 @@ namespace tix
 			TextureDx12Desc.SampleDesc.Quality = 0;
 			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 
-			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			TexDx12->TextureResource.CreateResource(
+				D3dDevice.Get(),
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 				D3D12_HEAP_FLAG_NONE,
 				&TextureDx12Desc,
-				D3D12_RESOURCE_STATE_COPY_DEST,
-				nullptr,
-				IID_PPV_ARGS(&TexDx12->TextureResource)));
+				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.Get(), 0, Desc.Mips);
+			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, Desc.Mips);
 
 			// Create the GPU upload buffer.
 			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -905,8 +917,8 @@ namespace tix
 				texData.SlicePitch = Surface->DataSize;
 			}
 
-			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.Get(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
-			Transition(TexDx12->TextureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
+			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 			ti_delete[] TextureDatas;
 
@@ -919,7 +931,7 @@ namespace tix
 			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			SRVDesc.Texture2D.MipLevels = 1;
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(TexDx12->TexDescriptor);
-			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, Descriptor);
+			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
 
 			FlushResourceBarriers(CommandList.Get());
 			// Hold resources used here
@@ -957,13 +969,14 @@ namespace tix
 			ClearValue.Color[2] = 0.0;
 			ClearValue.Color[3] = 1.0;
 
-			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			TexDx12->TextureResource.CreateResource(
+				D3dDevice.Get(),
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 				D3D12_HEAP_FLAG_NONE,
 				&TextureDx12Desc,
-				D3D12_RESOURCE_STATE_COMMON, 
-				&ClearValue,
-				IID_PPV_ARGS(&TexDx12->TextureResource)));
+				D3D12_RESOURCE_STATE_COMMON,
+				&ClearValue
+			);
 
 			// Describe and create a SRV for the texture.
 			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
@@ -982,7 +995,7 @@ namespace tix
 			SRVDesc.Texture2D.MostDetailedMip = 0;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(TexDx12->TexDescriptor);
-			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.Get(), &SRVDesc, SrvDescriptor);
+			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, SrvDescriptor);
 			
 			HoldResourceReference(Texture);
 		}
@@ -1043,8 +1056,12 @@ namespace tix
 		state.SampleMask = UINT_MAX;
 		state.PrimitiveTopologyType = k_PRIMITIVE_D3D12_TYPE_MAP[Desc.PrimitiveType];
 		TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
-		state.NumRenderTargets = 1;
-		state.RTVFormats[0] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[0]];
+		state.NumRenderTargets = Desc.RTCount;
+		TI_ASSERT(Desc.RTCount > 0);
+		for (int32 r = 0 ; r < Desc.RTCount; ++r)
+		{
+			state.RTVFormats[r] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[r]];
+		}
 		state.DSVFormat = k_PIXEL_FORMAT_MAP[Desc.DepthFormat];
 		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] && DXGI_FORMAT_UNKNOWN != state.DSVFormat);
 		state.SampleDesc.Count = 1;
@@ -1117,7 +1134,7 @@ namespace tix
 				FTexturePtr ColorBufferTexture = ColorBuffer.Texture;
 				TI_ASSERT(ColorBufferTexture != nullptr);
 				FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(ColorBufferTexture.get());
-				TI_ASSERT(TexDx12->TextureResource != nullptr);
+				TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
 				D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
 				RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
@@ -1128,7 +1145,7 @@ namespace tix
 
 				TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i].ptr == 0);
 				RenderTargetDx12->RTColorDescriptor[i] = DescriptorHeaps[EHT_RTV].AllocateDescriptor();
-				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.Get(), &RTVDesc, RenderTargetDx12->RTColorDescriptor[i]);
+				D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource(), &RTVDesc, RenderTargetDx12->RTColorDescriptor[i]);
 
 				++ColorBufferCount;
 			}
@@ -1142,7 +1159,7 @@ namespace tix
 			if (DSBufferTexture != nullptr)
 			{
 				FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(DSBufferTexture.get());
-				TI_ASSERT(TexDx12->TextureResource != nullptr);
+				TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
 				DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[DSBufferTexture->GetDesc().Format];
 				TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
@@ -1155,7 +1172,7 @@ namespace tix
 
 				TI_ASSERT(RenderTargetDx12->RTDSDescriptor.ptr == 0);
 				RenderTargetDx12->RTDSDescriptor = DescriptorHeaps[EHT_DSV].AllocateDescriptor();
-				D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.Get(), &DsvDesc, RenderTargetDx12->RTDSDescriptor);
+				D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, RenderTargetDx12->RTDSDescriptor);
 			}
 		}
 		return true;
@@ -1214,6 +1231,23 @@ namespace tix
 	{
 		FRenderTargetDx12* RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
 
+		// Transition Color buffer to D3D12_RESOURCE_STATE_RENDER_TARGET
+		const int32 CBCount = RT->GetColorBufferCount();
+		for (int32 cb = 0; cb < CBCount; ++cb)
+		{
+			FTexturePtr Texture = RT->GetColorBuffer(cb).Texture;
+			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		}
+
+		// Transition Depth buffer to D3D12_RESOURCE_STATE_DEPTH_WRITE
+		{
+			FTexturePtr Texture = RT->GetDepthStencilBuffer().Texture;
+			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		}
+		FlushResourceBarriers(CommandList.Get());
+
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
 		if (RT->GetColorBufferCount() > 0)
 		{
@@ -1227,7 +1261,6 @@ namespace tix
 		}
 
 		CommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
-		TI_TODO("May be need transition state.");
 	}
 
 	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT)
@@ -1239,6 +1272,26 @@ namespace tix
 
 	FRenderTargetPtr FRHIDx12::PopRenderTarget()
 	{
+		// Transition Color buffer to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		TI_ASSERT(RenderTargets.size() > 0);
+		FRenderTargetPtr CurrentRT = RenderTargets.back();
+		const int32 CBCount = CurrentRT->GetColorBufferCount();
+		for (int32 cb = 0; cb < CBCount; ++cb)
+		{
+			FTexturePtr Texture = CurrentRT->GetColorBuffer(cb).Texture;
+			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		}
+
+		// Transition Depth buffer to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		{
+			FTexturePtr Texture = CurrentRT->GetDepthStencilBuffer().Texture;
+			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		}
+		FlushResourceBarriers(CommandList.Get());
+
+		// Pop rt
 		FRenderTargetPtr RT = FRHI::PopRenderTarget();
 
 		if (RT == nullptr)

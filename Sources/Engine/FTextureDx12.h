@@ -6,6 +6,7 @@
 #pragma once
 
 #if COMPILE_WITH_RHI_DX12
+#include "FGPUResourceDx12.h"
 
 namespace tix
 {
@@ -20,7 +21,7 @@ namespace tix
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> TextureResource;
+		FGPUResourceDx12 TextureResource;
 		uint32 TexDescriptor;
 		friend class FRHIDx12;
 	};

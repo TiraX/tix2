@@ -193,15 +193,17 @@ namespace tix
 		uint32 VsFormat;
 		uint32 PrimitiveType;
 
-		E_PIXEL_FORMAT RTFormats[FRHIConfig::MultiRTMax];
+		int32 RTCount;
+		E_PIXEL_FORMAT RTFormats[ERTC_COUNT];
 		E_PIXEL_FORMAT DepthFormat;
 
 		TPipelineDesc()
 			: Flags(EPSO_DEPTH | EPSO_DEPTH_TEST)
 			, VsFormat(EVSSEG_POSITION)
 			, PrimitiveType(EPT_TRIANGLELIST)
+			, RTCount(1)
 		{
-			for (int32 i = 0; i < FRHIConfig::MultiRTMax; i++)
+			for (int32 i = 0; i < ERTC_COUNT; i++)
 			{
 				RTFormats[i] = FRHIConfig::DefaultBackBufferFormat;
 			}

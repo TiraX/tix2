@@ -97,7 +97,7 @@ namespace tix
 	void FDescriptorHeapDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE Start = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		int32 Offset = Descriptor.ptr - Start.ptr;
+		int32 Offset = (int32)(Descriptor.ptr - Start.ptr);
 		TI_ASSERT(Offset >= 0 && (Offset % DescriptorIncSize) == 0);
 		uint32 Index = Offset / DescriptorIncSize;
 		RecallDescriptor(Index);

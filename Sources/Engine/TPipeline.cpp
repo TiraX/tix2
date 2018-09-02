@@ -47,6 +47,18 @@ namespace tix
 			Desc.RasterizerDesc.CullMode = ECM_NONE;
 
 		Desc.VsFormat = InMaterial.VsFormat;
+
+		// if Material.RTInfo.NumRT > 0, use material's rt info;
+		// else use default frame buffer info
+		if (InMaterial.RTInfo.NumRT > 0)
+		{
+			Desc.RTCount = InMaterial.RTInfo.NumRT;
+			for (int32 c = 0; c < Desc.RTCount; ++c)
+			{
+				Desc.RTFormats[c] = InMaterial.RTInfo.ColorRT[c];
+			}
+			Desc.DepthFormat = InMaterial.RTInfo.DepthRT;
+		}
 	}
 
 	TPipeline::~TPipeline()
