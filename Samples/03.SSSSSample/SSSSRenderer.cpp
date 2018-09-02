@@ -17,7 +17,8 @@ FSSSSRenderer::~FSSSSRenderer()
 
 void FSSSSRenderer::InitInRenderThread()
 {
-	FRenderer::InitInRenderThread();
+	FRHI * RHI = FRHI::Get();
+	FSRender.InitCommonResources(RHI);
 
 	// Render target test case
 	RTTest = FRenderTarget::Create(1280, 720);
@@ -47,5 +48,5 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	
 	RHI->PopRenderTarget();
 
-	DrawFullScreenTexture(RHI, RTTest->GetColorBuffer(ERTC_COLOR0).Texture);
+	FSRender.DrawFullScreenTexture(RHI, RTTest->GetColorBuffer(ERTC_COLOR0).Texture);
 }

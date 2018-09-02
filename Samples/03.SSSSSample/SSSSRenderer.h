@@ -17,4 +17,5 @@ public:
 private:
 protected:
 	FRenderTargetPtr RTTest;
+	FFullScreenRender FSRender;
 };

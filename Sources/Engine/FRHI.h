@@ -22,7 +22,7 @@ namespace tix
 	class FRHI
 	{
 	public: 
-		static FRHI* Get();
+		TI_API static FRHI* Get();
 		static void CreateRHI(E_RHI_TYPE RhiType);
 		static void ReleaseRHI();
 

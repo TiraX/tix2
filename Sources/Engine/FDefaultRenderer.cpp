@@ -38,7 +38,6 @@ namespace tix
 
 	void FDefaultRenderer::InitInRenderThread()
 	{
-		FRenderer::InitInRenderThread();
 	}
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)

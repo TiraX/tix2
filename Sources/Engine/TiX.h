@@ -71,6 +71,7 @@ using namespace std;
 #include "FScene.h"
 #include "FRenderer.h"
 #include "FDefaultRenderer.h"
+#include "FFullScreenRender.h"
 #include "FRenderThread.h"
 
 #include "TResourceLibrary.h"

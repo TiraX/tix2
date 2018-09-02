@@ -178,6 +178,9 @@
     <ClCompile Include="..\..\Sources\Engine\FGPUResourceDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -455,6 +458,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h">
       <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

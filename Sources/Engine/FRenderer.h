@@ -17,20 +17,9 @@ namespace tix
 		FRenderer();
 		virtual ~FRenderer();
 
-		virtual void InitInRenderThread();
+		virtual void InitInRenderThread() = 0;
 		virtual void Render(FRHI* RHI, FScene* Scene) = 0;
 
-		virtual void InitCommonResources(FRHI* RHI);
-		virtual void DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture);
-
 	protected:
-		// Common Resources
-		struct FullScreenVertex
-		{
-			vector3df Position;
-			vector2df UV;
-		};
-		FMeshBufferPtr FullScreenQuad;
-		FPipelinePtr FullScreenPipeline;
 	};
 }
