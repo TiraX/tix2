@@ -958,6 +958,7 @@ namespace tix
 		else
 		{
 			// do not have texture data, Create a empty texture (used for render target usually).
+			D3D12_CLEAR_VALUE ClearValue = {};
 			D3D12_RESOURCE_DESC TextureDx12Desc = {};
 			TextureDx12Desc.Alignment = 0;
 			TextureDx12Desc.DepthOrArraySize = 1;
@@ -966,10 +967,16 @@ namespace tix
 			if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
 			{
 				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+				ClearValue.Color[0] = 0.0;
+				ClearValue.Color[1] = 0.0;
+				ClearValue.Color[2] = 0.0;
+				ClearValue.Color[3] = 0.0;
 			}
 			if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
 			{
 				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+				ClearValue.DepthStencil.Depth = 1.f;
+				ClearValue.DepthStencil.Stencil = 0;
 			}
 			TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
 			TextureDx12Desc.Width = Desc.Width;
@@ -979,12 +986,7 @@ namespace tix
 			TextureDx12Desc.SampleDesc.Count = 1;
 			TextureDx12Desc.SampleDesc.Quality = 0;
 
-			D3D12_CLEAR_VALUE ClearValue = {};
 			ClearValue.Format = DxgiFormat;
-			ClearValue.Color[0] = 0.0;
-			ClearValue.Color[1] = 0.0;
-			ClearValue.Color[2] = 0.0;
-			ClearValue.Color[3] = 1.0;
 
 			TexDx12->TextureResource.CreateResource(
 				D3dDevice.Get(),
@@ -1277,7 +1279,7 @@ namespace tix
 		FlushResourceBarriers(CommandList.Get());
 
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
-		if (RT->GetColorBufferCount() > 0)
+		if (CBCount > 0)
 		{
 			Rtv = RTDx12->RTColorDescriptor;
 		}
@@ -1288,7 +1290,21 @@ namespace tix
 			Dsv = &RTDx12->RTDSDescriptor;
 		}
 
+		// Set render target
 		CommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
+
+		// Clear render target
+		if (CBCount > 0)
+		{
+			for (int32 cb = 0; cb < CBCount; ++cb)
+			{
+				CommandList->ClearRenderTargetView(RTDx12->RTColorDescriptor[cb], DirectX::Colors::Transparent, 0, nullptr);
+			}
+		}
+		if (Dsv != nullptr)
+		{
+			CommandList->ClearDepthStencilView(*Dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		}
 	}
 
 	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT)

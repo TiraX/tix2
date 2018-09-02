@@ -13,6 +13,7 @@ public:
 
 	virtual void InitInRenderThread() override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
+
 private:
 protected:
 	FRenderTargetPtr RTTest;

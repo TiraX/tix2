@@ -27,10 +27,10 @@ namespace tix
 	{
 		// create full screen quad
 		static const FullScreenVertex FullScreenQuadVertices[4] = {
-			{vector3df(-1.f, -1.f, 0.f), vector2df(0.f, 0.f)},
-			{vector3df(1.f, -1.f, 0.f), vector2df(1.f, 0.f)},
-			{vector3df(-1.f, 1.f, 0.f), vector2df(0.f, 1.f)},
-			{vector3df(1.f, 1.f, 0.f), vector2df(1.f, 1.f)}
+			{vector3df(-1.f, -1.f, 0.f), vector2df(0.f, 1.f)},
+			{vector3df(1.f, -1.f, 0.f), vector2df(1.f, 1.f)},
+			{vector3df(-1.f, 1.f, 0.f), vector2df(0.f, 0.f)},
+			{vector3df(1.f, 1.f, 0.f), vector2df(1.f, 0.f)}
 		};
 		static const uint16 FullScreenQuadIndices[6] = {
 			0, 2, 1, 1, 2, 3
@@ -83,7 +83,7 @@ namespace tix
 	{
 		RHI->SetMeshBuffer(FullScreenQuad);
 		RHI->SetPipeline(FullScreenPipeline);
-		RHI->SetShaderTexture(0, Texture);
+		RHI->SetShaderTexture(1, Texture);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}
