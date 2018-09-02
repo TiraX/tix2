@@ -36,6 +36,7 @@ namespace tix
 		};
 
 		TMeshBufferPtr MBData = ti_new TMeshBuffer();
+		MBData->SetResourceName("FullScreenQuad");
 		MBData->SetVertexStreamData(EVSSEG_POSITION | EVSSEG_TEXCOORD0, FullScreenQuadVertices, 4, EIT_16BIT, FullScreenQuadIndices, 6);
 		FullScreenQuad = RHI->CreateMeshBuffer();
 		FullScreenQuad->SetFromTMeshBuffer(MBData);
@@ -44,6 +45,7 @@ namespace tix
 
 		// create full screen render pipeline
 		TPipelinePtr Pipeline = ti_new TPipeline();
+		Pipeline->SetResourceName("FullScreenPL");
 		const TString ShaderPaths[ESS_COUNT] = {
 			"FullScreenVS.cso",
 			"FullScreenPS.cso",

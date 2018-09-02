@@ -52,6 +52,12 @@ namespace tix
 		Buffer.BufferType = ERTAT_TEXTURE;
 		Buffer.Level = 0;
 
+		{
+			int8 NameBuf[64];
+			sprintf_s(NameBuf, 64, "-CB%d", ColorBufferIndex);
+			Texture->SetResourceName(GetResourceName() + NameBuf);
+		}
+
 		RTColorBuffers[ColorBufferIndex] = Buffer;
 	}
 
@@ -66,6 +72,7 @@ namespace tix
 		FRHI * RHI = FRHI::Get();
 		FTexturePtr Texture = RHI->CreateTexture(Desc);
 		Texture->SetTextureFlag(ETF_RT_DSBUFFER, true);
+		Texture->SetResourceName(GetResourceName() + "-DS");
 
 		RTDepthStencilBuffer.Texture = Texture;
 		RTDepthStencilBuffer.BufferType = ERTAT_TEXTURE;

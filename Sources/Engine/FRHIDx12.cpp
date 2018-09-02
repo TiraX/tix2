@@ -24,6 +24,11 @@
 
 namespace tix
 {
+#if defined (TIX_DEBUG)
+#	define DX_SETNAME(Resource, Name) SetResourceName(Resource, Name)
+#else
+#	define DX_SETNAME(Resource, Name)
+#endif
 	FRHIDx12::FRHIDx12()
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
@@ -129,7 +134,7 @@ namespace tix
 
 		// Describe and create a shader resource view (SRV) heap for the texture.
 		DescriptorHeaps[EHT_CBV_SRV_UAV].Create(D3dDevice.Get(), EHT_CBV_SRV_UAV);
-		
+
 		// Create Default Command list
 		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&CommandList)));
 		VALIDATE_HRESULT(CommandList->Close());
@@ -257,7 +262,7 @@ namespace tix
 		// Create render target views of the swap chain back buffer.
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
-			
+
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
 				BackBufferDescriptorIndex[n] = DescriptorHeaps[EHT_RTV].AllocateDescriptorSlot();
@@ -436,7 +441,7 @@ namespace tix
 	{
 		return ti_new FUniformBufferDx12();
 	}
-	
+
 	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
 	{
 		return ti_new FRenderTargetDx12(W, H);
@@ -501,6 +506,18 @@ namespace tix
 	void FRHIDx12::RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
 	{
 		DescriptorHeaps[HeapType].RecallDescriptor(Descriptor);
+	}
+
+	void FRHIDx12::SetResourceName(ID3D12Resource* InDxResource, const TString& InName)
+	{
+		TWString WName = FromString(InName);
+		InDxResource->SetName(WName.c_str());
+	}
+
+	void FRHIDx12::SetResourceName(ID3D12PipelineState* InDxResource, const TString& InName)
+	{
+		TWString WName = FromString(InName);
+		InDxResource->SetName(WName.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -642,6 +659,7 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
 		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
+		MeshBuffer->SetResourceName(InMeshData->GetResourceName());
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
 
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
@@ -668,7 +686,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&VertexBufferUpload)));
 
-		MBDx12->VertexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
+		DX_SETNAME(MBDx12->VertexBuffer.Get(), MeshBuffer->GetResourceName() + "-VB");
 
 		// Upload the vertex buffer to the GPU.
 		{
@@ -705,7 +723,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&IndexBufferUpload)));
 
-		MBDx12->IndexBuffer->SetName(MeshBuffer->GetResourceWName().c_str());
+		DX_SETNAME(MBDx12->IndexBuffer.Get(), MeshBuffer->GetResourceName() + "-ib");
 
 		// Upload the index buffer to the GPU.
 		{
@@ -883,6 +901,7 @@ namespace tix
 		if (InTexData != nullptr && InTexData->GetSurfaces().size() > 0)
 		{
 			// Create texture resource and fill with texture data.
+			Texture->SetResourceName(InTexData->GetResourceName());
 
 			// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
 			// the command list that references it has finished executing on the GPU.
@@ -936,6 +955,7 @@ namespace tix
 
 			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
 			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
 
 			ti_delete[] TextureDatas;
 
@@ -996,6 +1016,7 @@ namespace tix
 				D3D12_RESOURCE_STATE_COMMON,
 				&ClearValue
 			);
+			DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
 
 			// Describe and create a SRV for the texture.
 			TI_ASSERT(TexDx12->TexDescriptor == uint32(-1));
@@ -1025,6 +1046,7 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
 		TI_ASSERT(Pipeline->GetResourceFamily() == ERF_Dx12);
+		Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
 		const TPipelineDesc& Desc = InPipelineDesc->Desc;
 
@@ -1086,6 +1108,7 @@ namespace tix
 		state.SampleDesc.Count = 1;
 
 		VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
+		DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
 
 		// Shader data can be deleted once the pipeline state is created.
 		//for (int32 s = 0; s < ESS_COUNT; ++s)

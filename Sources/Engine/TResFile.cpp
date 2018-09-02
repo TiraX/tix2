@@ -138,9 +138,7 @@ namespace tix
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] != nullptr)
 			Resource = CreateMaterialInstance();
 
-#ifdef TIX_DEBUG
-		Resource->ResourceName = Filename;
-#endif
+		Resource->SetResourceName(Filename);
 
 		return Resource;
 	}

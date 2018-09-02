@@ -24,18 +24,13 @@ namespace tix
 			return ResourceFamily;
 		}
 #if defined (TIX_DEBUG)
-		void SetResourceName(const int8* Name)
+		void SetResourceName(const TString& Name)
 		{
 			ResourceName = Name;
-			ResourceNameW = FromString(ResourceName);
 		}
 		const TString& GetResourceName() const
 		{
 			return ResourceName;
-		}
-		const TWString& GetResourceWName() const
-		{
-			return ResourceNameW;
 		}
 #endif
 	protected:
@@ -44,7 +39,6 @@ namespace tix
 		E_RESOURCE_FAMILY	ResourceFamily;
 #if defined (TIX_DEBUG)
 		TString				ResourceName;
-		TWString			ResourceNameW;
 #endif
 	};
 }

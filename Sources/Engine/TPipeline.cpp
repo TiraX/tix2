@@ -59,6 +59,8 @@ namespace tix
 			}
 			Desc.DepthFormat = InMaterial.RTInfo.DepthRT;
 		}
+
+		SetResourceName(InMaterial.GetResourceName());
 	}
 
 	TPipeline::~TPipeline()

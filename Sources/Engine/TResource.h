@@ -30,6 +30,24 @@ namespace tix
 		virtual void InitRenderThreadResource() = 0;
 		virtual void DestroyRenderThreadResource() = 0;
 
+		const TString& GetResourceName() const
+		{
+#ifdef TIX_DEBUG
+			return ResourceName;
+#else
+			static const TString s_Resource = "TixResource";
+			return s_Resource;
+#endif
+		}
+
+		void SetResourceName(const TString& ResName)
+		{
+#ifdef TIX_DEBUG
+			ResourceName = ResName;
+#else
+#endif
+		}
+
 	protected:
 		E_RESOURCE_TYPE ResType;
 #ifdef TIX_DEBUG

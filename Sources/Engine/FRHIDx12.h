@@ -72,6 +72,9 @@ namespace tix
 		void HoldResourceReference(FRenderResourcePtr InResource);
 		void HoldResourceReference(ComPtr<ID3D12Resource> InDxResource);
 
+		void SetResourceName(ID3D12Resource* InDxResource, const TString& InName);
+		void SetResourceName(ID3D12PipelineState* InDxResource, const TString& InName);
+
 		uint64 UpdateSubresources(
 			_In_ ID3D12GraphicsCommandList* pCmdList,
 			_In_ ID3D12Resource* pDestinationResource,
