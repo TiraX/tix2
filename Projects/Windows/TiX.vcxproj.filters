@@ -20,6 +20,12 @@
     <Filter Include="Sources\Scene">
       <UniqueIdentifier>{bdfc19fb-c18a-4840-b952-2bd5238e2ee2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Render\Shaders">
+      <UniqueIdentifier>{ebd6cb83-0241-4e43-b779-9105dd5174dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Render\Shaders\dx12">
+      <UniqueIdentifier>{960fae7b-e010-4614-9a14-f47eb954c176}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
@@ -450,5 +456,13 @@
     <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h">
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">
+      <Filter>Sources\Render\Shaders\dx12</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenVS.hlsl">
+      <Filter>Sources\Render\Shaders\dx12</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -168,6 +168,16 @@
     <ClInclude Include="..\..\Sources\Engine\TVersion.h" />
     <ClInclude Include="..\..\Sources\Engine\TiX.h" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{35BBC1C9-B035-492D-BED1-E952A99069BC}</ProjectGuid>

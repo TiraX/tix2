@@ -17,6 +17,8 @@ FSSSSRenderer::~FSSSSRenderer()
 
 void FSSSSRenderer::InitInRenderThread()
 {
+	FRenderer::InitInRenderThread();
+
 	// Render target test case
 	RTTest = FRenderTarget::Create(1280, 720);
 	RTTest->AddColorBuffer(EPF_BGRA8, ERTC_COLOR0);
@@ -42,6 +44,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			DrawMeshBuffer(RHI, MB, PL, ViewUniformBuffer->UniformBuffer);
 		}
 	}
-
+	
 	RHI->PopRenderTarget();
+
+	DrawFullScreenTexture(RHI, RTTest->GetColorBuffer(ERTC_COLOR0).Texture);
 }

@@ -38,6 +38,7 @@ namespace tix
 
 	void FDefaultRenderer::InitInRenderThread()
 	{
+		FRenderer::InitInRenderThread();
 	}
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -62,7 +63,7 @@ namespace tix
 	{
 		RHI->SetMeshBuffer(InMeshBuffer);
 		RHI->SetPipeline(Pipeline);
-		RHI->SetUniformBuffer(InUniformBuffer);
+		RHI->SetUniformBuffer(0, InUniformBuffer);
 
 		RHI->DrawPrimitiveIndexedInstanced(InMeshBuffer->GetIndicesCount(), 1, 0, 0, 0);
 	}
