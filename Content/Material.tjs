@@ -1,0 +1,23 @@
+{
+    "name": "Material", 
+    "type": "material", 
+    "version": 1, 
+    "desc": "", 
+    "shaders": [
+        "SampleVertexShader.cso", 
+        "SamplePixelShader.cso", 
+        "", 
+        "", 
+        ""
+    ], 
+    "vs_format": [
+        "EVSSEG_POSITION", 
+        "EVSSEG_NORMAL", 
+        "EVSSEG_TEXCOORD0", 
+        "EVSSEG_TANGENT"
+    ], 
+    "blend_mode": "BLEND_MODE_OPAQUE", 
+    "depth_write": true, 
+    "depth_test": true, 
+    "two_sides": false
+}

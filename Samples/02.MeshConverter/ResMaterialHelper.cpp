@@ -6,12 +6,40 @@
 #include "stdafx.h"
 #include "ResHelper.h"
 #include "ResMaterialHelper.h"
+#include "rapidjson/document.h"
+
+using namespace rapidjson;
 
 namespace tix
 {
+#define ReturnEnumValue(Str, EnumValue) if (Str == #EnumValue) {return EnumValue;}
+	E_BLEND_MODE GetMode(const TString& name)
+	{
+		ReturnEnumValue(name, BLEND_MODE_OPAQUE);
+		ReturnEnumValue(name, BLEND_MODE_TRANSLUCENT);
+		ReturnEnumValue(name, BLEND_MODE_MASK);
+		ReturnEnumValue(name, BLEND_MODE_ADDITIVE);
+
+		return BLEND_MODE_OPAQUE;
+	}
+	
+	E_VERTEX_STREAM_SEGMENT GetVertexSegment(const TString& name)
+	{
+		ReturnEnumValue(name, EVSSEG_POSITION);
+		ReturnEnumValue(name, EVSSEG_NORMAL);
+		ReturnEnumValue(name, EVSSEG_COLOR);
+		ReturnEnumValue(name, EVSSEG_TEXCOORD0);
+		ReturnEnumValue(name, EVSSEG_TEXCOORD1);
+		ReturnEnumValue(name, EVSSEG_TANGENT);
+		ReturnEnumValue(name, EVSSEG_BLENDINDEX);
+		ReturnEnumValue(name, EVSSEG_BLENDWEIGHT);
+
+		return EVSSEG_POSITION;
+	}
+
 	TResMaterialHelper::TResMaterialHelper()
 		: VsFormat(EVSSEG_POSITION | EVSSEG_NORMAL | EVSSEG_TEXCOORD0 | EVSSEG_TANGENT)
-		, BlendMode(TMaterial::MATERIAL_BLEND_OPAQUE)
+		, BlendMode(BLEND_MODE_OPAQUE)
 		, bDepthWrite(true)
 		, bDepthTest(true)
 		, bTwoSides(false)
@@ -22,13 +50,65 @@ namespace tix
 	{
 	}
 
+	void TResMaterialHelper::LoadMaterial(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings)
+	{
+		TFile f;
+		if (!f.Open(Filename, EFA_READ))
+			return;
+
+		int8* content = ti_new int8[f.GetSize() + 1];
+		f.Read(content, f.GetSize(), f.GetSize());
+		content[f.GetSize()] = 0;
+		f.Close();
+
+		Document tjs;
+		tjs.Parse(content);
+		ti_delete[] content;
+
+		TResMaterialHelper Helper;
+
+		// shaders
+		Value& Shaders = tjs["shaders"];
+		TI_ASSERT(Shaders.IsArray() && Shaders.Size() == ESS_COUNT);
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			Helper.SetShaderName((E_SHADER_STAGE)s, Shaders[s].GetString());
+		}
+
+		// vs format
+		Value& VSFormat = tjs["vs_format"];
+		TI_ASSERT(VSFormat.IsArray());
+		uint32 Format = 0;
+		for (SizeType vs = 0; vs < VSFormat.Size(); ++vs)
+		{
+			Format |= GetVertexSegment(VSFormat[vs].GetString());
+		}
+		Helper.SetShaderVsFormat(Format);
+
+		// blend mode
+		Value& BM = tjs["blend_mode"];
+		Helper.SetBlendMode(GetMode(BM.IsNull() ? "null" : BM.GetString()));
+
+		// depth write / depth test / two sides
+		Value& depth_write = tjs["depth_write"];
+		Helper.EnableDepthWrite(depth_write.IsNull() ? true : depth_write.GetBool());
+
+		Value& depth_test = tjs["depth_test"];
+		Helper.EnableDepthTest(depth_test.IsNull() ? true : depth_test.GetBool());
+
+		Value& two_sides = tjs["two_sides"];
+		Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
+
+		Helper.OutputMaterial(OutStream, OutStrings);
+	}
+
 
 	void TResMaterialHelper::SetShaderName(E_SHADER_STAGE Stage, const TString& Name)
 	{
 		Shaders[Stage] = Name;
 	}
 
-	void TResMaterialHelper::SetBlendMode(TMaterial::E_BLEND_MODE InBlendMode)
+	void TResMaterialHelper::SetBlendMode(E_BLEND_MODE InBlendMode)
 	{
 		BlendMode = InBlendMode;
 	}

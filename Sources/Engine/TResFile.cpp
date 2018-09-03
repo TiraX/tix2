@@ -256,7 +256,7 @@ namespace tix
 				Material->SetShaderName((E_SHADER_STAGE)s, GetString(Header->ShaderNames[s]));
 			}
 			Material->SetShaderVsFormat(Header->VsFormat);
-			Material->SetBlendMode((TMaterial::E_BLEND_MODE)Header->BlendMode);
+			Material->SetBlendMode((E_BLEND_MODE)Header->BlendMode);
 			Material->EnableDepthWrite(Header->bDepthWrite != 0);
 			Material->EnableDepthTest(Header->bDepthTest != 0);
 			Material->EnableTwoSides(Header->bTwoSides != 0);

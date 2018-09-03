@@ -6,6 +6,9 @@
 #include "stdafx.h"
 #include "ResHelper.h"
 #include "ResMaterialInstanceHelper.h"
+#include "rapidjson/document.h"
+
+using namespace rapidjson;
 
 namespace tix
 {
@@ -15,6 +18,70 @@ namespace tix
 
 	TResMaterialInstanceHelper::~TResMaterialInstanceHelper()
 	{
+	}
+
+	void TResMaterialInstanceHelper::LoadMaterialInstance(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings)
+	{
+		TFile f;
+		if (!f.Open(Filename, EFA_READ))
+			return;
+
+		int8* content = ti_new int8[f.GetSize() + 1];
+		f.Read(content, f.GetSize(), f.GetSize());
+		content[f.GetSize()] = 0;
+		f.Close();
+
+		Document tjs;
+		tjs.Parse(content);
+		ti_delete[] content;
+
+		TResMaterialInstanceHelper Helper;
+
+		// MI Name
+		Value& MIName = tjs["name"];
+		Helper.SetMaterialInstanceName(MIName.GetString());
+
+		// linked material
+		Value& LinkedMaterial = tjs["linked_material"];
+		Helper.SetMaterialRes(LinkedMaterial.GetString());
+
+		Value& Parameters = tjs["parameters"];
+		TI_ASSERT(Parameters.IsObject()); 
+		for (Value::ConstMemberIterator itr = Parameters.MemberBegin();
+			itr != Parameters.MemberEnd(); ++itr)
+		{
+			TString ParamName = itr->name.GetString();
+			Value& Param = Parameters[ParamName.c_str()];
+			TString ParamType = Param["type"].GetString();
+			Value& ParamValue = Param["value"];
+			if (ParamType == "int")
+			{
+				Helper.AddParameter(ParamName, ParamValue.GetInt());
+			}
+			else if (ParamType == "float")
+			{
+				Helper.AddParameter(ParamName, ParamValue.GetFloat());
+			}
+			else if (ParamType == "float4")
+			{
+				TI_ASSERT(ParamValue.IsArray() && ParamValue.Size() <= 4);
+				quaternion q;
+				for (SizeType pv = 0; pv < ParamValue.Size(); ++pv)
+					q[pv] = ParamValue[pv].GetFloat();
+				Helper.AddParameter(ParamName, q);
+			}
+			else if (ParamType == "texture")
+			{
+				TI_ASSERT(ParamValue.IsString());
+				Helper.AddParameter(ParamName, ParamValue.GetString());
+			}
+			else
+			{
+				TI_ASSERT(0);
+			}
+		}
+
+		Helper.OutputMaterialInstance(OutStream, OutStrings);
 	}
 
 	void TResMaterialInstanceHelper::SetMaterialInstanceName(const TString& InInstanceName)

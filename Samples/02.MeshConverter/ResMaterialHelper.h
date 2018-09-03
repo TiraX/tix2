@@ -13,8 +13,10 @@ namespace tix
 		TResMaterialHelper();
 		~TResMaterialHelper();
 
+		static void LoadMaterial(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
+
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
-		void SetBlendMode(TMaterial::E_BLEND_MODE InBlendMode);
+		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
@@ -26,7 +28,7 @@ namespace tix
 
 	private:
 		TString Shaders[ESS_COUNT];
-		TMaterial::E_BLEND_MODE BlendMode;
+		E_BLEND_MODE BlendMode;
 		uint32 VsFormat;
 		bool bDepthWrite;
 		bool bDepthTest;

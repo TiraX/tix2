@@ -7,6 +7,16 @@
 
 namespace tix
 {
+	enum E_BLEND_MODE
+	{
+		BLEND_MODE_OPAQUE,
+		BLEND_MODE_TRANSLUCENT,
+		BLEND_MODE_MASK,
+		BLEND_MODE_ADDITIVE,
+
+		BLEND_MODE_COUNT,
+	};
+
 	struct TMaterialRTInfo
 	{
 		int32 NumRT;
@@ -36,13 +46,6 @@ namespace tix
 
 		TPipelinePtr Pipeline;
 		
-		enum E_BLEND_MODE
-		{
-			MATERIAL_BLEND_OPAQUE,
-			MATERIAL_BLEND_TRANSLUCENT,
-			MATERIAL_BLEND_MASK,
-			MATERIAL_BLEND_ADDITIVE,
-		};
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
 		void SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);

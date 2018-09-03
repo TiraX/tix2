@@ -8,3 +8,4 @@ Samples/01.Startup/x64/
 Samples/02.MeshConverter/x64/
 Samples/02.MeshConverter/head.tix
 Samples/03.SSSSSample/x64/
+*.cso

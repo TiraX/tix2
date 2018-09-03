@@ -24,14 +24,14 @@ namespace tix
 		}
 		switch (InMaterial.BlendMode)
 		{
-		case TMaterial::MATERIAL_BLEND_OPAQUE:
+		case BLEND_MODE_OPAQUE:
 			break;
-		case TMaterial::MATERIAL_BLEND_TRANSLUCENT:
+		case BLEND_MODE_TRANSLUCENT:
 			Desc.Enable(EPSO_BLEND);
 			break;
-		case TMaterial::MATERIAL_BLEND_MASK:
+		case BLEND_MODE_MASK:
 			break;
-		case TMaterial::MATERIAL_BLEND_ADDITIVE:
+		case BLEND_MODE_ADDITIVE:
 			Desc.Enable(EPSO_BLEND);
 			Desc.BlendState.DestBlend = EBF_ONE;
 			break;
