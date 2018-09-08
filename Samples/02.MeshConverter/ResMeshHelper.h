@@ -55,6 +55,7 @@ namespace tix
 		TResMeshHelper();
 		~TResMeshHelper();
 
+		static bool LoadMeshFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static bool LoadObjFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
 
 		TResMeshDefine& AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles);

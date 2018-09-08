@@ -20,32 +20,19 @@ namespace tix
 	{
 	}
 
-	void TResMaterialInstanceHelper::LoadMaterialInstance(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResMaterialInstanceHelper::LoadMaterialInstance(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
-		TFile f;
-		if (!f.Open(Filename, EFA_READ))
-			return;
-
-		int8* content = ti_new int8[f.GetSize() + 1];
-		f.Read(content, f.GetSize(), f.GetSize());
-		content[f.GetSize()] = 0;
-		f.Close();
-
-		Document tjs;
-		tjs.Parse(content);
-		ti_delete[] content;
-
 		TResMaterialInstanceHelper Helper;
 
 		// MI Name
-		Value& MIName = tjs["name"];
+		Value& MIName = Doc["name"];
 		Helper.SetMaterialInstanceName(MIName.GetString());
 
 		// linked material
-		Value& LinkedMaterial = tjs["linked_material"];
+		Value& LinkedMaterial = Doc["linked_material"];
 		Helper.SetMaterialRes(LinkedMaterial.GetString());
 
-		Value& Parameters = tjs["parameters"];
+		Value& Parameters = Doc["parameters"];
 		TI_ASSERT(Parameters.IsObject()); 
 		for (Value::ConstMemberIterator itr = Parameters.MemberBegin();
 			itr != Parameters.MemberEnd(); ++itr)

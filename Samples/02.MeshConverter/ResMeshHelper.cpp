@@ -199,4 +199,37 @@ namespace tix
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
+
+	bool TResMeshHelper::LoadMeshFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	{
+		TResMeshHelper ResMesh;
+
+		TString Name = Doc["name"].GetString();
+		int32 Version = Doc["Version"].GetInt();
+
+		int32 VCount = Doc["vertex_count_total"].GetInt();
+		int32 ICount = Doc["index_count_total"].GetInt();
+		int32 UVCount = Doc["texcoord_count"].GetInt();
+
+		Value& Sections = Doc["sections"];
+		for (SizeType i = 0; i < Sections.Size(); ++i)
+		{
+			Value& Section = Sections[i];
+			Value& Position = Section["position"];
+			Value& Normal = Section["normal"];
+			Value& Tangent = Section["tangent"];
+			Value& Position = Section["position"];
+
+			TResMeshDefine& Mesh = ResMesh.AddMesh("DefaultMesh", (int32)PosArrayNew.size(), (int32)Indices.size() / 3);
+		}
+		//void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
+
+		Mesh.AddSegment(ESSI_POSITION, (float*)&PosArrayNew[0], sizeof(vector3df));
+		Mesh.AddSegment(ESSI_NORMAL, (float*)&NormalArrayNew[0], sizeof(vector3df));
+		Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&UVArrayNew[0], sizeof(vector3df));
+		Mesh.SetFaces(&Indices[0], (int32)Indices.size());
+		
+		ResMesh.OutputMesh(OutStream, OutStrings);
+		return true;
+	}
 }

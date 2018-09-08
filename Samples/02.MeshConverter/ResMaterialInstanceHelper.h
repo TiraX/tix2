@@ -55,7 +55,7 @@ namespace tix
 		TResMaterialInstanceHelper();
 		~TResMaterialInstanceHelper();
 
-		static void LoadMaterialInstance(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
+		static void LoadMaterialInstance(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 
 		void SetMaterialInstanceName(const TString& InstanceName);
 		void SetMaterialRes(const TString& MaterialName);

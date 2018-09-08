@@ -50,25 +50,12 @@ namespace tix
 	{
 	}
 
-	void TResMaterialHelper::LoadMaterial(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResMaterialHelper::LoadMaterial(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
-		TFile f;
-		if (!f.Open(Filename, EFA_READ))
-			return;
-
-		int8* content = ti_new int8[f.GetSize() + 1];
-		f.Read(content, f.GetSize(), f.GetSize());
-		content[f.GetSize()] = 0;
-		f.Close();
-
-		Document tjs;
-		tjs.Parse(content);
-		ti_delete[] content;
-
 		TResMaterialHelper Helper;
 
 		// shaders
-		Value& Shaders = tjs["shaders"];
+		Value& Shaders = Doc["shaders"];
 		TI_ASSERT(Shaders.IsArray() && Shaders.Size() == ESS_COUNT);
 		for (int32 s = 0; s < ESS_COUNT; ++s)
 		{
@@ -76,7 +63,7 @@ namespace tix
 		}
 
 		// vs format
-		Value& VSFormat = tjs["vs_format"];
+		Value& VSFormat = Doc["vs_format"];
 		TI_ASSERT(VSFormat.IsArray());
 		uint32 Format = 0;
 		for (SizeType vs = 0; vs < VSFormat.Size(); ++vs)
@@ -86,17 +73,17 @@ namespace tix
 		Helper.SetShaderVsFormat(Format);
 
 		// blend mode
-		Value& BM = tjs["blend_mode"];
+		Value& BM = Doc["blend_mode"];
 		Helper.SetBlendMode(GetMode(BM.IsNull() ? "null" : BM.GetString()));
 
 		// depth write / depth test / two sides
-		Value& depth_write = tjs["depth_write"];
+		Value& depth_write = Doc["depth_write"];
 		Helper.EnableDepthWrite(depth_write.IsNull() ? true : depth_write.GetBool());
 
-		Value& depth_test = tjs["depth_test"];
+		Value& depth_test = Doc["depth_test"];
 		Helper.EnableDepthTest(depth_test.IsNull() ? true : depth_test.GetBool());
 
-		Value& two_sides = tjs["two_sides"];
+		Value& two_sides = Doc["two_sides"];
 		Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
 
 		Helper.OutputMaterial(OutStream, OutStrings);
