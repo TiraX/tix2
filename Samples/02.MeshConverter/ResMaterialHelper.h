@@ -33,6 +33,8 @@ namespace tix
 		bool bDepthWrite;
 		bool bDepthTest;
 		bool bTwoSides;
+		TVector<E_PIXEL_FORMAT> ColorBuffers;
+		E_PIXEL_FORMAT DepthBuffer;
 		TStream ShaderCodes[ESS_COUNT];
 	};
 }

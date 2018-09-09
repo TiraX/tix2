@@ -1,0 +1,26 @@
+{
+    "name": "MI_SkinBase", 
+    "type": "material_instance", 
+    "version": 1, 
+    "desc": "", 
+    "linked_material": "M_SkinBase", 
+    "parameters": {
+        "TestParam": {
+            "type": "int", 
+            "value": 1
+        }, 
+        "TestParamVec": {
+            "type": "float4", 
+            "value": [
+                1, 
+                2, 
+                3, 
+                0
+            ]
+        }, 
+        "TestTexture": {
+            "type": "texture", 
+            "value": "Test.texture"
+        }
+    }
+}

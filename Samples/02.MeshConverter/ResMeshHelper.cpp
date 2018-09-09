@@ -71,6 +71,11 @@ namespace tix
 		Faces.Count = Count;
 	}
 
+	void TResMeshDefine::SetMaterial(const TString& MaterialName)
+	{
+		LinkedMaterialInstance = MaterialName;
+	}
+
 	/////////////////////////////////////////////////////////////////
 
 	TResMeshHelper::TResMeshHelper()
@@ -115,6 +120,7 @@ namespace tix
 			MeshHeader.PrimitiveCount = Mesh.NumTriangles;
 			MeshHeader.IndexType = Mesh.NumVertices > 65535 ? EIT_32BIT : EIT_16BIT;
 			MeshHeader.Flag = 0;
+			MeshHeader.StrMaterialInstance = AddStringToList(OutStrings, Mesh.LinkedMaterialInstance);
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION]->Data[0], Mesh.Segments[ESSI_POSITION]->Data[1], Mesh.Segments[ESSI_POSITION]->Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
 
@@ -337,6 +343,13 @@ namespace tix
 				ElementOffset += 4;
 			}
 			Mesh.SetFaces(&Indices[0], (int32)Indices.size());
+
+			Value& JMaterial = Section["material"];
+			if (!JMaterial.IsNull())
+			{
+				TString MaterialName = JMaterial.GetString();
+				Mesh.SetMaterial(MaterialName);
+			}
 		}
 
 		ResMesh.OutputMesh(OutStream, OutStrings);

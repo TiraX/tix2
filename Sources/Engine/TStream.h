@@ -7,7 +7,7 @@
 
 namespace tix
 {
-	class TI_API TStream : public IReferenceCounted
+	class TStream : public IReferenceCounted
 	{
 	public:
 		TStream(int32 buf_size = 1024)

@@ -168,11 +168,26 @@ namespace tix
 			const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * i);
 			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
 
+			// Load vertex data and index data
 			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
 			const int8* VertexData = VertexDataStart + MeshDataOffset;
 			const int8* IndexData = VertexDataStart + ti_align4(Header->VertexCount * VertexStride);
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 			Mesh->SetBBox(Header->BBox);
+
+			// Load material
+			TString MaterialResName = GetString(Header->StrMaterialInstance);
+			if (MaterialResName.find(".tres") == TString::npos)
+			{
+				MaterialResName += ".tres";
+			}
+			TResourcePtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			if (MIRes == nullptr)
+			{
+				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
+			}
+			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes.get());
+			Mesh->SetDefaultMaterial(MaterialInstance);
 
 			Result = Mesh;
 		}
@@ -341,6 +356,10 @@ namespace tix
 
 			// Link material
 			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
+			if (MaterialResName.find(".tres") == TString::npos)
+			{
+				MaterialResName += ".tres";
+			}
 			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{

@@ -25,6 +25,7 @@ namespace tix
 			: Name(InName)
 			, NumVertices(InNumVertices)
 			, NumTriangles(InNumTriangles)
+			, LinkedMaterialInstance("MI_Unknown")
 		{
 			memset(Segments, 0, sizeof(TResMeshSegment*) * ESSI_TOTAL);
 
@@ -44,9 +45,11 @@ namespace tix
 		int32 NumTriangles;
 		TResMeshSegment* Segments[ESSI_TOTAL];
 		TResMeshFaces Faces;
+		TString LinkedMaterialInstance;
 
 		void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
 		void SetFaces(int32* Indices, int32 Count);
+		void SetMaterial(const TString& MaterialName);
 	};
 
 	class TResMeshHelper

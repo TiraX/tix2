@@ -22,7 +22,9 @@ void FSSSSRenderer::InitInRenderThread()
 
 	// Render target test case
 	RTTest = FRenderTarget::Create(1280, 720);
+#if defined (TIX_DEBUG)
 	RTTest->SetResourceName("RTTest");
+#endif
 	RTTest->AddColorBuffer(EPF_BGRA8, ERTC_COLOR0);
 	RTTest->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RTTest->Compile();

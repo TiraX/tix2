@@ -136,6 +136,7 @@ namespace tix
 		int32 VertexCount;
 		int32 PrimitiveCount;	//triangle count, means (index count) / 3. (triangle list)
 		int32 IndexType;
+		int32 StrMaterialInstance;
 		uint32 Flag;
 		aabbox3df BBox;
 
@@ -151,6 +152,7 @@ namespace tix
 			, VertexCount(0)
 			, PrimitiveCount(0)
 			, IndexType(0)
+			, StrMaterialInstance(0)
 			, Flag(0)
 		{
 		}
@@ -177,6 +179,8 @@ namespace tix
 		uint8 bDepthTest;
 		uint8 bTwoSides;
 		int32 ShaderCodeLength[ESS_COUNT];
+		uint8 ColorBuffers[ERTC_COUNT];
+		int32 DepthBuffer;
 	};
 
 	struct THeaderMaterialInstance

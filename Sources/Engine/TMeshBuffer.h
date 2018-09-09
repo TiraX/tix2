@@ -96,23 +96,35 @@ namespace tix
 		{
 			return PsData;
 		}
+
+		void SetDefaultMaterial(TMaterialInstancePtr Material)
+		{
+			DefaultMaterial = Material;
+		}
+
+		TMaterialInstancePtr GetDefaultMaterial()
+		{
+			return DefaultMaterial;
+		}
 	protected:
 
 	protected:
-		E_PRIMITIVE_TYPE	PrimitiveType;
-		int32				Usage;
-		aabbox3df			BBox;
+		E_PRIMITIVE_TYPE PrimitiveType;
+		int32 Usage;
+		aabbox3df BBox;
 
-		uint32				MeshFlag;
+		uint32 MeshFlag;
 
-		uint8*				VsData;
-		int32				VsDataCount;
+		uint8* VsData;
+		int32 VsDataCount;
 
-		E_INDEX_TYPE		IndexType;
-		uint8*				PsData;
-		int32				PsDataCount;
+		E_INDEX_TYPE IndexType;
+		uint8* PsData;
+		int32 PsDataCount;
 
-		uint32				VsFormat;
-		uint32				Stride;
+		uint32 VsFormat;
+		uint32 Stride;
+
+		TMaterialInstancePtr DefaultMaterial;
 	};
 }

@@ -659,7 +659,9 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
 		TI_ASSERT(MeshBuffer->GetResourceFamily() == ERF_Dx12);
+#if defined (TIX_DEBUG)
 		MeshBuffer->SetResourceName(InMeshData->GetResourceName());
+#endif
 		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(MeshBuffer.get());
 
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
@@ -901,7 +903,9 @@ namespace tix
 		if (InTexData != nullptr && InTexData->GetSurfaces().size() > 0)
 		{
 			// Create texture resource and fill with texture data.
+#if defined (TIX_DEBUG)
 			Texture->SetResourceName(InTexData->GetResourceName());
+#endif
 
 			// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
 			// the command list that references it has finished executing on the GPU.
@@ -1046,7 +1050,9 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
 		TI_ASSERT(Pipeline->GetResourceFamily() == ERF_Dx12);
+#if defined (TIX_DEBUG)
 		Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
+#endif
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
 		const TPipelineDesc& Desc = InPipelineDesc->Desc;
 

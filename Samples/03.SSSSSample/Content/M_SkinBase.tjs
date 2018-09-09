@@ -1,0 +1,26 @@
+{
+    "name": "M_SkinBase", 
+    "type": "material", 
+    "version": 1, 
+    "desc": "", 
+    "shaders": [
+        "SampleVertexShader.cso", 
+        "SamplePixelShader.cso", 
+        "", 
+        "", 
+        ""
+    ], 
+    "vs_format": [
+        "EVSSEG_POSITION", 
+        "EVSSEG_NORMAL", 
+        "EVSSEG_TEXCOORD0"
+    ], 
+	"rt_colors": [
+		"EPF_BGRA8"
+	],
+	"rt_depth" : "EPF_DEPTH24_STENCIL8",
+    "blend_mode": "BLEND_MODE_OPAQUE", 
+    "depth_write": true, 
+    "depth_test": true, 
+    "two_sides": false
+}

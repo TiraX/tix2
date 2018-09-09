@@ -18,6 +18,7 @@ namespace tix
 		, bDepthWrite(true)
 		, bDepthTest(true)
 		, bTwoSides(false)
+		, DepthBuffer(EPF_UNKNOWN)
 	{
 	}
 
@@ -60,6 +61,17 @@ namespace tix
 
 		Value& two_sides = Doc["two_sides"];
 		Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
+
+		// rt format
+		Value& RT_Colors = Doc["rt_colors"];
+		TI_ASSERT(RT_Colors.IsArray());
+		Helper.ColorBuffers.resize(RT_Colors.Size());
+		for (SizeType cb = 0; cb < RT_Colors.Size(); ++cb)
+		{
+			Helper.ColorBuffers[cb] = GetPixelFormat(RT_Colors[cb].GetString());
+		}
+		Value& RT_Depth = Doc["rt_depth"];
+		Helper.DepthBuffer = GetPixelFormat(RT_Depth.GetString());
 
 		Helper.OutputMaterial(OutStream, OutStrings);
 	}
@@ -117,7 +129,19 @@ namespace tix
 			Define.bDepthWrite = bDepthWrite ? 1 : 0;
 			Define.bDepthTest = bDepthTest ? 1 : 0;
 			Define.bTwoSides = bTwoSides ? 1 : 0;
-			
+
+			const int32 cb_count = (int32)ColorBuffers.size();
+			int32 cb = 0;
+			for (; cb < cb_count; ++cb)
+			{
+				Define.ColorBuffers[cb] = ColorBuffers[cb];
+			}
+			for (; cb < ERTC_COUNT; ++cb)
+			{
+				Define.ColorBuffers[cb] = EPF_UNKNOWN;
+			}
+			Define.DepthBuffer = DepthBuffer;
+
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderMaterial));
 
