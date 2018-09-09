@@ -7,6 +7,37 @@
 #include "ResHelper.h"
 #include "ResMeshHelper.h"
 
+void ConvertJArrayToArray(const Value& JArray, TVector<float>& OutArray)
+{
+	TI_ASSERT(JArray.IsArray());
+	SizeType JArraySize = JArray.Size();
+	OutArray.reserve(JArraySize);
+	for (SizeType i = 0; i < JArraySize; ++i)
+	{
+		OutArray.push_back(JArray[i].GetFloat());
+	}
+}
+void ConvertJArrayToArray(const Value& JArray, TVector<int32>& OutArray)
+{
+	TI_ASSERT(JArray.IsArray());
+	SizeType JArraySize = JArray.Size();
+	OutArray.reserve(JArraySize);
+	for (SizeType i = 0; i < JArraySize; ++i)
+	{
+		OutArray.push_back(JArray[i].GetInt());
+	}
+}
+void ConvertJArrayToArray(const Value& JArray, TVector<TString>& OutArray)
+{
+	TI_ASSERT(JArray.IsArray());
+	SizeType JArraySize = JArray.Size();
+	OutArray.reserve(JArraySize);
+	for (SizeType i = 0; i < JArraySize; ++i)
+	{
+		OutArray.push_back(JArray[i].GetString());
+	}
+}
+
 namespace tix
 {
 	void TResMeshDefine::AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte)
@@ -205,30 +236,87 @@ namespace tix
 		TResMeshHelper ResMesh;
 
 		TString Name = Doc["name"].GetString();
-		int32 Version = Doc["Version"].GetInt();
+		int32 Version = Doc["version"].GetInt();
 
 		int32 VCount = Doc["vertex_count_total"].GetInt();
 		int32 ICount = Doc["index_count_total"].GetInt();
 		int32 UVCount = Doc["texcoord_count"].GetInt();
 
 		Value& Sections = Doc["sections"];
+
+		TVector<float> Vertices;
+		TVector<int32> Indices;
+		TVector<TString> SFormat;
+
+		// Only support 1 section for now.
+		TI_ASSERT(Sections.Size() == 1);
 		for (SizeType i = 0; i < Sections.Size(); ++i)
 		{
 			Value& Section = Sections[i];
-			Value& Position = Section["position"];
-			Value& Normal = Section["normal"];
-			Value& Tangent = Section["tangent"];
-			Value& Position = Section["position"];
+			int32 VertexCount = Section["vertex_count"].GetInt();
+			Value& JVertices = Section["vertices"];
+			Value& JIndices = Section["indices"];
+			Value& JVsFormat = Section["vs_format"];
 
-			TResMeshDefine& Mesh = ResMesh.AddMesh("DefaultMesh", (int32)PosArrayNew.size(), (int32)Indices.size() / 3);
+			Vertices.clear();
+			Indices.clear();
+			SFormat.clear();
+
+			ConvertJArrayToArray(JVertices, Vertices);
+			ConvertJArrayToArray(JIndices, Indices);
+			ConvertJArrayToArray(JVsFormat, SFormat);
+
+			int32 VsFormat = 0;
+			for (const auto& S : SFormat)
+			{
+				VsFormat |= GetVertexSegment(S);
+			}
+
+			TResMeshDefine& Mesh = ResMesh.AddMesh("DefaultMesh", (int32)VertexCount, (int32)Indices.size() / 3);
+			int32 ElementOffset = 0;
+			{
+				TI_ASSERT((VsFormat & EVSSEG_POSITION) != 0);
+				Mesh.AddSegment(ESSI_POSITION, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_NORMAL) != 0)
+			{
+				Mesh.AddSegment(ESSI_NORMAL, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_COLOR) != 0)
+			{
+				Mesh.AddSegment(ESSI_COLOR, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				ElementOffset += 4;
+			}
+			if ((VsFormat & EVSSEG_TEXCOORD0) != 0)
+			{
+				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Vertices[ElementOffset], sizeof(vector2df));
+				ElementOffset += 2;
+			}
+			if ((VsFormat & EVSSEG_TEXCOORD1) != 0)
+			{
+				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Vertices[ElementOffset], sizeof(vector2df));
+				ElementOffset += 2;
+			}
+			if ((VsFormat & EVSSEG_TANGENT) != 0)
+			{
+				Mesh.AddSegment(ESSI_TANGENT, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_BLENDINDEX) != 0)
+			{
+				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				ElementOffset += 4;
+			}
+			if ((VsFormat & EVSSEG_BLENDWEIGHT) != 0)
+			{
+				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				ElementOffset += 4;
+			}
+			Mesh.SetFaces(&Indices[0], (int32)Indices.size());
 		}
-		//void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
 
-		Mesh.AddSegment(ESSI_POSITION, (float*)&PosArrayNew[0], sizeof(vector3df));
-		Mesh.AddSegment(ESSI_NORMAL, (float*)&NormalArrayNew[0], sizeof(vector3df));
-		Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&UVArrayNew[0], sizeof(vector3df));
-		Mesh.SetFaces(&Indices[0], (int32)Indices.size());
-		
 		ResMesh.OutputMesh(OutStream, OutStrings);
 		return true;
 	}
