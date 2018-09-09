@@ -181,6 +181,9 @@
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRootSignatureDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -461,6 +464,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRootSignatureDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

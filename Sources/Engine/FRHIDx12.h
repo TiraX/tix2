@@ -9,6 +9,7 @@
 
 #include "dx12/d3dx12.h"
 #include "FRHIDescriptorHeapDx12.h"
+#include "FRootSignatureDx12.h"
 
 using namespace Microsoft::WRL;
 
@@ -130,7 +131,9 @@ namespace tix
 		ComPtr<ID3D12CommandQueue> CommandQueue;
 		ComPtr<ID3D12CommandAllocator> CommandAllocators[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12GraphicsCommandList> CommandList;
-		ComPtr<ID3D12RootSignature> RootSignature;
+
+		// RootSignature
+		FRootSignatureDx12 RootSignature;
 
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[EHT_COUNT];

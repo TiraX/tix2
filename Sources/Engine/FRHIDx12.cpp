@@ -81,7 +81,7 @@ namespace tix
 			IID_PPV_ARGS(&D3dDevice)		// Returns the Direct3D device created.
 		);
 
-#if defined(_DEBUG)
+#if defined(TIX_DEBUG)
 		if (FAILED(hr))
 		{
 			// If the initialization fails, fall back to the WARP device.
@@ -311,14 +311,16 @@ namespace tix
 
 		// Create a root signature with a single constant buffer slot.
 		{
-			CD3DX12_DESCRIPTOR_RANGE range[2];
-			CD3DX12_ROOT_PARAMETER parameter[2];
-
-			range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
-			range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
-
-			parameter[0].InitAsDescriptorTable(1, &range[0], D3D12_SHADER_VISIBILITY_VERTEX);
-			parameter[1].InitAsDescriptorTable(1, &range[1], D3D12_SHADER_VISIBILITY_PIXEL);
+			D3D12_SAMPLER_DESC DefaultSampler = {};
+			DefaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			DefaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			DefaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			DefaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			DefaultSampler.MipLODBias = 0;
+			DefaultSampler.MaxAnisotropy = 0;
+			DefaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			DefaultSampler.MinLOD = 0.0f;
+			DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
@@ -326,29 +328,13 @@ namespace tix
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
 
-			D3D12_STATIC_SAMPLER_DESC sampler = {};
-			sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			sampler.MipLODBias = 0;
-			sampler.MaxAnisotropy = 0;
-			sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-			sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-			sampler.MinLOD = 0.0f;
-			sampler.MaxLOD = D3D12_FLOAT32_MAX;
-			sampler.ShaderRegister = 0;
-			sampler.RegisterSpace = 0;
-			sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-			CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-			rootSignatureDesc.Init(_countof(parameter), parameter, 1, &sampler, rootSignatureFlags);
-
-			ComPtr<ID3DBlob> pSignature;
-			ComPtr<ID3DBlob> pError;
-			VALIDATE_HRESULT(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, pSignature.GetAddressOf(), pError.GetAddressOf()));
-			VALIDATE_HRESULT(D3dDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), IID_PPV_ARGS(&RootSignature)));
-			RootSignature->SetName(L"RootSignature");
+			RootSignature.Reset(2, 1);
+			RootSignature.InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
+			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
+			//RootSignature.GetParameter(1).InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+			RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
 		}
 
 		// Set the 3D rendering viewport to target the entire window.
