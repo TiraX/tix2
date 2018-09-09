@@ -38,6 +38,23 @@ void ConvertJArrayToArray(const Value& JArray, TVector<TString>& OutArray)
 	}
 }
 
+inline int32 GetSegmentElements(E_VERTEX_STREAM_SEGMENT Segment)
+{
+	if (Segment == EVSSEG_POSITION ||
+		Segment == EVSSEG_NORMAL ||
+		Segment == EVSSEG_TANGENT)
+		return 3;
+	if (Segment == EVSSEG_TEXCOORD0 ||
+		Segment == EVSSEG_TEXCOORD1)
+		return 2;
+	if (Segment == EVSSEG_COLOR ||
+		Segment == EVSSEG_BLENDINDEX ||
+		Segment == EVSSEG_BLENDWEIGHT)
+		return 4;
+	TI_ASSERT(0);
+	return 0;
+}
+
 namespace tix
 {
 	void TResMeshDefine::AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte)
@@ -267,51 +284,56 @@ namespace tix
 			ConvertJArrayToArray(JVsFormat, SFormat);
 
 			int32 VsFormat = 0;
+			int32 ElementsStride = 0;
 			for (const auto& S : SFormat)
 			{
-				VsFormat |= GetVertexSegment(S);
+				E_VERTEX_STREAM_SEGMENT Segment = GetVertexSegment(S);
+				VsFormat |= Segment;
+				ElementsStride += GetSegmentElements(Segment);
 			}
+			TI_ASSERT(VertexCount * ElementsStride == Vertices.size());
 
+			const int32 BytesStride = ElementsStride * sizeof(float);
 			TResMeshDefine& Mesh = ResMesh.AddMesh("DefaultMesh", (int32)VertexCount, (int32)Indices.size() / 3);
 			int32 ElementOffset = 0;
 			{
 				TI_ASSERT((VsFormat & EVSSEG_POSITION) != 0);
-				Mesh.AddSegment(ESSI_POSITION, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				Mesh.AddSegment(ESSI_POSITION, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_NORMAL) != 0)
 			{
-				Mesh.AddSegment(ESSI_NORMAL, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				Mesh.AddSegment(ESSI_NORMAL, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_COLOR) != 0)
 			{
-				Mesh.AddSegment(ESSI_COLOR, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				Mesh.AddSegment(ESSI_COLOR, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
 			if ((VsFormat & EVSSEG_TEXCOORD0) != 0)
 			{
-				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Vertices[ElementOffset], sizeof(vector2df));
+				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 2;
 			}
 			if ((VsFormat & EVSSEG_TEXCOORD1) != 0)
 			{
-				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Vertices[ElementOffset], sizeof(vector2df));
+				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 2;
 			}
 			if ((VsFormat & EVSSEG_TANGENT) != 0)
 			{
-				Mesh.AddSegment(ESSI_TANGENT, (float*)&Vertices[ElementOffset], sizeof(vector3df));
+				Mesh.AddSegment(ESSI_TANGENT, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_BLENDINDEX) != 0)
 			{
-				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
 			if ((VsFormat & EVSSEG_BLENDWEIGHT) != 0)
 			{
-				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Vertices[ElementOffset], sizeof(SColorf));
+				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
 			Mesh.SetFaces(&Indices[0], (int32)Indices.size());
