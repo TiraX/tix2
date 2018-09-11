@@ -13,7 +13,8 @@
     "vs_format": [
         "EVSSEG_POSITION", 
         "EVSSEG_NORMAL", 
-        "EVSSEG_TEXCOORD0"
+        "EVSSEG_TEXCOORD0",
+        "EVSSEG_TANGENT"
     ], 
 	"rt_colors": [
 		"EPF_BGRA8"
