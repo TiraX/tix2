@@ -187,6 +187,15 @@ namespace tix
 		float n0 = n * 255.f + 0.5f;
 		return (uint8)n0;
 	}
+	inline uint8 FloatToColor(float n)
+	{
+		if (n < 0.f)
+			n = 0.f;
+		if (n > 1.f)
+			n = 1.f;
+		float n0 = n * 255.f + 0.5f;
+		return (uint8)n0;
+	}
 	/////////////////////////////////////////////////////////////////
 	class TResFileHelper
 	{

@@ -163,10 +163,10 @@ namespace tix
 				if (DataColor != nullptr)
 				{
 					uint8 CData[4];
-					CData[0] = FloatToUNorm(DataColor[0]);
-					CData[1] = FloatToUNorm(DataColor[1]);
-					CData[2] = FloatToUNorm(DataColor[2]);
-					CData[3] = FloatToUNorm(DataColor[3]);
+					CData[0] = FloatToColor(DataColor[0]);
+					CData[1] = FloatToColor(DataColor[1]);
+					CData[2] = FloatToColor(DataColor[2]);
+					CData[3] = FloatToColor(DataColor[3]);
 
 					TI_ASSERT(sizeof(CData) == TMeshBuffer::SemanticSize[ESSI_COLOR]);
 					DataStream.Put(CData, sizeof(CData));
