@@ -226,17 +226,27 @@ namespace tix
 
 			TTexturePtr Texture = ti_new TTexture(Desc);
 
-			int32 DataOffset = 0;
-			for (uint32 m = 0; m < Texture->GetDesc().Mips; ++m)
+			int32 ArraySize = 1;
+			if (Desc.Type == ETT_TEXTURE_CUBE)
 			{
-				const uint8* Data = TextureDataStart + DataOffset;
-				int32 Width = *(const int32*)(Data + sizeof(int32) * 0);
-				int32 Height = *(const int32*)(Data + sizeof(int32) * 1);
-				int32 RowPitch = *(const int32*)(Data + sizeof(int32) * 2);
-				int32 Size = *(const int32*)(Data + sizeof(int32) * 3);
-				Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, RowPitch, Size);
-				DataOffset += Size + sizeof(uint32) * 4;
-				DataOffset = ti_align4(DataOffset);
+				ArraySize = 6;
+			}
+			TI_ASSERT(Header->Surfaces == ArraySize * Desc.Mips);
+
+			int32 DataOffset = 0;
+			for (int32 a = 0; a < ArraySize; ++a)
+			{
+				for (uint32 m = 0; m < Texture->GetDesc().Mips; ++m)
+				{
+					const uint8* Data = TextureDataStart + DataOffset;
+					int32 Width = *(const int32*)(Data + sizeof(int32) * 0);
+					int32 Height = *(const int32*)(Data + sizeof(int32) * 1);
+					int32 RowPitch = *(const int32*)(Data + sizeof(int32) * 2);
+					int32 Size = *(const int32*)(Data + sizeof(int32) * 3);
+					Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, RowPitch, Size);
+					DataOffset += Size + sizeof(uint32) * 4;
+					DataOffset = ti_align4(DataOffset);
+				}
 			}
 
 			Result = Texture;

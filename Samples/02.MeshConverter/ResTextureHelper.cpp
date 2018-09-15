@@ -49,6 +49,7 @@ namespace tix
 			TextureHeader.WrapMode = Define->Desc.WrapMode;
 			TextureHeader.SRGB = Define->Desc.SRGB;
 			TextureHeader.Mips = Define->Desc.Mips;
+			TextureHeader.Surfaces = (uint32)Define->Surfaces.size();
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
 			FillZero4(HeaderStream);

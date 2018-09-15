@@ -885,6 +885,7 @@ namespace tix
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 
 		if (InTexData != nullptr && InTexData->GetSurfaces().size() > 0)
 		{
@@ -898,19 +899,22 @@ namespace tix
 			// We will flush the GPU at the end of this method to ensure the resource is not
 			// prematurely destroyed.
 			ComPtr<ID3D12Resource> TextureUploadHeap;
+			const int32 ArraySize = IsCubeMap ? 6 : 1;
 
 			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
 			// Describe and create a Texture2D.
 			D3D12_RESOURCE_DESC TextureDx12Desc = {};
-			TextureDx12Desc.MipLevels = Desc.Mips;
-			TextureDx12Desc.Format = DxgiFormat;
+			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			TextureDx12Desc.Alignment = 0;
 			TextureDx12Desc.Width = Desc.Width;
 			TextureDx12Desc.Height = Desc.Height;
-			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-			TextureDx12Desc.DepthOrArraySize = 1;
+			TextureDx12Desc.DepthOrArraySize = ArraySize;
+			TextureDx12Desc.MipLevels = Desc.Mips;
+			TextureDx12Desc.Format = DxgiFormat;
 			TextureDx12Desc.SampleDesc.Count = 1;
 			TextureDx12Desc.SampleDesc.Quality = 0;
-			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
 			TexDx12->TextureResource.CreateResource(
 				D3dDevice.Get(),
@@ -932,18 +936,21 @@ namespace tix
 
 			// Copy data to the intermediate upload heap and then schedule a copy 
 			// from the upload heap to the Texture2D.
-			D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[Desc.Mips];
+			const int32 SubResourceNum = ArraySize * Desc.Mips;
+
+			D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[SubResourceNum];
 			const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
-			for (uint32 m = 0; m < Desc.Mips; ++m)
+			TI_ASSERT(SubResourceNum == TextureSurfaces.size());
+			for (int32 s = 0; s < SubResourceNum; ++s)
 			{
-				D3D12_SUBRESOURCE_DATA& texData = TextureDatas[m];
-				const TTexture::TSurface* Surface = TextureSurfaces[m];
+				D3D12_SUBRESOURCE_DATA& texData = TextureDatas[s];
+				const TTexture::TSurface* Surface = TextureSurfaces[s];
 				texData.pData = Surface->Data;
 				texData.RowPitch = Surface->RowPitch;
 				texData.SlicePitch = Surface->DataSize;
 			}
 
-			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, Desc.Mips, TextureDatas);
+			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
 			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
 
@@ -955,8 +962,15 @@ namespace tix
 			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			SRVDesc.Format = TextureDx12Desc.Format;
-			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SRVDesc.Texture2D.MipLevels = 1;
+			SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
+			if (IsCubeMap)
+			{
+				SRVDesc.TextureCube.MipLevels = TextureDx12Desc.MipLevels;
+			}
+			else
+			{
+				SRVDesc.Texture2D.MipLevels = TextureDx12Desc.MipLevels;
+			}
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = DescriptorHeaps[EHT_CBV_SRV_UAV].GetCpuDescriptorHandle(TexDx12->TexDescriptor);
 			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
 

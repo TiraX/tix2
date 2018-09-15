@@ -38,7 +38,7 @@ namespace tix
 		EPF_DDS_DXT1,
 		EPF_DDS_DXT3,
 		EPF_DDS_DXT5,
-		EPF_DDS_RESERVED,
+		EPF_DDS_BC5,
 
 		// PVR formats
 		EPF_COMPRESSED_sRGB_PVRTC_4BPP,

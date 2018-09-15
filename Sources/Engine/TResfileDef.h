@@ -168,6 +168,7 @@ namespace tix
 		int32 WrapMode;
 		uint32 SRGB;
 		uint32 Mips;
+		uint32 Surfaces;
 	};
 
 	struct THeaderMaterial

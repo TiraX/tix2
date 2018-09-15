@@ -6,8 +6,13 @@ set path=%path%;%BinaryPath%
 set Converter=%BinaryPath%\02.ResConverter.exe
 
 for %%i in (*.tjs) do (
+echo converting - %%i
 %Converter% %%i
-echo converted - %%i
+)
+
+for %%i in (*.dds) do (
+echo converting - %%i
+%Converter% %%i
 )
 
 pause

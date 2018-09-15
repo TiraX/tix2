@@ -71,6 +71,8 @@ namespace tix
 
 			case 24:
 				// No 24bpp DXGI formats aka D3DFMT_R8G8B8
+				printf("Error: No 24bpp DXGI formats aka D3DFMT_R8G8B8.\n");
+				TI_ASSERT(0);
 				break;
 
 			case 16:
@@ -290,6 +292,14 @@ namespace tix
 			return EPF_DDS_DXT3;
 		case DXGI_FORMAT_BC3_UNORM:
 			return EPF_DDS_DXT5;
+		case DXGI_FORMAT_BC5_UNORM:
+			return EPF_DDS_BC5;
+		case DXGI_FORMAT_R8_UNORM:
+			return EPF_A8;
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+			return EPF_RGBA32F;
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+			return EPF_RGBA8;
 		}
 		return EPF_UNKNOWN;
 	}
@@ -764,24 +774,29 @@ namespace tix
 			// Create the texture
 			TResTextureDefine* Texture = ti_new TResTextureDefine();
 			Texture->Desc.Type = GetTixTypeFromDdsType(resDim, (header->caps2 & DDS_CUBEMAP) != 0);
+			if (Texture->Desc.Type == ETT_TEXTURE_UNKNOWN)
+			{
+				printf("Error: unknown texture type.\n");
+				TI_ASSERT(0);
+			}
 			Texture->Desc.Format = GetTixFormatFromDXGIFormat(format);
+			if (Texture->Desc.Format == EPF_UNKNOWN)
+			{
+				printf("Error: unknown texture pixel format.\n");
+				TI_ASSERT(0);
+			}
 			Texture->Desc.Width = width;
 			Texture->Desc.Height = height;
 			Texture->Desc.WrapMode = ETC_REPEAT;
 			Texture->Desc.SRGB = 0;
 			Texture->Desc.Mips = mipCount;
 
-			Texture->Surfaces.resize(mipCount);
+			Texture->Surfaces.resize(mipCount * arraySize);
 
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;
 			uint32 RowBytes = 0;
 			uint32 index = 0;
-			if (arraySize > 1)
-			{
-				printf("Error: Texture array not supported yet.\n");
-				TI_ASSERT(0);
-			}
 			for (uint32 j = 0; j < arraySize; j++)
 			{
 				uint32 w = width;
@@ -797,7 +812,7 @@ namespace tix
 						nullptr
 					);
 
-					TResSurfaceData& Surface = Texture->Surfaces[i];
+					TResSurfaceData& Surface = Texture->Surfaces[j * mipCount + i];
 					Surface.W = w;
 					Surface.H = h;
 					Surface.RowPitch = RowBytes;
