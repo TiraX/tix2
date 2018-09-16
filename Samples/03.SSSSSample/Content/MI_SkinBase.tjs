@@ -3,24 +3,11 @@
     "type": "material_instance", 
     "version": 1, 
     "desc": "", 
-    "linked_material": "M_SkinBase", 
+    "linked_material": "M_SkinBase.tres", 
     "parameters": {
-        "TestParam": {
-            "type": "int", 
-            "value": 1
-        }, 
-        "TestParamVec": {
-            "type": "float4", 
-            "value": [
-                1, 
-                2, 
-                3, 
-                0
-            ]
-        }, 
-        "TestTexture": {
+        "TextureDiffuse": {
             "type": "texture", 
-            "value": "Test.texture"
+            "value": "AlbedoMap.tres"
         }
     }
 }

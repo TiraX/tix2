@@ -27,7 +27,7 @@ VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;
 
-    vsOutput.position = mul(vp, float4(vsInput.position, 1.0));
+    vsOutput.position = mul(float4(vsInput.position, 1.0), vp);
     vsOutput.texCoord = vsInput.texcoord0;
 
     vsOutput.normal = vsInput.normal;

@@ -54,10 +54,9 @@ namespace tix
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
 
-		// temp method
-		TI_API void SetRTColorBufferCount(int32 Count);
-		TI_API void SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer);
-		TI_API void SetRTDepth(E_PIXEL_FORMAT Format);
+		void SetRTColorBufferCount(int32 Count);
+		void SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer);
+		void SetRTDepth(E_PIXEL_FORMAT Format);
 
 	private:
 		TString ShaderNames[ESS_COUNT];

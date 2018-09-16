@@ -13,12 +13,14 @@ namespace tix
 		TI_API static TResourceLibrary* Get();
 
 		TI_API TResourcePtr LoadResource(const TString& ResFilename);
-		TI_API void RemoveUnusedResouces();
+		TI_API void RemoveUnusedResources();
 
 	private:
 		static TResourceLibrary* s_instance;
 		TResourceLibrary();
 		virtual ~TResourceLibrary();
+
+		void RemoveAllResources();
 
 	private:
 		typedef TMap< TString, TResourcePtr >	MapResources;

@@ -286,6 +286,24 @@ namespace tix
 			Material->EnableDepthTest(Header->bDepthTest != 0);
 			Material->EnableTwoSides(Header->bTwoSides != 0);
 
+			// RT info
+			int RTNum = 0;
+			for (int32 cb = 0; cb < ERTC_COUNT; ++cb)
+			{
+				if (Header->ColorBuffers[cb] == EPF_UNKNOWN)
+					break;
+				else
+				{
+					Material->SetRTColor((E_PIXEL_FORMAT)Header->ColorBuffers[cb], (E_RT_COLOR_BUFFER)cb);
+					++RTNum;
+				}
+			}
+			if (Header->DepthBuffer != EPF_UNKNOWN)
+			{
+				Material->SetRTDepth((E_PIXEL_FORMAT)Header->DepthBuffer);
+			}
+			Material->SetRTColorBufferCount(RTNum);
+
 			// Load Shader code
 			int32 CodeOffset = 0;
 			for (int32 s = 0; s < ESS_COUNT; ++s)
@@ -347,22 +365,40 @@ namespace tix
 			
 			MInstance->ParamNames.reserve(Header->ParamCount);
 			MInstance->ParamTypes.reserve(Header->ParamCount);
+			MInstance->ParamValueBuffer.Reset();
 
 			const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
 			const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount);
 			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount + ti_align4(Header->ParamCount));
 
 			// Load param names and types
+			int32 ValueOffset = 0;
 			for (int32 p = 0; p < Header->ParamCount; ++p)
 			{
 				MInstance->ParamNames.push_back(GetString(ParamNameOffset[p]));
-				MInstance->ParamTypes.push_back((int32)(ParamTypeOffset[p]));
+				E_MI_PARAM_TYPE ParamType = (E_MI_PARAM_TYPE)(ParamTypeOffset[p]);
+				MInstance->ParamTypes.push_back(ParamType);
+				const int32 ValueBytes = TMaterialInstance::GetParamTypeBytes(ParamType);
+				if (ParamType == MIPT_TEXTURE)
+				{
+					// texture params
+					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
+					TString TextureName = GetString(TextureNameIndex);
+					TResourcePtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
+					if (TextureRes == nullptr)
+					{
+						_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
+					}
+					TTexturePtr Texture = static_cast<TTexture*>(TextureRes.get());
+					MInstance->ParamTextures.push_back(Texture);
+				}
+				else
+				{
+					// value params
+					MInstance->ParamValueBuffer.Put(ParamValueOffset + ValueOffset, ValueBytes);
+				}
+				ValueOffset += ValueBytes;
 			}
-
-			// Load param values
-			const int32 ValueBufferLength = MInstance->GetValueBufferLength();
-			MInstance->ParamValueBuffer.Reset();
-			MInstance->ParamValueBuffer.Put(ParamValueOffset, ValueBufferLength);
 
 			// Link material
 			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
@@ -373,7 +409,7 @@ namespace tix
 			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{
-				_LOG(Error, "Failed to load material [%s] for Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
+				_LOG(Error, "Failed to load material [%s] for Material Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
 			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
 

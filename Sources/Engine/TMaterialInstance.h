@@ -28,7 +28,7 @@ namespace tix
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-		int32 GetValueBufferLength() const;
+		static int32 GetParamTypeBytes(E_MI_PARAM_TYPE Type);
 
 		TMaterialPtr LinkedMaterial;
 		FUniformBufferPtr UniformBuffer;
@@ -37,6 +37,7 @@ namespace tix
 		TVector<TString> ParamNames;
 		TVector<int32> ParamTypes;
 		TStream ParamValueBuffer;
+		TVector<TTexturePtr> ParamTextures;
 
 	protected:
 		friend class TResFile;

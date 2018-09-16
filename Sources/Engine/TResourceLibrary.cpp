@@ -24,7 +24,7 @@ namespace tix
 
 	TResourceLibrary::~TResourceLibrary()
 	{
-		RemoveUnusedResouces();
+		RemoveAllResources();
 		TI_ASSERT(s_instance != nullptr);
 		s_instance = nullptr;
 	}
@@ -54,7 +54,7 @@ namespace tix
 		}
 	}
 
-	void TResourceLibrary::RemoveUnusedResouces()
+	void TResourceLibrary::RemoveUnusedResources()
 	{
 		MapResources::iterator it = Resources.begin();
 		for (; it != Resources.end(); )
@@ -71,5 +71,16 @@ namespace tix
 				++it;
 			}
 		}
+	}
+
+	void TResourceLibrary::RemoveAllResources()
+	{
+		MapResources::iterator it = Resources.begin();
+		for (; it != Resources.end(); ++ it)
+		{
+			it->second->DestroyRenderThreadResource();
+			it->second = nullptr;
+		}
+		Resources.clear();
 	}
 }

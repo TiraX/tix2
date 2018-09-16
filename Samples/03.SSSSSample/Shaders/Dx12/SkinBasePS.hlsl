@@ -29,9 +29,9 @@ cbuffer PSConstants : register(b0)
 SamplerState sampler0 : register(s0);
 
 [RootSignature(SkinBase_RootSig)]
-float3 main(VSOutput vsOutput) : SV_Target0
+float4 main(VSOutput vsOutput) : SV_Target0
 {
-    float3 diffuseAlbedo = texDiffuse.Sample(sampler0, vsOutput.uv);
+    //float3 diffuseAlbedo = texDiffuse.Sample(sampler0, vsOutput.uv);
 
-    return diffuseAlbedo;
+    return float4(0.5, 0.5, 0.5, 1.0);
 }

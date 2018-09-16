@@ -74,6 +74,7 @@ namespace tix
 	private:
 		TString InstanceName;
 		TString LinkedMaterial;
-		TVector<TMIParam> Parameters;
+		TVector<TMIParam> ValueParameters;
+		TVector<TMIParam> TextureParameters;
 	};
 }

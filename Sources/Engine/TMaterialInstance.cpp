@@ -36,20 +36,11 @@ namespace tix
 		4,	//MIPT_FLOAT,
 		16,	//MIPT_INT4,
 		16,	//MIPT_FLOAT4,
-		0,	//MIPT_TEXTURE,
+		4,	//MIPT_TEXTURE (int),
 	};
-	int32 TMaterialInstance::GetValueBufferLength() const
-	{
-		if (ParamValueBuffer.GetLength() > 0)
-			return ParamValueBuffer.GetLength();
 
-		// Calculate length from param types
-		int32 Length = 0;
-		for (auto t : ParamTypes)
-		{
-			TI_ASSERT(t > MIPT_UNKNOWN && t < MIPT_COUNT);
-			Length += ParamTypeLength[t];
-		}
-		return Length;
+	int32 TMaterialInstance::GetParamTypeBytes(E_MI_PARAM_TYPE Type)
+	{
+		return ParamTypeLength[Type];
 	}
 }
