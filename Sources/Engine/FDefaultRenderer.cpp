@@ -60,6 +60,7 @@ namespace tix
 
 	void FDefaultRenderer::DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline, FUniformBufferPtr InUniformBuffer)
 	{
+		TI_TODO("Refactor this draw mesh buffer function.");
 		RHI->SetMeshBuffer(InMeshBuffer);
 		RHI->SetPipeline(Pipeline);
 		RHI->SetUniformBuffer(0, InUniformBuffer);

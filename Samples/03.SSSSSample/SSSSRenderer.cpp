@@ -44,8 +44,21 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
 			FPipelinePtr PL = Primitive->Pipelines[m];
 			FUniformBufferPtr UB = Primitive->Uniforms[m];
+			FTexturePtr Tex = nullptr;
+			if (Primitive->Textures.size() > 0)
+			{
+				Tex = Primitive->Textures[0];
+			}
 
-			DrawMeshBuffer(RHI, MB, PL, ViewUniformBuffer->UniformBuffer);
+			{
+				RHI->SetMeshBuffer(MB);
+				RHI->SetPipeline(PL);
+				RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
+
+				if (Tex != nullptr)
+					RHI->SetShaderTexture(1, Tex);
+				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
+			}
 		}
 	}
 	

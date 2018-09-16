@@ -29,6 +29,7 @@ VSOutput main(VSInput vsInput)
 
     vsOutput.position = mul(float4(vsInput.position, 1.0), vp);
     vsOutput.texCoord = vsInput.texcoord0;
+	vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
 
     vsOutput.normal = vsInput.normal;
     vsOutput.tangent = vsInput.tangent;

@@ -16,11 +16,18 @@ namespace tix
 	{
 	}
 
-	void FPrimitive::AddMesh(FMeshBufferPtr MeshBuffer, FPipelinePtr Pipeline, FUniformBufferPtr UniformBuffer)
+	void FPrimitive::AddMesh(FMeshBufferPtr MeshBuffer, FPipelinePtr Pipeline, TMaterialInstancePtr MInstance)
 	{
 		MeshBuffers.push_back(MeshBuffer);
 		Pipelines.push_back(Pipeline);
-		Uniforms.push_back(UniformBuffer);
+
+		Uniforms.push_back(MInstance->UniformBuffer);
+
+		const TVector<TTexturePtr>& TextureParams = MInstance->GetTextureParams();
+		for (const auto& t : TextureParams)
+		{
+			Textures.push_back(t->TextureResource);
+		}
 
 		TI_ASSERT(MeshBuffers.size() == Uniforms.size() && MeshBuffers.size() == Pipelines.size());
 	}

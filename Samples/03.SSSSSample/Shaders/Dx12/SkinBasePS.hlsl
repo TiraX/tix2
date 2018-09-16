@@ -31,7 +31,7 @@ SamplerState sampler0 : register(s0);
 [RootSignature(SkinBase_RootSig)]
 float4 main(VSOutput vsOutput) : SV_Target0
 {
-    //float3 diffuseAlbedo = texDiffuse.Sample(sampler0, vsOutput.uv);
+    float3 diffuseAlbedo = texDiffuse.Sample(sampler0, vsOutput.uv);
 
-    return float4(0.5, 0.5, 0.5, 1.0);
+    return float4(diffuseAlbedo, 1.0);
 }

@@ -81,7 +81,7 @@ namespace tix
 		TI_ASSERT((InMesh->MeshBufferResource != nullptr) 
 			&& (Material->Pipeline->PipelineResource != nullptr)
 			&& (InMInstance->UniformBuffer != nullptr));
-		Primitive->AddMesh(InMesh->MeshBufferResource, Material->Pipeline->PipelineResource, InMInstance->UniformBuffer);
+		Primitive->AddMesh(InMesh->MeshBufferResource, Material->Pipeline->PipelineResource, InMInstance);
 
 		// Add primitive to scene
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitveToScene,
