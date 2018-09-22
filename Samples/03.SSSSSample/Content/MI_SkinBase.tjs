@@ -8,6 +8,10 @@
         "TextureDiffuse": {
             "type": "texture", 
             "value": "AlbedoMap.tres"
+        },
+        "TextureNormal": {
+            "type": "texture", 
+            "value": "NormalMap.tres"
         }
     }
 }
