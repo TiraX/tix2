@@ -12,6 +12,14 @@
         "TextureNormal": {
             "type": "texture", 
             "value": "NormalMap.tres"
+        },
+        "TextureSpecular": {
+            "type": "texture", 
+            "value": "SpecularAOMap.tres"
+        },
+        "TextureBeckmann": {
+            "type": "texture", 
+            "value": "BeckmannMap.tres"
         }
     }
 }
