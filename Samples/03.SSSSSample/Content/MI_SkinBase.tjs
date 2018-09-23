@@ -20,6 +20,10 @@
         "TextureBeckmann": {
             "type": "texture", 
             "value": "BeckmannMap.tres"
+        },
+        "TextureIrr": {
+            "type": "texture", 
+            "value": "EnvIrradianceMap.tres"
         }
     }
 }

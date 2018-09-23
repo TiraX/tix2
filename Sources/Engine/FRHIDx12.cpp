@@ -333,7 +333,7 @@ namespace tix
 			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 			//RootSignature.GetParameter(1).InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
-			RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 4, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
 		}
 
@@ -923,7 +923,8 @@ namespace tix
 				&TextureDx12Desc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, Desc.Mips);
+			const int32 SubResourceNum = ArraySize * Desc.Mips;
+			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, SubResourceNum);
 
 			// Create the GPU upload buffer.
 			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -936,7 +937,6 @@ namespace tix
 
 			// Copy data to the intermediate upload heap and then schedule a copy 
 			// from the upload heap to the Texture2D.
-			const int32 SubResourceNum = ArraySize * Desc.Mips;
 
 			D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[SubResourceNum];
 			const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
