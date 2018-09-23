@@ -264,3 +264,4 @@ inline int32 ti_align16(int32 n)
 #include "math/SViewFrustum.h"
 #include "math/Triangle3d.h"
 #include "math/FMatrix.h"
+#include "math/FVector.h"

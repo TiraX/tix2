@@ -7,7 +7,6 @@
 
 namespace tix
 {
-	// FMeshBuffer, hold vertex buffer and index buffer render resource
 	class FMatrix
 	{
 	public:

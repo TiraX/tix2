@@ -28,6 +28,8 @@ namespace tix
 		{
 			const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
 			ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
+			ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
+			ViewUniformBuffer->UniformBufferData.ViewPos = VPInfo.CamPos;
 
 			ViewUniformBuffer->InitUniformBuffer();
 

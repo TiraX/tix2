@@ -468,6 +468,9 @@
     <ClInclude Include="..\..\Sources\Engine\FRootSignatureDx12.h">
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\math\FVector.h">
+      <Filter>Sources\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">
