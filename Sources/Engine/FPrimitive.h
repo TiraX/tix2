@@ -14,13 +14,15 @@ namespace tix
 		virtual ~FPrimitive();
 
 		// Temp solution, re-factor in future
-		void AddMesh(FMeshBufferPtr MeshBuffer, FPipelinePtr Pipeline, TMaterialInstancePtr MInstance);
+		void AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance);
 
 		TVector<FMeshBufferPtr> MeshBuffers;
 		TVector<FPipelinePtr> Pipelines;
 		TVector<FUniformBufferPtr> Uniforms;
+		aabbox3df BBox;
 		// Temp solution, re-factor in future
 		TVector<FTexturePtr> Textures;
+
 
 	};
 } // end namespace tix

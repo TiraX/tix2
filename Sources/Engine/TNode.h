@@ -55,14 +55,7 @@ namespace tix
 		
 		virtual TNode* GetNodeById(const TString& uid);
 		virtual void GetNodesByType(E_NODE_TYPE type, TVector<TNode*>& elements);
-
-		virtual void SetFlag(E_NODE_FLAG flag, bool enable)
-		{
-			if (enable)
-				NodeFlag |= flag;
-			else
-				NodeFlag &= ~flag;
-		}
+		
 		virtual TNode* IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection);
 		virtual TNode* IsIntersectWithPoint(const vector3df& p, aabbox3df& outBBox, vector3df& outIntersection);
 
@@ -76,7 +69,7 @@ namespace tix
 		{
 			return Parent;
 		}
-		TI_API TNode*	GetParent(E_NODE_TYPE type);
+		TI_API TNode* GetParent(E_NODE_TYPE type);
 
 		TNode* GetChild(uint32 index)
 		{
@@ -89,9 +82,17 @@ namespace tix
 			return NodeType;
 		}
 
-		uint32 GetFlag() const
+		void SetFlag(E_NODE_FLAG Flag, bool enable)
 		{
-			return NodeFlag;
+			if (enable)
+				NodeFlag |= Flag;
+			else
+				NodeFlag &= ~Flag;
+		}
+
+		bool HasFlag(E_NODE_FLAG Flag) const
+		{
+			return (NodeFlag & Flag) != 0;
 		}
 
 		uint32	GetChildrenCount()
@@ -133,8 +134,7 @@ namespace tix
 		
 		virtual void RemoveAndDeleteAll();
 
-		// interfaces for different nodes
-		//virtual void AddMeshBuffer(TMeshBufferPtr MeshBuffer) {};
+		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) {};
 
 	protected:
 		virtual bool RemoveChild(TNode* child);

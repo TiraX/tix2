@@ -201,12 +201,14 @@ namespace tix
 		{
 			(*it)->UpdateAllTransformation();
 		}
-
-		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
 	}
 
 	void TNode::UpdateAbsoluteTransformation()
 	{
+		// clear ENF_ABSOLUTETRANSFORMATION_UPDATED at the begin of this frame
+		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
+
+		// update absolute transformation if need. And mark ENF_ABSOLUTETRANSFORMATION_UPDATED if transformation is updated.
 		if (Parent &&
 			((Parent->NodeFlag & ENF_ABSOLUTETRANSFORMATION_UPDATED) ||
 			(NodeFlag & ENF_DIRTY_TRANSFORM)))

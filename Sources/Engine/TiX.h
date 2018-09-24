@@ -56,6 +56,7 @@ using namespace std;
 #include "TNodeCamera.h"
 #include "TNodeCameraNav.h"
 #include "TNodeStaticMesh.h"
+#include "TNodeLight.h"
 #include "TScene.h"
 
 #include "FRenderResource.h"

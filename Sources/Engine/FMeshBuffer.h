@@ -53,22 +53,11 @@ namespace tix
 		{
 			return Stride;
 		}
-
-		const aabbox3df& GetBBox() const
-		{
-			return BBox;
-		}
-
-		void SetBBox(const aabbox3df& bbox)
-		{
-			BBox = bbox;
-		}
 	protected:
 
 	protected:
 		E_PRIMITIVE_TYPE	PrimitiveType;
 		int32				Usage;
-		aabbox3df			BBox;
 
 		uint32				MeshFlag;
 

@@ -38,7 +38,6 @@ namespace tix
 	{
 		PrimitiveType = InMeshBuffer->GetPrimitiveType();
 		Usage = InMeshBuffer->GetUsage();
-		BBox = InMeshBuffer->GetBBox();
 		MeshFlag = InMeshBuffer->GetFlag();
 		VsDataCount = InMeshBuffer->GetVerticesCount();
 		IndexType = InMeshBuffer->GetIndexType();

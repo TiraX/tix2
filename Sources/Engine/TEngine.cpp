@@ -150,11 +150,24 @@ namespace tix
 		TEngine::Destroy();
 	}
 
+	void TEngine::BeginFrame()
+	{
+		Scene->ResetActiveLists();
+	}
+
+	void TEngine::EndFrame()
+	{
+		// Tick finished, trigger render thread
+		TickFinished();
+	}
+
 	void TEngine::Tick()
 	{
 		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 		float  Dt = Delta * 0.001f;
+
+		BeginFrame();
 
 		// update inputs
 		Device->GetInput()->UpdateEvents(Dt);
@@ -169,8 +182,7 @@ namespace tix
 		// Remember last frame start time
 		LastFrameTime = CurrentFrameTime;
 
-		// Tick finished, trigger render thread
-		TickFinished();
+		EndFrame();
 
 		// Check if reach max frame interval time
 		uint32 TimePast = (uint32)(TTimer::GetCurrentTimeMillis() - CurrentFrameTime);

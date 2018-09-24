@@ -7,26 +7,21 @@ By ZhaoShuai tirax.cn@gmail.com
 
 namespace tix
 {
-	enum E_STAGE_LIST_TYPE
+	enum E_SCENE_LIST_TYPE
 	{
-		ESLT_SOLID,
-		ESLT_TRANSPARENT,
-		ESLT_PARTICLES,
+		ESLT_STATIC_SOLID,
+		ESLT_DYNAMIC_SOLID,
+
+		ESLT_TRANSLUCENT,
 
 		ESLT_LIGHTS,
-
-		ESLT_UI_3D,
-
-		ESLT_SKYBOX,
 
 		ESLT_COUNT,
 	};
 
-	enum E_STAGE_FLAG
+	enum E_SCENE_FLAG
 	{
-		STAGE_FLAG_RESERVED = 1 << 0,
-		STAGE_PAUSE_UPDATE_ANIM = 1 << 1,
-		STAGE_CAMERA_DIRTY = 1 << 2,
+		SF_LIGHTS_DIRTY = 1 << 0,
 	};
 
 	class TNodeSceneRoot
@@ -48,14 +43,14 @@ namespace tix
 		TI_API void TickAllNodes(float Dt, TNode* Root = nullptr);
 		TI_API void UpdateAllNodesTransforms(TNode* Root = nullptr);
 
-		void SetStageFlag(E_STAGE_FLAG flag, bool enable)
+		void SetSceneFlag(E_SCENE_FLAG flag, bool enable)
 		{
 			if (enable)
 				Flag |= flag;
 			else
 				Flag &= ~flag;
 		}
-		bool IsEnabled(E_STAGE_FLAG flag)
+		bool HasSceneFlag(E_SCENE_FLAG flag)
 		{
 			return (Flag & flag) != 0;
 		}
@@ -69,9 +64,12 @@ namespace tix
 		TI_API TNodeCamera* GetActiveCamera();
 
 		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
+		TI_API TNodeLight* AddLight(float Intensity, const SColor& Color);
 
+		void ResetActiveLists();
+		void AddToActiveList(E_SCENE_LIST_TYPE List, TNode * ActiveNode);
 	protected:
-
+		void BindLights();
 
 	protected:
 		TNodeSceneRoot * NodeRoot;
@@ -79,6 +77,8 @@ namespace tix
 
 		TNodeCamera* DefaultCamera;
 		TNodeCamera* ActiveCamera;
+
+		TVector<TNode*> ActiveNodeList[ESLT_COUNT];
 	};
 
 } // end namespace tix

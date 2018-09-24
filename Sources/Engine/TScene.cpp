@@ -55,6 +55,8 @@ namespace tix
 
 		TI_TODO("Use parallel transform update.");
 		Root->UpdateAllTransformation();
+
+		BindLights();
 	}
 
 	void TScene::SetActiveCamera(TNodeCamera* camera)
@@ -75,24 +77,51 @@ namespace tix
 		// Create a static mesh node to hold mesh resource
 		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
 
-		// Create Primitive
-		FPrimitivePtr Primitive = ti_new FPrimitive;
-		TMaterialPtr Material = InMInstance->LinkedMaterial;
-		TI_ASSERT((InMesh->MeshBufferResource != nullptr) 
-			&& (Material->Pipeline->PipelineResource != nullptr)
-			&& (InMInstance->UniformBuffer != nullptr));
-		Primitive->AddMesh(InMesh->MeshBufferResource, Material->Pipeline->PipelineResource, InMInstance);
-
-		// Add primitive to scene
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitveToScene,
-			FPrimitivePtr, Primitive, Primitive,
-			{
-				RenderThread->GetRenderScene()->AddPrimitive(Primitive);
-			});
-
 		// Link primitive to node
-		StaticMesh->LinkFPrimitive(Primitive);
+		StaticMesh->LinkMesh(InMesh, InMInstance, bCastShadow, bReceiveShadow);
 		
 		return StaticMesh;
+	}
+
+	TNodeLight* TScene::AddLight(float Intensity, const SColor& Color)
+	{
+		TNodeLight* Light = TNodeFactory::CreateNode<TNodeLight>(NodeRoot);
+		Light->SetIntensity(Intensity);
+		Light->SetColor(Color);
+		return Light;
+	}
+
+	void TScene::ResetActiveLists()
+	{
+		for (int32 l = 0; l < ESLT_COUNT; ++l)
+		{
+			ActiveNodeList[l].clear();
+		}
+	}
+
+	void TScene::AddToActiveList(E_SCENE_LIST_TYPE List, TNode * ActiveNode)
+	{
+		ActiveNodeList[List].push_back(ActiveNode);
+	}
+
+	void TScene::BindLights()
+	{
+		if (ActiveNodeList[ESLT_LIGHTS].size() > 0)
+		{
+			bool ForceRebind = HasSceneFlag(SF_LIGHTS_DIRTY);
+
+			// go though static solid list
+			for (auto Node : ActiveNodeList[ESLT_STATIC_SOLID])
+			{
+				TI_ASSERT(Node->GetType() == ENT_StaticMesh);
+				Node->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+			}
+
+			// then dynamic solid list
+			for (auto Node : ActiveNodeList[ESLT_DYNAMIC_SOLID])
+			{
+				Node->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+			}
+		}
 	}
 }

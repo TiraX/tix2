@@ -44,13 +44,13 @@ namespace tix
 		{
 			return	Intensity;
 		}
-		void SetDiffuse(const SColor& c)
+		void SetColor(const SColor& c)
 		{
-			Diffuse = c;
+			LightColor = c;
 		}
-		const SColor& GetDiffuse()
+		const SColor& GetColor()
 		{
-			return Diffuse;
+			return LightColor;
 		}
 		const aabbox3df& GetAffectBox()
 		{
@@ -61,7 +61,7 @@ namespace tix
 
 	protected:
 		float Intensity;
-		SColor Diffuse;
+		SColor LightColor;
 		uint32 LightFlag;
 
 		aabbox3df AffectBox;

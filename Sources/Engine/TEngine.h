@@ -55,6 +55,9 @@ namespace tix
 		void Tick();
 		void TickFinished();
 
+		void BeginFrame();
+		void EndFrame();
+
 	private:
 		static E_Platform CurrentPlatform;
 

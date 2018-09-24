@@ -11,7 +11,7 @@ namespace tix
 	TNodeLight::TNodeLight(TNode* parent)
 		: TNode(TNodeLight::NODE_TYPE, parent)
 		, Intensity(1.0f)
-		, Diffuse(1.0f, 1.0f, 1.0f, 1.0f)
+		, LightColor(255,255,255,255)
 		, LightFlag(0)
 	{
 	}
@@ -31,19 +31,22 @@ namespace tix
 			AffectBox.MinEdge = vector3df(-AttenuationDistance, -AttenuationDistance, -AttenuationDistance);
 			AffectBox.MaxEdge = vector3df(AttenuationDistance, AttenuationDistance, AttenuationDistance);
 
-			AbsoluteTransformation.transformBox(AffectBox);
+			AffectBox.move(AbsoluteTransformation.getTranslation());
+
+			// notify scene , lights get dirty
+			TEngine::Get()->GetScene()->SetSceneFlag(SF_LIGHTS_DIRTY, true);
 		}
 
-		NodeFlag &= ~ENF_ABSOLUTETRANSFORMATION_UPDATED;
-		TI_TODO("Add active light to scene light list");
-		//TiEngine::Get()->GetRenderStage()->AddToList(ESLT_LIGHTS, this);	// add to light list for light calculation
+		TEngine::Get()->GetScene()->AddToActiveList(ESLT_LIGHTS, this);
 	}
 
 	void TNodeLight::SetRotate(const quaternion &rotate)
 	{
+		// keep this empty, light do not need rotate
 	}
 
 	void TNodeLight::SetScale(const vector3df& scale)
 	{
+		// keep this empty, light do not need scale
 	}
 }

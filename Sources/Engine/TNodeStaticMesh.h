@@ -7,6 +7,7 @@
 
 namespace tix
 {
+	class TNodeLight;
 	class TNodeStaticMesh : public TNode
 	{
 		DECLARE_NODE_WITH_CONSTRUCTOR(StaticMesh);
@@ -14,9 +15,16 @@ namespace tix
 	public:
 		virtual ~TNodeStaticMesh();
 
-		void LinkFPrimitive(FPrimitivePtr Primitive);
+		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) override;
+		void LinkMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
+
+	protected:
+		virtual void UpdateAbsoluteTransformation();
+
 	protected:
 		FPrimitivePtr LinkedPrimitive;
+		aabbox3df TransformedBBox;
+		TVector<TNodeLight*> BindedLights;
 	};
 
 } // end namespace tix

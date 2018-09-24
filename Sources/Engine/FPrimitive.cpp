@@ -16,14 +16,30 @@ namespace tix
 	{
 	}
 
-	void FPrimitive::AddMesh(FMeshBufferPtr MeshBuffer, FPipelinePtr Pipeline, TMaterialInstancePtr MInstance)
+	void FPrimitive::AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance)
 	{
-		MeshBuffers.push_back(MeshBuffer);
-		Pipelines.push_back(Pipeline);
+		// Add bbox
+		if (MeshBuffers.empty())
+		{
+			BBox.reset(InMeshBBox);
+		}
+		else
+		{
+			BBox.addInternalBox(InMeshBBox);
+		}
 
-		Uniforms.push_back(MInstance->UniformBuffer);
+		// Add mesh buffer
+		MeshBuffers.push_back(InMeshBuffer);
 
-		const TVector<TTexturePtr>& TextureParams = MInstance->GetTextureParams();
+		// Add pipeline
+		TMaterialPtr Material = InMInstance->LinkedMaterial;
+		TI_ASSERT(Material->Pipeline->PipelineResource != nullptr);
+		Pipelines.push_back(Material->Pipeline->PipelineResource);
+
+		// Instance uniform buffer
+		Uniforms.push_back(InMInstance->UniformBuffer);
+
+		const TVector<TTexturePtr>& TextureParams = InMInstance->GetTextureParams();
 		for (const auto& t : TextureParams)
 		{
 			Textures.push_back(t->TextureResource);
