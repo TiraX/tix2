@@ -184,6 +184,9 @@
     <ClCompile Include="..\..\Sources\Engine\FRootSignatureDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNodeLight.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -470,6 +473,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\FVector.h">
       <Filter>Sources\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNodeLight.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

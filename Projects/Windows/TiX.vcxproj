@@ -62,6 +62,7 @@
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCamera.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeCameraNav.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TNodeLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPath.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="..\..\Sources\Engine\TNode.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeCamera.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeCameraNav.h" />
+    <ClInclude Include="..\..\Sources\Engine\TNodeLight.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPath.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />

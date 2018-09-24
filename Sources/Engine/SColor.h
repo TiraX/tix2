@@ -77,6 +77,8 @@ namespace tix
 			return c;
 		}
 
+		inline SColor& operator = (const SColorf& Other);
+
 		//!
 		uint8& operator [] (uint32 i)
 		{
@@ -124,17 +126,21 @@ namespace tix
 			: A(a), R(r), G(g), B(b)
 		{}
 
-		SColor	GetColoruint8() const
+		void ToSColor(SColor& OutColor) const
+		{
+			OutColor.A = (uint8)(A * 255 + 0.5f);
+			OutColor.R = (uint8)(R * 255 + 0.5f);
+			OutColor.G = (uint8)(G * 255 + 0.5f);
+			OutColor.B = (uint8)(B * 255 + 0.5f);
+		}
+
+		SColor ToSColor() const
 		{
 			SColor c;
-
-			c.A	= (uint8)(A * 255);
-			c.R	= (uint8)(R * 255);
-			c.G	= (uint8)(G * 255);
-			c.B	= (uint8)(B * 255);
-
+			ToSColor(c);
 			return c;
 		}
+
 		//!
 		float32& operator [] (uint32 i)
 		{
@@ -223,4 +229,10 @@ namespace tix
 
 		float R, G, B, A;
 	};
+
+	inline SColor& SColor::operator = (const SColorf& Other)
+	{
+		Other.ToSColor(*this);
+		return *this;
+	}
 }

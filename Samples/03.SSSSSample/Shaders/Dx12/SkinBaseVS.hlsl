@@ -2,7 +2,9 @@
 
 cbuffer VSConstants : register(b0)
 {
-    float4x4 vp;
+	float4x4 ViewProjection;
+	float3 ViewDir;
+	float3 ViewPos;
 };
 
 struct VSInput
@@ -27,7 +29,7 @@ VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;
 
-    vsOutput.position = mul(float4(vsInput.position, 1.0), vp);
+    vsOutput.position = mul(float4(vsInput.position, 1.0), ViewProjection);
     vsOutput.texCoord = vsInput.texcoord0;
 	vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
 

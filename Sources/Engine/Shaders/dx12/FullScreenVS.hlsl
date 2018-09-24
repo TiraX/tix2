@@ -1,10 +1,9 @@
 // A constant buffer that stores the three basic column-major matrices for composing geometry.
 cbuffer ModelViewProjectionConstantBuffer : register(b0)
 {
-	//matrix model;
-	//matrix view;
-	//matrix projection;
-	matrix vp;
+	matrix ViewProjection;
+	float3 ViewDir;
+	float3 ViewPos;
 };
 
 // Per-vertex data used as input to the vertex shader.
