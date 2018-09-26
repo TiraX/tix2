@@ -187,6 +187,9 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeLight.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FLight.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -476,6 +479,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TNodeLight.h">
       <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FLight.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

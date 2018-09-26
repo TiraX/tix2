@@ -11,7 +11,7 @@ namespace tix
 	{
 	public:
 		FPrimitive();
-		virtual ~FPrimitive();
+		~FPrimitive();
 
 		// Temp solution, re-factor in future
 		void AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance);
@@ -19,11 +19,9 @@ namespace tix
 		TVector<FMeshBufferPtr> MeshBuffers;
 		TVector<FPipelinePtr> Pipelines;
 		TVector<FUniformBufferPtr> Uniforms;
-		aabbox3df BBox;
 		// Temp solution, re-factor in future
 		TVector<FTexturePtr> Textures;
-
-
+		aabbox3df BBox;
 	};
 } // end namespace tix
 

@@ -10,9 +10,9 @@
 
 namespace tix
 {
-	static const int32 MaxDescriptorCount[EHT_COUNT] = 
+	static const int32 MaxDescriptorCount[EHT_COUNT] =
 	{
-		1024,	//EHT_CBV_SRV_UAV,
+		MAX_CBV_SRV_UAV_DESCRIPTORS,	//EHT_CBV_SRV_UAV,
 		512,	//EHT_SAMPLER,
 		128,	//EHT_RTV,
 		64,		//EHT_DSV,
@@ -34,7 +34,7 @@ namespace tix
 		D3D12_DESCRIPTOR_HEAP_FLAG_NONE,	//EHT_DSV,
 	};
 
-	static const LPCWSTR k_HEAP_NAMES[EHT_COUNT] = 
+	static const LPCWSTR k_HEAP_NAMES[EHT_COUNT] =
 	{
 		L"CBV_SRV_UAV_HEAP",	//EHT_CBV_SRV_UAV,
 		L"SAMPLER_HEAP",	//EHT_SAMPLER,
@@ -45,8 +45,13 @@ namespace tix
 	FDescriptorHeapDx12::FDescriptorHeapDx12()
 		: HeapType(EHT_INVALID)
 		, DescriptorIncSize(0)
-		, DescriptorAllocated(0)
-	{}
+	{
+	}
+
+	FDescriptorHeapDx12::~FDescriptorHeapDx12()
+	{
+		ClearAllAllocators();
+	}
 
 	void FDescriptorHeapDx12::Create(ID3D12Device* D3dDevice, E_HEAP_TYPE InHeapType)
 	{
@@ -62,45 +67,31 @@ namespace tix
 		DescriptorHeap->SetName(k_HEAP_NAMES[InHeapType]);
 
 		DescriptorIncSize = D3dDevice->GetDescriptorHandleIncrementSize(k_DESCRIPTOR_HEAP_TYPE_MAP[InHeapType]);
+
+		CreateDefaultAllocator();
 	}
 
-	void FDescriptorHeapDx12::Destroy()
+	void FDescriptorHeapDx12::ClearAllAllocators()
 	{
-
-	}
-
-	uint32 FDescriptorHeapDx12::AllocateDescriptorSlot()
-	{
-		if (AvaibleDescriptorHeapSlots.size() > 0)
+		for (auto& i : Allocators)
 		{
-			uint32 SlotIndex = AvaibleDescriptorHeapSlots.back();
-			AvaibleDescriptorHeapSlots.pop_back();
-			return SlotIndex;
+			ti_delete i;
+			i = nullptr;
 		}
-		uint32 Result = DescriptorAllocated;
-		++DescriptorAllocated;
-		TI_ASSERT(DescriptorAllocated < (uint32)MaxDescriptorCount[HeapType]);
-		return Result;
+		Allocators.clear();
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorHeapDx12::AllocateDescriptor()
+	void FDescriptorHeapDx12::CreateDefaultAllocator()
 	{
-		uint32 SlotIndex = AllocateDescriptorSlot();
-		return GetCpuDescriptorHandle(SlotIndex);
+		FDescriptorAllocator* Allocator = ti_new FDescriptorAllocator(this, 0, MaxDescriptorCount[HeapType]);
+		Allocators.push_back(Allocator);
 	}
 
-	void FDescriptorHeapDx12::RecallDescriptor(uint32 HeapIndex)
+	void FDescriptorHeapDx12::CreateAllocator(uint32 Offset, uint32 Size)
 	{
-		AvaibleDescriptorHeapSlots.push_back(HeapIndex);
-	}
-
-	void FDescriptorHeapDx12::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
-	{
-		D3D12_CPU_DESCRIPTOR_HANDLE Start = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		int32 Offset = (int32)(Descriptor.ptr - Start.ptr);
-		TI_ASSERT(Offset >= 0 && (Offset % DescriptorIncSize) == 0);
-		uint32 Index = Offset / DescriptorIncSize;
-		RecallDescriptor(Index);
+		TI_ASSERT(Offset + Size <= (uint32)MaxDescriptorCount[HeapType]);
+		FDescriptorAllocator* Allocator = ti_new FDescriptorAllocator(this, Offset, Size);
+		Allocators.push_back(Allocator);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorHeapDx12::GetCpuDescriptorHandle(uint32 Index)
@@ -115,6 +106,43 @@ namespace tix
 		D3D12_GPU_DESCRIPTOR_HANDLE Result = DescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 		Result.ptr += Index * DescriptorIncSize;
 		return Result;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+
+
+	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorAllocator::AllocateDescriptor()
+	{
+		uint32 SlotIndex = AllocateDescriptorSlot();
+		return Heap->GetCpuDescriptorHandle(SlotIndex);
+	}
+
+	void FDescriptorAllocator::RecallDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE Descriptor)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE Start = Heap->GetCpuDescriptorHandle(0);
+		int32 IndexOffset = (int32)(Descriptor.ptr - Start.ptr);
+		TI_ASSERT(IndexOffset >= 0 && (IndexOffset % Heap->GetIncSize()) == 0);
+		uint32 Index = IndexOffset / Heap->GetIncSize();
+		RecallDescriptor(Index);
+	}
+
+	uint32 FDescriptorAllocator::AllocateDescriptorSlot()
+	{
+		if (AvaibleDescriptorHeapSlots.size() > 0)
+		{
+			uint32 SlotIndex = AvaibleDescriptorHeapSlots.back();
+			AvaibleDescriptorHeapSlots.pop_back();
+			return SlotIndex;
+		}
+		uint32 Result = DescriptorAllocated + OffsetInHeap;
+		++DescriptorAllocated;
+		TI_ASSERT(DescriptorAllocated < Size);
+		return Result;
+	}
+
+	void FDescriptorAllocator::RecallDescriptor(uint32 HeapIndex)
+	{
+		AvaibleDescriptorHeapSlots.push_back(HeapIndex);
 	}
 }
 #endif	// COMPILE_WITH_RHI_DX12

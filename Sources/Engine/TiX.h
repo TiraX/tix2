@@ -24,6 +24,7 @@ using namespace std;
 #pragma warning( disable : 4251 )  
 
 // Include tix symbols
+// Basic define and types
 #include "TConfig.h"
 #include "TDefines.h"
 #include "IInstrusivePtr.hpp"
@@ -33,6 +34,8 @@ using namespace std;
 #include "TStringExt.h"
 #include "TMath.h"
 #include "TUtils.h"
+
+// Game thread components
 #include "TThread.h"
 #include "TQueue.h"
 #include "TTaskThread.h"
@@ -59,6 +62,7 @@ using namespace std;
 #include "TNodeLight.h"
 #include "TScene.h"
 
+// RHI things
 #include "FRenderResource.h"
 #include "FMeshBuffer.h"
 #include "FShader.h"
@@ -66,9 +70,12 @@ using namespace std;
 #include "FPipeline.h"
 #include "FUniformBuffer.h"
 #include "FRenderTarget.h"
-#include "FPrimitive.h"
 #include "FFrameResources.h"
 #include "FRHI.h"
+
+// Render thread things
+#include "FPrimitive.h"
+#include "FLight.h"
 #include "FScene.h"
 #include "FRenderer.h"
 #include "FDefaultRenderer.h"

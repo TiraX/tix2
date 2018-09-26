@@ -17,6 +17,12 @@ namespace tix
 		};
 	};
 
+	enum E_UNIFORM_BUFFER_FLAG
+	{
+		UB_FLAG_NONE = 0,
+		UB_FLAG_DYNAMIC_LIGHT = 1 << 0,
+	};
+
 	// Macros for declaring uniform buffer structures.
 
 /** Declares a member of a uniform buffer struct. */
@@ -28,10 +34,11 @@ namespace tix
 #define DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY_EX(MemberType,MemberName,ArrayDecl,Precision) DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_EXPLICIT(MemberType,MemberName,ArrayDecl,Precision)
 
 	/** Begins a uniform buffer struct declaration. */
-#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix) \
-	class StructTypeName : public IReferenceCounted\
+#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix,InUniformBufferFlag) \
+	class StructTypeName : public IReferenceCounted \
 	{ \
 	public: \
+		static const uint32 UBFlag = InUniformBufferFlag; \
 		StructTypeName () ConstructorSuffix \
 		struct FUniformBufferStruct \
 		{ \
@@ -42,15 +49,16 @@ namespace tix
 		FUniformBufferPtr UniformBuffer; \
 		FUniformBufferPtr InitUniformBuffer() \
 		{ \
+			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
 			UniformBuffer = RHI->CreateUniformBuffer(); \
-			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct)); \
+			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::UBFlag); \
 			return UniformBuffer; \
 		} \
 	}; \
 	typedef TI_INTRUSIVE_PTR(StructTypeName) StructTypeName##Ptr;
 
-#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{})
+#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName,InUniformBufferFlag) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{},InUniformBufferFlag)
 
 	class FUniformBuffer : public FRenderResource
 	{

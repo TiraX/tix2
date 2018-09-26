@@ -15,17 +15,17 @@ Texture2D<float3> texSpecular : register(t2);
 Texture2D<float3> texBeckmann : register(t3);
 TextureCube<float4> texIrrMap : register(t4);
 
+#define N_LIGHTS 3
 
-cbuffer PSConstants : register(b0)
+struct PointLight
 {
-    float3 SunDirection;
-    float3 SunColor;
-    float3 AmbientColor;
-    float4 ShadowTexelSize;
+	float3 Position;
+	float3 Color;
+};
 
-    float4 InvTileDim;
-    uint4 TileCount;
-    uint4 FirstLightIndex;
+cbuffer S4PSContants : register(b1)
+{
+	PointLight Lights[N_LIGHTS];
 }
 
 SamplerState sampler0 : register(s0);
@@ -56,46 +56,48 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	float4 color = float4(0.0, 0.0, 0.0, 0.0);
 	float4 specularColor = float4(0.0, 0.0, 0.0, 0.0);
 
-	/*
+	//*
 	[unroll]
-	for (int i = 0; i < N_LIGHTS; i++) {
-		float3 light = lights[i].position - input.worldPosition;
-		float dist = length(light);
-		light /= dist;
-
-		float spot = dot(lights[i].direction, -light);
-		[flatten]
-		if (spot > lights[i].falloffStart) {
-			// Calculate attenuation:
-			float curve = min(pow(dist / lights[i].farPlane, 6.0), 1.0);
-			float attenuation = lerp(1.0 / (1.0 + lights[i].attenuation * dist * dist), 0.0, curve);
-
-			// And the spot light falloff:
-			spot = saturate((spot - lights[i].falloffStart) / lights[i].falloffWidth);
-
-			// Calculate some terms we will use later on:
-			float3 f1 = lights[i].color * attenuation * spot;
-			float3 f2 = albedo.rgb * f1;
-
-			// Calculate the diffuse and specular lighting:
-			float3 diffuse = saturate(dot(light, normal));
-			float specular = intensity * SpecularKSK(beckmannTex, normal, light, input.view, roughness);
-
-			// And also the shadowing:
-			float shadow = ShadowPCF(input.worldPosition, i, 3, 1.0);
-
-			// Add the diffuse and specular components:
-#ifdef SEPARATE_SPECULARS
-			color.rgb += shadow * f2 * diffuse;
-			specularColor.rgb += shadow * f1 * specular;
-#else
-			color.rgb += shadow * (f2 * diffuse + f1 * specular);
-#endif
-
-			// Add the transmittance component:
-			if (sssEnabled && translucencyEnabled)
-				color.rgb += f2 * albedo.a * SSSSTransmittance(translucency, sssWidth, input.worldPosition, input.normal, light, shadowMaps[i], lights[i].viewProjection, lights[i].farPlane);
-		}
+	for (int i = 0; i < N_LIGHTS; i++) 
+	{
+		color.xyz += Lights[i].Color;
+//		float3 light = lights[i].position - input.worldPosition;
+//		float dist = length(light);
+//		light /= dist;
+//
+//		float spot = dot(lights[i].direction, -light);
+//		[flatten]
+//		if (spot > lights[i].falloffStart) {
+//			// Calculate attenuation:
+//			float curve = min(pow(dist / lights[i].farPlane, 6.0), 1.0);
+//			float attenuation = lerp(1.0 / (1.0 + lights[i].attenuation * dist * dist), 0.0, curve);
+//
+//			// And the spot light falloff:
+//			spot = saturate((spot - lights[i].falloffStart) / lights[i].falloffWidth);
+//
+//			// Calculate some terms we will use later on:
+//			float3 f1 = lights[i].color * attenuation * spot;
+//			float3 f2 = albedo.rgb * f1;
+//
+//			// Calculate the diffuse and specular lighting:
+//			float3 diffuse = saturate(dot(light, normal));
+//			float specular = intensity * SpecularKSK(beckmannTex, normal, light, input.view, roughness);
+//
+//			// And also the shadowing:
+//			float shadow = ShadowPCF(input.worldPosition, i, 3, 1.0);
+//
+//			// Add the diffuse and specular components:
+//#ifdef SEPARATE_SPECULARS
+//			color.rgb += shadow * f2 * diffuse;
+//			specularColor.rgb += shadow * f1 * specular;
+//#else
+//			color.rgb += shadow * (f2 * diffuse + f1 * specular);
+//#endif
+//
+//			// Add the transmittance component:
+//			if (sssEnabled && translucencyEnabled)
+//				color.rgb += f2 * albedo.a * SSSSTransmittance(translucency, sssWidth, input.worldPosition, input.normal, light, shadowMaps[i], lights[i].viewProjection, lights[i].farPlane);
+//		}
 	}
 	//*/
 

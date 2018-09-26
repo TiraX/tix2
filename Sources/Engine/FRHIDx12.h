@@ -39,7 +39,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize, uint32 UBFlag) override;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
@@ -58,8 +58,8 @@ namespace tix
 		virtual void PushRenderTarget(FRenderTargetPtr RT);
 		virtual FRenderTargetPtr PopRenderTarget();
 
-		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex);
-		void RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor);
+		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex, E_UNIFORMBUFFER_SECTION UniformBufferSection = UB_SECTION_NORMAL);
+		void RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor, E_UNIFORMBUFFER_SECTION UniformBufferSection = UB_SECTION_NORMAL);
 
 	protected: 
 		FRHIDx12();

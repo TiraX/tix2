@@ -49,4 +49,10 @@ namespace tix
 	{
 		// keep this empty, light do not need scale
 	}
+
+	void TNodeLight::CreateFLight()
+	{
+		TI_ASSERT(LightResource == nullptr);
+		LightResource = ti_new FLight(this);
+	}
 }

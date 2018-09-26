@@ -88,6 +88,7 @@ namespace tix
 		TNodeLight* Light = TNodeFactory::CreateNode<TNodeLight>(NodeRoot);
 		Light->SetIntensity(Intensity);
 		Light->SetColor(Color);
+		Light->CreateFLight();
 		return Light;
 	}
 
@@ -111,16 +112,16 @@ namespace tix
 			bool ForceRebind = HasSceneFlag(SF_LIGHTS_DIRTY);
 
 			// go though static solid list
-			for (auto Node : ActiveNodeList[ESLT_STATIC_SOLID])
+			for (auto StaticMeshNode : ActiveNodeList[ESLT_STATIC_SOLID])
 			{
-				TI_ASSERT(Node->GetType() == ENT_StaticMesh);
-				Node->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+				TI_ASSERT(StaticMeshNode->GetType() == ENT_StaticMesh);
+				StaticMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
 			}
 
 			// then dynamic solid list
-			for (auto Node : ActiveNodeList[ESLT_DYNAMIC_SOLID])
+			for (auto DynamicMeshNode : ActiveNodeList[ESLT_DYNAMIC_SOLID])
 			{
-				Node->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+				DynamicMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
 			}
 		}
 	}

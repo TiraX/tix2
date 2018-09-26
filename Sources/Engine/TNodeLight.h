@@ -20,6 +20,8 @@ namespace tix
 	public:
 		virtual ~TNodeLight();
 
+		void CreateFLight();
+
 		// light do not need scale and rotate,
 		// make these 2 functions empty
 		virtual void SetScale(const vector3df& scale);
@@ -56,6 +58,8 @@ namespace tix
 		{
 			return	AffectBox;
 		}
+
+		FLightPtr LightResource;
 	protected:
 		virtual void UpdateAbsoluteTransformation();
 

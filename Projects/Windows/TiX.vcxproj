@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FGPUResourceDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="..\..\Sources\Engine\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h" />
     <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FLight.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />

@@ -7,6 +7,13 @@
 
 namespace tix
 {
+	enum E_UNIFORMBUFFER_SECTION
+	{
+		UB_SECTION_NORMAL,
+		UB_SECTION_LIGHTS,
+
+		UB_SECTION_COUNT,
+	};
 	class FRHIConfig
 	{
 	public: 

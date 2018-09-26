@@ -56,7 +56,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
 
 				if (Tex != nullptr)
-					RHI->SetShaderTexture(1, Tex);
+					RHI->SetShaderTexture(2, Tex);
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}
