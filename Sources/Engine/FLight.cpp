@@ -21,6 +21,7 @@ namespace tix
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(DeleteLightUniformBufferResource,
 				FDynamicLightUniformBufferPtr, DynamicLightBuffer, DynamicLightBuffer,
 				{
+					TI_TODO("Manually call Destroy() is un-safe. Make a better solution to release render resources");
 					DynamicLightBuffer->UniformBuffer->Destroy();
 				});
 			DynamicLightBuffer = nullptr;

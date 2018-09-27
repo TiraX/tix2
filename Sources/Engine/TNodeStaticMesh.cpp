@@ -66,6 +66,8 @@ namespace tix
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED) || ForceRebind)
 		{
 			BindedLights.clear();
+
+			// find out lights affect this mesh
 			for (auto Light : Lights)
 			{
 				TI_ASSERT(Light->GetType() == ENT_Light);
@@ -75,6 +77,8 @@ namespace tix
 					BindedLights.push_back(LightNode);
 				}
 			}
+
+			// create lightinfo uniform buffers
 		}
 	}
 }

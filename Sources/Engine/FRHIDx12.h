@@ -33,7 +33,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
-		virtual FUniformBufferPtr CreateUniformBuffer() override;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 UBFlag) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;

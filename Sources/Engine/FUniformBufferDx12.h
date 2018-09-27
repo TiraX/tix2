@@ -12,7 +12,7 @@ namespace tix
 	class FUniformBufferDx12 : public FUniformBuffer
 	{
 	public:
-		FUniformBufferDx12();
+		FUniformBufferDx12(uint32 UBFlag);
 		virtual ~FUniformBufferDx12();
 
 		virtual void Destroy() override;

@@ -35,7 +35,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
-		virtual FUniformBufferPtr CreateUniformBuffer() = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 UBFlag) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;

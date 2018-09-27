@@ -8,8 +8,9 @@
 
 namespace tix
 {
-	FUniformBuffer::FUniformBuffer(E_RESOURCE_FAMILY InFamily)
+	FUniformBuffer::FUniformBuffer(E_RESOURCE_FAMILY InFamily, uint32 InUBFlag)
 		: FRenderResource(InFamily)
+		, UBFlag(InUBFlag)
 	{
 	}
 

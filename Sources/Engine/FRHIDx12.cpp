@@ -442,9 +442,9 @@ namespace tix
 		return ti_new FPipelineDx12();
 	}
 
-	FUniformBufferPtr FRHIDx12::CreateUniformBuffer()
+	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 UBFlag)
 	{
-		return ti_new FUniformBufferDx12();
+		return ti_new FUniformBufferDx12(UBFlag);
 	}
 
 	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)

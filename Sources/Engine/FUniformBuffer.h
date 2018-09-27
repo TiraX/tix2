@@ -51,7 +51,7 @@ namespace tix
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(); \
+			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBFlag); \
 			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::UBFlag); \
 			return UniformBuffer; \
 		} \
@@ -63,11 +63,12 @@ namespace tix
 	class FUniformBuffer : public FRenderResource
 	{
 	public:
-		FUniformBuffer(E_RESOURCE_FAMILY InFamily);
+		FUniformBuffer(E_RESOURCE_FAMILY InFamily, uint32 InUBFlag);
 		virtual ~FUniformBuffer();
 
 	protected:
 
 	protected:
+		uint32 UBFlag;
 	};
 }

@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FUniformBufferDx12::FUniformBufferDx12()
-		: FUniformBuffer(ERF_Dx12)
+	FUniformBufferDx12::FUniformBufferDx12(uint32 UBFlag)
+		: FUniformBuffer(ERF_Dx12, UBFlag)
 		, CbvDescriptor(uint32(-1))
 	{
 	}
