@@ -12,7 +12,6 @@
 namespace tix
 {
 	FPipelineDx12::FPipelineDx12()
-		: FPipeline(ERF_Dx12)
 	{
 	}
 

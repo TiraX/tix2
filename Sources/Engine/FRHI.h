@@ -7,6 +7,7 @@
 
 #include "FRHIConfig.h"
 #include "FViewport.h"
+#include "FRenderResourceHeap.h"
 
 namespace tix
 {
@@ -33,15 +34,15 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
-		virtual FUniformBufferPtr CreateUniformBuffer(uint32 UBFlag) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize, uint32 UBFlag) = 0;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
@@ -60,6 +61,9 @@ namespace tix
 		virtual void PushRenderTarget(FRenderTargetPtr RT);
 		virtual FRenderTargetPtr PopRenderTarget();
 
+		virtual uint32 AllocateHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap);
+		virtual void RecallHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
+
 		E_RHI_TYPE GetRHIType() const
 		{
 			return RHIType;
@@ -77,5 +81,7 @@ namespace tix
 
 		TVector<FRenderTargetPtr> RenderTargets;
 		TVector<FViewport> RtViewports;
+
+		FRenderResourceHeap RenderResourceHeap[EHT_COUNT];
 	};
 }

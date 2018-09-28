@@ -7,11 +7,11 @@
 
 namespace tix
 {
-	class FTexture : public FRenderResource
+	class FTexture : public FRenderResourceInHeap
 	{
 	public:
-		FTexture(E_RESOURCE_FAMILY InFamily);
-		FTexture(E_RESOURCE_FAMILY InFamily, const TTextureDesc& Desc);
+		FTexture();
+		FTexture(const TTextureDesc& Desc);
 		virtual ~FTexture();
 
 		virtual void Destroy() override {};

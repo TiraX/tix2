@@ -10,19 +10,13 @@ namespace tix
 	class FRenderResource : public IReferenceCounted
 	{
 	public:
-		FRenderResource(E_RESOURCE_FAMILY InFamily)
-			: ResourceFamily(InFamily)
+		FRenderResource()
 		{}
 		virtual ~FRenderResource() 
-		{
-		}
+		{}
 
 		virtual void Destroy() = 0;
 
-		E_RESOURCE_FAMILY GetResourceFamily() const
-		{
-			return ResourceFamily;
-		}
 #if defined (TIX_DEBUG)
 		void SetResourceName(const TString& Name)
 		{
@@ -33,12 +27,34 @@ namespace tix
 			return ResourceName;
 		}
 #endif
-	protected:
 
 	protected:
-		E_RESOURCE_FAMILY	ResourceFamily;
 #if defined (TIX_DEBUG)
-		TString				ResourceName;
+		TString ResourceName;
 #endif
+	};
+
+	/////////////////////////////////////////////////////////////////////////////////
+
+	class FRenderResourceInHeap : public FRenderResource
+	{
+	public:
+		FRenderResourceInHeap(E_RENDER_RESOURCE_HEAP_TYPE InHeapType);
+		virtual ~FRenderResourceInHeap();
+
+		virtual void InitRenderResourceHeapSlot();
+
+		E_RENDER_RESOURCE_HEAP_TYPE GetResourceHeapType() const
+		{
+			return HeapType;
+		}
+
+		uint32 GetRenderResourceSlot() const
+		{
+			return HeapSlot;
+		}
+	protected:
+		E_RENDER_RESOURCE_HEAP_TYPE HeapType;
+		uint32 HeapSlot;
 	};
 }

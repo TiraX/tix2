@@ -8,8 +8,7 @@
 
 namespace tix
 {
-	FPipeline::FPipeline(E_RESOURCE_FAMILY InFamily)
-		: FRenderResource(InFamily)
+	FPipeline::FPipeline()
 	{
 	}
 

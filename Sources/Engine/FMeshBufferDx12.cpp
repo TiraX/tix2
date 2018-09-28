@@ -34,7 +34,6 @@ namespace tix
 		DXGI_FORMAT_R32G32B32A32_FLOAT,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
 	FMeshBufferDx12::FMeshBufferDx12()
-		: FMeshBuffer(ERF_Dx12)
 	{
 	}
 
@@ -45,6 +44,7 @@ namespace tix
 
 	void FMeshBufferDx12::Destroy()
 	{
+		TI_TODO("Destroy() function seems can be removed.");
 		TI_ASSERT(IsRenderThread());
 		VertexBuffer = nullptr;
 		IndexBuffer = nullptr;

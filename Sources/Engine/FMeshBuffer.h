@@ -11,7 +11,7 @@ namespace tix
 	class FMeshBuffer : public FRenderResource
 	{
 	public:
-		FMeshBuffer(E_RESOURCE_FAMILY InFamily);
+		FMeshBuffer();
 		virtual ~FMeshBuffer();
 
 	public:

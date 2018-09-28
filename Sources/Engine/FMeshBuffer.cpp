@@ -18,9 +18,8 @@ namespace tix
 		4,	// ESSI_BLENDINDEX,
 		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
-	FMeshBuffer::FMeshBuffer(E_RESOURCE_FAMILY InFamily)
-		: FRenderResource(InFamily)
-		, PrimitiveType(EPT_TRIANGLELIST)
+	FMeshBuffer::FMeshBuffer()
+		: PrimitiveType(EPT_TRIANGLELIST)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
 		, PsDataCount(0)

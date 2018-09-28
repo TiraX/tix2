@@ -190,6 +190,12 @@
     <ClCompile Include="..\..\Sources\Engine\FLight.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRenderResourceHeap.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRenderResource.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -481,6 +487,9 @@
       <Filter>Sources\Scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FLight.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRenderResourceHeap.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

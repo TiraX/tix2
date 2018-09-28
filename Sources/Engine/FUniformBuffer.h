@@ -17,12 +17,6 @@ namespace tix
 		};
 	};
 
-	enum E_UNIFORM_BUFFER_FLAG
-	{
-		UB_FLAG_NONE = 0,
-		UB_FLAG_DYNAMIC_LIGHT = 1 << 0,
-	};
-
 	// Macros for declaring uniform buffer structures.
 
 /** Declares a member of a uniform buffer struct. */
@@ -34,11 +28,11 @@ namespace tix
 #define DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY_EX(MemberType,MemberName,ArrayDecl,Precision) DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_EXPLICIT(MemberType,MemberName,ArrayDecl,Precision)
 
 	/** Begins a uniform buffer struct declaration. */
-#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix,InUniformBufferFlag) \
+#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix,UniformHeapType) \
 	class StructTypeName : public IReferenceCounted \
 	{ \
 	public: \
-		static const uint32 UBFlag = InUniformBufferFlag; \
+		static const E_RENDER_RESOURCE_HEAP_TYPE UBHeap = UniformHeapType; \
 		StructTypeName () ConstructorSuffix \
 		struct FUniformBufferStruct \
 		{ \
@@ -51,24 +45,23 @@ namespace tix
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBFlag); \
-			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::UBFlag); \
+			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBHeap); \
+			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct)); \
 			return UniformBuffer; \
 		} \
 	}; \
 	typedef TI_INTRUSIVE_PTR(StructTypeName) StructTypeName##Ptr;
 
-#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName,InUniformBufferFlag) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{},InUniformBufferFlag)
+#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName,UniformHeapType) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{},UniformHeapType)
 
-	class FUniformBuffer : public FRenderResource
+	class FUniformBuffer : public FRenderResourceInHeap
 	{
 	public:
-		FUniformBuffer(E_RESOURCE_FAMILY InFamily, uint32 InUBFlag);
+		FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType);
 		virtual ~FUniformBuffer();
 
 	protected:
 
 	protected:
-		uint32 UBFlag;
 	};
 }

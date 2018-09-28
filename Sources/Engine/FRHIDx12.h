@@ -31,15 +31,15 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
+		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
-		virtual FUniformBufferPtr CreateUniformBuffer(uint32 UBFlag) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize, uint32 UBFlag) override;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
@@ -57,9 +57,6 @@ namespace tix
 		virtual void SetViewport(const FViewport& InViewport);
 		virtual void PushRenderTarget(FRenderTargetPtr RT);
 		virtual FRenderTargetPtr PopRenderTarget();
-
-		void RecallDescriptor(E_HEAP_TYPE HeapType, uint32 DescriptorIndex, E_UNIFORMBUFFER_SECTION UniformBufferSection = UB_SECTION_NORMAL);
-		void RecallDescriptor(E_HEAP_TYPE HeapType, D3D12_CPU_DESCRIPTOR_HANDLE Descriptor, E_UNIFORMBUFFER_SECTION UniformBufferSection = UB_SECTION_NORMAL);
 
 	protected: 
 		FRHIDx12();
@@ -113,7 +110,12 @@ namespace tix
 			_In_ ID3D12GraphicsCommandList* pCmdList);
 
 		void SetRenderTarget(FRenderTargetPtr RT);
-		
+
+		void InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset);
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(FRenderResourceInHeapPtr Resource);
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(FRenderResourceInHeapPtr Resource);
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
 	private:
 		ComPtr<ID3D12Device> D3dDevice;
 		ComPtr<IDXGIFactory4> DxgiFactory;
@@ -136,7 +138,7 @@ namespace tix
 		FRootSignatureDx12 RootSignature;
 
 		// Descriptor heaps
-		FDescriptorHeapDx12 DescriptorHeaps[EHT_COUNT];
+		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 		// CPU/GPU Synchronization.
 		ComPtr<ID3D12Fence> Fence;
@@ -153,6 +155,7 @@ namespace tix
 		FFrameResourcesDx12 * ResHolders[FRHIConfig::FrameBufferNum];
 
 		friend class FRHI;
+		friend class FDescriptorHeapDx12;
 	};
 }
 #endif	// COMPILE_WITH_RHI_DX12

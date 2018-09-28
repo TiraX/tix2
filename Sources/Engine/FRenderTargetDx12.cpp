@@ -12,7 +12,7 @@
 namespace tix
 {
 	FRenderTargetDx12::FRenderTargetDx12(int32 W, int32 H)
-		: FRenderTarget(ERF_Dx12, W, H)
+		: FRenderTarget(W, H)
 	{
 		for (int32 i = 0; i < ERTC_COUNT; ++i)
 		{
@@ -29,20 +29,6 @@ namespace tix
 	void FRenderTargetDx12::Destroy()
 	{
 		TI_ASSERT(IsRenderThread());
-		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-		for (int32 i = 0; i < ERTC_COUNT; ++i)
-		{
-			if (RTColorDescriptor[i].ptr != 0)
-			{
-				RHIDx12->RecallDescriptor(EHT_RTV, RTColorDescriptor[i]);
-				RTColorDescriptor[i].ptr = 0;
-			}
-		}
-		if (RTDSDescriptor.ptr != 0)
-		{
-			RHIDx12->RecallDescriptor(EHT_DSV, RTDSDescriptor);
-			RTDSDescriptor.ptr = 0;
-		}
 	}
 }
 

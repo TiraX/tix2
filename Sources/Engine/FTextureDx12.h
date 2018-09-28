@@ -22,7 +22,6 @@ namespace tix
 
 	private:
 		FGPUResourceDx12 TextureResource;
-		uint32 TexDescriptor;
 		friend class FRHIDx12;
 	};
 }

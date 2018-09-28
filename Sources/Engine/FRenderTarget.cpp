@@ -14,9 +14,8 @@ namespace tix
 		return RHI->CreateRenderTarget(W, H);
 	}
 
-	FRenderTarget::FRenderTarget(E_RESOURCE_FAMILY InFamily, int32 W, int32 H)
-		: FRenderResource(InFamily)
-		, Demension(W, H)
+	FRenderTarget::FRenderTarget(int32 W, int32 H)
+		: Demension(W, H)
 		, ColorBuffers(0)
 	{
 	}
@@ -47,10 +46,10 @@ namespace tix
 
 		RTBuffer Buffer;
 		Buffer.Texture = Texture;
+		Buffer.RTResource = ti_new FRenderTargetResource(EHT_RENDERTARGET);
 		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);
 		Buffer.BufferIndex = ColorBufferIndex;
 		Buffer.BufferType = ERTAT_TEXTURE;
-		Buffer.Level = 0;
 
 #if defined (TIX_DEBUG)
 		{
@@ -79,8 +78,8 @@ namespace tix
 #endif
 
 		RTDepthStencilBuffer.Texture = Texture;
+		RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
 		RTDepthStencilBuffer.BufferType = ERTAT_TEXTURE;
-		RTDepthStencilBuffer.Level = 0;
 	}
 
 	void FRenderTarget::Compile()

@@ -8,9 +8,8 @@
 
 namespace tix
 {
-	FUniformBuffer::FUniformBuffer(E_RESOURCE_FAMILY InFamily, uint32 InUBFlag)
-		: FRenderResource(InFamily)
-		, UBFlag(InUBFlag)
+	FUniformBuffer::FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType)
+		: FRenderResourceInHeap(HeapType)
 	{
 	}
 

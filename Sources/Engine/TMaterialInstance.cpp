@@ -20,7 +20,7 @@ namespace tix
 	{
 		TI_TODO("Implement here.");
 		TI_ASSERT(UniformBuffer == nullptr);
-		UniformBuffer = FRHI::Get()->CreateUniformBuffer(UB_FLAG_NONE);
+		UniformBuffer = FRHI::Get()->CreateUniformBuffer(EHT_UNIFORMBUFFER);
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()

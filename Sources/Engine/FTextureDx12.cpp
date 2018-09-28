@@ -12,14 +12,11 @@
 namespace tix
 {
 	FTextureDx12::FTextureDx12()
-		: FTexture(ERF_Dx12)
-		, TexDescriptor(uint32(-1))
 	{
 	}
 
 	FTextureDx12::FTextureDx12(const TTextureDesc& Desc)
-		: FTexture(ERF_Dx12, Desc)
-		, TexDescriptor(uint32(-1))
+		: FTexture(Desc)
 	{
 	}
 
@@ -30,13 +27,6 @@ namespace tix
 
 	void FTextureDx12::Destroy()
 	{
-		TI_ASSERT(IsRenderThread());
-		if (TexDescriptor != uint32(-1))
-		{
-			FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
-			RHIDx12->RecallDescriptor(EHT_CBV_SRV_UAV, TexDescriptor);
-			TexDescriptor = uint32(-1);
-		}
 	}
 }
 

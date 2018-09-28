@@ -35,29 +35,43 @@ namespace tix
 		ERT_STORE_MULTISAMPLE_RESOLVE,
 	};
 
+	class FRenderTargetResource : public FRenderResourceInHeap
+	{
+	public:
+		FRenderTargetResource(E_RENDER_RESOURCE_HEAP_TYPE InHeapType)
+			: FRenderResourceInHeap(InHeapType)
+		{}
+		~FRenderTargetResource()
+		{}
+
+		virtual void Destroy() override {};
+	private:
+
+	};
+
 	class FRenderTarget : public FRenderResource
 	{
 	public:
 		TI_API static FRenderTargetPtr Create(int32 W, int32 H);
 
-		FRenderTarget(E_RESOURCE_FAMILY InFamily, int32 W, int32 H);
+		FRenderTarget(int32 W, int32 H);
 		virtual ~FRenderTarget();
 
 		struct RTBuffer
 		{
 			FTexturePtr Texture;
+			FRenderTargetResourcePtr RTResource;
 			E_RT_COLOR_BUFFER BufferIndex;
 			E_RT_ATTACH_TYPE BufferType;
-			int32 Level;
 
 			RTBuffer()
 				: BufferIndex(ERTC_INVALID)
 				, BufferType(ERTAT_TEXTURE)
-				, Level(0)
 			{}
 			~RTBuffer()
 			{
 				Texture = nullptr;
+				RTResource = nullptr;
 			}
 		};
 

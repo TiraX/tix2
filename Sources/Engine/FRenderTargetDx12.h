@@ -19,6 +19,7 @@ namespace tix
 	protected:
 
 	private:
+		// hold color buffer and depth buffer descriptor for easy access
 		D3D12_CPU_DESCRIPTOR_HANDLE RTColorDescriptor[ERTC_COUNT];
 		D3D12_CPU_DESCRIPTOR_HANDLE RTDSDescriptor;
 		friend class FRHIDx12;

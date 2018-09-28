@@ -7,13 +7,13 @@
 
 namespace tix
 {
-	FTexture::FTexture(E_RESOURCE_FAMILY InFamily)
-		: FRenderResource(InFamily)
+	FTexture::FTexture()
+		: FRenderResourceInHeap(EHT_TEXTURE)
 	{
 	}
 
-	FTexture::FTexture(E_RESOURCE_FAMILY InFamily, const TTextureDesc& Desc)
-		: FRenderResource(InFamily)
+	FTexture::FTexture(const TTextureDesc& Desc)
+		: FRenderResourceInHeap(EHT_TEXTURE)
 	{
 		TextureDesc = Desc;
 	}

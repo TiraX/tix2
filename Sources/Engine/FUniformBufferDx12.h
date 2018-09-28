@@ -12,7 +12,7 @@ namespace tix
 	class FUniformBufferDx12 : public FUniformBuffer
 	{
 	public:
-		FUniformBufferDx12(uint32 UBFlag);
+		FUniformBufferDx12(E_RENDER_RESOURCE_HEAP_TYPE InHeap);
 		virtual ~FUniformBufferDx12();
 
 		virtual void Destroy() override;
@@ -20,7 +20,6 @@ namespace tix
 
 	private:
 		ComPtr<ID3D12Resource> ConstantBuffer;
-		uint32 CbvDescriptor;
 		friend class FRHIDx12;
 	};
 }

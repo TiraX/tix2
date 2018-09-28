@@ -74,4 +74,14 @@ namespace tix
 		else
 			return RenderTargets.back();
 	}
+
+	uint32 FRHI::AllocateHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap)
+	{
+		return RenderResourceHeap[Heap].AllocateSlot();
+	}
+
+	void FRHI::RecallHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex)
+	{
+		RenderResourceHeap[Heap].RecallSlot(SlotIndex);
+	}
 }
