@@ -17,8 +17,10 @@ namespace tix
 	FRenderResourceInHeap::~FRenderResourceInHeap()
 	{
 		TI_ASSERT(IsRenderThread());
-		TI_ASSERT(HeapSlot != uint32(-1));
-		FRHI::Get()->RecallHeapSlot(HeapType, HeapSlot);
+		if (HeapSlot != uint32(-1))
+		{
+			FRHI::Get()->RecallHeapSlot(HeapType, HeapSlot);
+		}
 	}
 
 	void FRenderResourceInHeap::InitRenderResourceHeapSlot()
