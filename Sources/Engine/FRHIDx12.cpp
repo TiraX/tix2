@@ -329,13 +329,17 @@ namespace tix
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
 
-			RootSignature.Reset(3, 1);
+			RootSignature.Reset(4, 1);
 			RootSignature.InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
 			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 			//RootSignature.GetParameter(1).InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
-			RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
+			//RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+			//RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
+			RootSignature.GetParameter(1).InitAsConstantBuffer(14, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 15, 64, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(3).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
+
 			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
 		}
 
@@ -1237,10 +1241,29 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
+		//D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(InUniformBuffer);
+		//CommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
+		CommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->ConstantBuffer->GetGPUVirtualAddress());
+
+		HoldResourceReference(InUniformBuffer);
+	}
+
+	void FRHIDx12::SetUniformBufferTable(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	{
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
+
+		// Bind the current frame's constant buffer to the pipeline.
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(InUniformBuffer);
 		CommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
 		HoldResourceReference(InUniformBuffer);
+	}
+
+	void FRHIDx12::SetDynamicLightsUniformBuffer()
+	{
+		// Bind dynamic lights descriptor table
+		D3D12_GPU_DESCRIPTOR_HANDLE LightDescriptor = GetGpuDescriptorHandle(EHT_UNIFORMBUFFER_LIGHT, 0);
+		CommandList->SetGraphicsRootDescriptorTable(2, LightDescriptor);
 	}
 
 	void FRHIDx12::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)

@@ -13,7 +13,8 @@
 
 #define SkinBase_RootSig \
     "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-    "DescriptorTable(CBV(b0, numDescriptors = 1), visibility = SHADER_VISIBILITY_VERTEX), " \
-    "DescriptorTable(CBV(b1, numDescriptors = 1), visibility = SHADER_VISIBILITY_PIXEL), " \
+	"CBV(b0, visibility=SHADER_VISIBILITY_VERTEX), " \
+	"CBV(b14, visibility=SHADER_VISIBILITY_PIXEL), " \
+    "DescriptorTable(CBV(b15, numDescriptors = 64), visibility = SHADER_VISIBILITY_PIXEL), " \
     "DescriptorTable(SRV(t0, numDescriptors = 5), visibility = SHADER_VISIBILITY_PIXEL)," \
     "StaticSampler(s0, visibility = SHADER_VISIBILITY_PIXEL)," 

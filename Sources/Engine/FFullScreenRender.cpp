@@ -87,7 +87,7 @@ namespace tix
 		TI_ASSERT(bInited);
 		RHI->SetMeshBuffer(FullScreenQuad);
 		RHI->SetPipeline(FullScreenPipeline);
-		RHI->SetShaderTexture(2, Texture);
+		RHI->SetShaderTexture(3, Texture);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}

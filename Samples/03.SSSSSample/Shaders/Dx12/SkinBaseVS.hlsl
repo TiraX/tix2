@@ -1,6 +1,6 @@
 #include "SkinBaseRS.hlsli"
 
-cbuffer VSConstants : register(b0)
+cbuffer ViewBuffer : register(b0)
 {
 	float4x4 ViewProjection;
 	float3 ViewDir;

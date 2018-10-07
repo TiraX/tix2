@@ -17,16 +17,19 @@ TextureCube<float4> texIrrMap : register(t4);
 
 #define N_LIGHTS 3
 
+
+cbuffer LightBinding : register(b14)
+{
+	int4 LightCount;
+	int4 LightIndex;
+};
+
 struct PointLight
 {
 	float3 Position;
 	float3 Color;
 };
-
-cbuffer S4PSContants : register(b1)
-{
-	PointLight Lights[N_LIGHTS];
-}
+ConstantBuffer<PointLight> LightsBuffer[64] : register(b15);
 
 SamplerState sampler0 : register(s0);
 
@@ -58,9 +61,10 @@ float4 main(VSOutput vsOutput) : SV_Target0
 
 	//*
 	[unroll]
-	for (int i = 0; i < N_LIGHTS; i++) 
+	for (int i = 0; i < LightCount.x; i++)
 	{
-		color.xyz += Lights[i].Color;
+		int Index = LightIndex[i];
+		color.xyz += LightsBuffer[Index].Color;
 //		float3 light = lights[i].position - input.worldPosition;
 //		float dist = length(light);
 //		light /= dist;

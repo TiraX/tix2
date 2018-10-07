@@ -45,7 +45,10 @@ namespace tix
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+		virtual void SetUniformBufferTable(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
+
+		virtual void SetDynamicLightsUniformBuffer() override;
 
 		virtual void DrawPrimitiveIndexedInstanced(
 			uint32 IndexCountPerInstance,

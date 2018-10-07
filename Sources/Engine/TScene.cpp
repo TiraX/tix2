@@ -126,6 +126,7 @@ namespace tix
 
 			// clear lights dirty flag after bind
 			SetSceneFlag(SF_LIGHTS_DIRTY, false);
+			TI_TODO("It will crashed when close after delete SetSceneFlag");
 		}
 	}
 }

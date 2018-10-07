@@ -51,12 +51,24 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 
 			{
+				//D3D12 ERROR : ID3D12CommandQueue::ExecuteCommandLists : 
+				//Specified GPU Descriptor Handle(ptr = 0x264d1eae200 at 45 offsetInDescriptorsFromDescriptorHeapStart), 
+				//for Root Signature(0x00000264D205CAC0:'RootSignature')'s Descriptor Table (at Parameter Index [2])'s 
+				//Descriptor Range(at Range Index[0] of type D3D12_DESCRIPTOR_RANGE_TYPE_SRV) has not been initialized,
+				//at Draw Index : [1].On Resource Binding Tier 1 hardware, 
+				//all descriptor tables declared in the set Root Signature must be populated and initialized, 
+				//even if the shaders do not need the descriptor.[EXECUTION ERROR #646: INVALID_DESCRIPTOR_HANDLE]
+			}
+
+			{
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
 				RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
+				RHI->SetUniformBuffer(1, Primitive->LightBindingUniformBuffer->UniformBuffer);
 
+				RHI->SetDynamicLightsUniformBuffer();
 				if (Tex != nullptr)
-					RHI->SetShaderTexture(2, Tex);
+					RHI->SetShaderTexture(3, Tex);
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}
