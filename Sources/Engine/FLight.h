@@ -8,8 +8,8 @@
 namespace tix
 {
 	BEGIN_UNIFORM_BUFFER_STRUCT(FDynamicLightUniformBuffer, EHT_UNIFORMBUFFER_LIGHT)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FVector4, LightPosition)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FVector4, LightColor)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, LightPosition)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, LightColor)
 	END_UNIFORM_BUFFER_STRUCT(FDynamicLightUniformBuffer)
 
 	class FLight : public IReferenceCounted

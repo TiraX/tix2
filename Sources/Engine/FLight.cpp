@@ -15,6 +15,7 @@ namespace tix
 
 	FLight::~FLight()
 	{
+		TI_TODO("Figure out a better way to destroy render resource, call destructor in render thread ?.");
 		// Remove Light uniform buffer resource 
 		if (DynamicLightBuffer != nullptr)
 		{

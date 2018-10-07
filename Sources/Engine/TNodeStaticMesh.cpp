@@ -61,6 +61,17 @@ namespace tix
 		TEngine::Get()->GetScene()->AddToActiveList(ESLT_STATIC_SOLID, this);
 	}
 
+	static void BindLightResource_RenderThread(FLightBindingUniformBufferPtr Binding, const TVector<FLightPtr>& BindedLightResources)
+	{
+		TI_ASSERT(BindedLightResources.size() <= 4);
+		for (int32 l = 0; l < (int32)BindedLightResources.size(); ++l)
+		{
+			FLightPtr LightResource = BindedLightResources[l];
+			Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
+		}
+		Binding->InitUniformBuffer();
+	}
+
 	void TNodeStaticMesh::BindLights(TVector<TNode *>& Lights, bool ForceRebind)
 	{
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED) || ForceRebind)
@@ -79,6 +90,33 @@ namespace tix
 			}
 
 			// create lightinfo uniform buffers
+			if (BindedLights.size() > 0)
+			{
+				TI_ASSERT(BindedLights.size() <= 4);
+				FLightBindingUniformBufferPtr Binding = ti_new FLightBindingUniformBuffer;
+				Binding->UniformBufferData.LightsNum.X = (int32)BindedLights.size();
+
+				TVector<FLightPtr> BindedLightResources;
+				for (int32 l = 0 ; l < (int32)BindedLights.size(); ++ l)
+				{
+					TNodeLight * Light = BindedLights[l];
+					BindedLightResources.push_back(Light->LightResource);
+					//Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
+				}
+
+				// init uniform buffer resource in render thread
+				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
+					FLightBindingUniformBufferPtr, Binding, Binding,
+					TVector<FLightPtr>, BindedLightResources, BindedLightResources,
+					{
+						BindLightResource_RenderThread(Binding, BindedLightResources);
+					});
+				LinkedPrimitive->LightBindingUniformBuffer = Binding;
+			}
+			else
+			{
+				LinkedPrimitive->LightBindingUniformBuffer = nullptr;
+			}
 		}
 	}
 }

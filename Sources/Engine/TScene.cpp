@@ -123,6 +123,9 @@ namespace tix
 			{
 				DynamicMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
 			}
+
+			// clear lights dirty flag after bind
+			SetSceneFlag(SF_LIGHTS_DIRTY, false);
 		}
 	}
 }

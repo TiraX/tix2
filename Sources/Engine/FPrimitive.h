@@ -7,6 +7,11 @@
 
 namespace tix
 {
+	BEGIN_UNIFORM_BUFFER_STRUCT(FLightBindingUniformBuffer, EHT_UNIFORMBUFFER)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightsNum)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightIndices)
+	END_UNIFORM_BUFFER_STRUCT(FLightBindingUniformBuffer)
+
 	class FPrimitive : public IReferenceCounted
 	{
 	public:
@@ -21,6 +26,7 @@ namespace tix
 		TVector<FUniformBufferPtr> Uniforms;
 		// Temp solution, re-factor in future
 		TVector<FTexturePtr> Textures;
+		FLightBindingUniformBufferPtr LightBindingUniformBuffer;
 		aabbox3df BBox;
 	};
 } // end namespace tix
