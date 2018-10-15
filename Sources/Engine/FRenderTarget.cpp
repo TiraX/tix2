@@ -97,13 +97,13 @@ namespace tix
 			if (ColorBuffer.BufferType == ERTAT_TEXTURE)
 			{
 				TI_ASSERT(ColorBuffer.Texture != nullptr);
-				RHI->UpdateHardwareResource(ColorBuffer.Texture, nullptr);
+				RHI->UpdateHardwareResource(ColorBuffer.Texture);
 			}
 		}
 
 		if (RTDepthStencilBuffer.Texture != nullptr)
 		{
-			RHI->UpdateHardwareResource(RTDepthStencilBuffer.Texture, nullptr);
+			RHI->UpdateHardwareResource(RTDepthStencilBuffer.Texture);
 		}
 
 		RHI->UpdateHardwareResource(this);

@@ -8,8 +8,9 @@
 
 namespace tix
 {
-	FUniformBuffer::FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType)
+	FUniformBuffer::FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 InStructSize)
 		: FRenderResourceInHeap(HeapType)
+		, StructSize(InStructSize)
 	{
 	}
 

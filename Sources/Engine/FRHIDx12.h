@@ -31,16 +31,20 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
-		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap) override;
+		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 InStructSize) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
+		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) override;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
+
+		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
+		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
@@ -126,10 +130,10 @@ namespace tix
 		
 		// Back buffers and Depth Stencil buffers
 		ComPtr<ID3D12Resource> BackBufferRTs[FRHIConfig::FrameBufferNum];
-		uint32 BackBufferDescriptorIndex[FRHIConfig::FrameBufferNum];
+		FRenderResourceTable BackBufferDescriptorTable;
 		D3D12_CPU_DESCRIPTOR_HANDLE BackBufferDescriptors[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12Resource> DepthStencil;
-		uint32 DepthStencilDescriptorIndex;
+		FRenderResourceTable DepthStencilDescriptorTable;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
 
 		// Commands

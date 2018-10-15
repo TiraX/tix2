@@ -11,10 +11,14 @@ namespace tix
 	FScene::FScene()
 		: SceneFlags(0)
 	{
+		// Init default empty light buffer
+		EmptyDynamicLightBuffer = ti_new FDynamicLightUniformBuffer();
+		EmptyDynamicLightBuffer->InitUniformBuffer();
 	}
 
 	FScene::~FScene()
 	{
+		EmptyDynamicLightBuffer = nullptr;
 	}
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)

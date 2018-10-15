@@ -33,6 +33,7 @@
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResourceHeap.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRenderResourceTable.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderTargetDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
@@ -96,6 +97,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResourceHeap.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRenderResourceTable.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderTarget.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderTargetDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />

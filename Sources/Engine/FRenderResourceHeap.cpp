@@ -35,22 +35,25 @@ namespace tix
 		Offset = HeapOffset;
 	}
 
-	uint32 FRenderResourceHeap::AllocateSlot()
+	FRenderResourceTable FRenderResourceHeap::AllocateTable(uint32 TableSize)
 	{
-		if (AvaibleHeapSlots.size() > 0)
+		TVector<uint32>& Avaibles = AvaibleHeapTables[TableSize];
+
+		if (Avaibles.size() > 0)
 		{
-			uint32 SlotIndex = AvaibleHeapSlots.back();
-			AvaibleHeapSlots.pop_back();
-			return SlotIndex;
+			uint32 StartIndex = Avaibles.back();
+			Avaibles.pop_back();
+			return FRenderResourceTable(this, StartIndex, TableSize);
 		}
 		uint32 Result = Allocated + Offset;
-		++Allocated;
+		Allocated += TableSize;
 		TI_ASSERT(Allocated < Size);
-		return Result;
+		return FRenderResourceTable(this, Result, TableSize);
 	}
 
 	void FRenderResourceHeap::RecallSlot(uint32 HeapSlot)
 	{
-		AvaibleHeapSlots.push_back(HeapSlot);
+		TI_ASSERT(0);
+		//AvaibleHeapSlots.push_back(HeapSlot);
 	}
 }

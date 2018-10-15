@@ -196,6 +196,9 @@
     <ClCompile Include="..\..\Sources\Engine\FRenderResource.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FRenderResourceTable.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -490,6 +493,9 @@
       <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRenderResourceHeap.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FRenderResourceTable.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

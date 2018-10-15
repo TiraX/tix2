@@ -264,10 +264,10 @@ namespace tix
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 
+			BackBufferDescriptorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(FRHIConfig::FrameBufferNum);
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
-				BackBufferDescriptorIndex[n] = RenderResourceHeap[EHT_RENDERTARGET].AllocateSlot();
-				BackBufferDescriptors[n] = GetCpuDescriptorHandle(EHT_RENDERTARGET, BackBufferDescriptorIndex[n]);
+				BackBufferDescriptors[n] = GetCpuDescriptorHandle(EHT_RENDERTARGET, BackBufferDescriptorTable.GetIndexAt(n));
 				VALIDATE_HRESULT(SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n])));
 				D3dDevice->CreateRenderTargetView(BackBufferRTs[n].Get(), nullptr, BackBufferDescriptors[n]);
 
@@ -305,8 +305,8 @@ namespace tix
 			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-			DepthStencilDescriptorIndex = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateSlot();
-			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorIndex);
+			DepthStencilDescriptorTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
+			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorTable.GetStartIndex());
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
 
@@ -419,9 +419,9 @@ namespace tix
 		return ti_new FTextureDx12(Desc);
 	}
 
-	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap)
+	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 InStructSize)
 	{
-		return ti_new FUniformBufferDx12(Heap);
+		return ti_new FUniformBufferDx12(Heap, InStructSize);
 	}
 
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
@@ -873,8 +873,7 @@ namespace tix
 			return DXGI_FORMAT_UNKNOWN;
 		}
 	}
-
-	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
+	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture)
 	{
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
@@ -883,157 +882,165 @@ namespace tix
 
 		Texture->InitRenderResourceHeapSlot();
 
-		if (InTexData != nullptr && InTexData->GetSurfaces().size() > 0)
+		// do not have texture data, Create a empty texture (used for render target usually).
+		D3D12_CLEAR_VALUE ClearValue = {};
+		D3D12_RESOURCE_DESC TextureDx12Desc = {};
+		TextureDx12Desc.Alignment = 0;
+		TextureDx12Desc.DepthOrArraySize = 1;
+		TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
 		{
-			// Create texture resource and fill with texture data.
+			TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			ClearValue.Color[0] = 0.0;
+			ClearValue.Color[1] = 0.0;
+			ClearValue.Color[2] = 0.0;
+			ClearValue.Color[3] = 0.0;
+		}
+		if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
+		{
+			TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			ClearValue.DepthStencil.Depth = 1.f;
+			ClearValue.DepthStencil.Stencil = 0;
+		}
+		TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
+		TextureDx12Desc.Width = Desc.Width;
+		TextureDx12Desc.Height = Desc.Height;
+		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		TextureDx12Desc.MipLevels = Desc.Mips;
+		TextureDx12Desc.SampleDesc.Count = 1;
+		TextureDx12Desc.SampleDesc.Quality = 0;
+
+		ClearValue.Format = DxgiFormat;
+
+		TexDx12->TextureResource.CreateResource(
+			D3dDevice.Get(),
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&TextureDx12Desc,
+			D3D12_RESOURCE_STATE_COMMON,
+			&ClearValue
+		);
+		DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
+
+		// Describe and create a SRV for the texture.
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+
+		SRVDesc.Format = DxgiFormat;
+		if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
+		{
+			SRVDesc.Format = GetDepthFormat(DxgiFormat);
+		}
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		SRVDesc.Texture2D.MipLevels = Desc.Mips;
+		SRVDesc.Texture2D.MostDetailedMip = 0;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = GetCpuDescriptorHandle(Texture);
+		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, SrvDescriptor);
+
+		HoldResourceReference(Texture);
+
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
+	{
+		TI_ASSERT(InTexData != nullptr);
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+		const TTextureDesc& Desc = TexDx12->GetDesc();
+		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
+
+		Texture->InitRenderResourceHeapSlot();
+
+		// Create texture resource and fill with texture data.
 #if defined (TIX_DEBUG)
-			Texture->SetResourceName(InTexData->GetResourceName());
+		Texture->SetResourceName(InTexData->GetResourceName());
 #endif
 
-			// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
-			// the command list that references it has finished executing on the GPU.
-			// We will flush the GPU at the end of this method to ensure the resource is not
-			// prematurely destroyed.
-			ComPtr<ID3D12Resource> TextureUploadHeap;
-			const int32 ArraySize = IsCubeMap ? 6 : 1;
+		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
+		// the command list that references it has finished executing on the GPU.
+		// We will flush the GPU at the end of this method to ensure the resource is not
+		// prematurely destroyed.
+		ComPtr<ID3D12Resource> TextureUploadHeap;
+		const int32 ArraySize = IsCubeMap ? 6 : 1;
 
-			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-			// Describe and create a Texture2D.
-			D3D12_RESOURCE_DESC TextureDx12Desc = {};
-			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			TextureDx12Desc.Alignment = 0;
-			TextureDx12Desc.Width = Desc.Width;
-			TextureDx12Desc.Height = Desc.Height;
-			TextureDx12Desc.DepthOrArraySize = ArraySize;
-			TextureDx12Desc.MipLevels = Desc.Mips;
-			TextureDx12Desc.Format = DxgiFormat;
-			TextureDx12Desc.SampleDesc.Count = 1;
-			TextureDx12Desc.SampleDesc.Quality = 0;
-			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+		// Describe and create a Texture2D.
+		D3D12_RESOURCE_DESC TextureDx12Desc = {};
+		TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		TextureDx12Desc.Alignment = 0;
+		TextureDx12Desc.Width = Desc.Width;
+		TextureDx12Desc.Height = Desc.Height;
+		TextureDx12Desc.DepthOrArraySize = ArraySize;
+		TextureDx12Desc.MipLevels = Desc.Mips;
+		TextureDx12Desc.Format = DxgiFormat;
+		TextureDx12Desc.SampleDesc.Count = 1;
+		TextureDx12Desc.SampleDesc.Quality = 0;
+		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-			TexDx12->TextureResource.CreateResource(
-				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&TextureDx12Desc,
-				D3D12_RESOURCE_STATE_COPY_DEST);
+		TexDx12->TextureResource.CreateResource(
+			D3dDevice.Get(),
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&TextureDx12Desc,
+			D3D12_RESOURCE_STATE_COPY_DEST);
 
-			const int32 SubResourceNum = ArraySize * Desc.Mips;
-			const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, SubResourceNum);
+		const int32 SubResourceNum = ArraySize * Desc.Mips;
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, SubResourceNum);
 
-			// Create the GPU upload buffer.
-			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-				D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
-				D3D12_RESOURCE_STATE_GENERIC_READ,
-				nullptr,
-				IID_PPV_ARGS(&TextureUploadHeap)));
+		// Create the GPU upload buffer.
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&TextureUploadHeap)));
 
-			// Copy data to the intermediate upload heap and then schedule a copy 
-			// from the upload heap to the Texture2D.
+		// Copy data to the intermediate upload heap and then schedule a copy 
+		// from the upload heap to the Texture2D.
 
-			D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[SubResourceNum];
-			const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
-			TI_ASSERT(SubResourceNum == TextureSurfaces.size());
-			for (int32 s = 0; s < SubResourceNum; ++s)
-			{
-				D3D12_SUBRESOURCE_DATA& texData = TextureDatas[s];
-				const TTexture::TSurface* Surface = TextureSurfaces[s];
-				texData.pData = Surface->Data;
-				texData.RowPitch = Surface->RowPitch;
-				texData.SlicePitch = Surface->DataSize;
-			}
-
-			UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
-			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
-
-			ti_delete[] TextureDatas;
-
-			// Describe and create a SRV for the texture.
-			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SRVDesc.Format = TextureDx12Desc.Format;
-			SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
-			if (IsCubeMap)
-			{
-				SRVDesc.TextureCube.MipLevels = TextureDx12Desc.MipLevels;
-			}
-			else
-			{
-				SRVDesc.Texture2D.MipLevels = TextureDx12Desc.MipLevels;
-			}
-			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(Texture);
-			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
-
-			FlushResourceBarriers(CommandList.Get());
-			// Hold resources used here
-			HoldResourceReference(Texture);
-			HoldResourceReference(TextureUploadHeap);
-		}
-		else
+		D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[SubResourceNum];
+		const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
+		TI_ASSERT(SubResourceNum == TextureSurfaces.size());
+		for (int32 s = 0; s < SubResourceNum; ++s)
 		{
-			// do not have texture data, Create a empty texture (used for render target usually).
-			D3D12_CLEAR_VALUE ClearValue = {};
-			D3D12_RESOURCE_DESC TextureDx12Desc = {};
-			TextureDx12Desc.Alignment = 0;
-			TextureDx12Desc.DepthOrArraySize = 1;
-			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-			if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
-			{
-				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-				ClearValue.Color[0] = 0.0;
-				ClearValue.Color[1] = 0.0;
-				ClearValue.Color[2] = 0.0;
-				ClearValue.Color[3] = 0.0;
-			}
-			if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
-			{
-				TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-				ClearValue.DepthStencil.Depth = 1.f;
-				ClearValue.DepthStencil.Stencil = 0;
-			}
-			TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
-			TextureDx12Desc.Width = Desc.Width;
-			TextureDx12Desc.Height = Desc.Height;
-			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-			TextureDx12Desc.MipLevels = Desc.Mips;
-			TextureDx12Desc.SampleDesc.Count = 1;
-			TextureDx12Desc.SampleDesc.Quality = 0;
-
-			ClearValue.Format = DxgiFormat;
-
-			TexDx12->TextureResource.CreateResource(
-				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&TextureDx12Desc,
-				D3D12_RESOURCE_STATE_COMMON,
-				&ClearValue
-			);
-			DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
-
-			// Describe and create a SRV for the texture.
-			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-
-			SRVDesc.Format = DxgiFormat;
-			if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
-			{
-				SRVDesc.Format = GetDepthFormat(DxgiFormat);
-			}
-			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SRVDesc.Texture2D.MipLevels = Desc.Mips;
-			SRVDesc.Texture2D.MostDetailedMip = 0;
-
-			D3D12_CPU_DESCRIPTOR_HANDLE SrvDescriptor = GetCpuDescriptorHandle(Texture);
-			D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, SrvDescriptor);
-			
-			HoldResourceReference(Texture);
+			D3D12_SUBRESOURCE_DATA& texData = TextureDatas[s];
+			const TTexture::TSurface* Surface = TextureSurfaces[s];
+			texData.pData = Surface->Data;
+			texData.RowPitch = Surface->RowPitch;
+			texData.SlicePitch = Surface->DataSize;
 		}
+
+		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
+		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
+
+		ti_delete[] TextureDatas;
+
+		// Describe and create a SRV for the texture.
+		//D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		//SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		//SRVDesc.Format = TextureDx12Desc.Format;
+		//SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
+		//if (IsCubeMap)
+		//{
+		//	SRVDesc.TextureCube.MipLevels = TextureDx12Desc.MipLevels;
+		//}
+		//else
+		//{
+		//	SRVDesc.Texture2D.MipLevels = TextureDx12Desc.MipLevels;
+		//}
+		//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(Texture);
+		//D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
+
+		FlushResourceBarriers(CommandList.Get());
+		// Hold resources used here
+		HoldResourceReference(Texture);
+		HoldResourceReference(TextureUploadHeap);
 
 		return true;
 	}
@@ -1117,12 +1124,13 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize)
+	static const int32 UniformBufferAlignSize = 256;
+	bool FRHIDx12::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
 		UniformBuffer->InitRenderResourceHeapSlot();
 
-		int32 AlignedDataSize = ti_align(InDataSize, 256);
+		const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
 		CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
 
 		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
@@ -1134,20 +1142,20 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&UniformBufferDx12->ConstantBuffer)));
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
-		cbvDesc.SizeInBytes = AlignedDataSize;
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBuffer);
-		D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
+		//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+		//cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
+		//cbvDesc.SizeInBytes = AlignedDataSize;
+		//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBuffer);
+		//D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
 
 		// Map the constant buffers.
 		uint8 * MappedConstantBuffer = nullptr;
 		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
 		VALIDATE_HRESULT(UniformBufferDx12->ConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
-		memcpy(MappedConstantBuffer, InData, InDataSize);
-		if (AlignedDataSize - InDataSize > 0)
+		memcpy(MappedConstantBuffer, InData, UniformBuffer->GetStructSize());
+		if (AlignedDataSize - UniformBuffer->GetStructSize() > 0)
 		{
-			memset(MappedConstantBuffer + InDataSize, 0, AlignedDataSize - InDataSize);
+			memset(MappedConstantBuffer + UniformBuffer->GetStructSize(), 0, AlignedDataSize - UniformBuffer->GetStructSize());
 		}
 		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
 		HoldResourceReference(UniformBuffer);
@@ -1214,6 +1222,43 @@ namespace tix
 			}
 		}
 		return true;
+	}
+
+	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
+
+		const int32 AlignedDataSize = ti_align(InUniformBuffer->GetStructSize(), UniformBufferAlignSize);
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
+		cbvDesc.SizeInBytes = AlignedDataSize;
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
+
+		const TTextureDesc& Desc = InTexture->GetDesc();
+		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
+		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DxgiFormat;
+		SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
+		if (IsCubeMap)
+		{
+			SRVDesc.TextureCube.MipLevels = Desc.Mips;
+		}
+		else
+		{
+			SRVDesc.Texture2D.MipLevels = Desc.Mips;
+		}
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)

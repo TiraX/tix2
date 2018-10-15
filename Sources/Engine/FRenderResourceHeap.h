@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "FRenderResourceTable.h"
 
 namespace tix
 {
@@ -17,18 +18,28 @@ namespace tix
 
 		void Create(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 HeapSize, uint32 HeapOffset);
 
-		uint32 AllocateSlot();
+		FRenderResourceTable AllocateTable(uint32 Size);
+
 		void RecallSlot(uint32 HeapSlot);
+
+		E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const
+		{
+			return HeapType;
+		}
 		int32 GetHeapSize() const
 		{
 			return Size;
 		}
 
 	private:
+
+	private:
 		E_RENDER_RESOURCE_HEAP_TYPE HeapType;
-		TVector<uint32> AvaibleHeapSlots;
+		THMap<uint32, TVector<uint32>> AvaibleHeapTables;
 		uint32 Allocated;
 		uint32 Size;
 		uint32 Offset;
+
+		friend class FRenderResourceTable;
 	};
 }

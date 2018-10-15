@@ -12,7 +12,7 @@ namespace tix
 	class FUniformBufferDx12 : public FUniformBuffer
 	{
 	public:
-		FUniformBufferDx12(E_RENDER_RESOURCE_HEAP_TYPE InHeap);
+		FUniformBufferDx12(E_RENDER_RESOURCE_HEAP_TYPE InHeap, uint32 InStructSize);
 		virtual ~FUniformBufferDx12();
 
 		virtual void Destroy() override;

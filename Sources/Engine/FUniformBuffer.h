@@ -45,8 +45,8 @@ namespace tix
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBHeap); \
-			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData, sizeof(StructTypeName::FUniformBufferStruct)); \
+			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBHeap, sizeof(StructTypeName::FUniformBufferStruct)); \
+			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData); \
 			return UniformBuffer; \
 		} \
 	}; \
@@ -57,11 +57,16 @@ namespace tix
 	class FUniformBuffer : public FRenderResourceInHeap
 	{
 	public:
-		FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType);
+		FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 InStructSize);
 		virtual ~FUniformBuffer();
 
+		uint32 GetStructSize() const
+		{
+			return StructSize;
+		}
 	protected:
 
 	protected:
+		uint32 StructSize;
 	};
 }

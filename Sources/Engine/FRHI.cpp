@@ -77,7 +77,9 @@ namespace tix
 
 	uint32 FRHI::AllocateHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap)
 	{
-		return RenderResourceHeap[Heap].AllocateSlot();
+		TI_ASSERT(0);
+		return 0;
+		//return RenderResourceHeap[Heap].AllocateSlot();
 	}
 
 	void FRHI::RecallHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex)

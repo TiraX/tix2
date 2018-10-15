@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "FRHIDescriptorHeapDx12.h"
 #include "FRHIDx12.h"
+#include "FRHIDx12Conversion.h"
 
 #if COMPILE_WITH_RHI_DX12
 
@@ -45,14 +46,6 @@ namespace tix
 	{
 	}
 
-	static const E_RENDER_RESOURCE_HEAP_TYPE DxHeapMap[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] = 
-	{
-		EHT_UNIFORMBUFFER,	//D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV = 0,
-		EHT_SAMPLER,		//D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER = (D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV + 1) ,
-		EHT_RENDERTARGET,	//D3D12_DESCRIPTOR_HEAP_TYPE_RTV = (D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1) ,
-		EHT_DEPTHSTENCIL,	//D3D12_DESCRIPTOR_HEAP_TYPE_DSV = (D3D12_DESCRIPTOR_HEAP_TYPE_RTV + 1) ,
-	};
-
 	void FDescriptorHeapDx12::Create(FRHIDx12* RHIDx12, D3D12_DESCRIPTOR_HEAP_TYPE InHeapType)
 	{
 		HeapType = InHeapType;
@@ -77,7 +70,7 @@ namespace tix
 		}
 		else
 		{
-			RHIDx12->InitRHIRenderResourceHeap(DxHeapMap[InHeapType], MaxDescriptorCount[InHeapType], 0);
+			RHIDx12->InitRHIRenderResourceHeap(GetTiXHeapTypeFromDxHeap(InHeapType), MaxDescriptorCount[InHeapType], 0);
 		}
 	}
 

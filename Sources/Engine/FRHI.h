@@ -34,16 +34,20 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
-		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap) = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 InStructSize) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
+		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData, int32 InDataSize) = 0;
+		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
+
+		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
+		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;

@@ -54,5 +54,7 @@ namespace tix
 		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;
+
+		FDynamicLightUniformBufferPtr EmptyDynamicLightBuffer;
 	};
 } // end namespace tix
