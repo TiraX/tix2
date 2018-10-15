@@ -37,6 +37,7 @@ namespace tix
 
 	FRenderResourceTable FRenderResourceHeap::AllocateTable(uint32 TableSize)
 	{
+		TI_ASSERT(IsRenderThread());
 		TVector<uint32>& Avaibles = AvaibleHeapTables[TableSize];
 
 		if (Avaibles.size() > 0)
@@ -51,9 +52,10 @@ namespace tix
 		return FRenderResourceTable(this, Result, TableSize);
 	}
 
-	void FRenderResourceHeap::RecallSlot(uint32 HeapSlot)
+	void FRenderResourceHeap::RecallTable(const FRenderResourceTable& Table)
 	{
-		TI_ASSERT(0);
-		//AvaibleHeapSlots.push_back(HeapSlot);
+		TI_ASSERT(IsRenderThread());
+		TVector<uint32>& Avaibles = AvaibleHeapTables[Table.GetTableSize()];
+		Avaibles.push_back(Table.GetStartIndex());
 	}
 }

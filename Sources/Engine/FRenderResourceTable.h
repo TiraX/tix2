@@ -28,6 +28,13 @@ namespace tix
 			TI_ASSERT(Index < Size);
 			return Start + Index;
 		}
+
+		uint32 GetTableSize() const
+		{
+			return Size;
+		}
+
+		E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const;
 	protected:
 		FRenderResourceHeap* Heap;
 		uint32 Start;

@@ -67,6 +67,9 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetUniformBuffer(1, Primitive->LightBindingUniformBuffer->UniformBuffer);
 
 				RHI->SetDynamicLightsUniformBuffer();
+
+				TI_ASSERT(0);
+				TI_TODO("Set a texture render resource table here.");
 				if (Tex != nullptr)
 					RHI->SetShaderTexture(3, Tex);
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);

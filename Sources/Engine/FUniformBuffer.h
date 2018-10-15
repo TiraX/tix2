@@ -28,11 +28,10 @@ namespace tix
 #define DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY_EX(MemberType,MemberName,ArrayDecl,Precision) DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_EXPLICIT(MemberType,MemberName,ArrayDecl,Precision)
 
 	/** Begins a uniform buffer struct declaration. */
-#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix,UniformHeapType) \
+#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix) \
 	class StructTypeName : public IReferenceCounted \
 	{ \
 	public: \
-		static const E_RENDER_RESOURCE_HEAP_TYPE UBHeap = UniformHeapType; \
 		StructTypeName () ConstructorSuffix \
 		struct FUniformBufferStruct \
 		{ \
@@ -45,19 +44,19 @@ namespace tix
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(StructTypeName::UBHeap, sizeof(StructTypeName::FUniformBufferStruct)); \
+			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct)); \
 			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData); \
 			return UniformBuffer; \
 		} \
 	}; \
 	typedef TI_INTRUSIVE_PTR(StructTypeName) StructTypeName##Ptr;
 
-#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName,UniformHeapType) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{},UniformHeapType)
+#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{})
 
-	class FUniformBuffer : public FRenderResourceInHeap
+	class FUniformBuffer : public FRenderResource
 	{
 	public:
-		FUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 InStructSize);
+		FUniformBuffer(uint32 InStructSize);
 		virtual ~FUniformBuffer();
 
 		uint32 GetStructSize() const

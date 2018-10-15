@@ -34,7 +34,7 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
-		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 InStructSize) = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
@@ -52,7 +52,7 @@ namespace tix
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
-		virtual void SetUniformBufferTable(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
+		virtual void SetRenderResourceTable(int32 BindIndex, const FRenderResourceTable& RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 
 		virtual void SetDynamicLightsUniformBuffer() = 0;
@@ -67,9 +67,6 @@ namespace tix
 		virtual void SetViewport(const FViewport& InViewport);
 		virtual void PushRenderTarget(FRenderTargetPtr RT);
 		virtual FRenderTargetPtr PopRenderTarget();
-
-		virtual uint32 AllocateHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap);
-		virtual void RecallHeapSlot(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
 
 		E_RHI_TYPE GetRHIType() const
 		{

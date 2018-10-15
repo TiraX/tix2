@@ -46,7 +46,7 @@ namespace tix
 
 		RTBuffer Buffer;
 		Buffer.Texture = Texture;
-		Buffer.RTResource = ti_new FRenderTargetResource(EHT_RENDERTARGET);
+		//Buffer.RTResource = ti_new FRenderTargetResource(EHT_RENDERTARGET);
 		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);
 		Buffer.BufferIndex = ColorBufferIndex;
 		Buffer.BufferType = ERTAT_TEXTURE;
@@ -78,7 +78,7 @@ namespace tix
 #endif
 
 		RTDepthStencilBuffer.Texture = Texture;
-		RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
+		//RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
 		RTDepthStencilBuffer.BufferType = ERTAT_TEXTURE;
 	}
 

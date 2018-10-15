@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FUniformBufferDx12::FUniformBufferDx12(E_RENDER_RESOURCE_HEAP_TYPE InHeap, uint32 InStructSize)
-		: FUniformBuffer(InHeap, InStructSize)
+	FUniformBufferDx12::FUniformBufferDx12(uint32 InStructSize)
+		: FUniformBuffer(InStructSize)
 	{
 	}
 

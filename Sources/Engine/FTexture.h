@@ -7,7 +7,7 @@
 
 namespace tix
 {
-	class FTexture : public FRenderResourceInHeap
+	class FTexture : public FRenderResource
 	{
 	public:
 		FTexture();

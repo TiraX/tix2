@@ -64,10 +64,12 @@ namespace tix
 	static void BindLightResource_RenderThread(FLightBindingUniformBufferPtr Binding, const TVector<FLightPtr>& BindedLightResources)
 	{
 		TI_ASSERT(BindedLightResources.size() <= 4);
+		TI_ASSERT(0);
+		TI_TODO("First !!!!!! Implement dynamic light binding resource creation.");
 		for (int32 l = 0; l < (int32)BindedLightResources.size(); ++l)
 		{
-			FLightPtr LightResource = BindedLightResources[l];
-			Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
+//			FLightPtr LightResource = BindedLightResources[l];
+//			Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
 		}
 		Binding->InitUniformBuffer();
 	}

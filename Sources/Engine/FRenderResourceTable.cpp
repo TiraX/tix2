@@ -24,8 +24,7 @@ namespace tix
 
 	FRenderResourceTable::~FRenderResourceTable()
 	{
-		// return resource table to heap.
-		TI_ASSERT(0);
+		Heap->RecallTable(*this);
 	}
 
 	void FRenderResourceTable::PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index)
@@ -38,5 +37,10 @@ namespace tix
 	{
 		TI_ASSERT(Index < Size);
 		FRHI::Get()->PutTextureInHeap(InTexture, Heap->GetHeapType(), Start + Index);
+	}
+
+	E_RENDER_RESOURCE_HEAP_TYPE FRenderResourceTable::GetHeapType() const
+	{
+		return Heap->GetHeapType();
 	}
 }

@@ -31,7 +31,7 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
-		virtual FUniformBufferPtr CreateUniformBuffer(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 InStructSize) override;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
@@ -49,7 +49,7 @@ namespace tix
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
-		virtual void SetUniformBufferTable(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+		virtual void SetRenderResourceTable(int32 BindIndex, const FRenderResourceTable& RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 
 		virtual void SetDynamicLightsUniformBuffer() override;
@@ -119,9 +119,7 @@ namespace tix
 		void SetRenderTarget(FRenderTargetPtr RT);
 
 		void InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset);
-		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(FRenderResourceInHeapPtr Resource);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
-		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(FRenderResourceInHeapPtr Resource);
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
 	private:
 		ComPtr<ID3D12Device> D3dDevice;

@@ -20,7 +20,7 @@ namespace tix
 
 		FRenderResourceTable AllocateTable(uint32 Size);
 
-		void RecallSlot(uint32 HeapSlot);
+		void RecallTable(const FRenderResourceTable& Table);
 
 		E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const
 		{
