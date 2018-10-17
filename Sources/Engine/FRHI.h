@@ -73,6 +73,12 @@ namespace tix
 			return RHIType;
 		}
 
+		FRenderResourceHeap& GetRenderResourceHeap(int32 Index)
+		{
+			TI_ASSERT(Index >= 0 && Index < EHT_COUNT);
+			return RenderResourceHeap[Index];
+		}
+
 	protected:
 		static FRHI* RHI;
 		FRHI(E_RHI_TYPE InRHIType);

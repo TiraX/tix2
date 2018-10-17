@@ -5,20 +5,19 @@
 
 #include "stdafx.h"
 #include "FScene.h"
+#include "FSceneLights.h"
 
 namespace tix
 {
 	FScene::FScene()
 		: SceneFlags(0)
 	{
-		// Init default empty light buffer
-		EmptyDynamicLightBuffer = ti_new FDynamicLightUniformBuffer();
-		EmptyDynamicLightBuffer->InitUniformBuffer();
+		SceneLights = ti_new FSceneLights;
 	}
 
 	FScene::~FScene()
 	{
-		EmptyDynamicLightBuffer = nullptr;
+		SAFE_DELETE(SceneLights);
 	}
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)

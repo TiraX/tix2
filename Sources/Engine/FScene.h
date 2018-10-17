@@ -7,6 +7,7 @@
 
 namespace tix
 {
+	class FSceneLights;
 	class FScene
 	{
 	public:
@@ -39,6 +40,11 @@ namespace tix
 			}
 		}
 
+		FSceneLights * GetSceneLights()
+		{
+			return SceneLights;
+		}
+
 		const FViewProjectionInfo& GetViewProjection() const
 		{
 			return ViewProjection;
@@ -49,12 +55,12 @@ namespace tix
 			return StaticDrawList;
 		}
 	protected:
+		FSceneLights * SceneLights;
+
 		TVector<FPrimitivePtr> StaticDrawList;
 
 		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;
-
-		FDynamicLightUniformBufferPtr EmptyDynamicLightBuffer;
 	};
 } // end namespace tix

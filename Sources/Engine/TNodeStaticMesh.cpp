@@ -64,12 +64,10 @@ namespace tix
 	static void BindLightResource_RenderThread(FLightBindingUniformBufferPtr Binding, const TVector<FLightPtr>& BindedLightResources)
 	{
 		TI_ASSERT(BindedLightResources.size() <= 4);
-		TI_ASSERT(0);
-		TI_TODO("First !!!!!! Implement dynamic light binding resource creation.");
 		for (int32 l = 0; l < (int32)BindedLightResources.size(); ++l)
 		{
-//			FLightPtr LightResource = BindedLightResources[l];
-//			Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
+			FLightPtr LightResource = BindedLightResources[l];
+			Binding->UniformBufferData.LightIndices[l] = LightResource->GetLightIndex();
 		}
 		Binding->InitUniformBuffer();
 	}
@@ -80,7 +78,7 @@ namespace tix
 		{
 			BindedLights.clear();
 
-			// find out lights affect this mesh
+			// Find out lights affect this mesh
 			for (auto Light : Lights)
 			{
 				TI_ASSERT(Light->GetType() == ENT_Light);
@@ -91,7 +89,7 @@ namespace tix
 				}
 			}
 
-			// create lightinfo uniform buffers
+			// Create lights info uniform buffers
 			if (BindedLights.size() > 0)
 			{
 				TI_ASSERT(BindedLights.size() <= 4);
@@ -103,10 +101,9 @@ namespace tix
 				{
 					TNodeLight * Light = BindedLights[l];
 					BindedLightResources.push_back(Light->LightResource);
-					//Binding->UniformBufferData.LightIndices[l] = LightResource->DynamicLightBuffer->UniformBuffer->GetRenderResourceSlot();
 				}
 
-				// init uniform buffer resource in render thread
+				// Init uniform buffer resource in render thread
 				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
 					FLightBindingUniformBufferPtr, Binding, Binding,
 					TVector<FLightPtr>, BindedLightResources, BindedLightResources,

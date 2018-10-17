@@ -5,10 +5,12 @@
 
 #include "stdafx.h"
 #include "FLight.h"
+#include "FSceneLights.h"
 
 namespace tix
 {
 	FLight::FLight(TNodeLight * Light)
+		: LightIndex(uint32(-1))
 	{
 		InitFromLightNode(Light);
 	}
@@ -39,24 +41,19 @@ namespace tix
 		SColorf LColor(Light->GetColor());
 		LColor *= Light->GetIntensity();
 		DynamicLightBuffer->UniformBufferData.LightColor = LColor;
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(InitLightUniformBuffer,
-			FDynamicLightUniformBufferPtr, DynamicLightBuffer, DynamicLightBuffer,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddLightToFScene,
+			FLightPtr, InLight, this,
 			{
-				DynamicLightBuffer->InitUniformBuffer();
+				InLight->InitRenderResource_RenderThread();
 			});
+	}
 
-
-		//if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
-		//{
-		//	const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
-		//	ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
-		//	ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
-		//	ViewUniformBuffer->UniformBufferData.ViewPos = VPInfo.CamPos;
-
-		//	ViewUniformBuffer->InitUniformBuffer();
-
-		//	// remove vp dirty flag
-		//	Scene->SetSceneFlag(FScene::ViewProjectionDirty, false);
-		//}
+	void FLight::InitRenderResource_RenderThread()
+	{
+		TI_ASSERT(IsRenderThread());
+		DynamicLightBuffer->InitUniformBuffer();
+		TI_ASSERT(LightIndex == uint32(-1));
+		uint32 Index = FRenderThread::Get()->GetRenderScene()->GetSceneLights()->AddLightUniformBuffer(DynamicLightBuffer->UniformBuffer);
+		SetLightIndex(Index);
 	}
 }

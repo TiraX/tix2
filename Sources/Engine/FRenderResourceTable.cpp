@@ -24,6 +24,7 @@ namespace tix
 
 	FRenderResourceTable::~FRenderResourceTable()
 	{
+		TI_TODO("Do not retain Heap pointer, but hold a heap type, then get heap from RHI");
 		Heap->RecallTable(*this);
 	}
 

@@ -1162,6 +1162,8 @@ namespace tix
 	{
 		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 
+		TI_TODO("First here.!!!!!!!");
+		TI_ASSERT(0);
 		// Create Render target view
 		// Color buffers
 		int32 ColorBufferCount = 0;

@@ -19,8 +19,20 @@ namespace tix
 		~FLight();
 
 		FDynamicLightUniformBufferPtr DynamicLightBuffer;
+		void SetLightIndex(uint32 Index)
+		{
+			LightIndex = Index;
+		}
+		uint32 GetLightIndex() const
+		{
+			return LightIndex;
+		}
 	protected:
 		void InitFromLightNode(TNodeLight * Light);
+		void InitRenderResource_RenderThread();
+
+	protected:
+		uint32 LightIndex;	// The index light allocated in FSceneLights
 	};
 } // end namespace tix
 

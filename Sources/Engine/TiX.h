@@ -64,6 +64,7 @@ using namespace std;
 
 // RHI things
 #include "FRenderResource.h"
+#include "FRenderResourceTable.h"
 #include "FMeshBuffer.h"
 #include "FShader.h"
 #include "FTexture.h"

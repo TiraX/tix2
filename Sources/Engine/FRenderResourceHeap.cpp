@@ -48,7 +48,7 @@ namespace tix
 		}
 		uint32 Result = Allocated + Offset;
 		Allocated += TableSize;
-		TI_ASSERT(Allocated < Size);
+		TI_ASSERT(Allocated <= Size);
 		return FRenderResourceTable(this, Result, TableSize);
 	}
 

@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRootSignatureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FSceneLights.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
@@ -107,6 +108,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h" />
     <ClInclude Include="..\..\Sources\Engine\FRootSignatureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
+    <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
