@@ -11,6 +11,7 @@ namespace tix
 	class FSceneLights
 	{
 	public:
+		static const int32 MaxDynamicLightsInScene = MAX_HEAP_LIGHTS;
 		FSceneLights();
 		~FSceneLights();
 

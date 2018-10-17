@@ -21,16 +21,15 @@ namespace tix
 
 	void FSceneLights::InitEmptyLightsBuffer()
 	{
-		TI_TODO("Re-factor make MAX lights count in FSceneLights logic");
 		// Create Render resource table for all dynamic lights
-		LightsTable = FRHI::Get()->GetRenderResourceHeap(EHT_UNIFORMBUFFER_LIGHT).AllocateTable(LIGHTS_IN_CBV_SRV_UAV_HEAP);
+		LightsTable = FRHI::Get()->GetRenderResourceHeap(EHT_UNIFORMBUFFER_LIGHT).AllocateTable(MaxDynamicLightsInScene);
 
 		// Init default empty light buffer
 		EmptyDynamicLightBuffer = ti_new FDynamicLightUniformBuffer();
 		EmptyDynamicLightBuffer->InitUniformBuffer();
 
 		// Fill empty light buffer to table
-		for (int32 i = 0 ; i < LIGHTS_IN_CBV_SRV_UAV_HEAP ; ++ i)
+		for (int32 i = 0 ; i < MaxDynamicLightsInScene; ++ i)
 		{
 			LightsTable.PutUniformBufferInTable(EmptyDynamicLightBuffer->UniformBuffer, i);
 		}
@@ -41,7 +40,7 @@ namespace tix
 		uint32 CurrentSlot = Allocated;
 		LightsTable.PutUniformBufferInTable(LightUniformBuffer, CurrentSlot);
 		++Allocated;
-		TI_ASSERT(Allocated <= LIGHTS_IN_CBV_SRV_UAV_HEAP);
+		TI_ASSERT(Allocated <= MaxDynamicLightsInScene);
 		return CurrentSlot;
 	}
 

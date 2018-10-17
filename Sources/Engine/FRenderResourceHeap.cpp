@@ -8,14 +8,6 @@
 
 namespace tix
 {
-	static const int32 MaxDescriptorCount[EHT_COUNT] =
-	{
-		1024,	//EHT_CBV_SRV_UAV,
-		512,	//EHT_SAMPLER,
-		128,	//EHT_RTV,
-		32,		//EHT_DSV,
-	};
-
 	FRenderResourceHeap::FRenderResourceHeap()
 		: HeapType(EHT_NONE)
 		, Allocated(0)

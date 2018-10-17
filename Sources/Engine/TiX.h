@@ -21,7 +21,7 @@
 using namespace std;
 
 // Disable std container warnings in DLL export
-#pragma warning( disable : 4251 )  
+#pragma warning( disable : 4251 )
 
 // Include tix symbols
 // Basic define and types
