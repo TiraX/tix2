@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "FRHI.h"
+#include "FRenderTarget.h"
 #include "FRHIDx12.h"
 
 namespace tix
@@ -51,6 +52,11 @@ namespace tix
 		Viewport = InViewport;
 	}
 	
+	FRenderTargetPtr FRHI::CreateRenderTarget(int32 W, int32 H)
+	{
+		return ti_new FRenderTarget(W, H);
+	}
+
 	void FRHI::PushRenderTarget(FRenderTargetPtr RT)
 	{
 		RenderTargets.push_back(RT);
@@ -73,5 +79,32 @@ namespace tix
 			return nullptr;
 		else
 			return RenderTargets.back();
+	}
+
+	bool FRHI::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+	{
+		// Create render target render resource tables
+		// Color buffers
+		int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
+		TI_ASSERT(RenderTarget->RTColorTable.GetTableSize() == 0);
+		RenderTarget->RTColorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(ColorBufferCount);
+		for (int32 i = 0 ; i < ColorBufferCount ; ++ i)
+		{
+			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+			RenderTarget->RTColorTable.PutRTColorInTable(ColorBuffer.Texture, i);
+		}
+
+		// Depth stencil buffers
+		{
+			const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
+			FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
+			if (DSBufferTexture != nullptr)
+			{
+				TI_ASSERT(RenderTarget->RTDepthTable.GetTableSize() == 0);
+				RenderTarget->RTDepthTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
+				RenderTarget->RTDepthTable.PutRTDepthInTable(DSBufferTexture, 0);
+			}
+		}
+		return true;
 	}
 }

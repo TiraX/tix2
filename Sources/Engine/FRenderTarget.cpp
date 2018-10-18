@@ -49,7 +49,6 @@ namespace tix
 		//Buffer.RTResource = ti_new FRenderTargetResource(EHT_RENDERTARGET);
 		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);
 		Buffer.BufferIndex = ColorBufferIndex;
-		Buffer.BufferType = ERTAT_TEXTURE;
 
 #if defined (TIX_DEBUG)
 		{
@@ -79,7 +78,6 @@ namespace tix
 
 		RTDepthStencilBuffer.Texture = Texture;
 		//RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
-		RTDepthStencilBuffer.BufferType = ERTAT_TEXTURE;
 	}
 
 	void FRenderTarget::Compile()
@@ -93,12 +91,9 @@ namespace tix
 			// Color buffer must be continuous
 			if (ColorBuffer.BufferIndex == ERTC_INVALID)
 				break;
-
-			if (ColorBuffer.BufferType == ERTAT_TEXTURE)
-			{
-				TI_ASSERT(ColorBuffer.Texture != nullptr);
-				RHI->UpdateHardwareResource(ColorBuffer.Texture);
-			}
+			
+			TI_ASSERT(ColorBuffer.Texture != nullptr);
+			RHI->UpdateHardwareResource(ColorBuffer.Texture);
 		}
 
 		if (RTDepthStencilBuffer.Texture != nullptr)

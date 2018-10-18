@@ -56,16 +56,16 @@ namespace tix
 		FRenderTarget(int32 W, int32 H);
 		virtual ~FRenderTarget();
 
+		virtual void Destroy() {};
+
 		struct RTBuffer
 		{
 			FTexturePtr Texture;
 			//FRenderTargetResourcePtr RTResource;
 			E_RT_COLOR_BUFFER BufferIndex;
-			E_RT_ATTACH_TYPE BufferType;
 
 			RTBuffer()
 				: BufferIndex(ERTC_INVALID)
-				, BufferType(ERTAT_TEXTURE)
 			{}
 			~RTBuffer()
 			{
@@ -94,6 +94,16 @@ namespace tix
 			return RTDepthStencilBuffer;
 		}
 
+		const FRenderResourceTable& GetRTColorTable() const
+		{
+			return RTColorTable;
+		}
+
+		const FRenderResourceTable& GetRTDepthTable() const
+		{
+			return RTDepthTable;
+		}
+
 		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex);
 		TI_API virtual void AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex);
 		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format);
@@ -106,6 +116,11 @@ namespace tix
 
 		RTBuffer RTColorBuffers[ERTC_COUNT];
 		RTBuffer RTDepthStencilBuffer;
+
+		FRenderResourceTable RTColorTable;
+		FRenderResourceTable RTDepthTable;
+
 		int32 ColorBuffers;
+		friend class FRHI;
 	};
 }

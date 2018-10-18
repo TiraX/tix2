@@ -434,10 +434,10 @@ namespace tix
 		return ti_new FPipelineDx12();
 	}
 
-	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
-	{
-		return ti_new FRenderTargetDx12(W, H);
-	}
+	//FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
+	//{
+	//	return ti_new FRenderTargetDx12(W, H);
+	//}
 
 	// Wait for pending GPU work to complete.
 	void FRHIDx12::WaitingForGpu()
@@ -1158,68 +1158,68 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
-	{
-		FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
+	//bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+	//{
+	//	FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 
-		TI_TODO("First here.!!!!!!!");
-		TI_ASSERT(0);
-		// Create Render target view
-		// Color buffers
-		int32 ColorBufferCount = 0;
-		for (int32 i = 0; i < ERTC_COUNT; ++i)
-		{
-			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
-			if (ColorBuffer.BufferIndex != ERTC_INVALID)
-			{
-				//FTexturePtr ColorBufferTexture = ColorBuffer.Texture;
-				//TI_ASSERT(ColorBufferTexture != nullptr);
-				//FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(ColorBufferTexture.get());
-				//TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
+	//	TI_TODO("First here.!!!!!!!");
+	//	TI_ASSERT(0);
+	//	// Create Render target view
+	//	// Color buffers
+	//	int32 ColorBufferCount = 0;
+	//	for (int32 i = 0; i < ERTC_COUNT; ++i)
+	//	{
+	//		const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+	//		if (ColorBuffer.BufferIndex != ERTC_INVALID)
+	//		{
+	//			//FTexturePtr ColorBufferTexture = ColorBuffer.Texture;
+	//			//TI_ASSERT(ColorBufferTexture != nullptr);
+	//			//FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(ColorBufferTexture.get());
+	//			//TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
-				//D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
-				//RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
-				//TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
-				//RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-				//RTVDesc.Texture2D.MipSlice = 0;
-				//RTVDesc.Texture2D.PlaneSlice = 0;
+	//			//D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
+	//			//RTVDesc.Format = k_PIXEL_FORMAT_MAP[ColorBufferTexture->GetDesc().Format];
+	//			//TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
+	//			//RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	//			//RTVDesc.Texture2D.MipSlice = 0;
+	//			//RTVDesc.Texture2D.PlaneSlice = 0;
 
-				//TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i].ptr == 0);
-				//ColorBuffer.RTResource->InitRenderResourceHeapSlot();
-				//RenderTargetDx12->RTColorDescriptor[i] = GetCpuDescriptorHandle(ColorBuffer.RTResource);
-				//D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource(), &RTVDesc, RenderTargetDx12->RTColorDescriptor[i]);
+	//			//TI_ASSERT(RenderTargetDx12->RTColorDescriptor[i].ptr == 0);
+	//			//ColorBuffer.RTResource->InitRenderResourceHeapSlot();
+	//			//RenderTargetDx12->RTColorDescriptor[i] = GetCpuDescriptorHandle(ColorBuffer.RTResource);
+	//			//D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource(), &RTVDesc, RenderTargetDx12->RTColorDescriptor[i]);
 
-				++ColorBufferCount;
-			}
-		}
-		TI_ASSERT(RenderTarget->GetColorBufferCount() == ColorBufferCount);
+	//			++ColorBufferCount;
+	//		}
+	//	}
+	//	TI_ASSERT(RenderTarget->GetColorBufferCount() == ColorBufferCount);
 
-		// Depth stencil buffers
-		{
-			const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
-			FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
-			if (DSBufferTexture != nullptr)
-			{
-				//FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(DSBufferTexture.get());
-				//TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
+	//	// Depth stencil buffers
+	//	{
+	//		const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
+	//		FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
+	//		if (DSBufferTexture != nullptr)
+	//		{
+	//			//FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(DSBufferTexture.get());
+	//			//TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
-				//DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[DSBufferTexture->GetDesc().Format];
-				//TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
+	//			//DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[DSBufferTexture->GetDesc().Format];
+	//			//TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
 
-				//D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
-				//DsvDesc.Format = GetDSVFormat(DxgiFormat);
-				//DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-				//DsvDesc.Texture2D.MipSlice = 0;
-				//DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+	//			//D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
+	//			//DsvDesc.Format = GetDSVFormat(DxgiFormat);
+	//			//DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	//			//DsvDesc.Texture2D.MipSlice = 0;
+	//			//DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-				//TI_ASSERT(RenderTargetDx12->RTDSDescriptor.ptr == 0);
-				//DepthStencilBuffer.RTResource->InitRenderResourceHeapSlot();
-				//RenderTargetDx12->RTDSDescriptor = GetCpuDescriptorHandle(DepthStencilBuffer.RTResource);
-				//D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, RenderTargetDx12->RTDSDescriptor);
-			}
-		}
-		return true;
-	}
+	//			//TI_ASSERT(RenderTargetDx12->RTDSDescriptor.ptr == 0);
+	//			//DepthStencilBuffer.RTResource->InitRenderResourceHeapSlot();
+	//			//RenderTargetDx12->RTDSDescriptor = GetCpuDescriptorHandle(DepthStencilBuffer.RTResource);
+	//			//D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, RenderTargetDx12->RTDSDescriptor);
+	//		}
+	//	}
+	//	return true;
+	//}
 
 	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
@@ -1256,6 +1256,40 @@ namespace tix
 		}
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
+	{
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
+		TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
+
+		D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
+		RTVDesc.Format = k_PIXEL_FORMAT_MAP[InTexture->GetDesc().Format];
+		TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
+		RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		RTVDesc.Texture2D.MipSlice = 0;
+		RTVDesc.Texture2D.PlaneSlice = 0;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, InHeapSlot);
+		D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource(), &RTVDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
+	{
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
+		TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
+
+		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[InTexture->GetDesc().Format];
+		TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
+		DsvDesc.Format = GetDSVFormat(DxgiFormat);
+		DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		DsvDesc.Texture2D.MipSlice = 0;
+		DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, InHeapSlot);
+		D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, Descriptor);
 	}
 
 	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
@@ -1300,11 +1334,9 @@ namespace tix
 
 	void FRHIDx12::SetDynamicLightsUniformBuffer()
 	{
-		TI_ASSERT(0);
-		TI_TODO("Second !!!!! implement resource table binding");
 		// Bind dynamic lights descriptor table
-		//D3D12_GPU_DESCRIPTOR_HANDLE LightDescriptor = GetGpuDescriptorHandle(EHT_UNIFORMBUFFER_LIGHT, 0);
-		//CommandList->SetGraphicsRootDescriptorTable(2, LightDescriptor);
+		D3D12_GPU_DESCRIPTOR_HANDLE LightDescriptor = GetGpuDescriptorHandle(EHT_UNIFORMBUFFER_LIGHT, 0);
+		CommandList->SetGraphicsRootDescriptorTable(2, LightDescriptor);
 	}
 
 	void FRHIDx12::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)
@@ -1337,8 +1369,6 @@ namespace tix
 
 	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
 	{
-		FRenderTargetDx12* RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
-
 		// Transition Color buffer to D3D12_RESOURCE_STATE_RENDER_TARGET
 		const int32 CBCount = RT->GetColorBufferCount();
 		for (int32 cb = 0; cb < CBCount; ++cb)
@@ -1356,16 +1386,27 @@ namespace tix
 		}
 		FlushResourceBarriers(CommandList.Get());
 
+		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> RTVDescriptors;
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
 		if (CBCount > 0)
 		{
-			Rtv = RTDx12->RTColorDescriptor;
+			const FRenderResourceTable& ColorTable = RT->GetRTColorTable();
+			RTVDescriptors.reserve(CBCount); 
+			for (int32 cb = 0 ; cb < CBCount ; ++ cb)
+			{
+				D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, ColorTable.GetIndexAt(cb));
+				RTVDescriptors.push_back(Descriptor);
+			}
+			Rtv = RTVDescriptors.data();
 		}
 
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv = nullptr;
-		if (RTDx12->RTDSDescriptor.ptr != 0)
+		D3D12_CPU_DESCRIPTOR_HANDLE DepthDescriptor;
+		const FRenderResourceTable& DepthTable = RT->GetRTDepthTable();
+		if (DepthTable.GetTableSize() != 0)
 		{
-			Dsv = &RTDx12->RTDSDescriptor;
+			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable.GetIndexAt(0));
+			Dsv = &DepthDescriptor;
 		}
 
 		// Set render target
@@ -1376,7 +1417,7 @@ namespace tix
 		{
 			for (int32 cb = 0; cb < CBCount; ++cb)
 			{
-				CommandList->ClearRenderTargetView(RTDx12->RTColorDescriptor[cb], DirectX::Colors::Transparent, 0, nullptr);
+				CommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
 			}
 		}
 		if (Dsv != nullptr)

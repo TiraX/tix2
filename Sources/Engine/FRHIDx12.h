@@ -34,17 +34,19 @@ namespace tix
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
-		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
+		//virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
+		//virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
+		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
+		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;

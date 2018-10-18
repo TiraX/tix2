@@ -17,6 +17,8 @@ namespace tix
 
 		virtual void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
 		virtual void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
+		virtual void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
+		virtual void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
 
 		uint32 GetStartIndex() const
 		{

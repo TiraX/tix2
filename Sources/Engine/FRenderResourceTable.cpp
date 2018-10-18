@@ -40,6 +40,18 @@ namespace tix
 		FRHI::Get()->PutTextureInHeap(InTexture, Heap->GetHeapType(), Start + Index);
 	}
 
+	void FRenderResourceTable::PutRTColorInTable(FTexturePtr InTexture, uint32 Index)
+	{
+		TI_ASSERT(Index < Size);
+		FRHI::Get()->PutRTColorInHeap(InTexture, Start + Index);
+	}
+
+	void FRenderResourceTable::PutRTDepthInTable(FTexturePtr InTexture, uint32 Index)
+	{
+		TI_ASSERT(Index < Size);
+		FRHI::Get()->PutRTDepthInHeap(InTexture, Start + Index);
+	}
+
 	E_RENDER_RESOURCE_HEAP_TYPE FRenderResourceTable::GetHeapType() const
 	{
 		return Heap->GetHeapType();
