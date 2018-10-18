@@ -337,7 +337,7 @@ namespace tix
 			//RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 			RootSignature.GetParameter(1).InitAsConstantBuffer(14, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 15, 64, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 15, 64, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(3).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
 
 			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
