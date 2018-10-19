@@ -51,7 +51,7 @@ namespace tix
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
-		virtual void SetRenderResourceTable(int32 BindIndex, const FRenderResourceTable& RenderResourceTable) override;
+		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 
 		virtual void SetDynamicLightsUniformBuffer() override;
@@ -130,10 +130,10 @@ namespace tix
 		
 		// Back buffers and Depth Stencil buffers
 		ComPtr<ID3D12Resource> BackBufferRTs[FRHIConfig::FrameBufferNum];
-		FRenderResourceTable BackBufferDescriptorTable;
+		FRenderResourceTablePtr BackBufferDescriptorTable;
 		D3D12_CPU_DESCRIPTOR_HANDLE BackBufferDescriptors[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12Resource> DepthStencil;
-		FRenderResourceTable DepthStencilDescriptorTable;
+		FRenderResourceTablePtr DepthStencilDescriptorTable;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
 
 		// Commands

@@ -94,12 +94,12 @@ namespace tix
 			return RTDepthStencilBuffer;
 		}
 
-		const FRenderResourceTable& GetRTColorTable() const
+		FRenderResourceTablePtr GetRTColorTable()
 		{
 			return RTColorTable;
 		}
 
-		const FRenderResourceTable& GetRTDepthTable() const
+		FRenderResourceTablePtr GetRTDepthTable()
 		{
 			return RTDepthTable;
 		}
@@ -117,8 +117,8 @@ namespace tix
 		RTBuffer RTColorBuffers[ERTC_COUNT];
 		RTBuffer RTDepthStencilBuffer;
 
-		FRenderResourceTable RTColorTable;
-		FRenderResourceTable RTDepthTable;
+		FRenderResourceTablePtr RTColorTable;
+		FRenderResourceTablePtr RTDepthTable;
 
 		int32 ColorBuffers;
 		friend class FRHI;

@@ -15,6 +15,6 @@
     "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
 	"CBV(b0, visibility=SHADER_VISIBILITY_VERTEX), " \
 	"CBV(b14, visibility=SHADER_VISIBILITY_PIXEL), " \
-    "DescriptorTable(CBV(b15, numDescriptors = 64), visibility = SHADER_VISIBILITY_PIXEL), " \
+    "DescriptorTable(CBV(b15, numDescriptors = 8), visibility = SHADER_VISIBILITY_PIXEL), " \
     "DescriptorTable(SRV(t0, numDescriptors = 5), visibility = SHADER_VISIBILITY_PIXEL)," \
     "StaticSampler(s0, visibility = SHADER_VISIBILITY_PIXEL)," 

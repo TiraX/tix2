@@ -27,7 +27,7 @@ namespace tix
 		Offset = HeapOffset;
 	}
 
-	FRenderResourceTable FRenderResourceHeap::AllocateTable(uint32 TableSize)
+	FRenderResourceTablePtr FRenderResourceHeap::AllocateTable(uint32 TableSize)
 	{
 		TI_ASSERT(IsRenderThread());
 		TVector<uint32>& Avaibles = AvaibleHeapTables[TableSize];
@@ -36,12 +36,12 @@ namespace tix
 		{
 			uint32 StartIndex = Avaibles.back();
 			Avaibles.pop_back();
-			return FRenderResourceTable(this, StartIndex, TableSize);
+			return ti_new FRenderResourceTable(this, StartIndex, TableSize);
 		}
 		uint32 Result = Allocated + Offset;
 		Allocated += TableSize;
 		TI_ASSERT(Allocated <= Size);
-		return FRenderResourceTable(this, Result, TableSize);
+		return ti_new FRenderResourceTable(this, Result, TableSize);
 	}
 
 	void FRenderResourceHeap::RecallTable(const FRenderResourceTable& Table)

@@ -267,7 +267,7 @@ namespace tix
 			BackBufferDescriptorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(FRHIConfig::FrameBufferNum);
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
-				BackBufferDescriptors[n] = GetCpuDescriptorHandle(EHT_RENDERTARGET, BackBufferDescriptorTable.GetIndexAt(n));
+				BackBufferDescriptors[n] = GetCpuDescriptorHandle(EHT_RENDERTARGET, BackBufferDescriptorTable->GetIndexAt(n));
 				VALIDATE_HRESULT(SwapChain->GetBuffer(n, IID_PPV_ARGS(&BackBufferRTs[n])));
 				D3dDevice->CreateRenderTargetView(BackBufferRTs[n].Get(), nullptr, BackBufferDescriptors[n]);
 
@@ -306,7 +306,7 @@ namespace tix
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
 			DepthStencilDescriptorTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
-			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorTable.GetStartIndex());
+			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorTable->GetStartIndex());
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
 
@@ -337,7 +337,7 @@ namespace tix
 			//RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 			RootSignature.GetParameter(1).InitAsConstantBuffer(14, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 15, 64, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 15, 8, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(3).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
 
 			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
@@ -1322,10 +1322,10 @@ namespace tix
 		HoldResourceReference(InUniformBuffer);
 	}
 
-	void FRHIDx12::SetRenderResourceTable(int32 BindIndex, const FRenderResourceTable& RenderResourceTable)
+	void FRHIDx12::SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
 	{
 		// Bind the current frame's constant buffer to the pipeline.
-		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable.GetHeapType(), RenderResourceTable.GetStartIndex());
+		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
 		CommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
 		TI_TODO("Need to hold table resources");
@@ -1390,11 +1390,11 @@ namespace tix
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
 		if (CBCount > 0)
 		{
-			const FRenderResourceTable& ColorTable = RT->GetRTColorTable();
+			FRenderResourceTablePtr ColorTable = RT->GetRTColorTable();
 			RTVDescriptors.reserve(CBCount); 
 			for (int32 cb = 0 ; cb < CBCount ; ++ cb)
 			{
-				D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, ColorTable.GetIndexAt(cb));
+				D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, ColorTable->GetIndexAt(cb));
 				RTVDescriptors.push_back(Descriptor);
 			}
 			Rtv = RTVDescriptors.data();
@@ -1402,10 +1402,10 @@ namespace tix
 
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv = nullptr;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthDescriptor;
-		const FRenderResourceTable& DepthTable = RT->GetRTDepthTable();
-		if (DepthTable.GetTableSize() != 0)
+		FRenderResourceTablePtr DepthTable = RT->GetRTDepthTable();
+		if (DepthTable->GetTableSize() != 0)
 		{
-			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable.GetIndexAt(0));
+			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable->GetIndexAt(0));
 			Dsv = &DepthDescriptor;
 		}
 

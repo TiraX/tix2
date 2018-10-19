@@ -11,7 +11,7 @@ namespace tix
 	enum 
 	{
 		MAX_HEAP_UNIFORMBUFFERS = 512,
-		MAX_HEAP_LIGHTS = 64,
+		MAX_HEAP_LIGHTS = 8,
 		MAX_HEAP_TEXTURES = 512 - MAX_HEAP_LIGHTS,
 		MAX_HEAP_SRV_CBV = MAX_HEAP_UNIFORMBUFFERS + MAX_HEAP_TEXTURES + MAX_HEAP_LIGHTS,
 
@@ -27,7 +27,7 @@ namespace tix
 
 		void Create(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 HeapSize, uint32 HeapOffset);
 
-		FRenderResourceTable AllocateTable(uint32 Size);
+		FRenderResourceTablePtr AllocateTable(uint32 Size);
 
 		void RecallTable(const FRenderResourceTable& Table);
 

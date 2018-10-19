@@ -8,17 +8,19 @@
 namespace tix
 {
 	class FRenderResourceHeap;
-	class FRenderResourceTable
+	class FRenderResourceTable : public FRenderResource
 	{
 	public:
 		FRenderResourceTable();
 		FRenderResourceTable(FRenderResourceHeap * InHeap, uint32 InStart, uint32 InSize);
 		~FRenderResourceTable();
 
-		virtual void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
-		virtual void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
-		virtual void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
-		virtual void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
+		virtual void Destroy() override {};
+
+		void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
+		void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
+		void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
+		void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
 
 		uint32 GetStartIndex() const
 		{

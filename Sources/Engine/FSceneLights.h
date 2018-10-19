@@ -23,7 +23,7 @@ namespace tix
 	protected:
 		FDynamicLightUniformBufferPtr EmptyDynamicLightBuffer;
 
-		FRenderResourceTable LightsTable;
+		FRenderResourceTablePtr LightsTable;
 		uint32 Allocated;
 	};
 } // end namespace tix

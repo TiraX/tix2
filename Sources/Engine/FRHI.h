@@ -54,7 +54,7 @@ namespace tix
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
-		virtual void SetRenderResourceTable(int32 BindIndex, const FRenderResourceTable& RenderResourceTable) = 0;
+		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 
 		virtual void SetDynamicLightsUniformBuffer() = 0;
