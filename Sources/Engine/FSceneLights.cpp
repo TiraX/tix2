@@ -9,45 +9,70 @@
 namespace tix
 {
 	FSceneLights::FSceneLights()
-		: Allocated(0)
+		: bUniformBufferDirty(false)
 	{
-		InitEmptyLightsBuffer();
+		// Init available slots
+		AvaibleSlot.reserve(MaxDynamicLightsInScene);
+		for (int32 slot = MaxDynamicLightsInScene - 1; slot >= 0; -- slot)
+		{
+			AvaibleSlot.push_back(slot);
+		}
+
+		// Create scene lights uniform buffer
+		LightsUniformBuffer = ti_new FSceneLightsUniformBuffer;
 	}
 
 	FSceneLights::~FSceneLights()
 	{
-		EmptyDynamicLightBuffer = nullptr;
-		LightsTable = nullptr;
+		// Remove all FLightPtr refs
+		for (int32 s = 0 ; s < MaxDynamicLightsInScene ; ++ s)
+		{
+			DynamicLights[s] = nullptr;
+		}
+
+		LightsUniformBuffer = nullptr;
 	}
 
-	void FSceneLights::InitEmptyLightsBuffer()
+	void FSceneLights::AddLight(FLightPtr InLight)
 	{
-		// Create Render resource table for all dynamic lights
-		LightsTable = FRHI::Get()->GetRenderResourceHeap(EHT_UNIFORMBUFFER_LIGHT).AllocateTable(MaxDynamicLightsInScene);
-
-		// Init default empty light buffer
-		EmptyDynamicLightBuffer = ti_new FDynamicLightUniformBuffer();
-		EmptyDynamicLightBuffer->InitUniformBuffer();
-
-		// Fill empty light buffer to table
-		for (int32 i = 0 ; i < MaxDynamicLightsInScene; ++ i)
+		uint32 LightIndex = InLight->GetLightIndex();
+		if (LightIndex == uint32(-1))
 		{
-			LightsTable->PutUniformBufferInTable(EmptyDynamicLightBuffer->UniformBuffer, i);
+			// Get an available slot index
+			LightIndex = AvaibleSlot.back();
+			AvaibleSlot.pop_back();
+			TI_ASSERT(DynamicLights[LightIndex] == nullptr);
+			DynamicLights[LightIndex] = InLight;
+			InLight->SetLightIndex(LightIndex);
+		}
+		else
+		{
+			TI_ASSERT(DynamicLights[LightIndex] == InLight);
+		}
+		LightsUniformBuffer->UniformBufferData.LightPosition[LightIndex] = InLight->GetLightPosition();
+		LightsUniformBuffer->UniformBufferData.LightColor[LightIndex] = InLight->GetLightColor();
+		bUniformBufferDirty = true;
+	}
+
+	void FSceneLights::RemoveLight(FLightPtr InLight)
+	{
+		uint32 LightIndex = InLight->GetLightIndex();
+		TI_ASSERT(LightIndex < MaxDynamicLightsInScene && (DynamicLights[LightIndex] == InLight || DynamicLights[LightIndex] == nullptr));
+		DynamicLights[LightIndex] = nullptr;
+		AvaibleSlot.push_back(LightIndex);
+	}
+
+	void FSceneLights::InitSceneLightsUniformBufferRenderResource()
+	{
+		if (bUniformBufferDirty)
+		{
+			LightsUniformBuffer->InitUniformBuffer();
+			bUniformBufferDirty = false;
 		}
 	}
 
-	uint32 FSceneLights::AddLightUniformBuffer(FUniformBufferPtr LightUniformBuffer)
+	void FSceneLights::BindSceneLightsUniformBuffer(FRHI * RHI, int32 BindIndex)
 	{
-		uint32 CurrentSlot = Allocated;
-		LightsTable->PutUniformBufferInTable(LightUniformBuffer, CurrentSlot);
-		++Allocated;
-		TI_ASSERT(Allocated <= MaxDynamicLightsInScene);
-		return CurrentSlot;
-	}
-
-	void FSceneLights::RemoveLightUniformBuffer(uint32 Index)
-	{
-		TI_ASSERT(Index < Allocated);
-		LightsTable->PutUniformBufferInTable(EmptyDynamicLightBuffer->UniformBuffer, Index);
+		RHI->SetUniformBuffer(BindIndex, LightsUniformBuffer->UniformBuffer);
 	}
 }

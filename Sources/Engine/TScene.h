@@ -64,7 +64,7 @@ namespace tix
 		TI_API TNodeCamera* GetActiveCamera();
 
 		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
-		TI_API TNodeLight* AddLight(float Intensity, const SColor& Color);
+		TI_API TNodeLight* AddLight(const vector3df& Position, float Intensity, const SColor& Color);
 
 		void ResetActiveLists();
 		void AddToActiveList(E_SCENE_LIST_TYPE List, TNode * ActiveNode);

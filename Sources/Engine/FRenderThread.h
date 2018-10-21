@@ -18,6 +18,19 @@ namespace tix
 		Code; \
 	}
 
+	// No parameter
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_DECLARE(TypeName, Code) \
+	class FRTTask_##TypeName : public TTask \
+	{ \
+	public: \
+		FRTTask_##TypeName() {} \
+		RENDERTHREAD_TASK_FUNCTION(Code) \
+	};
+
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_CREATE(TypeName) \
+	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(); \
+	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
+
 	// One parameters
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
 	class FRTTask_##TypeName : public TTask \
@@ -70,6 +83,10 @@ namespace tix
  * RenderThread is built in parameter.
  * RHI is built in parameter.
  */
+#define ENQUEUE_UNIQUE_RENDER_COMMAND(TypeName, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_DECLARE(TypeName, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_CREATE(TypeName)
+
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1)

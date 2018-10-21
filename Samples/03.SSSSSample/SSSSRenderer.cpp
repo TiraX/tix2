@@ -62,7 +62,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
 				RHI->SetUniformBuffer(1, Primitive->LightBindingUniformBuffer->UniformBuffer);
 
-				RHI->SetDynamicLightsUniformBuffer();
+				Scene->GetSceneLights()->BindSceneLightsUniformBuffer(RHI, 2);
 
 				if (TextureTable != nullptr)
 				{

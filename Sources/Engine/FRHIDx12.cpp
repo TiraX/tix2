@@ -334,8 +334,8 @@ namespace tix
 			//RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
 			//RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
-			RootSignature.GetParameter(1).InitAsConstantBuffer(14, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(2).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 15, 8, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(1).InitAsConstantBuffer(4, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.GetParameter(2).InitAsConstantBuffer(5, D3D12_SHADER_VISIBILITY_PIXEL);
 			RootSignature.GetParameter(3).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
 
 			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
@@ -1328,13 +1328,6 @@ namespace tix
 
 		TI_TODO("Need to hold table resources");
 		//HoldResourceReference(InUniformBuffer);
-	}
-
-	void FRHIDx12::SetDynamicLightsUniformBuffer()
-	{
-		// Bind dynamic lights descriptor table
-		D3D12_GPU_DESCRIPTOR_HANDLE LightDescriptor = GetGpuDescriptorHandle(EHT_UNIFORMBUFFER_LIGHT, 0);
-		CommandList->SetGraphicsRootDescriptorTable(2, LightDescriptor);
 	}
 
 	void FRHIDx12::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)

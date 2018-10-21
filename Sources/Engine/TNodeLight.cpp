@@ -18,6 +18,16 @@ namespace tix
 
 	TNodeLight::~TNodeLight()
 	{
+		if (LightResource != nullptr)
+		{
+			// Remove FLight from FSceneLights
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveFLightFromFScene,
+				FLightPtr, InLight, LightResource,
+				{
+					InLight->RemoveFromSceneLights_RenderThread();
+				});
+			LightResource = nullptr;
+		}
 	}
 
 	void TNodeLight::UpdateAbsoluteTransformation()
@@ -54,5 +64,12 @@ namespace tix
 	{
 		TI_ASSERT(LightResource == nullptr);
 		LightResource = ti_new FLight(this);
+
+		// Add FLight to FSceneLights
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddFLightToFScene,
+			FLightPtr, InLight, LightResource,
+			{
+				InLight->AddToSceneLights_RenderThread();
+			});
 	}
 }

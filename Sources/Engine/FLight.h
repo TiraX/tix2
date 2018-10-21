@@ -7,18 +7,15 @@
 
 namespace tix
 {
-	BEGIN_UNIFORM_BUFFER_STRUCT(FDynamicLightUniformBuffer)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, LightPosition)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, LightColor)
-	END_UNIFORM_BUFFER_STRUCT(FDynamicLightUniformBuffer)
-
 	class FLight : public IReferenceCounted
 	{
 	public:
 		FLight(TNodeLight * Light);
 		~FLight();
 
-		FDynamicLightUniformBufferPtr DynamicLightBuffer;
+		void AddToSceneLights_RenderThread();
+		void RemoveFromSceneLights_RenderThread();
+
 		void SetLightIndex(uint32 Index)
 		{
 			LightIndex = Index;
@@ -27,12 +24,21 @@ namespace tix
 		{
 			return LightIndex;
 		}
+		const vector3df& GetLightPosition() const
+		{
+			return Position;
+		}
+		const SColorf& GetLightColor() const
+		{
+			return Color;
+		}
 	protected:
 		void InitFromLightNode(TNodeLight * Light);
-		void InitRenderResource_RenderThread();
 
 	protected:
 		uint32 LightIndex;	// The index light allocated in FSceneLights
+		vector3df Position;
+		SColorf Color;
 	};
 } // end namespace tix
 

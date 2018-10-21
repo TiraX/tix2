@@ -15,21 +15,19 @@ Texture2D<float3> texSpecular : register(t2);
 Texture2D<float3> texBeckmann : register(t3);
 TextureCube<float4> texIrrMap : register(t4);
 
-#define N_LIGHTS 3
+#define MAX_LIGHTS 32
 
-
-cbuffer LightBinding : register(b14)
+cbuffer LightBinding : register(b4)
 {
 	int4 LightCount;
 	int4 LightIndex;
 };
 
-struct PointLight
+cbuffer LightData : register(b5)
 {
-	float3 Position;
-	float3 Color;
-};
-ConstantBuffer<PointLight> LightsBuffer[64] : register(b15);
+	float4 LightPosition[MAX_LIGHTS];
+	float4 LightColor[MAX_LIGHTS];
+}
 
 SamplerState sampler0 : register(s0);
 
@@ -64,7 +62,7 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	for (int i = 0; i < LightCount.x; i++)
 	{
 		int Index = LightIndex[i];
-		color.xyz += LightsBuffer[Index].Color;
+		color.xyz += LightColor[Index].xyz;
 //		float3 light = lights[i].position - input.worldPosition;
 //		float dist = length(light);
 //		light /= dist;

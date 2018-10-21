@@ -17,43 +17,27 @@ namespace tix
 
 	FLight::~FLight()
 	{
-		TI_TODO("Figure out a better way to destroy render resource, call destructor in render thread ?.");
-		// Remove Light uniform buffer resource 
-		if (DynamicLightBuffer != nullptr)
-		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(DeleteLightUniformBufferResource,
-				FDynamicLightUniformBufferPtr, DynamicLightBuffer, DynamicLightBuffer,
-				{
-					TI_TODO("Manually call Destroy() is un-safe. Make a better solution to release render resources");
-					DynamicLightBuffer->UniformBuffer->Destroy();
-				});
-			DynamicLightBuffer = nullptr;
-		}
 	}
 
 	void FLight::InitFromLightNode(TNodeLight * Light)
 	{
-		// create uniform buffer
-		if (DynamicLightBuffer == nullptr)
-			DynamicLightBuffer = ti_new FDynamicLightUniformBuffer();
-
-		DynamicLightBuffer->UniformBufferData.LightPosition = Light->GetAbsolutePosition();
+		TI_TODO("Refactor !!!!!!!!!!!!! Light position should not be updated here.");
+		Position = Light->GetAbsolutePosition();
 		SColorf LColor(Light->GetColor());
 		LColor *= Light->GetIntensity();
-		DynamicLightBuffer->UniformBufferData.LightColor = LColor;
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddLightToFScene,
-			FLightPtr, InLight, this,
-			{
-				InLight->InitRenderResource_RenderThread();
-			});
+		Color = LColor;
+
+	}
+	
+	void FLight::AddToSceneLights_RenderThread()
+	{
+		TI_ASSERT(LightIndex == uint32(-1));
+		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->AddLight(this);
 	}
 
-	void FLight::InitRenderResource_RenderThread()
+	void FLight::RemoveFromSceneLights_RenderThread()
 	{
-		TI_ASSERT(IsRenderThread());
-		DynamicLightBuffer->InitUniformBuffer();
-		TI_ASSERT(LightIndex == uint32(-1));
-		uint32 Index = FRenderThread::Get()->GetRenderScene()->GetSceneLights()->AddLightUniformBuffer(DynamicLightBuffer->UniformBuffer);
-		SetLightIndex(Index);
+		TI_ASSERT(LightIndex != uint32(-1));
+		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->RemoveLight(this);
 	}
 }

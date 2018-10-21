@@ -5,6 +5,7 @@ By ZhaoShuai tirax.cn@gmail.com
 
 #include "stdafx.h"
 #include "TScene.h"
+#include "FSceneLights.h"
 
 namespace tix
 {
@@ -83,9 +84,10 @@ namespace tix
 		return StaticMesh;
 	}
 
-	TNodeLight* TScene::AddLight(float Intensity, const SColor& Color)
+	TNodeLight* TScene::AddLight(const vector3df& Position, float Intensity, const SColor& Color)
 	{
 		TNodeLight* Light = TNodeFactory::CreateNode<TNodeLight>(NodeRoot);
+		Light->SetPosition(Position);
 		Light->SetIntensity(Intensity);
 		Light->SetColor(Color);
 		Light->CreateFLight();
@@ -111,22 +113,29 @@ namespace tix
 		{
 			bool ForceRebind = HasSceneFlag(SF_LIGHTS_DIRTY);
 
-			// go though static solid list
+			// Go though static solid list
 			for (auto StaticMeshNode : ActiveNodeList[ESLT_STATIC_SOLID])
 			{
 				TI_ASSERT(StaticMeshNode->GetType() == ENT_StaticMesh);
 				StaticMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
 			}
 
-			// then dynamic solid list
+			// Then dynamic solid list
 			for (auto DynamicMeshNode : ActiveNodeList[ESLT_DYNAMIC_SOLID])
 			{
 				DynamicMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
 			}
 
-			// clear lights dirty flag after bind
+			// Clear lights dirty flag after bind
 			SetSceneFlag(SF_LIGHTS_DIRTY, false);
 			TI_TODO("It will crashed when close after delete SetSceneFlag");
+
+			// Send a render thread task to update lights uniform buffer
+			ENQUEUE_UNIQUE_RENDER_COMMAND(InitSceneLightsUniformBuffer,
+				{
+					RenderThread->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
+				});
+
 		}
 	}
 }

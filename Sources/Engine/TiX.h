@@ -77,6 +77,7 @@ using namespace std;
 // Render thread things
 #include "FPrimitive.h"
 #include "FLight.h"
+#include "FSceneLights.h"
 #include "FScene.h"
 #include "FRenderer.h"
 #include "FDefaultRenderer.h"
