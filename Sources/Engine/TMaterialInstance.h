@@ -32,18 +32,13 @@ namespace tix
 
 		TMaterialPtr LinkedMaterial;
 		FUniformBufferPtr UniformBuffer;
-
-		// temp solution, refactor in futhre
-		const TVector<TTexturePtr>& GetTextureParams() const
-		{
-			return ParamTextures;
-		}
+		FRenderResourceTablePtr TextureResourceTable;
 
 	protected:
 
 		TVector<TString> ParamNames;
 		TVector<int32> ParamTypes;
-		TStream ParamValueBuffer;
+		TStreamPtr ParamValueBuffer;
 		TVector<TTexturePtr> ParamTextures;
 
 	protected:

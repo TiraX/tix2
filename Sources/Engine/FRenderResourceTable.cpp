@@ -8,10 +8,10 @@
 
 namespace tix
 {
-	FRenderResourceTable::FRenderResourceTable()
+	FRenderResourceTable::FRenderResourceTable(uint32 InSize)
 		: Heap(nullptr)
 		, Start(uint32(-1))
-		, Size(0)
+		, Size(InSize)
 	{
 	}
 

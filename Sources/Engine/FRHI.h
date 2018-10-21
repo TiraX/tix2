@@ -27,6 +27,7 @@ namespace tix
 		static void CreateRHI(E_RHI_TYPE RhiType);
 		static void ReleaseRHI();
 
+		virtual void InitRHI() = 0;
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
@@ -38,6 +39,7 @@ namespace tix
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H);
+		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;

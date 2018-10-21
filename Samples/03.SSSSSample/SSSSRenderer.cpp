@@ -44,11 +44,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
 			FPipelinePtr PL = Primitive->Pipelines[m];
 			FUniformBufferPtr UB = Primitive->Uniforms[m];
-			FTexturePtr Tex = nullptr;
-			if (Primitive->Textures.size() > 0)
-			{
-				Tex = Primitive->Textures[0];
-			}
+			FRenderResourceTablePtr TextureTable = Primitive->TextureTables[m];
 
 			{
 				//D3D12 ERROR : ID3D12CommandQueue::ExecuteCommandLists : 
@@ -68,10 +64,10 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 
 				RHI->SetDynamicLightsUniformBuffer();
 
-				TI_ASSERT(0);
-				TI_TODO("Set a texture render resource table here.");
-				if (Tex != nullptr)
-					RHI->SetShaderTexture(3, Tex);
+				if (TextureTable != nullptr)
+				{
+					RHI->SetRenderResourceTable(3, TextureTable);
+				}
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}

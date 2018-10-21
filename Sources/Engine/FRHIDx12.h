@@ -24,6 +24,7 @@ namespace tix
 		virtual ~FRHIDx12();
 
 		// RHI common methods
+		virtual void InitRHI() override;
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
@@ -69,8 +70,6 @@ namespace tix
 
 	protected: 
 		FRHIDx12();
-
-		void Init();
 
 	private:
 		void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);

@@ -9,7 +9,6 @@ namespace tix
 {
 	TMaterialInstance::TMaterialInstance()
 		: TResource(ERES_MATERIAL_INSTANCE)
-		, ParamValueBuffer(0)
 	{}
 
 	TMaterialInstance::~TMaterialInstance()
@@ -18,15 +17,46 @@ namespace tix
 
 	void TMaterialInstance::InitRenderThreadResource()
 	{
-		TI_TODO("Implement here.");
-		TI_ASSERT(UniformBuffer == nullptr);
-		UniformBuffer = FRHI::Get()->CreateUniformBuffer(EHT_UNIFORMBUFFER);
+		if (ParamValueBuffer != nullptr)
+		{
+			TI_ASSERT(UniformBuffer == nullptr);
+			UniformBuffer = FRHI::Get()->CreateUniformBuffer(ParamValueBuffer->GetLength());
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIUniformBuffer,
+				FUniformBufferPtr, UniformBuffer, UniformBuffer,
+				TStreamPtr, UniformBufferData, ParamValueBuffer,
+				{
+					RHI->UpdateHardwareResource(UniformBuffer, UniformBufferData->GetBuffer());
+				});
+		}
+		if (ParamTextures.size() > 0)
+		{
+			TI_ASSERT(TextureResourceTable == nullptr);
+			TextureResourceTable = FRHI::Get()->CreateRenderResourceTable((uint32)ParamTextures.size());
+			TVector<FTexturePtr> Textures;
+			for (auto Tex : ParamTextures)
+			{
+				TI_ASSERT(Tex->TextureResource != nullptr);
+				Textures.push_back(Tex->TextureResource);
+			}
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMITextureResourceTable,
+				FRenderResourceTablePtr, MI_TextureResourceTable, TextureResourceTable,
+				TVector<FTexturePtr>, Textures, Textures,
+				{
+					RHI->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(MI_TextureResourceTable);
+					for (int32 t = 0; t < (int32)Textures.size(); ++t)
+					{
+						FTexturePtr Texture = Textures[t];
+						MI_TextureResourceTable->PutTextureInTable(Texture, t);
+					}
+				});
+		}
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()
 	{
 		TI_TODO("Implement here.");
 		UniformBuffer = nullptr;
+		TextureResourceTable = nullptr;
 	}
 
 	static const int32 ParamTypeLength[MIPT_COUNT] =

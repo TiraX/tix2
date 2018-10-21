@@ -29,19 +29,32 @@ namespace tix
 
 	FRenderResourceTablePtr FRenderResourceHeap::AllocateTable(uint32 TableSize)
 	{
+		FRenderResourceTablePtr ResourceTable = FRHI::Get()->CreateRenderResourceTable(TableSize);
+		AllocateTable(ResourceTable);
+		return ResourceTable;
+	}
+
+	void FRenderResourceHeap::AllocateTable(FRenderResourceTablePtr OutTable)
+	{
 		TI_ASSERT(IsRenderThread());
+		const uint32 TableSize = OutTable->GetTableSize();
+		TI_ASSERT(TableSize != 0);
 		TVector<uint32>& Avaibles = AvaibleHeapTables[TableSize];
 
 		if (Avaibles.size() > 0)
 		{
 			uint32 StartIndex = Avaibles.back();
 			Avaibles.pop_back();
-			return ti_new FRenderResourceTable(this, StartIndex, TableSize);
+			OutTable->Heap = this;
+			OutTable->Start = StartIndex;
+			OutTable->Size = TableSize;
 		}
 		uint32 Result = Allocated + Offset;
 		Allocated += TableSize;
 		TI_ASSERT(Allocated <= Size);
-		return ti_new FRenderResourceTable(this, Result, TableSize);
+		OutTable->Heap = this;
+		OutTable->Start = Result;
+		OutTable->Size = TableSize;
 	}
 
 	void FRenderResourceHeap::RecallTable(const FRenderResourceTable& Table)

@@ -365,11 +365,25 @@ namespace tix
 			
 			MInstance->ParamNames.reserve(Header->ParamCount);
 			MInstance->ParamTypes.reserve(Header->ParamCount);
-			MInstance->ParamValueBuffer.Reset();
 
 			const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
 			const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount);
 			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount + ti_align4(Header->ParamCount));
+
+			int32 TotalValueBufferLength = 0;
+			for (int32 p = 0; p < Header->ParamCount; ++p)
+			{
+				E_MI_PARAM_TYPE ParamType = (E_MI_PARAM_TYPE)(ParamTypeOffset[p]);
+				const int32 ValueBytes = TMaterialInstance::GetParamTypeBytes(ParamType);
+				if (ParamType != MIPT_TEXTURE)
+				{
+					TotalValueBufferLength += ValueBytes;
+				}
+			}
+			if (TotalValueBufferLength > 0)
+			{
+				MInstance->ParamValueBuffer = ti_new TStream(TotalValueBufferLength);
+			}
 
 			// Load param names and types
 			int32 ValueOffset = 0;
@@ -395,7 +409,7 @@ namespace tix
 				else
 				{
 					// value params
-					MInstance->ParamValueBuffer.Put(ParamValueOffset + ValueOffset, ValueBytes);
+					MInstance->ParamValueBuffer->Put(ParamValueOffset + ValueOffset, ValueBytes);
 				}
 				ValueOffset += ValueBytes;
 			}

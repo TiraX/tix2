@@ -31,8 +31,7 @@ namespace tix
 	{
 		// Create Primitive
 		FPrimitivePtr Primitive = ti_new FPrimitive;
-		TI_ASSERT((InMesh->MeshBufferResource != nullptr)
-			&& (InMInstance->UniformBuffer != nullptr));
+		TI_ASSERT(InMesh->MeshBufferResource != nullptr);
 		Primitive->AddMesh(InMesh->MeshBufferResource, InMesh->GetBBox(), InMInstance);
 
 		// Add primitive to scene

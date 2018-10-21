@@ -11,7 +11,7 @@ namespace tix
 	class FRenderResourceTable : public FRenderResource
 	{
 	public:
-		FRenderResourceTable();
+		FRenderResourceTable(uint32 InSize);
 		FRenderResourceTable(FRenderResourceHeap * InHeap, uint32 InStart, uint32 InSize);
 		~FRenderResourceTable();
 
@@ -43,5 +43,7 @@ namespace tix
 		FRenderResourceHeap* Heap;
 		uint32 Start;
 		uint32 Size;
+
+		friend class FRenderResourceHeap;
 	};
 }

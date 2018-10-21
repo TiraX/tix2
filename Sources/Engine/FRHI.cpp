@@ -25,6 +25,7 @@ namespace tix
 #else
 #error("No avaible RHI for this platform.")
 #endif
+		RHI->InitRHI();
 	}
 
 	void FRHI::ReleaseRHI()
@@ -55,6 +56,11 @@ namespace tix
 	FRenderTargetPtr FRHI::CreateRenderTarget(int32 W, int32 H)
 	{
 		return ti_new FRenderTarget(W, H);
+	}
+
+	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize)
+	{
+		return ti_new FRenderResourceTable(InSize);
 	}
 
 	void FRHI::PushRenderTarget(FRenderTargetPtr RT)

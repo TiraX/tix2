@@ -24,8 +24,8 @@ namespace tix
 		TVector<FMeshBufferPtr> MeshBuffers;
 		TVector<FPipelinePtr> Pipelines;
 		TVector<FUniformBufferPtr> Uniforms;
-		// Temp solution, re-factor in future
-		TVector<FTexturePtr> Textures;
+		TVector<FRenderResourceTablePtr> TextureTables;
+
 		FLightBindingUniformBufferPtr LightBindingUniformBuffer;
 		aabbox3df BBox;
 	};

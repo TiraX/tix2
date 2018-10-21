@@ -39,12 +39,11 @@ namespace tix
 		// Instance uniform buffer
 		Uniforms.push_back(InMInstance->UniformBuffer);
 
-		const TVector<TTexturePtr>& TextureParams = InMInstance->GetTextureParams();
-		for (const auto& t : TextureParams)
-		{
-			Textures.push_back(t->TextureResource);
-		}
+		// Texture resource table
+		TextureTables.push_back(InMInstance->TextureResourceTable);
 
-		TI_ASSERT(MeshBuffers.size() == Uniforms.size() && MeshBuffers.size() == Pipelines.size());
+		TI_ASSERT(MeshBuffers.size() == Uniforms.size() && 
+			MeshBuffers.size() == Pipelines.size() &&
+			MeshBuffers.size() == TextureTables.size());
 	}
 }

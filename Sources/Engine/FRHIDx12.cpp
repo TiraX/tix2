@@ -35,8 +35,6 @@ namespace tix
 		, CurrentFrame(0)
 		, NumBarriersToFlush(0)
 	{
-		Init();
-
 		// Create frame resource holders
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
@@ -56,7 +54,7 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::Init()
+	void FRHIDx12::InitRHI()
 	{
 #if defined(TIX_DEBUG)
 		// If the project is in a debug build, enable debugging via SDK Layers.
