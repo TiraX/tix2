@@ -67,6 +67,7 @@ using namespace std;
 #include "FRenderResourceTable.h"
 #include "FMeshBuffer.h"
 #include "FShader.h"
+#include "FShaderBinding.h"
 #include "FTexture.h"
 #include "FPipeline.h"
 #include "FUniformBuffer.h"

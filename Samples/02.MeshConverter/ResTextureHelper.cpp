@@ -46,7 +46,7 @@ namespace tix
 			TextureHeader.Format = Define->Desc.Format;
 			TextureHeader.Width = Define->Desc.Width;
 			TextureHeader.Height = Define->Desc.Height;
-			TextureHeader.WrapMode = Define->Desc.WrapMode;
+			TextureHeader.AddressMode = Define->Desc.AddressMode;
 			TextureHeader.SRGB = Define->Desc.SRGB;
 			TextureHeader.Mips = Define->Desc.Mips;
 			TextureHeader.Surfaces = (uint32)Define->Surfaces.size();

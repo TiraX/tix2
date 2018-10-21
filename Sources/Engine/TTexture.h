@@ -23,29 +23,23 @@ namespace tix
 	enum E_TEXTURE_FILTER_TYPE
 	{
 		//! Nearest texel filter.
-		ETFT_NEAREST = 0,
+		ETFT_MINMAG_NEAREST_MIP_NEAREST = 0,
 
 		//! Bilinear texel filter, no mipmaps.
-		ETFT_LINEAR,
-
-		//! Nearest texel filter in nearest mipmap level.
-		ETFT_NEAREST_MIPMAP_NEAREST,
-
-		//! Bilinear texel filter in nearest mipmap level.
-		ETFT_LINEAR_MIPMAP_NEAREST,
-
+		ETFT_MINMAG_LINEAR_MIP_NEAREST,
+		
 		//! Interpolated nearest texel filter between mipmap levels.
-		ETFT_NEAREST_MIPMAP_LINEAR,
+		ETFT_MINMAG_NEAREST_MIPMAP_LINEAR,
 
 		//! Trilinear texel filter.
-		ETFT_LINEAR_MIPMAP_LINEAR,
+		ETFT_MINMAG_LINEAR_MIPMAP_LINEAR,
 
 		ETFT_COUNT,
 		ETFT_UNKNOWN = ETFT_COUNT,
 	};
 
 	//! Texture coord clamp mode outside [0.0, 1.0]
-	enum E_TEXTURE_CLAMP
+	enum E_TEXTURE_ADDRESS_MODE
 	{
 		//! Texture repeats
 		ETC_REPEAT = 0,
@@ -84,7 +78,7 @@ namespace tix
 		E_PIXEL_FORMAT Format;
 		int32 Width;
 		int32 Height;
-		E_TEXTURE_CLAMP WrapMode;
+		E_TEXTURE_ADDRESS_MODE AddressMode;
 		uint32 SRGB;
 		uint32 Mips;
 		uint32 Flags;
@@ -94,7 +88,7 @@ namespace tix
 			, Format(EPF_UNKNOWN)
 			, Width(0)
 			, Height(0)
-			, WrapMode(ETC_REPEAT)
+			, AddressMode(ETC_REPEAT)
 			, SRGB(0)
 			, Mips(1)
 			, Flags(0)

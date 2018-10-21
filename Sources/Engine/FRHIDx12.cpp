@@ -327,6 +327,8 @@ namespace tix
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
 
+			TI_TODO("Refactor root signature to FShaderBindings");
+
 			RootSignature.Reset(4, 1);
 			RootSignature.InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
 			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -436,6 +438,11 @@ namespace tix
 	//{
 	//	return ti_new FRenderTargetDx12(W, H);
 	//}
+
+	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers)
+	{
+		return ti_new FRootSignatureDx12(NumBindings, NumStaticSamplers);
+	}
 
 	// Wait for pending GPU work to complete.
 	void FRHIDx12::WaitingForGpu()
@@ -1067,9 +1074,16 @@ namespace tix
 			InputElement.InstanceDataStepRate = 0;
 		}
 
+		FShaderBindingPtr Binding = Pipeline->GetShaderBinding();
+		FRootSignatureDx12 * PipelineRS = &RootSignature;
+		if (Binding != nullptr)
+		{
+			PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
+		}
+
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
-		state.pRootSignature = RootSignature.Get();
+		state.pRootSignature = PipelineRS->Get();
 		TI_ASSERT(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength() > 0);
 		state.VS = { InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength()) };
 		if (InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength() > 0)
@@ -1304,6 +1318,14 @@ namespace tix
 	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
 	{
 		FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
+
+		FShaderBindingPtr ShaderBinding = InPipeline->GetShaderBinding();
+		if (ShaderBinding != nullptr)
+		{
+			FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
+			CommandList->SetGraphicsRootSignature(RSDx12->Get());
+		}
+
 
 		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 

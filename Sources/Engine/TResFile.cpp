@@ -220,7 +220,7 @@ namespace tix
 			Desc.Format = (E_PIXEL_FORMAT)Header->Format;
 			Desc.Width = Header->Width;
 			Desc.Height = Header->Height;
-			Desc.WrapMode = (E_TEXTURE_CLAMP)Header->WrapMode;
+			Desc.AddressMode = (E_TEXTURE_ADDRESS_MODE)Header->AddressMode;
 			Desc.SRGB = Header->SRGB;
 			Desc.Mips = Header->Mips;
 

@@ -45,17 +45,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FPipelinePtr PL = Primitive->Pipelines[m];
 			FUniformBufferPtr UB = Primitive->Uniforms[m];
 			FRenderResourceTablePtr TextureTable = Primitive->TextureTables[m];
-
-			{
-				//D3D12 ERROR : ID3D12CommandQueue::ExecuteCommandLists : 
-				//Specified GPU Descriptor Handle(ptr = 0x264d1eae200 at 45 offsetInDescriptorsFromDescriptorHeapStart), 
-				//for Root Signature(0x00000264D205CAC0:'RootSignature')'s Descriptor Table (at Parameter Index [2])'s 
-				//Descriptor Range(at Range Index[0] of type D3D12_DESCRIPTOR_RANGE_TYPE_SRV) has not been initialized,
-				//at Draw Index : [1].On Resource Binding Tier 1 hardware, 
-				//all descriptor tables declared in the set Root Signature must be populated and initialized, 
-				//even if the shaders do not need the descriptor.[EXECUTION ERROR #646: INVALID_DESCRIPTOR_HANDLE]
-			}
-
+			
 			{
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);

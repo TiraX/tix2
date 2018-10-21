@@ -40,6 +40,7 @@ namespace tix
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H);
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
+		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;

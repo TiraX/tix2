@@ -30,7 +30,7 @@ namespace tix
 		Desc.Format = Format;
 		Desc.Width = Demension.X;
 		Desc.Height = Demension.Y;
-		Desc.WrapMode = ETC_CLAMP_TO_EDGE;
+		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
 
 		FRHI * RHI = FRHI::Get();
 		FTexturePtr Texture = RHI->CreateTexture(Desc);
@@ -67,7 +67,7 @@ namespace tix
 		Desc.Format = Format;
 		Desc.Width = Demension.X;
 		Desc.Height = Demension.Y;
-		Desc.WrapMode = ETC_CLAMP_TO_EDGE;
+		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
 		
 		FRHI * RHI = FRHI::Get();
 		FTexturePtr Texture = RHI->CreateTexture(Desc);

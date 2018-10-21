@@ -787,7 +787,7 @@ namespace tix
 			}
 			Texture->Desc.Width = width;
 			Texture->Desc.Height = height;
-			Texture->Desc.WrapMode = ETC_REPEAT;
+			Texture->Desc.AddressMode = ETC_REPEAT;
 			Texture->Desc.SRGB = 0;
 			Texture->Desc.Mips = mipCount;
 

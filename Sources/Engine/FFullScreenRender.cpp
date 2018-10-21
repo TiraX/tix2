@@ -17,6 +17,7 @@ namespace tix
 	{
 		FullScreenQuad = nullptr;
 		FullScreenPipeline = nullptr;
+		FullScreenBinding = nullptr;
 	}
 
 	void FFullScreenRender::InitCommonResources(FRHI* RHI)
@@ -24,7 +25,7 @@ namespace tix
 		if (bInited)
 			return;
 
-		// create full screen quad
+		// Create full screen quad
 		static const FullScreenVertex FullScreenQuadVertices[4] = {
 			{vector3df(-1.f, -1.f, 0.f), vector2df(0.f, 1.f)},
 			{vector3df(1.f, -1.f, 0.f), vector2df(1.f, 1.f)},
@@ -43,7 +44,16 @@ namespace tix
 		RHI->UpdateHardwareResource(FullScreenQuad, MBData);
 		MBData = nullptr;
 
-		// create full screen render pipeline
+		// Create full screen shader binding
+		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1, 1);
+		FullScreenBinding->InitBinding(0, BINDING_TEXTURE, 0, ESS_PIXEL_SHADER);
+		FSamplerDesc Desc;
+		Desc.Filter = ETFT_MINMAG_LINEAR_MIP_NEAREST;
+		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
+		FullScreenBinding->InitStaticSampler(0, Desc, ESS_PIXEL_SHADER);
+		FullScreenBinding->Finalize(RHI);
+
+		// Create full screen render pipeline
 		TPipelinePtr Pipeline = ti_new TPipeline();
 		Pipeline->SetResourceName("FullScreenPL");
 		const TString ShaderPaths[ESS_COUNT] = {
@@ -76,6 +86,7 @@ namespace tix
 		Pipeline->Desc.VsFormat = FullScreenQuad->GetVSFormat();
 
 		FullScreenPipeline = RHI->CreatePipeline();
+		FullScreenPipeline->SetShaderBinding(FullScreenBinding);
 		RHI->UpdateHardwareResource(FullScreenPipeline, Pipeline);
 		Pipeline = nullptr;
 

@@ -28,6 +28,7 @@ namespace tix
 	DECLARE_INSTRUSIVE_PTR(FLight);
 	DECLARE_INSTRUSIVE_PTR(FUniformBuffer);
 	DECLARE_INSTRUSIVE_PTR(FRenderTarget);
+	DECLARE_INSTRUSIVE_PTR(FShaderBinding);
 
 #undef DECLARE_INSTRUSIVE_PTR
 } // end namespace tix

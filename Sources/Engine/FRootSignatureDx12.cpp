@@ -8,9 +8,100 @@
 #if COMPILE_WITH_RHI_DX12
 #include "FRootSignatureDx12.h"
 #include "FRHIDx12.h"
+#include "FRHIDx12Conversion.h"
 
 namespace tix
 {
+	static const D3D12_SHADER_VISIBILITY Dx12ShaderVisibilityMap[ESS_COUNT] =
+	{
+		D3D12_SHADER_VISIBILITY_VERTEX,	//ESS_VERTEX_SHADER,
+		D3D12_SHADER_VISIBILITY_PIXEL,	//ESS_PIXEL_SHADER,
+		D3D12_SHADER_VISIBILITY_DOMAIN,	//ESS_DOMAIN_SHADER,
+		D3D12_SHADER_VISIBILITY_HULL,	//ESS_HULL_SHADER,
+		D3D12_SHADER_VISIBILITY_GEOMETRY,	//ESS_GEOMETRY_SHADER,
+	};
+
+	void FRootSignatureDx12::InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingStage)
+	{
+		TI_ASSERT(InBindingStage < ESS_COUNT);
+		D3D12_SHADER_VISIBILITY ShaderVisibility = Dx12ShaderVisibilityMap[InBindingStage];
+		switch (InBindingType)
+		{
+		case BINDING_UNIFORMBUFFER:
+			GetParameter(InBindingIndex).InitAsConstantBuffer(InBindingRegisterIndex, ShaderVisibility);
+			break;
+		case BINDING_TEXTURE:
+			GetParameter(InBindingIndex).InitAsBufferSRV(InBindingRegisterIndex, ShaderVisibility);
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+	}
+
+	void FRootSignatureDx12::InitTableBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage)
+	{
+		TI_ASSERT(InBindingStage < ESS_COUNT);
+		D3D12_SHADER_VISIBILITY ShaderVisibility = Dx12ShaderVisibilityMap[InBindingStage];
+		switch (InBindingType)
+		{
+		case BINDING_UNIFORMBUFFER:
+			GetParameter(InBindingIndex).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, InBindingRegisterIndex, InBindingSize, ShaderVisibility);
+			break;
+		case BINDING_TEXTURE:
+			GetParameter(InBindingIndex).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, InBindingRegisterIndex, InBindingSize, ShaderVisibility);
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+	}
+
+	void FRootSignatureDx12::InitStaticSampler(uint32 InBindingIndex, const FSamplerDesc& Desc, uint32 InBindingStage)
+	{
+		TI_ASSERT(InBindingStage < ESS_COUNT);
+		D3D12_SHADER_VISIBILITY ShaderVisibility = Dx12ShaderVisibilityMap[InBindingStage];
+
+		D3D12_SAMPLER_DESC Dx12Sampler = {};
+		Dx12Sampler.Filter = GetDxTextureFilterFromTiX(Desc.Filter);
+		Dx12Sampler.AddressU = GetDxTextureAddressModeFromTiX(Desc.AddressMode);
+		Dx12Sampler.AddressV = GetDxTextureAddressModeFromTiX(Desc.AddressMode);
+		Dx12Sampler.AddressW = GetDxTextureAddressModeFromTiX(Desc.AddressMode);
+		Dx12Sampler.MipLODBias = 0;
+		Dx12Sampler.MaxAnisotropy = 0;
+		Dx12Sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		Dx12Sampler.MinLOD = 0.0f;
+		Dx12Sampler.MaxLOD = D3D12_FLOAT32_MAX;
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+
+		InitStaticSampler(InBindingIndex, Dx12Sampler, D3D12_SHADER_VISIBILITY_PIXEL);
+	}
+
+	void FRootSignatureDx12::Finalize(FRHI * RHI)
+	{
+		FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(RHI);
+
+		D3D12_ROOT_SIGNATURE_FLAGS RootSignatureFlags =
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+
+		Finalize(RHIDx12->GetD3dDevice().Get(), RootSignatureFlags);
+	}
+
+	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FUniformBufferPtr UniformBuffer)
+	{}
+	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FTexturePtr Texture)
+	{}
+	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FRenderResourceTablePtr RenderResourceTable)
+	{}
+
 	void FRootSignatureDx12::InitStaticSampler(
 		uint32 Register,
 		const D3D12_SAMPLER_DESC& NonStaticSamplerDesc,

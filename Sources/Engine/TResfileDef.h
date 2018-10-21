@@ -165,7 +165,7 @@ namespace tix
 		int32 Format;
 		int32 Width;
 		int32 Height;
-		int32 WrapMode;
+		int32 AddressMode;
 		uint32 SRGB;
 		uint32 Mips;
 		uint32 Surfaces;

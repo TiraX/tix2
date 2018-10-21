@@ -105,36 +105,31 @@ namespace tix
 
 	////////////////////////////////////////////////////////////////
 
-	class FRootSignatureDx12
+	class FRootSignatureDx12 : public FShaderBinding
 	{
 	public:
 		FRootSignatureDx12(uint32 NumRootParams = 0, uint32 NumStaticSamplers = 0) 
-			: Finalized(false)
+			: FShaderBinding(NumRootParams, NumStaticSamplers)
+			, Finalized(false)
 		{
 			Reset(NumRootParams, NumStaticSamplers);
 		}
 
-		~FRootSignatureDx12()
+		virtual ~FRootSignatureDx12()
 		{
 			Signature = nullptr;
 		}
 
-		static void DestroyAll(void);
+		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingStage) override;
+		virtual void InitTableBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) override;
+		virtual void InitStaticSampler(uint32 InBindingIndex, const FSamplerDesc& Desc, uint32 InBindingStage) override;
 
-		void Reset(uint32 NumRootParams, uint32 NumStaticSamplers = 0)
-		{
-			if (NumRootParams > 0)
-			{
-				ParamArray.resize(NumRootParams);
-			}
+		virtual void Finalize(FRHI * RHI);
 
-			if (NumStaticSamplers > 0)
-			{
-				SamplerArray.resize(NumStaticSamplers);
-			}
-			NumInitializedStaticSamplers = 0;
-		}
-
+		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FUniformBufferPtr UniformBuffer) override;
+		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FTexturePtr Texture) override;
+		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FRenderResourceTablePtr RenderResourceTable) override;
+		
 		FRootParameterDx12& GetParameter(uint32 EntryIndex)
 		{
 			return ParamArray[EntryIndex];
@@ -153,6 +148,20 @@ namespace tix
 		ID3D12RootSignature* Get() const
 		{
 			return Signature.Get(); 
+		}
+	private:
+		void Reset(uint32 NumRootParams, uint32 NumStaticSamplers = 0)
+		{
+			if (NumRootParams > 0)
+			{
+				ParamArray.resize(NumRootParams);
+			}
+
+			if (NumStaticSamplers > 0)
+			{
+				SamplerArray.resize(NumStaticSamplers);
+			}
+			NumInitializedStaticSamplers = 0;
 		}
 
 	private:

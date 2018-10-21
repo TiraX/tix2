@@ -36,6 +36,7 @@ namespace tix
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		//virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
+		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
@@ -66,6 +67,10 @@ namespace tix
 		virtual void PushRenderTarget(FRenderTargetPtr RT);
 		virtual FRenderTargetPtr PopRenderTarget();
 
+		ComPtr<ID3D12Device> GetD3dDevice()
+		{
+			return D3dDevice;
+		}
 	protected: 
 		FRHIDx12();
 

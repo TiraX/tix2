@@ -13,8 +13,18 @@ namespace tix
 		FPipeline();
 		virtual ~FPipeline();
 
+		void SetShaderBinding(FShaderBindingPtr Binding)
+		{
+			ShaderBinding = Binding;
+		}
+
+		FShaderBindingPtr GetShaderBinding()
+		{
+			return ShaderBinding;
+		}
 	protected:
 
 	protected:
+		FShaderBindingPtr ShaderBinding;
 	};
 }
