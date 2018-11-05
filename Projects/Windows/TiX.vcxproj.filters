@@ -519,4 +519,9 @@
       <Filter>Sources\Render\Shaders\dx12</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Sources\Engine\Shaders\dx12\FullScreenRS.hlsli">
+      <Filter>Sources\Render\Shaders\dx12</Filter>
+    </None>
+  </ItemGroup>
 </Project>

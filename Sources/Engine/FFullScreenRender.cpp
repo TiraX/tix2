@@ -46,7 +46,7 @@ namespace tix
 
 		// Create full screen shader binding
 		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1, 1);
-		FullScreenBinding->InitBinding(0, BINDING_TEXTURE, 0, ESS_PIXEL_SHADER);
+		FullScreenBinding->InitTableBinding(0, BINDING_TEXTURE, 0, 1, ESS_PIXEL_SHADER);
 		FSamplerDesc Desc;
 		Desc.Filter = ETFT_MINMAG_LINEAR_MIP_NEAREST;
 		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
@@ -101,7 +101,7 @@ namespace tix
 		// a temp solution , change it in future 
 		FRenderResourceTablePtr TexTable = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
 		TexTable->PutTextureInTable(Texture, 0);
-		RHI->SetRenderResourceTable(3, TexTable);
+		RHI->SetRenderResourceTable(0, TexTable);
 		TI_TODO("Important, re-factor here!!!!!!!");
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);

@@ -1,4 +1,6 @@
 // A constant buffer that stores the three basic column-major matrices for composing geometry.
+#include "FullScreenRS.hlsli"
+
 cbuffer ModelViewProjectionConstantBuffer : register(b0)
 {
 	matrix ViewProjection;
@@ -21,6 +23,7 @@ struct PixelShaderInput
 };
 
 // Simple shader to do vertex processing on the GPU.
+[RootSignature(FullScreen_RootSig)]
 PixelShaderInput main(VertexShaderInput input)
 {
 	PixelShaderInput output;
