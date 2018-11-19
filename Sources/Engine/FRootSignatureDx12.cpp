@@ -23,6 +23,9 @@ namespace tix
 
 	void FRootSignatureDx12::InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingStage)
 	{
+#if DEBUG_SHADER_BINDING_TYPE
+		InitBindingType(InBindingIndex, InBindingType, false);
+#endif
 		TI_ASSERT(InBindingStage < ESS_COUNT);
 		D3D12_SHADER_VISIBILITY ShaderVisibility = Dx12ShaderVisibilityMap[InBindingStage];
 		switch (InBindingType)
@@ -41,6 +44,9 @@ namespace tix
 
 	void FRootSignatureDx12::InitTableBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage)
 	{
+#if DEBUG_SHADER_BINDING_TYPE
+		InitBindingType(InBindingIndex, InBindingType, true);
+#endif
 		TI_ASSERT(InBindingStage < ESS_COUNT);
 		D3D12_SHADER_VISIBILITY ShaderVisibility = Dx12ShaderVisibilityMap[InBindingStage];
 		switch (InBindingType)
@@ -94,13 +100,6 @@ namespace tix
 
 		Finalize(RHIDx12->GetD3dDevice().Get(), RootSignatureFlags);
 	}
-
-	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FUniformBufferPtr UniformBuffer)
-	{}
-	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FTexturePtr Texture)
-	{}
-	void FRootSignatureDx12::Bind(FRHI * RHI, uint32 BindingIndex, FRenderResourceTablePtr RenderResourceTable)
-	{}
 
 	void FRootSignatureDx12::InitStaticSampler(
 		uint32 Register,

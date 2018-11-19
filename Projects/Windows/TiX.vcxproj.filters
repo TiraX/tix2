@@ -205,6 +205,9 @@
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -508,6 +511,9 @@
       <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

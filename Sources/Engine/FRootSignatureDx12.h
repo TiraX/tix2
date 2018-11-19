@@ -124,11 +124,7 @@ namespace tix
 		virtual void InitTableBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) override;
 		virtual void InitStaticSampler(uint32 InBindingIndex, const FSamplerDesc& Desc, uint32 InBindingStage) override;
 
-		virtual void Finalize(FRHI * RHI);
-
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FUniformBufferPtr UniformBuffer) override;
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FTexturePtr Texture) override;
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FRenderResourceTablePtr RenderResourceTable) override;
+		virtual void Finalize(FRHI * RHI) override;
 		
 		FRootParameterDx12& GetParameter(uint32 EntryIndex)
 		{

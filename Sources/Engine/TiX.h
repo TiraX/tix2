@@ -68,6 +68,7 @@ using namespace std;
 #include "FMeshBuffer.h"
 #include "FShader.h"
 #include "FShaderBinding.h"
+#include "FShaderParamValue.h"
 #include "FTexture.h"
 #include "FPipeline.h"
 #include "FUniformBuffer.h"

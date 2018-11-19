@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FUniformBuffer.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h" />
     <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
     <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBuffer.h" />

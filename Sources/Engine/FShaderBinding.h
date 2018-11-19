@@ -7,12 +7,20 @@
 
 namespace tix
 {
+#ifdef TIX_DEBUG
+#	define DEBUG_SHADER_BINDING_TYPE 1
+#else
+#	define DEBUG_SHADER_BINDING_TYPE 0
+#endif // TIX_DEBUG
+
+
 	enum E_BINDING_TYPE
 	{
 		BINDING_UNIFORMBUFFER,
 		BINDING_TEXTURE,
 
 		BINDING_TYPE_NUM,
+		BINDING_TYPE_INVALID = BINDING_TYPE_NUM,
 	};
 
 	struct FSamplerDesc
@@ -25,7 +33,7 @@ namespace tix
 	class FShaderBinding : public IReferenceCounted
 	{
 	public:
-		FShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers);
+		FShaderBinding(uint32 InNumBindings, uint32 NumStaticSamplers);
 		virtual ~FShaderBinding();
 
 		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingStage) = 0;
@@ -34,10 +42,24 @@ namespace tix
 
 		virtual void Finalize(FRHI * RHI) = 0;
 
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FUniformBufferPtr UniformBuffer) = 0;
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FTexturePtr Texture) = 0;
-		virtual void Bind(FRHI * RHI, uint32 BindingIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
+		const int32 GetNumBinding() const
+		{
+			return NumBindings;
+		}
 
-	private:
+#if DEBUG_SHADER_BINDING_TYPE
+		void ValidateBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, bool IsTable);
+#endif
+
+	protected:
+#if DEBUG_SHADER_BINDING_TYPE
+		void InitBindingType(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, bool IsTable);
+#endif
+
+	protected:
+		int32 NumBindings;
+#if DEBUG_SHADER_BINDING_TYPE
+		TVector<int32> BindingTypes;
+#endif
 	};
 }
