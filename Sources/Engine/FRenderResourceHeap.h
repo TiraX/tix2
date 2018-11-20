@@ -26,10 +26,10 @@ namespace tix
 
 		void Create(E_RENDER_RESOURCE_HEAP_TYPE HeapType, uint32 HeapSize, uint32 HeapOffset);
 
-		FRenderResourceTablePtr AllocateTable(uint32 Size);
-		void AllocateTable(FRenderResourceTablePtr OutTable);
+		TI_API FRenderResourceTablePtr AllocateTable(uint32 Size);
+		TI_API void AllocateTable(FRenderResourceTablePtr OutTable);
 
-		void RecallTable(const FRenderResourceTable& Table);
+		TI_API void RecallTable(const FRenderResourceTable& Table);
 
 		E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const
 		{

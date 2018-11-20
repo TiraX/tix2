@@ -18,6 +18,7 @@ namespace tix
 
 		void InitCommonResources(FRHI* RHI);
 		void DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture);
+		void DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable);
 
 	protected:
 		bool bInited;

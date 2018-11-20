@@ -4,17 +4,28 @@
 */
 
 #pragma once
+#include "FShaderBinding.h"
 
 namespace tix
 {
 	struct FShaderValue
 	{
-		union 
+		FRenderResourcePtr RenderResource;
+		int32 BindingType;
+
+		FShaderValue()
+			: BindingType(BINDING_TYPE_INVALID)
+		{}
+
+		FShaderValue(FRenderResourcePtr InResource, int32 InType)
+			: RenderResource(InResource)
+			, BindingType(InType)
+		{}
+
+		~FShaderValue()
 		{
-			FUniformBufferPtr UniformBuffer;
-			FTexturePtr Texture;
-			FRenderResourceTablePtr Table;
-		};
+			RenderResource = nullptr;
+		}
 	};
 
 	class FRHI;
@@ -27,6 +38,8 @@ namespace tix
 		void SetParamValue(uint32 InBindingIndex, FUniformBufferPtr UniformBuffer);
 		void SetParamValue(uint32 InBindingIndex, FTexturePtr Texture);
 		void SetParamValue(uint32 InBindingIndex, FRenderResourceTablePtr RenderResourceTable);
+
+		void ApplyParamValues(FRHI * RHI);
 
 	private:
 		FShaderBindingPtr ShaderBinding;

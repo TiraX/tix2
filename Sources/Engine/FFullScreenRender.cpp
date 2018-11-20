@@ -46,7 +46,7 @@ namespace tix
 
 		// Create full screen shader binding
 		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1, 1);
-		FullScreenBinding->InitTableBinding(0, BINDING_TEXTURE, 0, 1, ESS_PIXEL_SHADER);
+		FullScreenBinding->InitBinding(0, BINDING_TEXTURE_TABLE, 0, 1, ESS_PIXEL_SHADER);
 		FSamplerDesc Desc;
 		Desc.Filter = ETFT_MINMAG_LINEAR_MIP_NEAREST;
 		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
@@ -96,6 +96,7 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture)
 	{
 		TI_ASSERT(bInited);
+		TI_ASSERT(0);
 		RHI->SetMeshBuffer(FullScreenQuad);
 		RHI->SetPipeline(FullScreenPipeline);
 		// a temp solution , change it in future 
@@ -103,6 +104,16 @@ namespace tix
 		TexTable->PutTextureInTable(Texture, 0);
 		RHI->SetRenderResourceTable(0, TexTable);
 		TI_TODO("Important, re-factor here!!!!!!!");
+
+		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
+	}
+
+	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable)
+	{
+		TI_ASSERT(bInited);
+		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->SetPipeline(FullScreenPipeline);
+		RHI->SetRenderResourceTable(0, TextureTable);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}

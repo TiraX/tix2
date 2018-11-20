@@ -17,10 +17,10 @@ namespace tix
 
 		virtual void Destroy() override {};
 
-		void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
-		void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
-		void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
-		void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
+		TI_API void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
+		TI_API void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
+		TI_API void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
+		TI_API void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
 
 		uint32 GetStartIndex() const
 		{
@@ -38,7 +38,7 @@ namespace tix
 			return Size;
 		}
 
-		E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const;
+		TI_API E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const;
 	protected:
 		FRenderResourceHeap* Heap;
 		uint32 Start;

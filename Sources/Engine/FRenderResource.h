@@ -7,6 +7,13 @@
 
 namespace tix
 {
+	template<typename T>
+	inline IInstrusivePtr<T> ResourceCast(FRenderResourcePtr Resource)
+	{
+		IInstrusivePtr<T> Ptr = static_cast<T*>(Resource.get());
+		return Ptr;
+	}
+
 	class FRenderResource : public IReferenceCounted
 	{
 	public:

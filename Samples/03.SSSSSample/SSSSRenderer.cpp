@@ -12,6 +12,7 @@ FSSSSRenderer::FSSSSRenderer()
 
 FSSSSRenderer::~FSSSSRenderer()
 {
+	RTTextureTable = nullptr;
 	RTTest = nullptr;
 }
 
@@ -28,6 +29,9 @@ void FSSSSRenderer::InitInRenderThread()
 	RTTest->AddColorBuffer(EPF_BGRA8, ERTC_COLOR0);
 	RTTest->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RTTest->Compile();
+
+	RTTextureTable = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
+	RTTextureTable->PutTextureInTable(RTTest->GetColorBuffer(ERTC_COLOR0).Texture, 0);
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -65,5 +69,5 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	
 	RHI->PopRenderTarget();
 
-	FSRender.DrawFullScreenTexture(RHI, RTTest->GetColorBuffer(ERTC_COLOR0).Texture);
+	FSRender.DrawFullScreenTexture(RHI, RTTextureTable);
 }

@@ -1348,16 +1348,16 @@ namespace tix
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
 		CommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
-		TI_TODO("Need to hold table resources");
-		//HoldResourceReference(InUniformBuffer);
+		HoldResourceReference(RenderResourceTable);
 	}
 
 	void FRHIDx12::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)
 	{
 		FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
-
+		//The GPU virtual address of the Buffer.Textures are not supported.D3D12_GPU_VIRTUAL_ADDRESS is a typedef'd alias of UINT64.
 		// Bind texture to pipeline
-		CommandList->SetGraphicsRootShaderResourceView(BindIndex, TexDx12->TextureResource.GetResource()->GetGPUVirtualAddress());
+		//CommandList->SetGraphicsRootShaderResourceView(BindIndex, TexDx12->TextureResource.GetResource()->GetGPUVirtualAddress());
+		TI_ASSERT(0);
 
 		HoldResourceReference(InTexture);
 	}

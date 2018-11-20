@@ -18,4 +18,5 @@ private:
 protected:
 	FRenderTargetPtr RTTest;
 	FFullScreenRender FSRender;
+	FRenderResourceTablePtr RTTextureTable;
 };
