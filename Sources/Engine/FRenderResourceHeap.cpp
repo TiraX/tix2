@@ -30,11 +30,11 @@ namespace tix
 	FRenderResourceTablePtr FRenderResourceHeap::AllocateTable(uint32 TableSize)
 	{
 		FRenderResourceTablePtr ResourceTable = FRHI::Get()->CreateRenderResourceTable(TableSize);
-		AllocateTable(ResourceTable);
+		InitResourceTable(ResourceTable);
 		return ResourceTable;
 	}
 
-	void FRenderResourceHeap::AllocateTable(FRenderResourceTablePtr OutTable)
+	void FRenderResourceHeap::InitResourceTable(FRenderResourceTablePtr OutTable)
 	{
 		TI_ASSERT(IsRenderThread());
 		const uint32 TableSize = OutTable->GetTableSize();

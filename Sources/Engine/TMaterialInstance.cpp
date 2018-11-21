@@ -42,7 +42,7 @@ namespace tix
 				FRenderResourceTablePtr, MI_TextureResourceTable, TextureResourceTable,
 				TVector<FTexturePtr>, Textures, Textures,
 				{
-					RHI->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(MI_TextureResourceTable);
+					RHI->GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(MI_TextureResourceTable);
 					for (int32 t = 0; t < (int32)Textures.size(); ++t)
 					{
 						FTexturePtr Texture = Textures[t];
