@@ -54,76 +54,36 @@ namespace tix
 
 	void TResMaterialBindingHelper::OutputMaterialParameterBinding(TStream& OutStream, TVector<TString>& OutStrings)
 	{
-		TI_ASSERT(0);
-		//TResfileChunkHeader ChunkHeader;
-		//ChunkHeader.ID = TIRES_ID_CHUNK_MINSTANCE;
-		//ChunkHeader.Version = TIRES_VERSION_CHUNK_MINSTANCE;
-		//ChunkHeader.ElementCount = 1;
+		TResfileChunkHeader ChunkHeader;
+		ChunkHeader.ID = TIRES_ID_CHUNK_MBINDING;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_MBINDING;
+		ChunkHeader.ElementCount = 1;
 
-		//TStream HeaderStream, DataStream(1024 * 8);
-		//for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
-		//{
-		//	THeaderMaterialInstance Define;
-		//	Define.NameIndex = AddStringToList(OutStrings, InstanceName);
-		//	Define.LinkedMaterialIndex = AddStringToList(OutStrings, LinkedMaterial);
-		//	Define.ParamCount = (int32)(ValueParameters.size() + TextureParameters.size());
-		//	
-		//	// Save header
-		//	HeaderStream.Put(&Define, sizeof(THeaderMaterialInstance));
+		TStream HeaderStream, DataStream(1024 * 8);
+		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
+		{
+			THeaderMaterialBinding Define;
+			Define.BindingCount = (int32)Bindings.size();
 
-		//	// Save Parameters formats
-		//	TStream SName, SType, SValue;
-		//	// Value params first
-		//	for (const auto& Param : ValueParameters)
-		//	{
-		//		int32 ParamNameIndex = AddStringToList(OutStrings, Param.ParamName);
-		//		SName.Put(&ParamNameIndex, sizeof(int32));
-		//		SType.Put(&Param.ParamType, sizeof(uint8));
-		//		switch (Param.ParamType)
-		//		{
-		//		case MIPT_INT:
-		//		case MIPT_FLOAT:
-		//			SValue.Put(&Param.ParamValue.ValueFloat, sizeof(float));
-		//			break;
-		//		case MIPT_INT4:
-		//		case MIPT_FLOAT4:
-		//			SValue.Put(&Param.ParamValue.ValueQuat, sizeof(float) * 4);
-		//			break;
-		//		default:
-		//			printf("Invalid param type %d for %s.\n", Param.ParamType, InstanceName.c_str());
-		//			break;
-		//		}
-		//	}
-		//	// Then texture params
-		//	for (const auto& Param : TextureParameters)
-		//	{
-		//		int32 ParamNameIndex = AddStringToList(OutStrings, Param.ParamName);
-		//		SName.Put(&ParamNameIndex, sizeof(int32));
-		//		SType.Put(&Param.ParamType, sizeof(uint8));
-		//		switch (Param.ParamType)
-		//		{
-		//		case MIPT_TEXTURE:
-		//		{
-		//			int32 TextureNameIndex = AddStringToList(OutStrings, Param.ParamValue.ValueString);
-		//			SValue.Put(&TextureNameIndex, sizeof(int32));
-		//		}
-		//		break;
-		//		default:
-		//			printf("Invalid param type %d for %s.\n", Param.ParamType, InstanceName.c_str());
-		//			break;
-		//		}
-		//	}
-		//	FillZero4(SType);
-		//	DataStream.Put(SName.GetBuffer(), SName.GetLength());
-		//	DataStream.Put(SType.GetBuffer(), SType.GetLength());
-		//	DataStream.Put(SValue.GetBuffer(), SValue.GetLength());
-		//}
+			// Save header
+			HeaderStream.Put(&Define, sizeof(THeaderMaterialBinding));
 
-		//ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
+			// Save Param Bindings
+			for (const auto& Binding : Bindings)
+			{
+				TBindingInfo Info;
+				Info.BindingType = (int8)Binding.BindingType;
+				Info.BindingStage = (int8)Binding.BindingStage;
+				Info.BindingSize = (int8)Binding.Size;
+				DataStream.Put(&Info, sizeof(TBindingInfo));
+			}
+		}
 
-		//OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
-		//FillZero4(OutStream);
-		//OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
-		//OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
+		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
+
+		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
+		FillZero4(OutStream);
+		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
+		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 }

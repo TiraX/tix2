@@ -11,10 +11,10 @@ namespace tix
 	{
 		TIRES_VERSION_MAINFILE = 1,
 		TIRES_VERSION_CHUNK_MESH = 1,
-		//TIRES_VERSION_CHUNK_SCEN	= 4,	// add TiMaterial in DAE converting, remove Material, use default TiMaterial instead;added trigger node
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
 		TIRES_VERSION_CHUNK_MATERIAL = 1,
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
+		TIRES_VERSION_CHUNK_MBINDING = 1,
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -51,6 +51,7 @@ namespace tix
 		TIRES_ID_CHUNK_TEXTURE		= TI_MAKE_IDENTIFIER('T', 'E', 'X', 'E'),
 		TIRES_ID_CHUNK_MATERIAL		= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'R'),
 		TIRES_ID_CHUNK_MINSTANCE	= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'I'),
+		TIRES_ID_CHUNK_MBINDING		= TI_MAKE_IDENTIFIER('M', 'B', 'I', 'D'),
 		//TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
@@ -190,5 +191,25 @@ namespace tix
 		int32 NameIndex;
 		int32 LinkedMaterialIndex;
 		int32 ParamCount;
+	};
+
+	struct THeaderMaterialBinding
+	{
+		int32 BindingCount;
+	};
+
+	struct TBindingInfo
+	{
+		int8 BindingType;
+		int8 BindingStage;
+		int8 BindingSize;
+		int8 Alignment;
+
+		TBindingInfo()
+			: BindingType(0)
+			, BindingStage(0)
+			, BindingSize(0)
+			, Alignment(0)
+		{}
 	};
 }
