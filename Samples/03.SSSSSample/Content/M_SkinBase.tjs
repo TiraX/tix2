@@ -20,7 +20,7 @@
 		"EPF_BGRA8"
 	],
 	"rt_depth": "EPF_DEPTH24_STENCIL8",
-	"shader_binding": "MPB_SkinBase.tres",
+	"shader_binding": "SB_SkinBase.tres",
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": true,
 	"depth_test": true,

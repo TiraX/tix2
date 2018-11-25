@@ -5,24 +5,24 @@
 
 #include "stdafx.h"
 #include "ResHelper.h"
-#include "ResMaterialBindingHelper.h"
+#include "ResShaderBindingHelper.h"
 #include "rapidjson/document.h"
 
 using namespace rapidjson;
 
 namespace tix
 {
-	TResMaterialBindingHelper::TResMaterialBindingHelper()
+	TResShaderBindingHelper::TResShaderBindingHelper()
 	{
 	}
 
-	TResMaterialBindingHelper::~TResMaterialBindingHelper()
+	TResShaderBindingHelper::~TResShaderBindingHelper()
 	{
 	}
 
-	void TResMaterialBindingHelper::LoadMaterialParameterBinding(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResShaderBindingHelper::LoadShaderBinding(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
-		TResMaterialBindingHelper Helper;
+		TResShaderBindingHelper Helper;
 
 		// MPB Name
 		Value& MPBName = Doc["name"];
@@ -43,40 +43,45 @@ namespace tix
 				ParamSize = Parameter["size"].GetInt();
 			}
 
-			TMaterialParamBinding& Binding = Helper.Bindings[p];
-			Binding.BindingType = GetBindingType(BindingType.GetString());
-			Binding.BindingStage = GetShaderStage(BindingStage.GetString());
-			Binding.Size = ParamSize;
+			TI_ASSERT(ParamSize < 255);
+			TBindingParamInfo& Binding = Helper.Bindings[p];
+			Binding.BindingType = (int8)GetBindingType(BindingType.GetString());
+			Binding.BindingStage = (int8)GetShaderStage(BindingStage.GetString());
+			Binding.BindingSize = (uint8)ParamSize;
 		}
 
-		Helper.OutputMaterialParameterBinding(OutStream, OutStrings);
+		Helper.OutputShaderBinding(OutStream, OutStrings);
 	}
 
-	void TResMaterialBindingHelper::OutputMaterialParameterBinding(TStream& OutStream, TVector<TString>& OutStrings)
+	void TResShaderBindingHelper::OutputShaderBinding(TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResfileChunkHeader ChunkHeader;
-		ChunkHeader.ID = TIRES_ID_CHUNK_MBINDING;
-		ChunkHeader.Version = TIRES_VERSION_CHUNK_MBINDING;
+		ChunkHeader.ID = TIRES_ID_CHUNK_SBINDING;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_SBINDING;
 		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);
 		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
 		{
-			THeaderMaterialBinding Define;
+			THeaderShaderBinding Define;
 			Define.BindingCount = (int32)Bindings.size();
-
-			// Save header
-			HeaderStream.Put(&Define, sizeof(THeaderMaterialBinding));
-
+			
 			// Save Param Bindings
+			TStream BindingStream;
 			for (const auto& Binding : Bindings)
 			{
-				TBindingInfo Info;
-				Info.BindingType = (int8)Binding.BindingType;
-				Info.BindingStage = (int8)Binding.BindingStage;
-				Info.BindingSize = (int8)Binding.Size;
-				DataStream.Put(&Info, sizeof(TBindingInfo));
+				TBindingParamInfo Info;
+				Info = Binding;
+				BindingStream.Put(&Info, sizeof(TBindingParamInfo));
 			}
+
+			// Calculate Binding Crc
+			Define.BindingCrc = TCrc::MemCrc32(BindingStream.GetBuffer(), BindingStream.GetLength());
+
+			// Save header
+			HeaderStream.Put(&Define, sizeof(THeaderShaderBinding));
+			// Save Data
+			DataStream.Put(BindingStream.GetBuffer(), BindingStream.GetLength());
 		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();

@@ -4,7 +4,6 @@
 */
 
 #include "stdafx.h"
-
 #include "TResFile.h"
 
 namespace tix
@@ -114,6 +113,10 @@ namespace tix
 				ChunkHeader[ECL_MATERIAL_INSTANCE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_MINSTANCE);
 				break;
+			case TIRES_ID_CHUNK_SBINDING:
+				ChunkHeader[ECL_SHADER_BINDING] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SBINDING);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -137,6 +140,9 @@ namespace tix
 
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] != nullptr)
 			Resource = CreateMaterialInstance();
+
+		if (ChunkHeader[ECL_SHADER_BINDING] != nullptr)
+			Resource = CreateShaderlBinding();
 
 		Resource->SetResourceName(Filename);
 
@@ -336,6 +342,15 @@ namespace tix
 				}
 			}
 
+			// Load Shader Binding
+			TString ShaderBindingResName = GetString(Header->ShaderBindingStr);
+			if (ShaderBindingResName.rfind(".tres") == TString::npos)
+			{
+				ShaderBindingResName += ".tres";
+			}
+			TResourcePtr ShaderBindingRes = TResourceLibrary::Get()->LoadResource(ShaderBindingResName);				
+			Material->ShaderBinding = static_cast<TShaderBinding*>(ShaderBindingRes.get());
+
 			Result = Material;
 		}
 		return Result;
@@ -428,6 +443,45 @@ namespace tix
 			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
 
 			Result = MInstance;
+		}
+		return Result;
+	}
+
+	TShaderBindingPtr TResFile::CreateShaderlBinding()
+	{
+		if (ChunkHeader[ECL_SHADER_BINDING] == nullptr)
+			return nullptr;
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_SHADER_BINDING];
+		const int32 SBCount = ChunkHeader[ECL_SHADER_BINDING]->ElementCount;
+		if (SBCount == 0)
+		{
+			return nullptr;
+		}
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* SBDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderShaderBinding)) * SBCount;
+
+		TShaderBindingPtr Result;
+		// each ResFile should have only 1 resource
+		TI_ASSERT(SBCount == 1);
+		for (int32 i = 0; i < SBCount; ++i)
+		{
+			const THeaderShaderBinding* Header = (const THeaderShaderBinding*)(HeaderStart + ti_align4((int32)sizeof(THeaderShaderBinding)) * i);
+			TShaderBindingPtr ShaderBinding = ti_new TShaderBinding;
+
+			ShaderBinding->Bindings.resize(Header->BindingCount);
+
+			const TBindingParamInfo* BindingInfo = (const TBindingParamInfo*)(SBDataStart);
+			for (int32 i = 0; i < Header->BindingCount; ++i)
+			{
+				const TBindingParamInfo& BindingSrc = BindingInfo[i];
+				TBindingParamInfo& BindingDest = ShaderBinding->Bindings[i];
+
+				BindingDest = BindingSrc;
+			}
+
+			Result = ShaderBinding;
 		}
 		return Result;
 	}

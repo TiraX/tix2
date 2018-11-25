@@ -208,6 +208,12 @@
     <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -514,6 +520,12 @@
       <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TCrc.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TShaderBinding.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

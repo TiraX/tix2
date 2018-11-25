@@ -34,6 +34,7 @@ using namespace std;
 #include "TStringExt.h"
 #include "TMath.h"
 #include "TUtils.h"
+#include "TCrc.h"
 
 // Game thread components
 #include "TThread.h"
@@ -53,6 +54,7 @@ using namespace std;
 #include "TPipeline.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
+#include "TShaderBinding.h"
 #include "TResfileDef.h"
 #include "TResFile.h"
 #include "TNode.h"

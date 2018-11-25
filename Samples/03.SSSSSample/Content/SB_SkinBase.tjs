@@ -1,6 +1,6 @@
 {
-	"name": "MPB_SkinBase",
-	"type": "material_parameter_binding",
+	"name": "SB_SkinBase",
+	"type": "shader_binding",
 	"version": 1,
 	"desc": "",
 	"parameters": 

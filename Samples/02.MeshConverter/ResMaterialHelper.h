@@ -21,6 +21,7 @@ namespace tix
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
+		void SetShaderBinding(const TString& SBRes);
 
 		void OutputMaterial(TStream& OutStream, TVector<TString>& OutStrings);
 
@@ -36,5 +37,6 @@ namespace tix
 		TVector<E_PIXEL_FORMAT> ColorBuffers;
 		E_PIXEL_FORMAT DepthBuffer;
 		TStream ShaderCodes[ESS_COUNT];
+		TString ShaderBinding;
 	};
 }

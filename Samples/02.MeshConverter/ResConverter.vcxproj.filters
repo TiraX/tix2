@@ -31,7 +31,7 @@
     <ClInclude Include="ResMaterialHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResMaterialBindingHelper.h">
+    <ClInclude Include="ResShaderBindingHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,7 +63,7 @@
     <ClCompile Include="ResMaterialHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResMaterialBindingHelper.cpp">
+    <ClCompile Include="ResShaderBindingHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

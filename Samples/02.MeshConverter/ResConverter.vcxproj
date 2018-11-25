@@ -158,10 +158,10 @@
   <ItemGroup>
     <ClInclude Include="dds.h" />
     <ClInclude Include="ResHelper.h" />
-    <ClInclude Include="ResMaterialBindingHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
     <ClInclude Include="ResMaterialInstanceHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
+    <ClInclude Include="ResShaderBindingHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -169,11 +169,11 @@
   <ItemGroup>
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
-    <ClCompile Include="ResMaterialBindingHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />
     <ClCompile Include="ResMaterialInstanceHelper.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
     <ClCompile Include="ResMeshHelperObj.cpp" />
+    <ClCompile Include="ResShaderBindingHelper.cpp" />
     <ClCompile Include="ResTextureHelper.cpp" />
     <ClCompile Include="ResTextureHelperDds.cpp" />
     <ClCompile Include="stdafx.cpp">

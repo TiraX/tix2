@@ -62,6 +62,10 @@ namespace tix
 		Value& two_sides = Doc["two_sides"];
 		Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
 
+		// shader binding
+		Value& shader_binding = Doc["shader_binding"];
+		Helper.SetShaderBinding(shader_binding.IsNull() ? "" : shader_binding.GetString());
+
 		// rt format
 		Value& RT_Colors = Doc["rt_colors"];
 		TI_ASSERT(RT_Colors.IsArray());
@@ -106,6 +110,11 @@ namespace tix
 	{
 		bTwoSides = bEnable;
 	}
+
+	void TResMaterialHelper::SetShaderBinding(const TString& SBRes)
+	{
+		ShaderBinding = SBRes;
+	}
 	
 	void TResMaterialHelper::OutputMaterial(TStream& OutStream, TVector<TString>& OutStrings)
 	{
@@ -129,6 +138,7 @@ namespace tix
 			Define.bDepthWrite = bDepthWrite ? 1 : 0;
 			Define.bDepthTest = bDepthTest ? 1 : 0;
 			Define.bTwoSides = bTwoSides ? 1 : 0;
+			Define.ShaderBindingStr = AddStringToList(OutStrings, ShaderBinding);
 
 			const int32 cb_count = (int32)ColorBuffers.size();
 			int32 cb = 0;
