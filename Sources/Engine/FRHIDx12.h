@@ -144,7 +144,6 @@ namespace tix
 		ComPtr<ID3D12GraphicsCommandList> CommandList;
 
 		// RootSignature
-		FRootSignatureDx12 RootSignature;
 		D3D12_SAMPLER_DESC DefaultSampler;
 
 		// Descriptor heaps

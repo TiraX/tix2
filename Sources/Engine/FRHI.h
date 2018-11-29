@@ -20,10 +20,12 @@ namespace tix
 
 	struct FBoundResource
 	{
+		FPipelinePtr Pipeline;
 		FShaderBindingPtr ShaderBinding;
 
 		void Reset()
 		{
+			Pipeline = nullptr;
 			ShaderBinding = nullptr;
 		}
 	};

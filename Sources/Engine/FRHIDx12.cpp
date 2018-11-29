@@ -320,42 +320,7 @@ namespace tix
 			DefaultSampler.MinLOD = 0.0f;
 			DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
 		}
-
-		// Create a root signature with a single constant buffer slot.
-		{
-			D3D12_SAMPLER_DESC _DefaultSampler = {};
-			_DefaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			_DefaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			_DefaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			_DefaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			_DefaultSampler.MipLODBias = 0;
-			_DefaultSampler.MaxAnisotropy = 0;
-			_DefaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-			_DefaultSampler.MinLOD = 0.0f;
-			_DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
-
-			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
-
-			TI_TODO("Refactor root signature to FShaderBindings");
-
-			RootSignature.Reset(4, 1);
-			RootSignature.InitStaticSampler(0, _DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
-			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
-			//RootSignature.GetParameter(1).InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
-			//RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
-			//RootSignature.GetParameter(1).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
-			RootSignature.GetParameter(1).InitAsConstantBuffer(4, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(2).InitAsConstantBuffer(5, D3D12_SHADER_VISIBILITY_PIXEL);
-			RootSignature.GetParameter(3).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_PIXEL);
-
-			RootSignature.Finalize(D3dDevice.Get(), rootSignatureFlags);
-		}
-
+		
 		// Set the 3D rendering viewport to target the entire window.
 		FRHI::SetViewport(FViewport(0, 0, BackBufferWidth, BackBufferHeight));
 	}
@@ -370,7 +335,6 @@ namespace tix
 		VALIDATE_HRESULT(CommandList->Reset(CommandAllocators[CurrentFrame].Get(), nullptr));
 
 		// Set the graphics root signature and descriptor heaps to be used by this frame.
-		CommandList->SetGraphicsRootSignature(RootSignature.Get());
 		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
 		CommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
@@ -420,6 +384,9 @@ namespace tix
 
 			MoveToNextFrame();
 		}
+
+		// Reset current bound resources
+		CurrentBoundResource.Reset();
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture()
@@ -1088,11 +1055,8 @@ namespace tix
 		}
 
 		FShaderBindingPtr Binding = Pipeline->GetShaderBinding();
-		FRootSignatureDx12 * PipelineRS = &RootSignature;
-		if (Binding != nullptr)
-		{
-			PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
-		}
+		TI_ASSERT(Binding != nullptr);
+		FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
@@ -1366,19 +1330,25 @@ namespace tix
 
 	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
 	{
-		FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
-
-		FShaderBindingPtr ShaderBinding = InPipeline->GetShaderBinding();
-		if (ShaderBinding != nullptr)
+		if (CurrentBoundResource.Pipeline != InPipeline)
 		{
-			FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
-			CommandList->SetGraphicsRootSignature(RSDx12->Get());
+			FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
+
+			FShaderBindingPtr ShaderBinding = InPipeline->GetShaderBinding();
+			TI_ASSERT(ShaderBinding != nullptr);
+			if (CurrentBoundResource.ShaderBinding != ShaderBinding)
+			{
+				FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
+				CommandList->SetGraphicsRootSignature(RSDx12->Get());
+				CurrentBoundResource.ShaderBinding = ShaderBinding;
+			}
+
+			CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+
+			HoldResourceReference(InPipeline);
+
+			CurrentBoundResource.Pipeline = InPipeline;
 		}
-
-
-		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
-
-		HoldResourceReference(InPipeline);
 	}
 
 	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
