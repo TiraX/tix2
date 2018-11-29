@@ -54,8 +54,8 @@ namespace tix
 		FullScreenBinding->Finalize(RHI);
 
 		// Create full screen render pipeline
-		TPipelinePtr Pipeline = ti_new TPipeline();
-		Pipeline->SetResourceName("FullScreenPL");
+		TMaterialPtr FSMaterial = ti_new TMaterial();
+		FSMaterial->SetResourceName("FullScreenMaterial");
 		const TString ShaderPaths[ESS_COUNT] = {
 			"FullScreenVS.cso",
 			"FullScreenPS.cso",
@@ -74,21 +74,21 @@ namespace tix
 				TStream Buffer;
 				Buffer.Put(f);
 				f.Close();
-				Pipeline->SetShader((E_SHADER_STAGE)s, ShaderPaths[s], Buffer.GetBuffer(), Buffer.GetLength());
+				FSMaterial->SetShader((E_SHADER_STAGE)s, ShaderPaths[s], Buffer.GetBuffer(), Buffer.GetLength());
 			}
 			else
 			{
 				_LOG(Error, "Failed to load shader [%s].\n", ShaderPaths[s].c_str());
 			}
 		}
-		Pipeline->Desc.Disable(EPSO_DEPTH);
-		Pipeline->Desc.Disable(EPSO_DEPTH_TEST);
-		Pipeline->Desc.VsFormat = FullScreenQuad->GetVSFormat();
+		FSMaterial->EnableDepthWrite(false);
+		FSMaterial->EnableDepthTest(false);
+		FSMaterial->SetShaderVsFormat(FullScreenQuad->GetVSFormat());
 
 		FullScreenPipeline = RHI->CreatePipeline();
 		FullScreenPipeline->SetShaderBinding(FullScreenBinding);
-		RHI->UpdateHardwareResource(FullScreenPipeline, Pipeline);
-		Pipeline = nullptr;
+		RHI->UpdateHardwareResource(FullScreenPipeline, FSMaterial);
+		FSMaterial = nullptr;
 
 		bInited = true;
 	}

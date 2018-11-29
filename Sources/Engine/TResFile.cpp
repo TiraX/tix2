@@ -330,8 +330,7 @@ namespace tix
 						TFile f;
 						if (f.Open(ShaderPath, EFA_READ))
 						{
-							Material->ShaderCodes[s].Reset();
-							Material->ShaderCodes[s].Put(f);
+							Material->SetShaderCode((E_SHADER_STAGE)s, f);
 							f.Close();
 						}
 						else

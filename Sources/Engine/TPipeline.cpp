@@ -13,60 +13,6 @@ namespace tix
 	{
 	}
 
-	TPipeline::TPipeline(const TMaterial& InMaterial)
-		: TResource(ERES_PIPELINE)
-	{
-		// Change pipeline desc from InMaterial and InMesh
-		for (int32 s = 0; s < ESS_COUNT; ++s)
-		{
-			Desc.ShaderName[s] = InMaterial.ShaderNames[s];
-			ShaderCode[s].Put(InMaterial.ShaderCodes[s].GetBuffer(), InMaterial.ShaderCodes[s].GetLength());
-		}
-		switch (InMaterial.BlendMode)
-		{
-		case BLEND_MODE_OPAQUE:
-			break;
-		case BLEND_MODE_TRANSLUCENT:
-			Desc.Enable(EPSO_BLEND);
-			break;
-		case BLEND_MODE_MASK:
-			break;
-		case BLEND_MODE_ADDITIVE:
-			Desc.Enable(EPSO_BLEND);
-			Desc.BlendState.DestBlend = EBF_ONE;
-			break;
-		default:
-			TI_ASSERT(0);
-			break;
-		}
-		if (!InMaterial.bDepthWrite)
-			Desc.Disable(EPSO_DEPTH);
-		if (!InMaterial.bDepthTest)
-			Desc.Disable(EPSO_DEPTH_TEST);
-		if (InMaterial.bTwoSides)
-			Desc.RasterizerDesc.CullMode = ECM_NONE;
-
-		Desc.VsFormat = InMaterial.VsFormat;
-
-		// if Material.RTInfo.NumRT > 0, use material's rt info;
-		// else use default frame buffer info
-		if (InMaterial.RTInfo.NumRT > 0)
-		{
-			Desc.RTCount = InMaterial.RTInfo.NumRT;
-			for (int32 c = 0; c < Desc.RTCount; ++c)
-			{
-				Desc.RTFormats[c] = InMaterial.RTInfo.ColorRT[c];
-			}
-			Desc.DepthFormat = InMaterial.RTInfo.DepthRT;
-		}
-
-		// Set Shader Binding
-		TI_ASSERT(InMaterial.ShaderBinding != nullptr);
-		ShaderBinding = InMaterial.ShaderBinding;
-
-		SetResourceName(InMaterial.GetResourceName());
-	}
-
 	TPipeline::~TPipeline()
 	{
 	}

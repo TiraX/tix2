@@ -230,7 +230,6 @@ namespace tix
 	{
 	public:
 		TPipeline();
-		TPipeline(const TMaterial& Material);
 		virtual ~TPipeline();
 
 		void SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength);
@@ -238,13 +237,17 @@ namespace tix
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-		TPipelineDesc Desc;
 		FPipelinePtr PipelineResource;
 
+		const TPipelineDesc& GetDesc() const
+		{
+			return Desc;
+		}
 		TStream ShaderCode[ESS_COUNT];
 	protected:
 
 	protected:
+		TPipelineDesc Desc;
 		TShaderBindingPtr ShaderBinding;
 	};
 }

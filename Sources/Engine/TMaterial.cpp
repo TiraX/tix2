@@ -8,36 +8,12 @@
 namespace tix
 {
 	TMaterial::TMaterial()
-		: TResource(ERES_MATERIAL)
 	{}
 
 	TMaterial::~TMaterial()
 	{
 	}
 
-	void TMaterial::InitRenderThreadResource()
-	{
-		// create pipeline
-		TI_ASSERT(Pipeline == nullptr);
-		Pipeline = ti_new TPipeline(*this);
-		Pipeline->InitRenderThreadResource();
-
-		// release shader codes
-		for (int32 s = 0; s < ESS_COUNT; ++s)
-		{
-			ShaderCodes[s].Destroy();
-		}
-	}
-
-	void TMaterial::DestroyRenderThreadResource()
-	{
-		// destroy pipeline
-		if (Pipeline != nullptr)
-		{
-			Pipeline->DestroyRenderThreadResource();
-			Pipeline = nullptr;
-		}
-	}
 
 	void TMaterial::SetShaderName(E_SHADER_STAGE Stage, const TString& Name)
 	{
@@ -46,47 +22,85 @@ namespace tix
 
 	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length)
 	{
-		ShaderCodes[Stage].Reset();
-		ShaderCodes[Stage].Put(CodeBuffer, Length);
+		ShaderCode[Stage].Reset();
+		ShaderCode[Stage].Put(CodeBuffer, Length);
+	}
+
+	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, TFile& File)
+	{
+		ShaderCode[Stage].Reset();
+		ShaderCode[Stage].Put(File);
 	}
 
 	void TMaterial::SetBlendMode(E_BLEND_MODE InBlendMode)
 	{
-		BlendMode = InBlendMode;
+		switch (InBlendMode)
+		{
+		case BLEND_MODE_OPAQUE:
+			Desc.Disable(EPSO_BLEND);
+			break;
+		case BLEND_MODE_TRANSLUCENT:
+			Desc.Enable(EPSO_BLEND);
+			break;
+		case BLEND_MODE_MASK:
+			Desc.Disable(EPSO_BLEND);
+			break;
+		case BLEND_MODE_ADDITIVE:
+			Desc.Enable(EPSO_BLEND);
+			Desc.BlendState.DestBlend = EBF_ONE;
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
 	}
 
 	void TMaterial::SetShaderVsFormat(uint32 InVsFormat)
 	{
-		VsFormat = InVsFormat;
+		Desc.VsFormat = InVsFormat;
 	}
 
 	void TMaterial::EnableDepthWrite(bool bEnable)
 	{
-		bDepthWrite = bEnable;
+		if (bEnable)
+		{
+			Desc.Enable(EPSO_DEPTH);
+		}
+		else
+		{
+			Desc.Disable(EPSO_DEPTH);
+		}
 	}
 
 	void TMaterial::EnableDepthTest(bool bEnable)
 	{
-		bDepthTest = bEnable;
+		if (bEnable)
+		{
+			Desc.Enable(EPSO_DEPTH_TEST);
+		}
+		else
+		{
+			Desc.Disable(EPSO_DEPTH_TEST);
+		}
 	}
 
 	void TMaterial::EnableTwoSides(bool bEnable)
 	{
-		bTwoSides = bEnable;
+		Desc.RasterizerDesc.CullMode = bEnable ? ECM_NONE : ECM_BACK;
 	}
 
 	void TMaterial::SetRTColorBufferCount(int32 Count)
 	{
-		RTInfo.NumRT = Count;
+		Desc.RTCount = Count;
 	}
 
 	void TMaterial::SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer)
 	{
-		RTInfo.ColorRT[ColorBuffer] = Format;
+		Desc.RTFormats[ColorBuffer] = Format;
 	}
 	
 	void TMaterial::SetRTDepth(E_PIXEL_FORMAT Format)
 	{
-		RTInfo.DepthRT = Format;
+		Desc.DepthFormat = Format;
 	}
 }

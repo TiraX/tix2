@@ -33,8 +33,8 @@ namespace tix
 
 		// Add pipeline
 		TMaterialPtr Material = InMInstance->LinkedMaterial;
-		TI_ASSERT(Material->Pipeline->PipelineResource != nullptr);
-		Pipelines.push_back(Material->Pipeline->PipelineResource);
+		TI_ASSERT(Material->PipelineResource != nullptr);
+		Pipelines.push_back(Material->PipelineResource);
 
 		// Instance uniform buffer
 		Uniforms.push_back(InMInstance->UniformBuffer);

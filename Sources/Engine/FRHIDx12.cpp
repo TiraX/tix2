@@ -1032,7 +1032,7 @@ namespace tix
 		Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
 #endif
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
-		const TPipelineDesc& Desc = InPipelineDesc->Desc;
+		const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
 
 		TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
 		TVector<D3D12_INPUT_ELEMENT_DESC> InputLayout;

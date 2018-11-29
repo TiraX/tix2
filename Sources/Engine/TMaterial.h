@@ -17,37 +17,33 @@ namespace tix
 		BLEND_MODE_COUNT,
 	};
 
-	struct TMaterialRTInfo
-	{
-		int32 NumRT;
-		E_PIXEL_FORMAT ColorRT[ERTC_COUNT];
-		E_PIXEL_FORMAT DepthRT;
+	//struct TMaterialRTInfo
+	//{
+	//	int32 NumRT;
+	//	E_PIXEL_FORMAT ColorRT[ERTC_COUNT];
+	//	E_PIXEL_FORMAT DepthRT;
 
-		TMaterialRTInfo()
-			: NumRT(0)
-		{
-			ColorRT[ERTC_COLOR0] = EPF_UNKNOWN;
-			ColorRT[ERTC_COLOR1] = EPF_UNKNOWN;
-			ColorRT[ERTC_COLOR2] = EPF_UNKNOWN;
-			ColorRT[ERTC_COLOR3] = EPF_UNKNOWN;
+	//	TMaterialRTInfo()
+	//		: NumRT(0)
+	//	{
+	//		ColorRT[ERTC_COLOR0] = EPF_UNKNOWN;
+	//		ColorRT[ERTC_COLOR1] = EPF_UNKNOWN;
+	//		ColorRT[ERTC_COLOR2] = EPF_UNKNOWN;
+	//		ColorRT[ERTC_COLOR3] = EPF_UNKNOWN;
 
-			DepthRT = EPF_UNKNOWN;
-		}
-	};
+	//		DepthRT = EPF_UNKNOWN;
+	//	}
+	//};
 
-	class TMaterial : public TResource
+	class TMaterial : public TPipeline
 	{
 	public:
 		TMaterial();
 		virtual ~TMaterial();
 
-		virtual void InitRenderThreadResource() override;
-		virtual void DestroyRenderThreadResource() override;
-
-		TPipelinePtr Pipeline;
-		
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
 		void SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length);
+		void SetShaderCode(E_SHADER_STAGE Stage, TFile& File);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
 		void EnableDepthWrite(bool bEnable);
@@ -60,17 +56,8 @@ namespace tix
 
 	private:
 		TString ShaderNames[ESS_COUNT];
-		E_BLEND_MODE BlendMode;
-		uint32 VsFormat;
-		bool bDepthWrite;
-		bool bDepthTest;
-		bool bTwoSides;
 
-		TMaterialRTInfo RTInfo;
-
-		TStream ShaderCodes[ESS_COUNT];
-
-		TShaderBindingPtr ShaderBinding;
+		//TMaterialRTInfo RTInfo;
 
 		friend class TPipeline;
 		friend class TResFile;
