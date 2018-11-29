@@ -18,6 +18,16 @@ namespace tix
 		ERHI_NUM,
 	};
 
+	struct FBoundResource
+	{
+		FShaderBindingPtr ShaderBinding;
+
+		void Reset()
+		{
+			ShaderBinding = nullptr;
+		}
+	};
+
 	class FFrameResources;
 	// Render hardware interface
 	class FRHI
@@ -40,7 +50,7 @@ namespace tix
 		virtual FPipelinePtr CreatePipeline() = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H);
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
-		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers) = 0;
+		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
@@ -48,14 +58,15 @@ namespace tix
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget);
+		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) = 0;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
 
-		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
@@ -96,5 +107,6 @@ namespace tix
 		TVector<FViewport> RtViewports;
 
 		FRenderResourceHeap RenderResourceHeap[EHT_COUNT];
+		FBoundResource CurrentBoundResource;
 	};
 }

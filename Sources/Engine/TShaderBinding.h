@@ -11,14 +11,14 @@ namespace tix
 	{
 		int8 BindingType;
 		int8 BindingStage;
+		uint8 BindingRegister;
 		uint8 BindingSize;
-		int8 Alignment;
 
 		TBindingParamInfo()
 			: BindingType(0)
 			, BindingStage(0)
+			, BindingRegister(0)
 			, BindingSize(0)
-			, Alignment(0)
 		{}
 	};
 

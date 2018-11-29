@@ -60,6 +60,10 @@ namespace tix
 			Desc.DepthFormat = InMaterial.RTInfo.DepthRT;
 		}
 
+		// Set Shader Binding
+		TI_ASSERT(InMaterial.ShaderBinding != nullptr);
+		ShaderBinding = InMaterial.ShaderBinding;
+
 		SetResourceName(InMaterial.GetResourceName());
 	}
 
@@ -77,6 +81,8 @@ namespace tix
 	{
 		TI_ASSERT(PipelineResource == nullptr);
 		PipelineResource = FRHI::Get()->CreatePipeline();
+		TI_ASSERT(ShaderBinding->ShaderBindingResource != nullptr);
+		PipelineResource->SetShaderBinding(ShaderBinding->ShaderBindingResource);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TPipelineUpdateResource,
 			FPipelinePtr, Pipeline_RT, PipelineResource,

@@ -17,30 +17,27 @@ namespace tix
 
 	void TShaderBinding::InitRenderThreadResource()
 	{
-		TI_ASSERT(0);
-		//TI_ASSERT(TextureResource == nullptr);
-		//TextureResource = FRHI::Get()->CreateTexture();
+		TI_ASSERT(ShaderBindingResource == nullptr);
+		ShaderBindingResource = FRHI::Get()->CreateShaderBinding((uint32)Bindings.size());
 
-		//ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TTextureUpdateFTexture,
-		//	FTexturePtr, Texture_RT, TextureResource,
-		//	TTexturePtr, TextureData, this,
-		//	{
-		//		Texture_RT->InitTextureInfo(TextureData);
-		//		RHI->UpdateHardwareResource(Texture_RT, TextureData);
-		//	});
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TShaderBindingUpdateResource,
+			FShaderBindingPtr, ShaderBindingResource, ShaderBindingResource,
+			TVector<TBindingParamInfo>, BindingInfos, Bindings,
+			{
+				RHI->UpdateHardwareResource(ShaderBindingResource, BindingInfos);
+			});
 	}
 
 	void TShaderBinding::DestroyRenderThreadResource()
 	{
-		TI_ASSERT(0);
-		//if (TextureResource != nullptr)
-		//{
-		//	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
-		//		FTexturePtr, Texture_RT, TextureResource,
-		//		{
-		//			Texture_RT->Destroy();
-		//		});
-		//	TextureResource = nullptr;
-		//}
+		if (ShaderBindingResource != nullptr)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TShaderBindingDestroyResource,
+				FShaderBindingPtr, ShaderBindingResource, ShaderBindingResource,
+				{
+					ShaderBindingResource->Destroy();
+				});
+			ShaderBindingResource = nullptr;
+		}
 	}
 }

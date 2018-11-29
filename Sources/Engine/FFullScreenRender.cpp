@@ -45,7 +45,7 @@ namespace tix
 		MBData = nullptr;
 
 		// Create full screen shader binding
-		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1, 1);
+		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1);
 		FullScreenBinding->InitBinding(0, BINDING_TEXTURE_TABLE, 0, 1, ESS_PIXEL_SHADER);
 		FSamplerDesc Desc;
 		Desc.Filter = ETFT_MINMAG_LINEAR_MIP_NEAREST;

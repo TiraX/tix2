@@ -245,6 +245,6 @@ namespace tix
 	protected:
 
 	protected:
-
+		TShaderBindingPtr ShaderBinding;
 	};
 }

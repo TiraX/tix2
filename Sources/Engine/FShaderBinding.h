@@ -16,8 +16,11 @@ namespace tix
 
 	enum E_BINDING_TYPE
 	{
+		// Common Binding
+		BINDING_LIGHTS,
+
+		// Material Binding
 		BINDING_UNIFORMBUFFER,
-		BINDING_TEXTURE,
 
 		BINDING_UNIFORMBUFFER_TABLE,
 		BINDING_TEXTURE_TABLE,
@@ -33,10 +36,10 @@ namespace tix
 	};
 
 	class FRHI;
-	class FShaderBinding : public IReferenceCounted
+	class FShaderBinding : public FRenderResource
 	{
 	public:
-		FShaderBinding(uint32 InNumBindings, uint32 NumStaticSamplers);
+		FShaderBinding(uint32 InNumBindings);
 		virtual ~FShaderBinding();
 
 		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) = 0;

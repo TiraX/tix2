@@ -308,9 +308,8 @@ namespace tix
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
 
-		// Create a root signature with a single constant buffer slot.
+		// Init default sampler
 		{
-			D3D12_SAMPLER_DESC DefaultSampler = {};
 			DefaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 			DefaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			DefaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -320,6 +319,20 @@ namespace tix
 			DefaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 			DefaultSampler.MinLOD = 0.0f;
 			DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
+		}
+
+		// Create a root signature with a single constant buffer slot.
+		{
+			D3D12_SAMPLER_DESC _DefaultSampler = {};
+			_DefaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			_DefaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			_DefaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			_DefaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			_DefaultSampler.MipLODBias = 0;
+			_DefaultSampler.MaxAnisotropy = 0;
+			_DefaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			_DefaultSampler.MinLOD = 0.0f;
+			_DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 				D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
@@ -330,7 +343,7 @@ namespace tix
 			TI_TODO("Refactor root signature to FShaderBindings");
 
 			RootSignature.Reset(4, 1);
-			RootSignature.InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
+			RootSignature.InitStaticSampler(0, _DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
 			//RootSignature.GetParameter(0).InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 			//RootSignature.GetParameter(1).InitAsBufferSRV(0, D3D12_SHADER_VISIBILITY_PIXEL);
 			//RootSignature.GetParameter(0).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -439,9 +452,9 @@ namespace tix
 	//	return ti_new FRenderTargetDx12(W, H);
 	//}
 
-	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers)
+	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings)
 	{
-		return ti_new FRootSignatureDx12(NumBindings, NumStaticSamplers);
+		return ti_new FRootSignatureDx12(NumBindings, FRHIConfig::StaticSamplerNum);
 	}
 
 	// Wait for pending GPU work to complete.
@@ -1170,6 +1183,53 @@ namespace tix
 		return true;
 	}
 
+	bool FRHIDx12::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
+	{
+		FRootSignatureDx12 * RootSignatureDx12 = static_cast<FRootSignatureDx12*>(ShaderBindingResource.get());
+		TI_ASSERT(RootSignatureDx12->ParamArray.size() == BindingInfos.size());
+		TI_ASSERT((int32)RootSignatureDx12->SamplerArray.size() == FRHIConfig::StaticSamplerNum);
+
+		const int32 NumBindings = (int32)RootSignatureDx12->ParamArray.size();
+		const int32 NumSamplers = (int32)RootSignatureDx12->SamplerArray.size();
+		// Init static sampler
+		RootSignatureDx12->InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
+
+		// Init shader params
+		for (int32 i = 0; i < NumBindings; ++i)
+		{
+			const TBindingParamInfo& Info = BindingInfos[i];
+			D3D12_SHADER_VISIBILITY ShaderVisibility = GetDxShaderVisibilityFromTiX((E_SHADER_STAGE)Info.BindingStage);
+			switch (Info.BindingType)
+			{
+			case BINDING_LIGHTS:
+				RootSignatureDx12->GetParameter(i).InitAsConstantBuffer(Info.BindingRegister, ShaderVisibility);
+				break;
+			case BINDING_UNIFORMBUFFER:
+				RootSignatureDx12->GetParameter(i).InitAsConstantBuffer(Info.BindingRegister, ShaderVisibility);
+				break;
+			case BINDING_UNIFORMBUFFER_TABLE:
+				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, Info.BindingRegister, Info.BindingSize, ShaderVisibility);
+				break;
+			case BINDING_TEXTURE_TABLE:
+				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, Info.BindingRegister, Info.BindingSize, ShaderVisibility);
+				break;
+			default:
+				TI_ASSERT(0);
+				break;
+			}
+		}
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+		RootSignatureDx12->Finalize(D3dDevice.Get(), rootSignatureFlags);
+
+		HoldResourceReference(ShaderBindingResource);
+
+		return true;
+	}
+
 	//bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
 	//{
 	//	FRenderTargetDx12 * RenderTargetDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
@@ -1304,17 +1364,6 @@ namespace tix
 		D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, Descriptor);
 	}
 
-	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
-	{
-		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
-
-		CommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
-		CommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
-		CommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
-
-		HoldResourceReference(InMeshBuffer);
-	}
-
 	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
 	{
 		FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
@@ -1330,6 +1379,17 @@ namespace tix
 		CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 
 		HoldResourceReference(InPipeline);
+	}
+
+	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	{
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+
+		CommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
+		CommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+		CommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+
+		HoldResourceReference(InMeshBuffer);
 	}
 
 	void FRHIDx12::SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)

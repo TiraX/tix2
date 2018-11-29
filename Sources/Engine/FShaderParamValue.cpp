@@ -28,10 +28,7 @@ namespace tix
 
 	void FShaderParamValue::SetParamValue(uint32 InBindingIndex, FTexturePtr Texture)
 	{
-#if DEBUG_SHADER_BINDING_TYPE
-		ShaderBinding->ValidateBinding(InBindingIndex, BINDING_TEXTURE);
-#endif
-		ShaderValues[InBindingIndex] = FShaderValue(Texture, BINDING_TEXTURE);
+		TI_ASSERT(0);
 	}
 
 	void FShaderParamValue::SetParamValue(uint32 InBindingIndex, FRenderResourceTablePtr RenderResourceTable)
@@ -57,12 +54,6 @@ namespace tix
 			{
 				FUniformBufferPtr UniformBuffer = ResourceCast<FUniformBuffer>(Value.RenderResource);
 				RHI->SetUniformBuffer(i, UniformBuffer);
-			}
-			break;
-			case BINDING_TEXTURE:
-			{
-				FTexturePtr Texture = ResourceCast<FTexture>(Value.RenderResource);
-				RHI->SetShaderTexture(i, Texture);
 			}
 			break;
 			case BINDING_UNIFORMBUFFER_TABLE:

@@ -109,7 +109,7 @@ namespace tix
 	{
 	public:
 		FRootSignatureDx12(uint32 NumRootParams = 0, uint32 NumStaticSamplers = 0) 
-			: FShaderBinding(NumRootParams, NumStaticSamplers)
+			: FShaderBinding(NumRootParams)
 			, Finalized(false)
 		{
 			Reset(NumRootParams, NumStaticSamplers);
@@ -118,6 +118,11 @@ namespace tix
 		virtual ~FRootSignatureDx12()
 		{
 			Signature = nullptr;
+		}
+
+		virtual void Destroy()
+		{
+			TI_TODO("Destroy will be removed in futrue");
 		}
 
 		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) override;

@@ -36,6 +36,7 @@ namespace tix
 			Value& Parameter = Parameters[p];
 			Value& BindingType = Parameter["type"];
 			Value& BindingStage = Parameter["stage"];
+			Value& BindingRegister = Parameter["register"];
 
 			int32 ParamSize = 1;
 			if (Parameter.FindMember("size") != Parameter.MemberEnd())
@@ -47,6 +48,7 @@ namespace tix
 			TBindingParamInfo& Binding = Helper.Bindings[p];
 			Binding.BindingType = (int8)GetBindingType(BindingType.GetString());
 			Binding.BindingStage = (int8)GetShaderStage(BindingStage.GetString());
+			Binding.BindingRegister = (uint8)BindingRegister.GetInt();
 			Binding.BindingSize = (uint8)ParamSize;
 		}
 

@@ -8,7 +8,7 @@
 
 namespace tix
 {
-	FShaderBinding::FShaderBinding(uint32 InNumBindings, uint32 NumStaticSamplers)
+	FShaderBinding::FShaderBinding(uint32 InNumBindings)
 		: NumBindings(InNumBindings)
 	{
 #if DEBUG_SHADER_BINDING_TYPE

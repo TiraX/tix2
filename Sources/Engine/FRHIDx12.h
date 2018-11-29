@@ -36,22 +36,22 @@ namespace tix
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline() override;
 		//virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
-		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings, uint32 NumStaticSamplers) override;
+		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
-		//virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
+		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) override;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 
-		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
@@ -145,6 +145,7 @@ namespace tix
 
 		// RootSignature
 		FRootSignatureDx12 RootSignature;
+		D3D12_SAMPLER_DESC DefaultSampler;
 
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];

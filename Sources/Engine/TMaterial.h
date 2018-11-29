@@ -45,7 +45,6 @@ namespace tix
 		virtual void DestroyRenderThreadResource() override;
 
 		TPipelinePtr Pipeline;
-		TShaderBindingPtr ShaderBinding;
 		
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
 		void SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length);
@@ -70,6 +69,8 @@ namespace tix
 		TMaterialRTInfo RTInfo;
 
 		TStream ShaderCodes[ESS_COUNT];
+
+		TShaderBindingPtr ShaderBinding;
 
 		friend class TPipeline;
 		friend class TResFile;

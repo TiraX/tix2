@@ -33,9 +33,6 @@ namespace tix
 		case BINDING_UNIFORMBUFFER:
 			GetParameter(InBindingIndex).InitAsConstantBuffer(InBindingRegisterIndex, ShaderVisibility);
 			break;
-		case BINDING_TEXTURE:
-			GetParameter(InBindingIndex).InitAsBufferSRV(InBindingRegisterIndex, ShaderVisibility);
-			break;
 		case BINDING_UNIFORMBUFFER_TABLE:
 			GetParameter(InBindingIndex).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, InBindingRegisterIndex, InBindingSize, ShaderVisibility);
 			break;

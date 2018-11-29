@@ -21,5 +21,7 @@ namespace tix
 
 		static const E_PIXEL_FORMAT DefaultBackBufferFormat = EPF_BGRA8;
 		static const E_PIXEL_FORMAT DefaultDepthBufferFormat = EPF_DEPTH24_STENCIL8;
+
+		static const int32 StaticSamplerNum = 1;
 	};
 }
