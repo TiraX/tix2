@@ -101,7 +101,7 @@ namespace tix
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMeshBufferDestroyFMeshBuffer,
 			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
 			{
-				MeshBuffer->Destroy();
+				MeshBuffer = nullptr;
 			});
 		MeshBufferResource = nullptr;
 	}

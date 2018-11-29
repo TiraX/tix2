@@ -14,8 +14,6 @@ namespace tix
 		FTexture(const TTextureDesc& Desc);
 		virtual ~FTexture();
 
-		virtual void Destroy() override {};
-
 		void InitTextureInfo(TTexturePtr Texture);
 
 		const TTextureDesc& GetDesc() const

@@ -15,8 +15,6 @@ namespace tix
 		FRenderResourceTable(FRenderResourceHeap * InHeap, uint32 InStart, uint32 InSize);
 		~FRenderResourceTable();
 
-		virtual void Destroy() override {};
-
 		TI_API void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
 		TI_API void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
 		TI_API void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);

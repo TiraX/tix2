@@ -22,11 +22,6 @@ namespace tix
 
 	FTextureDx12::~FTextureDx12()
 	{
-		Destroy();
-	}
-
-	void FTextureDx12::Destroy()
-	{
 	}
 }
 

@@ -22,8 +22,6 @@ namespace tix
 		virtual ~FRenderResource() 
 		{}
 
-		virtual void Destroy() = 0;
-
 #if defined (TIX_DEBUG)
 		void SetResourceName(const TString& Name)
 		{

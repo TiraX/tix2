@@ -14,8 +14,6 @@ namespace tix
 	public:
 		FPipelineDx12();
 		virtual ~FPipelineDx12();
-
-		virtual void Destroy() override;
 	protected:
 
 	private:

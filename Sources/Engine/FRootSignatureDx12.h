@@ -117,12 +117,8 @@ namespace tix
 
 		virtual ~FRootSignatureDx12()
 		{
+			TI_ASSERT(IsRenderThread());
 			Signature = nullptr;
-		}
-
-		virtual void Destroy()
-		{
-			TI_TODO("Destroy will be removed in futrue");
 		}
 
 		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) override;

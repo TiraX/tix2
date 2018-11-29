@@ -99,7 +99,7 @@ namespace tix
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TPipelineDestroyFPipeline,
 			FPipelinePtr, Pipeline_RT, PipelineResource,
 			{
-				Pipeline_RT->Destroy();
+				Pipeline_RT = nullptr;
 			});
 		PipelineResource = nullptr;
 	}

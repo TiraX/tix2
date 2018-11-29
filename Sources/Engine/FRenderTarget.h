@@ -56,8 +56,6 @@ namespace tix
 		FRenderTarget(int32 W, int32 H);
 		virtual ~FRenderTarget();
 
-		virtual void Destroy() {};
-
 		struct RTBuffer
 		{
 			FTexturePtr Texture;

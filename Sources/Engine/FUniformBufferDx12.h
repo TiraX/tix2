@@ -14,8 +14,6 @@ namespace tix
 	public:
 		FUniformBufferDx12(uint32 InStructSize);
 		virtual ~FUniformBufferDx12();
-
-		virtual void Destroy() override;
 	protected:
 
 	private:

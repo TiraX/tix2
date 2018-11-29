@@ -17,7 +17,6 @@ namespace tix
 		FTextureDx12(const TTextureDesc& Desc);
 		virtual ~FTextureDx12();
 
-		virtual void Destroy() override;
 	protected:
 
 	private:

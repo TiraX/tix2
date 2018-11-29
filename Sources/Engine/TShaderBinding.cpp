@@ -35,7 +35,7 @@ namespace tix
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TShaderBindingDestroyResource,
 				FShaderBindingPtr, ShaderBindingResource, ShaderBindingResource,
 				{
-					ShaderBindingResource->Destroy();
+					ShaderBindingResource = nullptr;
 				});
 			ShaderBindingResource = nullptr;
 		}

@@ -61,7 +61,7 @@ namespace tix
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
 				FTexturePtr, Texture_RT, TextureResource,
 				{
-					Texture_RT->Destroy();
+					Texture_RT = nullptr;
 				});
 			TextureResource = nullptr;
 		}

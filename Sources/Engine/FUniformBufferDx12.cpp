@@ -18,11 +18,6 @@ namespace tix
 
 	FUniformBufferDx12::~FUniformBufferDx12()
 	{
-		Destroy();
-	}
-
-	void FUniformBufferDx12::Destroy()
-	{
 		TI_ASSERT(IsRenderThread());
 		ConstantBuffer = nullptr;
 	}

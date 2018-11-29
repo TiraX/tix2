@@ -17,11 +17,6 @@ namespace tix
 
 	FPipelineDx12::~FPipelineDx12()
 	{
-		Destroy();
-	}
-
-	void FPipelineDx12::Destroy()
-	{
 		TI_ASSERT(IsRenderThread());
 		PipelineState = nullptr;
 	}

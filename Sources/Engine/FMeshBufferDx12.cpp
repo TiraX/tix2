@@ -39,12 +39,6 @@ namespace tix
 
 	FMeshBufferDx12::~FMeshBufferDx12()
 	{
-		Destroy();
-	}
-
-	void FMeshBufferDx12::Destroy()
-	{
-		TI_TODO("Destroy() function seems can be removed.");
 		TI_ASSERT(IsRenderThread());
 		VertexBuffer = nullptr;
 		IndexBuffer = nullptr;
