@@ -9,14 +9,14 @@
 namespace tix
 {
 	FRenderResourceTable::FRenderResourceTable(uint32 InSize)
-		: Heap(nullptr)
+		: HeapType(EHT_NONE)
 		, Start(uint32(-1))
 		, Size(InSize)
 	{
 	}
 
 	FRenderResourceTable::FRenderResourceTable(FRenderResourceHeap * InHeap, uint32 InStart, uint32 InSize)
-		: Heap(InHeap)
+		: HeapType(InHeap->GetHeapType())
 		, Start(InStart)
 		, Size(InSize)
 	{
@@ -24,40 +24,40 @@ namespace tix
 
 	FRenderResourceTable::~FRenderResourceTable()
 	{
-		TI_TODO("Do not retain Heap pointer, but hold a heap type, then get heap from RHI");
-		Heap->RecallTable(*this);
+		TI_ASSERT(IsRenderThread());
+		FRHI::Get()->GetRenderResourceHeap(HeapType).RecallTable(*this);
 	}
 
 	void FRenderResourceTable::PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index)
 	{
-		TI_ASSERT(Heap->GetHeapType() == EHT_UNIFORMBUFFER);
+		TI_ASSERT(HeapType == EHT_UNIFORMBUFFER);
 		TI_ASSERT(Index < Size);
-		FRHI::Get()->PutUniformBufferInHeap(InUniformBuffer, Heap->GetHeapType(), Start + Index);
+		FRHI::Get()->PutUniformBufferInHeap(InUniformBuffer, HeapType, Start + Index);
 	}
 
 	void FRenderResourceTable::PutTextureInTable(FTexturePtr InTexture, uint32 Index)
 	{
-		TI_ASSERT(Heap->GetHeapType() == EHT_TEXTURE);
+		TI_ASSERT(HeapType == EHT_TEXTURE);
 		TI_ASSERT(Index < Size);
-		FRHI::Get()->PutTextureInHeap(InTexture, Heap->GetHeapType(), Start + Index);
+		FRHI::Get()->PutTextureInHeap(InTexture, HeapType, Start + Index);
 	}
 
 	void FRenderResourceTable::PutRTColorInTable(FTexturePtr InTexture, uint32 Index)
 	{
-		TI_ASSERT(Heap->GetHeapType() == EHT_RENDERTARGET);
+		TI_ASSERT(HeapType == EHT_RENDERTARGET);
 		TI_ASSERT(Index < Size);
 		FRHI::Get()->PutRTColorInHeap(InTexture, Start + Index);
 	}
 
 	void FRenderResourceTable::PutRTDepthInTable(FTexturePtr InTexture, uint32 Index)
 	{
-		TI_ASSERT(Heap->GetHeapType() == EHT_DEPTHSTENCIL);
+		TI_ASSERT(HeapType == EHT_DEPTHSTENCIL);
 		TI_ASSERT(Index < Size);
 		FRHI::Get()->PutRTDepthInHeap(InTexture, Start + Index);
 	}
 
 	E_RENDER_RESOURCE_HEAP_TYPE FRenderResourceTable::GetHeapType() const
 	{
-		return Heap->GetHeapType();
+		return HeapType;
 	}
 }

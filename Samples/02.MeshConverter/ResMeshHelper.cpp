@@ -200,9 +200,13 @@ namespace tix
 				}
 				if (DataBI != nullptr)
 				{
-					TI_TODO("use float precision blend index temp, change to uint8 in futher.");
-					TI_ASSERT(sizeof(float) * 4 == TMeshBuffer::SemanticSize[ESSI_BLENDINDEX]);
-					DataStream.Put(DataBI, sizeof(float) * 4);
+					TI_ASSERT(sizeof(uint8) * 4 == TMeshBuffer::SemanticSize[ESSI_BLENDINDEX]);
+					uint8 BIData[4];
+					BIData[0] = (uint8)DataBI[0];
+					BIData[1] = (uint8)DataBI[1];
+					BIData[2] = (uint8)DataBI[2];
+					BIData[3] = (uint8)DataBI[3];
+					DataStream.Put(BIData, sizeof(uint8) * 4);
 					DataBI += Mesh.Segments[ESSI_BLENDINDEX]->StrideInFloat;
 				}
 				if (DataBW != nullptr)

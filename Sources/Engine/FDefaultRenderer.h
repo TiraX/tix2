@@ -25,7 +25,6 @@ namespace tix
 		virtual void PrepareViewUniforms(FScene* Scene);
 
 	protected:
-		virtual void DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr InPipeline, FUniformBufferPtr InUniformBuffer);
 
 	protected:
 		FViewUniformBufferPtr ViewUniformBuffer;

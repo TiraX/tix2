@@ -97,15 +97,6 @@ namespace tix
 	{
 		TI_ASSERT(bInited);
 		TI_ASSERT(0);
-		RHI->SetMeshBuffer(FullScreenQuad);
-		RHI->SetPipeline(FullScreenPipeline);
-		// a temp solution , change it in future 
-		FRenderResourceTablePtr TexTable = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-		TexTable->PutTextureInTable(Texture, 0);
-		RHI->SetRenderResourceTable(0, TexTable);
-		TI_TODO("Important, re-factor here!!!!!!!");
-
-		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}
 
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable)

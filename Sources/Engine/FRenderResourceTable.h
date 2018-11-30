@@ -38,7 +38,7 @@ namespace tix
 
 		TI_API E_RENDER_RESOURCE_HEAP_TYPE GetHeapType() const;
 	protected:
-		FRenderResourceHeap* Heap;
+		E_RENDER_RESOURCE_HEAP_TYPE HeapType;
 		uint32 Start;
 		uint32 Size;
 

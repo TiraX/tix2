@@ -54,9 +54,24 @@ namespace tix
 
 	void TMaterialInstance::DestroyRenderThreadResource()
 	{
-		TI_TODO("Implement here.");
-		UniformBuffer = nullptr;
-		TextureResourceTable = nullptr;
+		if (UniformBuffer != nullptr)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyUniformBuffer,
+				FUniformBufferPtr, UniformBuffer, UniformBuffer,
+				{
+					UniformBuffer = nullptr;
+				});
+			UniformBuffer = nullptr;
+		}
+		if (TextureResourceTable != nullptr)
+		{
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyTextureTable,
+				FRenderResourceTablePtr, TextureResourceTable, TextureResourceTable,
+				{
+					TextureResourceTable = nullptr;
+				});
+			TextureResourceTable = nullptr;
+		}
 	}
 
 	static const int32 ParamTypeLength[MIPT_COUNT] =

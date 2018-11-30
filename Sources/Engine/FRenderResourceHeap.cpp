@@ -45,14 +45,14 @@ namespace tix
 		{
 			uint32 StartIndex = Avaibles.back();
 			Avaibles.pop_back();
-			OutTable->Heap = this;
+			OutTable->HeapType = HeapType;
 			OutTable->Start = StartIndex;
 			OutTable->Size = TableSize;
 		}
 		uint32 Result = Allocated + Offset;
 		Allocated += TableSize;
 		TI_ASSERT(Allocated <= Size);
-		OutTable->Heap = this;
+		OutTable->HeapType = HeapType;
 		OutTable->Start = Result;
 		OutTable->Size = TableSize;
 	}

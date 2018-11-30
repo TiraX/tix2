@@ -339,7 +339,6 @@ namespace tix
 		CommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		// Indicate this resource will be in use as a render target.
-		TI_TODO("Refactor this operation to render target related");
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		FlushResourceBarriers(CommandList.Get());
 
@@ -1099,11 +1098,10 @@ namespace tix
 		DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
 
 		// Shader data can be deleted once the pipeline state is created.
-		//for (int32 s = 0; s < ESS_COUNT; ++s)
-		//{
-		//	InPipelineDesc->.ShaderCode[s].Destroy();
-		//}
-		TI_TODO("Release shader code data");
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			InPipelineDesc->ShaderCode[s].Destroy();
+		}
 		HoldResourceReference(Pipeline);
 
 		return true;

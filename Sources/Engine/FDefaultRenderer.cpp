@@ -55,18 +55,12 @@ namespace tix
 				FPipelinePtr PL = Primitive->Pipelines[m];
 				FUniformBufferPtr UB = Primitive->Uniforms[m];
 
-				DrawMeshBuffer(RHI, MB, PL, ViewUniformBuffer->UniformBuffer);
+				RHI->SetMeshBuffer(MB);
+				RHI->SetPipeline(PL);
+				RHI->SetUniformBuffer(0, UB);
+
+				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}
-	}
-
-	void FDefaultRenderer::DrawMeshBuffer(FRHI * RHI, FMeshBufferPtr InMeshBuffer, FPipelinePtr Pipeline, FUniformBufferPtr InUniformBuffer)
-	{
-		TI_TODO("Refactor this draw mesh buffer function.");
-		RHI->SetMeshBuffer(InMeshBuffer);
-		RHI->SetPipeline(Pipeline);
-		RHI->SetUniformBuffer(0, InUniformBuffer);
-
-		RHI->DrawPrimitiveIndexedInstanced(InMeshBuffer->GetIndicesCount(), 1, 0, 0, 0);
 	}
 }
