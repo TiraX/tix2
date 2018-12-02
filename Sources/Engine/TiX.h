@@ -8,6 +8,7 @@
 // Include std symbols
 #include <stdlib.h>
 #include <string>
+#include <limits>
 #include <list>
 #include <vector>
 #include <map>

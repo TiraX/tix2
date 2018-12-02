@@ -246,9 +246,9 @@ inline int32 ti_align16(int32 n)
 	return ti_align(n, 16);
 }
 
-//#include "math/half.hpp"
-//using namespace half_float;
-//typedef half float16;
+#include "math/half.hpp"
+using namespace half_float;
+typedef half float16;
 
 #include "math/Vector2d.h"
 #include "math/Vector3d.h"
