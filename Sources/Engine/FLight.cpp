@@ -21,7 +21,6 @@ namespace tix
 
 	void FLight::InitFromLightNode(TNodeLight * Light)
 	{
-		TI_TODO("Refactor !!!!!!!!!!!!! Light position should not be updated here.");
 		Position = Light->GetAbsolutePosition();
 		SColorf LColor(Light->GetColor());
 		LColor *= Light->GetIntensity();
@@ -39,5 +38,11 @@ namespace tix
 	{
 		TI_ASSERT(LightIndex != uint32(-1));
 		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->RemoveLight(this);
+	}
+
+	void FLight::UpdateLightPosition_RenderThread(const vector3df& InPosition)
+	{
+		Position = InPosition;
+		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->MarkSceneLightsDirty();
 	}
 }

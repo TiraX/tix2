@@ -51,7 +51,7 @@ namespace tix
 		}
 		LightsUniformBuffer->UniformBufferData.LightPosition[LightIndex] = InLight->GetLightPosition();
 		LightsUniformBuffer->UniformBufferData.LightColor[LightIndex] = InLight->GetLightColor();
-		bUniformBufferDirty = true;
+		MarkSceneLightsDirty();
 	}
 
 	void FSceneLights::RemoveLight(FLightPtr InLight)

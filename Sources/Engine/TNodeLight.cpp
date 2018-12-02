@@ -35,7 +35,7 @@ namespace tix
 		TNode::UpdateAbsoluteTransformation();
 		if (NodeFlag & ENF_ABSOLUTETRANSFORMATION_UPDATED)
 		{
-			// calculate affect box
+			// Calculate affect box
 			const float MinimumIntensity = 0.01f;
 			float AttenuationDistance = sqrt(Intensity / MinimumIntensity);
 			AffectBox.MinEdge = vector3df(-AttenuationDistance, -AttenuationDistance, -AttenuationDistance);
@@ -43,7 +43,15 @@ namespace tix
 
 			AffectBox.move(AbsoluteTransformation.getTranslation());
 
-			// notify scene , lights get dirty
+			// Update FLight Position in render thread
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateFLightPosition,
+				FLightPtr, InLight, LightResource,
+				vector3df, InPosition, GetAbsolutePosition(),
+				{
+					InLight->UpdateLightPosition_RenderThread(InPosition);
+				});
+
+			// Notify scene , lights get dirty
 			TEngine::Get()->GetScene()->SetSceneFlag(SF_LIGHTS_DIRTY, true);
 		}
 

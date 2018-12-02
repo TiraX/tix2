@@ -15,6 +15,7 @@ namespace tix
 
 		void AddToSceneLights_RenderThread();
 		void RemoveFromSceneLights_RenderThread();
+		void UpdateLightPosition_RenderThread(const vector3df& InPosition);
 
 		void SetLightIndex(uint32 Index)
 		{

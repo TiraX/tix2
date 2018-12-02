@@ -30,6 +30,11 @@ namespace tix
 
 		// Bind scene lights uniform buffer to RHI
 		TI_API void BindSceneLightsUniformBuffer(FRHI * RHI, int32 BindIndex);
+
+		void MarkSceneLightsDirty()
+		{
+			bUniformBufferDirty = true;
+		}
 	protected:
 
 	protected:
