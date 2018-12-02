@@ -14,6 +14,22 @@ namespace tix
 		virtual ~TTask();
 
 		virtual void Execute() = 0;
+
+#if TIX_DEBUG_RENDER_TASK_NAME
+		void SetTaskName(const TString& Name)
+		{
+			TaskName = Name;
+		}
+		const TString& GetTaskName() const
+		{
+			return TaskName;
+		}
+#endif
+
+	protected:
+#if TIX_DEBUG_RENDER_TASK_NAME
+		TString TaskName;
+#endif
 	};
 
 	//////////////////////////////////////////////////////////////////////////

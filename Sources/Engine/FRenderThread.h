@@ -10,6 +10,12 @@ namespace tix
 	class FRenderer;
 	class FRHI;
 
+#if TIX_DEBUG_RENDER_TASK_NAME
+#	define SET_TASK_NAME(n) SetTaskName(n)
+#else
+#	define SET_TASK_NAME(n) 
+#endif
+
 #define RENDERTHREAD_TASK_FUNCTION(Code) \
 	virtual void Execute() override \
 	{ \
@@ -23,7 +29,7 @@ namespace tix
 	class FRTTask_##TypeName : public TTask \
 	{ \
 	public: \
-		FRTTask_##TypeName() {} \
+		FRTTask_##TypeName() {SET_TASK_NAME(#TypeName);} \
 		RENDERTHREAD_TASK_FUNCTION(Code) \
 	};
 
@@ -36,7 +42,7 @@ namespace tix
 	class FRTTask_##TypeName : public TTask \
 	{ \
 	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1) : ParamName1(In##ParamName1) {} \
+		FRTTask_##TypeName(ParamType1 In##ParamName1) : ParamName1(In##ParamName1) {SET_TASK_NAME(#TypeName);} \
 		RENDERTHREAD_TASK_FUNCTION(Code) \
 	private: \
 		ParamType1 ParamName1; \
@@ -51,7 +57,7 @@ namespace tix
 	class FRTTask_##TypeName : public TTask \
 	{ \
 	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2) : ParamName1(In##ParamName1), ParamName2(In##ParamName2) {} \
+		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2) : ParamName1(In##ParamName1), ParamName2(In##ParamName2) {SET_TASK_NAME(#TypeName);} \
 		RENDERTHREAD_TASK_FUNCTION(Code) \
 	private: \
 		ParamType1 ParamName1; \
@@ -67,7 +73,7 @@ namespace tix
 	class FRTTask_##TypeName : public TTask \
 	{ \
 	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3) {} \
+		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3) {SET_TASK_NAME(#TypeName);} \
 		RENDERTHREAD_TASK_FUNCTION(Code) \
 	private: \
 		ParamType1 ParamName1; \

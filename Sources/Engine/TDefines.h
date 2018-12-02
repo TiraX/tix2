@@ -71,3 +71,10 @@ void * operator new (std::size_t count);
 #	define TI_API
 #endif
 
+// Define DEBUG System
+#ifdef TIX_DEBUG
+#	define TIX_DEBUG_RENDER_TASK_NAME 0
+#else
+#	define TIX_DEBUG_RENDER_TASK_NAME 0
+#endif
+

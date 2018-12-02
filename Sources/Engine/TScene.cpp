@@ -111,31 +111,32 @@ namespace tix
 	{
 		if (ActiveNodeList[ESLT_LIGHTS].size() > 0)
 		{
-			bool ForceRebind = HasSceneFlag(SF_LIGHTS_DIRTY);
+			bool bLightsDirty = HasSceneFlag(SF_LIGHTS_DIRTY);
 
 			// Go though static solid list
 			for (auto StaticMeshNode : ActiveNodeList[ESLT_STATIC_SOLID])
 			{
 				TI_ASSERT(StaticMeshNode->GetType() == ENT_StaticMesh);
-				StaticMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+				StaticMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], bLightsDirty);
 			}
 
 			// Then dynamic solid list
 			for (auto DynamicMeshNode : ActiveNodeList[ESLT_DYNAMIC_SOLID])
 			{
-				DynamicMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], ForceRebind);
+				DynamicMeshNode->BindLights(ActiveNodeList[ESLT_LIGHTS], bLightsDirty);
+			}
+			
+			// Send a render thread task to update lights uniform buffer
+			if (bLightsDirty)
+			{
+				ENQUEUE_UNIQUE_RENDER_COMMAND(InitSceneLightsUniformBuffer,
+					{
+						RenderThread->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
+					});
 			}
 
 			// Clear lights dirty flag after bind
 			SetSceneFlag(SF_LIGHTS_DIRTY, false);
-			TI_TODO("It will crashed when close after delete SetSceneFlag");
-
-			// Send a render thread task to update lights uniform buffer
-			ENQUEUE_UNIQUE_RENDER_COMMAND(InitSceneLightsUniformBuffer,
-				{
-					RenderThread->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
-				});
-
 		}
 	}
 }

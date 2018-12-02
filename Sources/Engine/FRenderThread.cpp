@@ -148,6 +148,9 @@ namespace tix
 		{
 			Tasks.PopFront(Task);
 			Task->Execute();
+#if TIX_DEBUG_RENDER_TASK_NAME
+			_LOG(Log, "%d - Do RT Task: %s\n", RenderFrameIndex, Task->GetTaskName().c_str());
+#endif
 
 			// release task memory
 			ti_delete Task;

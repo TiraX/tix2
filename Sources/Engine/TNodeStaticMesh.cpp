@@ -60,8 +60,11 @@ namespace tix
 		TEngine::Get()->GetScene()->AddToActiveList(ESLT_STATIC_SOLID, this);
 	}
 
-	static void BindLightResource_RenderThread(FLightBindingUniformBufferPtr Binding, const TVector<FLightPtr>& BindedLightResources)
+	static void BindLightResource_RenderThread(FPrimitivePtr Primitive, const TVector<FLightPtr>& BindedLightResources)
 	{
+		FLightBindingUniformBufferPtr Binding = ti_new FLightBindingUniformBuffer;
+		Binding->UniformBufferData.LightsNum.X = (int32)BindedLightResources.size();
+
 		TI_ASSERT(BindedLightResources.size() <= 4);
 		for (int32 l = 0; l < (int32)BindedLightResources.size(); ++l)
 		{
@@ -69,6 +72,8 @@ namespace tix
 			Binding->UniformBufferData.LightIndices[l] = LightResource->GetLightIndex();
 		}
 		Binding->InitUniformBuffer();
+
+		Primitive->LightBindingUniformBuffer = Binding;
 	}
 
 	void TNodeStaticMesh::BindLights(TVector<TNode *>& Lights, bool ForceRebind)
@@ -89,32 +94,23 @@ namespace tix
 			}
 
 			// Create lights info uniform buffers
+			TVector<FLightPtr> BindedLightResources;
 			if (BindedLights.size() > 0)
 			{
 				TI_ASSERT(BindedLights.size() <= 4);
-				FLightBindingUniformBufferPtr Binding = ti_new FLightBindingUniformBuffer;
-				Binding->UniformBufferData.LightsNum.X = (int32)BindedLights.size();
-
-				TVector<FLightPtr> BindedLightResources;
 				for (int32 l = 0 ; l < (int32)BindedLights.size(); ++ l)
 				{
 					TNodeLight * Light = BindedLights[l];
 					BindedLightResources.push_back(Light->LightResource);
 				}
-
-				// Init uniform buffer resource in render thread
-				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
-					FLightBindingUniformBufferPtr, Binding, Binding,
-					TVector<FLightPtr>, BindedLightResources, BindedLightResources,
-					{
-						BindLightResource_RenderThread(Binding, BindedLightResources);
-					});
-				LinkedPrimitive->LightBindingUniformBuffer = Binding;
 			}
-			else
-			{
-				LinkedPrimitive->LightBindingUniformBuffer = nullptr;
-			}
+			// Init uniform buffer resource in render thread
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
+				FPrimitivePtr, Primitive, LinkedPrimitive,
+				TVector<FLightPtr>, BindedLightResources, BindedLightResources,
+				{
+					BindLightResource_RenderThread(Primitive, BindedLightResources);
+				});
 		}
 	}
 }
