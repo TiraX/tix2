@@ -40,8 +40,12 @@ namespace tix
 
 	bool TResFile::Load(const TString& Filename)
 	{
-		TString Path = TPath::GetAbsolutePath(Filename);
-		TFile* file = OpenResFile(Path);
+		TFile* file = OpenResFile(Filename);
+		if (file == nullptr)
+		{
+			TString Path = TPath::GetAbsolutePath(Filename);
+			file = OpenResFile(Path);
+		}
 		if (file == nullptr)
 			return false;
 
