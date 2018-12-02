@@ -13,9 +13,9 @@ namespace tix
 		12,	// ESSI_POSITION,
 		4,	// ESSI_NORMAL,
 		4,	// ESSI_COLOR,
-		8,	// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
-		8,	// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
-		4,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
+		4,	// ESSI_TEXCOORD0,
+		4,	// ESSI_TEXCOORD1,
+		4,	// ESSI_TANGENT,
 		4,	// ESSI_BLENDINDEX,
 		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
 	};
@@ -23,13 +23,13 @@ namespace tix
 	const int8* TMeshBuffer::SemanticName[ESSI_TOTAL] =
 	{
 		"POSITION",		// ESSI_POSITION,
-		"NORMAL",		// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
+		"NORMAL",		// ESSI_NORMAL,
 		"COLOR",		// ESSI_COLOR,
-		"TEXCOORD",		// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
-		"TEXCOORD",		// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
-		"TANGENT",		// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
+		"TEXCOORD",		// ESSI_TEXCOORD0,
+		"TEXCOORD",		// ESSI_TEXCOORD1,
+		"TANGENT",		// ESSI_TANGENT,
 		"BLENDINDEX",	// ESSI_BLENDINDEX,
-		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
+		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,
 	};
 
 	TMeshBuffer::TMeshBuffer()

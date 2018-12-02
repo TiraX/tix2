@@ -174,16 +174,20 @@ namespace tix
 				}
 				if (DataUv0 != nullptr)
 				{
-					TI_TODO("use full precision uv coord temp, change to half in futher.");
-					TI_ASSERT(sizeof(float) * 2 == TMeshBuffer::SemanticSize[ESSI_TEXCOORD0]);
-					DataStream.Put(DataUv0, sizeof(float) * 2);
+					TI_ASSERT(sizeof(float16) * 2 == TMeshBuffer::SemanticSize[ESSI_TEXCOORD0]);
+					float16 UvHalf[2];
+					UvHalf[0] = DataUv0[0];
+					UvHalf[1] = DataUv0[1];
+					DataStream.Put(UvHalf, sizeof(float16) * 2);
 					DataUv0 += Mesh.Segments[ESSI_TEXCOORD0]->StrideInFloat;
 				}
 				if (DataUv1 != nullptr)
 				{
-					TI_TODO("use full precision uv coord temp, change to half in futher.");
-					TI_ASSERT(sizeof(float) * 2 == TMeshBuffer::SemanticSize[ESSI_TEXCOORD1]);
-					DataStream.Put(DataUv1, sizeof(float) * 2);
+					TI_ASSERT(sizeof(float16) * 2 == TMeshBuffer::SemanticSize[ESSI_TEXCOORD1]);
+					float16 UvHalf[2];
+					UvHalf[0] = DataUv1[0];
+					UvHalf[1] = DataUv1[1];
+					DataStream.Put(UvHalf, sizeof(float16) * 2);
 					DataUv1 += Mesh.Segments[ESSI_TEXCOORD1]->StrideInFloat;
 				}
 				if (DataTangent != nullptr)

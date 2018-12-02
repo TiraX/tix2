@@ -22,17 +22,6 @@ namespace tix
 		"BLENDINDEX",	// ESSI_BLENDINDEX,
 		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,
 	};
-	static const DXGI_FORMAT SematicFormat[ESSI_TOTAL] = 
-	{
-		DXGI_FORMAT_R32G32B32_FLOAT,	// ESSI_POSITION,
-		DXGI_FORMAT_R32G32B32_FLOAT,	// ESSI_NORMAL,		// TI_TODO("May use packed normal in future");
-		DXGI_FORMAT_B8G8R8A8_UNORM,		// ESSI_COLOR,
-		DXGI_FORMAT_R32G32_FLOAT,		// ESSI_TEXCOORD0,	// TI_TODO("May use half float texcoord in future");
-		DXGI_FORMAT_R32G32_FLOAT,		// ESSI_TEXCOORD1,	// TI_TODO("May use half float texcoord in future");
-		DXGI_FORMAT_R32G32B32_FLOAT,	// ESSI_TANGENT,	// TI_TODO("May use packed tangent in future");
-		DXGI_FORMAT_R8G8B8A8_UINT,		// ESSI_BLENDINDEX,
-		DXGI_FORMAT_R32G32B32A32_FLOAT,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
-	};
 	FMeshBufferDx12::FMeshBufferDx12()
 	{
 	}
