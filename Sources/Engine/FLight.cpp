@@ -43,6 +43,6 @@ namespace tix
 	void FLight::UpdateLightPosition_RenderThread(const vector3df& InPosition)
 	{
 		Position = InPosition;
-		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->MarkSceneLightsDirty();
+		FRenderThread::Get()->GetRenderScene()->GetSceneLights()->UpdateLight(this);
 	}
 }

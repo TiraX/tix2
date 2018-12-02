@@ -24,6 +24,7 @@ namespace tix
 
 		void AddLight(FLightPtr InLight);
 		void RemoveLight(FLightPtr InLight);
+		void UpdateLight(FLightPtr InLight);
 
 		// InitSceneLightsUniformBufferRenderResource was send to render thread after TScene::BindLights
 		void InitSceneLightsUniformBufferRenderResource();
@@ -31,11 +32,11 @@ namespace tix
 		// Bind scene lights uniform buffer to RHI
 		TI_API void BindSceneLightsUniformBuffer(FRHI * RHI, int32 BindIndex);
 
+	protected:
 		void MarkSceneLightsDirty()
 		{
 			bUniformBufferDirty = true;
 		}
-	protected:
 
 	protected:
 		FLightPtr DynamicLights[MaxDynamicLightsInScene];

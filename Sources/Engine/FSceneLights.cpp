@@ -13,7 +13,7 @@ namespace tix
 	{
 		// Init available slots
 		AvaibleSlot.reserve(MaxDynamicLightsInScene);
-		for (int32 slot = MaxDynamicLightsInScene - 1; slot >= 0; -- slot)
+		for (int32 slot = MaxDynamicLightsInScene - 1; slot >= 0; --slot)
 		{
 			AvaibleSlot.push_back(slot);
 		}
@@ -25,7 +25,7 @@ namespace tix
 	FSceneLights::~FSceneLights()
 	{
 		// Remove all FLightPtr refs
-		for (int32 s = 0 ; s < MaxDynamicLightsInScene ; ++ s)
+		for (int32 s = 0; s < MaxDynamicLightsInScene; ++s)
 		{
 			DynamicLights[s] = nullptr;
 		}
@@ -60,6 +60,17 @@ namespace tix
 		TI_ASSERT(LightIndex < MaxDynamicLightsInScene && (DynamicLights[LightIndex] == InLight || DynamicLights[LightIndex] == nullptr));
 		DynamicLights[LightIndex] = nullptr;
 		AvaibleSlot.push_back(LightIndex);
+	}
+
+	void FSceneLights::UpdateLight(FLightPtr InLight)
+	{
+		uint32 LightIndex = InLight->GetLightIndex();
+		TI_ASSERT(LightIndex != uint32(-1));
+		TI_ASSERT(DynamicLights[LightIndex] == InLight);
+
+		LightsUniformBuffer->UniformBufferData.LightPosition[LightIndex] = InLight->GetLightPosition();
+		LightsUniformBuffer->UniformBufferData.LightColor[LightIndex] = InLight->GetLightColor();
+		MarkSceneLightsDirty();
 	}
 
 	void FSceneLights::InitSceneLightsUniformBufferRenderResource()

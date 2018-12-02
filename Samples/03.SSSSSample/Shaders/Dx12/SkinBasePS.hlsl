@@ -2,11 +2,13 @@
 
 struct VSOutput
 {
-    sample float4 position : SV_Position;
-    sample float2 uv : TexCoord0;
-    sample float3 normal : Normal;
-    sample float3 tangent : Tangent;
-    sample float3 bitangent : Bitangent;
+    float4 position : SV_Position;
+    float2 uv : TexCoord0;
+    float3 normal : Normal;
+    float3 tangent : Tangent;
+    float3 bitangent : Bitangent;
+	float3 view : TexCoord1;
+	float3 worldPosition : TexCoord2;
 };
 
 Texture2D<float3> texDiffuse : register(t0);
@@ -31,23 +33,55 @@ cbuffer LightData : register(b5)
 
 SamplerState sampler0 : register(s0);
 
+
+static const float specularIntensity = 1.84;
+static const float specularRoughness = 0.3;
+static const float specularFresnel = 0.81;
+
+float3 BumpMap(Texture2D<float3> normalTex, float2 texcoord) {
+	float3 bump;
+	bump.xy = -1.0 + 2.0 * normalTex.Sample(sampler0, texcoord).gr;
+	bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
+	return normalize(bump);
+}
+
+float Fresnel(float3 half, float3 view, float f0) {
+	float base = 1.0 - dot(view, half);
+	float exponential = pow(base, 5.0);
+	return exponential + f0 * (1.0 - exponential);
+}
+
+float SpecularKSK(Texture2D<float3> beckmannTex, float3 normal, float3 light, float3 view, float roughness) {
+	float3 half = view + light;
+	float3 halfn = normalize(half);
+
+	float ndotl = max(dot(normal, light), 0.0);
+	float ndoth = max(dot(normal, halfn), 0.0);
+
+	float ph = pow(2.0 * beckmannTex.SampleLevel(sampler0, float2(ndoth, roughness), 0).r, 10.0);
+	float f = lerp(0.25, Fresnel(halfn, view, 0.028), specularFresnel);
+	float ksk = max(ph * f / dot(half, half), 0.0);
+
+	return ndotl * ksk;
+}
+
 [RootSignature(SkinBase_RootSig)]
-float4 main(VSOutput vsOutput) : SV_Target0
+float4 main(VSOutput input) : SV_Target0
 {
 	//float3 n = texBeckmann.Sample(sampler0, vsOutput.uv);
 
 	// HACK for using baked object space normals (because blender tangent export is not working)
 	//float3 n = texBeckmann.Sample(sampler0, vsOutput.uv);
-	float3 objSpaceNormal = normalize(texNormal.Sample(sampler0, vsOutput.uv).xyz * 2.0 - 1.0);
+	float3 objSpaceNormal = normalize(texNormal.Sample(sampler0, input.uv).xyz * 2.0 - 1.0);
 
 	float3 worldSpaceNormal = objSpaceNormal;
 	float3 normal = worldSpaceNormal;
 
-	//input.view = normalize(input.view);
+	float3 view = normalize(input.view);
 
 	// Fetch albedo, specular parameters and static ambient occlusion:
-	float3 albedo = texDiffuse.Sample(sampler0, vsOutput.uv);
-	float3 specularAO = texSpecular.Sample(sampler0, vsOutput.uv).rgb;
+	float3 albedo = texDiffuse.Sample(sampler0, input.uv);
+	float3 specularAO = texSpecular.Sample(sampler0, input.uv).rgb;
 
 	float occlusion = specularAO.r;
 	float intensity = specularAO.b * 1.0;// specularIntensity;
@@ -62,43 +96,44 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	for (int i = 0; i < LightCount.x; i++)
 	{
 		int Index = LightIndex[i];
-		color.xyz += LightColor[Index].xyz;
-//		float3 light = lights[i].position - input.worldPosition;
-//		float dist = length(light);
-//		light /= dist;
-//
+		float3 LColor = LightColor[Index].xyz;
+		float3 light = LightPosition[Index].xyz - input.worldPosition;
+		float distanceSqr = dot(light, light);
+		float3 L = light * rsqrt(distanceSqr);
+
 //		float spot = dot(lights[i].direction, -light);
 //		[flatten]
 //		if (spot > lights[i].falloffStart) {
 //			// Calculate attenuation:
 //			float curve = min(pow(dist / lights[i].farPlane, 6.0), 1.0);
 //			float attenuation = lerp(1.0 / (1.0 + lights[i].attenuation * dist * dist), 0.0, curve);
+		float attenuation = 1.0 / (distanceSqr + 1.0);
 //
 //			// And the spot light falloff:
 //			spot = saturate((spot - lights[i].falloffStart) / lights[i].falloffWidth);
 //
 //			// Calculate some terms we will use later on:
-//			float3 f1 = lights[i].color * attenuation * spot;
-//			float3 f2 = albedo.rgb * f1;
-//
-//			// Calculate the diffuse and specular lighting:
-//			float3 diffuse = saturate(dot(light, normal));
-//			float specular = intensity * SpecularKSK(beckmannTex, normal, light, input.view, roughness);
-//
-//			// And also the shadowing:
-//			float shadow = ShadowPCF(input.worldPosition, i, 3, 1.0);
-//
-//			// Add the diffuse and specular components:
+		float3 f1 = LColor * attenuation;
+		float3 f2 = albedo.rgb * f1;
+
+		// Calculate the diffuse and specular lighting:
+		float3 diffuse = saturate(dot(L, normal));
+		float specular = intensity * SpecularKSK(texBeckmann, normal, light, input.view, roughness);
+
+		// And also the shadowing:
+		float shadow = 1.0;// ShadowPCF(input.worldPosition, i, 3, 1.0);
+
+		// Add the diffuse and specular components:
 //#ifdef SEPARATE_SPECULARS
-//			color.rgb += shadow * f2 * diffuse;
-//			specularColor.rgb += shadow * f1 * specular;
+//		color.rgb += shadow * f2 * diffuse;
+//		specularColor.rgb += shadow * f1 * specular;
 //#else
-//			color.rgb += shadow * (f2 * diffuse + f1 * specular);
+		color.rgb += shadow * (f2 * diffuse + f1 * specular);
 //#endif
-//
-//			// Add the transmittance component:
-//			if (sssEnabled && translucencyEnabled)
-//				color.rgb += f2 * albedo.a * SSSSTransmittance(translucency, sssWidth, input.worldPosition, input.normal, light, shadowMaps[i], lights[i].viewProjection, lights[i].farPlane);
+
+		// Add the transmittance component:
+		//if (sssEnabled && translucencyEnabled)
+		//	color.rgb += f2 * albedo.a * SSSSTransmittance(translucency, sssWidth, input.worldPosition, input.normal, light, shadowMaps[i], lights[i].viewProjection, lights[i].farPlane);
 //		}
 	}
 	//*/
@@ -122,12 +157,5 @@ float4 main(VSOutput vsOutput) : SV_Target0
 
 	// Compress the velocity for storing it in a 8-bit render target:
 	//color.a = sqrt(5.0 * length(velocity));
-	float3 env = texIrrMap.Sample(sampler0, vsOutput.normal).xyz;
-	float3 diff = texDiffuse.Sample(sampler0, vsOutput.uv);
-
-	return float4(env, 1.0);
-	//return color;
-	//return float4(specularAO.rrr, 1.0);
-
-    //return float4(n, 1.0);
+	return color;
 }
