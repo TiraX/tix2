@@ -215,8 +215,14 @@ namespace tix
 				}
 				if (DataBW != nullptr)
 				{
-					TI_ASSERT(sizeof(float) * 4 == TMeshBuffer::SemanticSize[ESSI_BLENDWEIGHT]);
-					DataStream.Put(DataBW, sizeof(float) * 4);
+					uint8 BWData[4];
+					BWData[0] = FloatToColor(DataBW[0]);
+					BWData[1] = FloatToColor(DataBW[1]);
+					BWData[2] = FloatToColor(DataBW[2]);
+					BWData[3] = FloatToColor(DataBW[3]);
+
+					TI_ASSERT((int32)sizeof(BWData) == TMeshBuffer::SemanticSize[ESSI_BLENDWEIGHT]);
+					DataStream.Put(BWData, sizeof(BWData));
 					DataBW += Mesh.Segments[ESSI_BLENDWEIGHT]->StrideInFloat;
 				}
 			}

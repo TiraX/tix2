@@ -17,7 +17,7 @@ namespace tix
 		4,	// ESSI_TEXCOORD1,
 		4,	// ESSI_TANGENT,
 		4,	// ESSI_BLENDINDEX,
-		16,	// ESSI_BLENDWEIGHT,// TI_TODO("May use half float blend weight in future");
+		4,	// ESSI_BLENDWEIGHT,
 	};
 
 	const int8* TMeshBuffer::SemanticName[ESSI_TOTAL] =
@@ -44,7 +44,6 @@ namespace tix
 		, Stride(0)
 		, MeshFlag(0)
 	{
-		TI_TODO("Change uv0 & uv1 stream to 4 component input.");
 	}
 
 	TMeshBuffer::~TMeshBuffer()
