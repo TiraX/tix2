@@ -73,7 +73,7 @@ void * operator new (std::size_t count);
 
 // Define DEBUG System
 #ifdef TIX_DEBUG
-#	define TIX_DEBUG_RENDER_TASK_NAME 0
+#	define TIX_DEBUG_RENDER_TASK_NAME 1
 #else
 #	define TIX_DEBUG_RENDER_TASK_NAME 0
 #endif

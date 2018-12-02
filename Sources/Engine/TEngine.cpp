@@ -195,7 +195,10 @@ namespace tix
 	void TEngine::TickFinished()
 	{
 		FRenderThread * RT = FRenderThread::Get();
-		while (RT->GetTriggerNum() >= FRHIConfig::FrameBufferNum)
+		TI_TODO("Here should not ahead 4 frames of render thread. 2 is enough i think");
+		// Game thread goes 2 frames ahead of render thread, more frames take more memory.
+		static const int32 GameThreadFramesAhead = 1;
+		while (RT->GetTriggerNum() >= GameThreadFramesAhead)
 		{
 			TThread::ThreadSleep(10);
 		}
