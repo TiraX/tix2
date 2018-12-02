@@ -26,7 +26,7 @@ namespace tix
 		struct FullScreenVertex
 		{
 			vector3df Position;
-			vector2df UV;
+			vector2df16 UV;
 		};
 		FMeshBufferPtr FullScreenQuad;
 		FShaderBindingPtr FullScreenBinding;

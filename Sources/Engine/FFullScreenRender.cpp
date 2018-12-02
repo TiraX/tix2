@@ -26,11 +26,13 @@ namespace tix
 			return;
 
 		// Create full screen quad
+		const float16 half0 = float16(0.f);
+		const float16 half1 = float16(1.f);
 		static const FullScreenVertex FullScreenQuadVertices[4] = {
-			{vector3df(-1.f, -1.f, 0.f), vector2df(0.f, 1.f)},
-			{vector3df(1.f, -1.f, 0.f), vector2df(1.f, 1.f)},
-			{vector3df(-1.f, 1.f, 0.f), vector2df(0.f, 0.f)},
-			{vector3df(1.f, 1.f, 0.f), vector2df(1.f, 0.f)}
+			{vector3df(-1.f, -1.f, 0.f), vector2df16(half0, half1)},
+			{vector3df(1.f, -1.f, 0.f), vector2df16(half1, half1)},
+			{vector3df(-1.f, 1.f, 0.f), vector2df16(half0, half0)},
+			{vector3df(1.f, 1.f, 0.f), vector2df16(half1, half0)}
 		};
 		static const uint16 FullScreenQuadIndices[6] = {
 			0, 2, 1, 1, 2, 3

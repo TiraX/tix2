@@ -314,6 +314,7 @@ public:
 
 //! Typedef for float32 2d vector.
 typedef vector2d<float32> vector2df;
+typedef vector2d<float16> vector2df16;
 typedef vector2d<float64> vector2df64;
 //! Typedef for integer 2d vector.
 typedef vector2d<int> vector2di;
