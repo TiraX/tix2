@@ -118,7 +118,7 @@ float4 main(VSOutput input) : SV_Target0
 
 		// Calculate the diffuse and specular lighting:
 		float3 diffuse = saturate(dot(L, normal));
-		float specular = intensity * SpecularKSK(texBeckmann, normal, light, input.view, roughness);
+		float specular = intensity * SpecularKSK(texBeckmann, normal, light, view, roughness);
 
 		// And also the shadowing:
 		float shadow = 1.0;// ShadowPCF(input.worldPosition, i, 3, 1.0);

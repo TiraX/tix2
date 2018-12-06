@@ -7,23 +7,23 @@
     "parameters": {
         "TextureDiffuse": {
             "type": "texture", 
-            "value": "AlbedoMap.tres"
+            "value": "T_AlbedoMap.tres"
         },
         "TextureNormal": {
             "type": "texture", 
-            "value": "NormalMap.tres"
+            "value": "T_NormalMap.tres"
         },
         "TextureSpecular": {
             "type": "texture", 
-            "value": "SpecularAOMap.tres"
+            "value": "T_SpecularAOMap.tres"
         },
         "TextureBeckmann": {
             "type": "texture", 
-            "value": "BeckmannMap.tres"
+            "value": "T_BeckmannMap.tres"
         },
         "TextureIrr": {
             "type": "texture", 
-            "value": "EnvIrradianceMap.tres"
+            "value": "TC_EnvIrradianceMap.tres"
         }
     }
 }
