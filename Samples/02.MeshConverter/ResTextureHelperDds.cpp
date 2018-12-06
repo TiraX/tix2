@@ -841,12 +841,12 @@ namespace tix
 		}
 	}
 
-	bool TResTextureHelper::LoadDdsFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings)
+	TResTextureDefine* TResTextureHelper::LoadDdsFile(const TString& Filename)
 	{
 		TFile f;
 		if (!f.Open(Filename, EFA_READ))
 		{
-			return false;
+			return nullptr;
 		}
 
 		// Load file to memory
@@ -860,7 +860,7 @@ namespace tix
 		if (dwMagicNumber != DDS_MAGIC)
 		{
 			ti_delete[] FileBuffer;
-			return false;
+			return nullptr;
 		}
 
 		auto header = reinterpret_cast<const DDS_HEADER*>(FileBuffer + sizeof(uint32));
@@ -870,7 +870,7 @@ namespace tix
 			header->ddspf.size != sizeof(DDS_PIXELFORMAT))
 		{
 			ti_delete[] FileBuffer;
-			return false;
+			return nullptr;
 		}
 
 		int32 offset = sizeof(DDS_HEADER) + sizeof(uint32);
@@ -886,7 +886,7 @@ namespace tix
 		if (FileSize < offset)
 		{
 			ti_delete[] FileBuffer;
-			return false;
+			return nullptr;
 		}
 
 		TString Name, Path;
@@ -905,11 +905,6 @@ namespace tix
 		Texture->Name = Name;
 		Texture->Path = Path;
 
-		TResTextureHelper ResTextureHelper;
-		ResTextureHelper.AddTexture(Texture);
-
-		ResTextureHelper.OutputTexture(OutStream, OutStrings);
-
-		return true;
+		return Texture;
 	}
 }

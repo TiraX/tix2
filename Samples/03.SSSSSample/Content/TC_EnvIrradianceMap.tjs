@@ -1,0 +1,11 @@
+{
+	"name": "TC_EnvIrradianceMap",
+	"type": "texture",
+	"version": 1,
+	"desc": "",
+	"source": "TC_EnvIrradianceMap.dds",
+	"texture_type": "ETT_TEXTURE_CUBE",
+	"srgb": 0,
+	"address_mode": "ETC_CLAMP_TO_EDGE",
+	"lod_bias": 0
+}

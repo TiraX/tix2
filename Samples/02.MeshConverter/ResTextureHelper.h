@@ -17,6 +17,7 @@ namespace tix
 	{
 		TString Name;
 		TString Path;
+		int32 LodBias;
 
 		TTextureDesc Desc;
 		TVector<TResSurfaceData> Surfaces;
@@ -28,7 +29,8 @@ namespace tix
 		TResTextureHelper();
 		~TResTextureHelper();
 
-		static bool LoadDdsFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
+		static bool LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+		static TResTextureDefine* LoadDdsFile(const TString& Filename);
 
 		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);

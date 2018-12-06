@@ -26,6 +26,44 @@ namespace tix
 	{
 		Textures.push_back(Texture);
 	}
+
+	bool TResTextureHelper::LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	{
+		TString Name = Doc["name"].GetString();
+		int32 Version = Doc["version"].GetInt();
+
+		TString TType = Doc["texture_type"].GetString();
+		E_TEXTURE_TYPE TextureType = GetTextureType(TType);
+
+		int32 SRgb = Doc["srgb"].GetInt();
+		TString AddressModeStr = Doc["address_mode"].GetString();
+		E_TEXTURE_ADDRESS_MODE AddressMode = GetAddressMode(AddressModeStr);
+
+		uint32 LodBias = Doc["lod_bias"].GetInt();
+
+		TString TextureSource = Doc["source"].GetString();
+
+		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource);
+		if (Texture != nullptr)
+		{
+			TI_ASSERT(LodBias < Texture->Desc.Mips);
+
+			Texture->LodBias = LodBias;
+			Texture->Desc.AddressMode = AddressMode;
+			Texture->Desc.SRGB = SRgb;
+
+			TResTextureHelper Helper;
+			Helper.AddTexture(Texture);
+			Helper.OutputTexture(OutStream, OutStrings);
+
+			return true;
+		}
+		else
+		{
+			printf("Can not load texture : %s.\n", TextureSource.c_str());
+			return false;
+		}
+	}
 	
 	void TResTextureHelper::OutputTexture(TStream& OutStream, TVector<TString>& OutStrings)
 	{
@@ -39,32 +77,47 @@ namespace tix
 		{
 			TResTextureDefine* Define = Textures[t];
 
+			int32 Faces = 1;
+			if (Define->Desc.Type == ETT_TEXTURE_CUBE)
+			{
+				Faces = 6;
+			}
+
 			// init header
 			THeaderTexture TextureHeader;
+			memset(&TextureHeader, 0, sizeof(THeaderTexture));
+
 			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define->Name);
-			TextureHeader.Type = Define->Desc.Type;
 			TextureHeader.Format = Define->Desc.Format;
-			TextureHeader.Width = Define->Desc.Width;
-			TextureHeader.Height = Define->Desc.Height;
+			TextureHeader.Width = Define->Desc.Width >> Define->LodBias;
+			TextureHeader.Height = Define->Desc.Height >> Define->LodBias;
+			TextureHeader.Type = Define->Desc.Type;
 			TextureHeader.AddressMode = Define->Desc.AddressMode;
 			TextureHeader.SRGB = Define->Desc.SRGB;
-			TextureHeader.Mips = Define->Desc.Mips;
-			TextureHeader.Surfaces = (uint32)Define->Surfaces.size();
+			TextureHeader.Mips = Define->Desc.Mips - Define->LodBias;
+			TextureHeader.Surfaces = (uint32)Define->Surfaces.size() - Define->LodBias * Faces;
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
 			FillZero4(HeaderStream);
 
 			const TVector<TResSurfaceData>& Surfaces = Define->Surfaces;
-			for (const auto& Surface : Surfaces)
+			for (int32 f = 0; f < Faces; ++f)
 			{
-				int32 DataLength = ti_align4(Surface.Data.GetLength());
-				DataStream.Put(&Surface.W, sizeof(int32));
-				DataStream.Put(&Surface.H, sizeof(int32));
-				DataStream.Put(&Surface.RowPitch, sizeof(int32));
-				DataStream.Put(&DataLength, sizeof(int32));
+				uint32 mip = Define->LodBias;
+				for (; mip < Define->Desc.Mips; ++mip)
+				{
+					int32 SurfaceIndex = f * Define->Desc.Mips + mip;
 
-				DataStream.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());
-				FillZero4(DataStream);
+					const TResSurfaceData& Surface = Surfaces[SurfaceIndex];
+					int32 DataLength = ti_align4(Surface.Data.GetLength());
+					DataStream.Put(&Surface.W, sizeof(int32));
+					DataStream.Put(&Surface.H, sizeof(int32));
+					DataStream.Put(&Surface.RowPitch, sizeof(int32));
+					DataStream.Put(&DataLength, sizeof(int32));
+
+					DataStream.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());
+					FillZero4(DataStream);
+				}
 			}
 		}
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();

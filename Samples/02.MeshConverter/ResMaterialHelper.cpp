@@ -50,7 +50,7 @@ namespace tix
 
 		// blend mode
 		Value& BM = Doc["blend_mode"];
-		Helper.SetBlendMode(GetMode(BM.IsNull() ? "null" : BM.GetString()));
+		Helper.SetBlendMode(GetBlendMode(BM.IsNull() ? "null" : BM.GetString()));
 
 		// depth write / depth test / two sides
 		Value& depth_write = Doc["depth_write"];

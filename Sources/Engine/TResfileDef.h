@@ -163,14 +163,17 @@ namespace tix
 	struct THeaderTexture
 	{
 		int32 StrId_Name;
-		int32 Type;
 		int32 Format;
 		int32 Width;
 		int32 Height;
-		int32 AddressMode;
-		uint32 SRGB;
-		uint32 Mips;
-		uint32 Surfaces;
+
+		uint8 Type;
+		uint8 AddressMode;
+		uint8 SRGB;
+		uint8 Mips;
+		uint8 Surfaces;
+		uint8 LodBias;
+		uint8 padding[2];
 	};
 
 	struct THeaderMaterial

@@ -10,9 +10,4 @@ echo converting - %%i
 %Converter% %%i
 )
 
-for %%i in (*.dds) do (
-echo converting - %%i
-%Converter% %%i
-)
-
 pause

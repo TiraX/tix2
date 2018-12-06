@@ -1,0 +1,11 @@
+{
+	"name": "T_SpecularAOMap",
+	"type": "texture",
+	"version": 1,
+	"desc": "",
+	"source": "T_SpecularAOMap.dds",
+	"texture_type": "ETT_TEXTURE_2D",
+	"srgb": 1,
+	"address_mode": "ETC_CLAMP_TO_EDGE",
+	"lod_bias": 0
+}
