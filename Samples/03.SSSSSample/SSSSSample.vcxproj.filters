@@ -42,21 +42,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Dx12\SamplePixelShader.hlsl">
+    <FxCompile Include="Shaders\Dx12\S_SkinBasePS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\SampleVertexShader.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\SkinBasePS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\SkinBaseVS.hlsl">
+    <FxCompile Include="Shaders\Dx12\S_SkinBaseVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Dx12\SkinBaseRS.hlsli">
+    <None Include="Shaders\Dx12\S_SkinBaseRS.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

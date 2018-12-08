@@ -196,9 +196,8 @@ namespace tix
 
 		HRESULT hr;
 
-		const DXGI_FORMAT BackBufferFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultBackBufferFormat];
-		const DXGI_FORMAT DepthBufferFormat = k_PIXEL_FORMAT_MAP[FRHIConfig::DefaultDepthBufferFormat];
-		TI_ASSERT(BackBufferFormat != DXGI_FORMAT_UNKNOWN && DepthBufferFormat != DXGI_FORMAT_UNKNOWN);
+		const DXGI_FORMAT BackBufferFormat = GetDxPixelFormat(FRHIConfig::DefaultBackBufferFormat);
+		const DXGI_FORMAT DepthBufferFormat = GetDxPixelFormat(FRHIConfig::DefaultDepthBufferFormat);
 
 		if (SwapChain != nullptr)
 		{
@@ -861,7 +860,7 @@ namespace tix
 	{
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
-		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
 		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 
 		// do not have texture data, Create a empty texture (used for render target usually).
@@ -885,7 +884,7 @@ namespace tix
 			ClearValue.DepthStencil.Depth = 1.f;
 			ClearValue.DepthStencil.Stencil = 0;
 		}
-		TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
+		TextureDx12Desc.Format = DxgiFormat;// GetBaseFormat(DxgiFormat);
 		TextureDx12Desc.Width = Desc.Width;
 		TextureDx12Desc.Height = Desc.Height;
 		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -931,7 +930,11 @@ namespace tix
 		TI_ASSERT(InTexData != nullptr);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
-		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
+		if (Desc.SRGB)
+		{
+			DxgiFormat = GetSRGBFormat(DxgiFormat);
+		}
 		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 
 		// Create texture resource and fill with texture data.
@@ -1088,9 +1091,9 @@ namespace tix
 		TI_ASSERT(Desc.RTCount > 0);
 		for (int32 r = 0 ; r < Desc.RTCount; ++r)
 		{
-			state.RTVFormats[r] = k_PIXEL_FORMAT_MAP[Desc.RTFormats[r]];
+			state.RTVFormats[r] = GetDxPixelFormat(Desc.RTFormats[r]);
 		}
-		state.DSVFormat = k_PIXEL_FORMAT_MAP[Desc.DepthFormat];
+		state.DSVFormat = GetDxPixelFormat(Desc.DepthFormat);
 		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] && DXGI_FORMAT_UNKNOWN != state.DSVFormat);
 		state.SampleDesc.Count = 1;
 
@@ -1272,7 +1275,7 @@ namespace tix
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
 
 		const TTextureDesc& Desc = InTexture->GetDesc();
-		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[Desc.Format];
+		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
 		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
 
@@ -1298,7 +1301,7 @@ namespace tix
 		TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
 		D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
-		RTVDesc.Format = k_PIXEL_FORMAT_MAP[InTexture->GetDesc().Format];
+		RTVDesc.Format = GetDxPixelFormat(InTexture->GetDesc().Format);
 		TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
 		RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		RTVDesc.Texture2D.MipSlice = 0;
@@ -1313,7 +1316,7 @@ namespace tix
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
 		TI_ASSERT(TexDx12->TextureResource.GetResource() != nullptr);
 
-		DXGI_FORMAT DxgiFormat = k_PIXEL_FORMAT_MAP[InTexture->GetDesc().Format];
+		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(InTexture->GetDesc().Format);
 		TI_ASSERT(DXGI_FORMAT_UNKNOWN != DxgiFormat);
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;

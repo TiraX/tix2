@@ -1,4 +1,4 @@
-#include "SkinBaseRS.hlsli"
+#include "S_SkinBaseRS.hlsli"
 
 struct VSOutput
 {

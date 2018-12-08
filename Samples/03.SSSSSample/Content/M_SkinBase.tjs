@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"SkinBaseVS.cso",
-		"SkinBasePS.cso",
+		"S_SkinBaseVS.cso",
+		"S_SkinBasePS.cso",
 		"",
 		"",
 		""
