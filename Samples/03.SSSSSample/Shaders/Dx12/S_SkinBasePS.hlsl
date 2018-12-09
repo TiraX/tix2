@@ -45,8 +45,8 @@ float3 BumpMap(Texture2D<float3> normalTex, float2 texcoord) {
 	return normalize(bump);
 }
 
-float Fresnel(float3 half, float3 view, float f0) {
-	float base = 1.0 - dot(view, half);
+float Fresnel(float3 h, float3 view, float f0) {
+	float base = 1.0 - dot(view, h);
 	float exponential = pow(base, 5.0);
 	return exponential + f0 * (1.0 - exponential);
 }
@@ -93,7 +93,7 @@ float4 main(VSOutput input) : SV_Target0
 
 	float occlusion = specularAO.r;
 	float intensity = specularAO.b * 1.0;// specularIntensity;
-	float roughness = (specularAO.g / 0.3) * 1.0;// specularRoughness;
+	float roughness = (specularAO.g / 0.3) * 0.3;// specularRoughness;
 
 	// Initialize the output:
 	float4 color = float4(0.0, 0.0, 0.0, 0.0);
@@ -148,7 +148,7 @@ float4 main(VSOutput input) : SV_Target0
 
 	// Add the ambient component:
 	//color.rgb += occlusion * ambient * albedo.rgb * irradianceTex.Sample(LinearSampler, normal).rgb;
-	color.rgb += occlusion * albedo.rgb ;
+	color.rgb += occlusion * albedo.rgb * 0.6;
 
 	// Store the SSS strength:
 	//specularColor.a = albedo.a;
