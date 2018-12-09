@@ -52,29 +52,37 @@ float Fresnel(float3 half, float3 view, float f0) {
 }
 
 float SpecularKSK(Texture2D<float3> beckmannTex, float3 normal, float3 light, float3 view, float roughness) {
-	float3 half = view + light;
-	float3 halfn = normalize(half);
+	float3 h = view + light;
+	float3 halfn = normalize(h);
 
 	float ndotl = max(dot(normal, light), 0.0);
 	float ndoth = max(dot(normal, halfn), 0.0);
 
 	float ph = pow(2.0 * beckmannTex.SampleLevel(sampler0, float2(ndoth, roughness), 0).r, 10.0);
 	float f = lerp(0.25, Fresnel(halfn, view, 0.028), specularFresnel);
-	float ksk = max(ph * f / dot(half, half), 0.0);
+	float ksk = max(ph * f / dot(h, h), 0.0);
 
 	return ndotl * ksk;
+}
+
+float3 GetWorldSpaceNormal(in float3 objSpaceNormal, in VSOutput input)
+{
+	float3 iNormal = normalize(input.normal);
+	float3 iTangent = normalize(input.tangent);
+	float3 iBitangent = cross(iNormal, iTangent);
+
+	float3x3 tbn = float3x3(iTangent, iBitangent, iNormal);
+	return mul(objSpaceNormal, tbn);
+	//float3x3 tbn = transpose(float3x3(iTangent, iBitangent, iNormal));
+	//return mul(tbn, objSpaceNormal);
 }
 
 [RootSignature(SkinBase_RootSig)]
 float4 main(VSOutput input) : SV_Target0
 {
-	//float3 n = texBeckmann.Sample(sampler0, vsOutput.uv);
-
-	// HACK for using baked object space normals (because blender tangent export is not working)
-	//float3 n = texBeckmann.Sample(sampler0, vsOutput.uv);
 	float3 objSpaceNormal = normalize(texNormal.Sample(sampler0, input.uv).xyz * 2.0 - 1.0);
 
-	float3 worldSpaceNormal = objSpaceNormal;
+	float3 worldSpaceNormal = GetWorldSpaceNormal(objSpaceNormal, input);
 	float3 normal = worldSpaceNormal;
 
 	float3 view = normalize(input.view);
@@ -118,7 +126,7 @@ float4 main(VSOutput input) : SV_Target0
 
 		// Calculate the diffuse and specular lighting:
 		float3 diffuse = saturate(dot(L, normal));
-		float specular = intensity * SpecularKSK(texBeckmann, normal, light, view, roughness);
+		float specular = intensity * SpecularKSK(texBeckmann, normal, L, view, roughness);
 
 		// And also the shadowing:
 		float shadow = 1.0;// ShadowPCF(input.worldPosition, i, 3, 1.0);

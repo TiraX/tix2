@@ -17,7 +17,7 @@
 		"EVSSEG_TANGENT"
 	],
 	"rt_colors": [
-		"EPF_BGRA8"
+		"EPF_BGRA8_SRGB"
 	],
 	"rt_depth": "EPF_DEPTH24_STENCIL8",
 	"shader_binding": "SB_SkinBase.tres",

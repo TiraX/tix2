@@ -5,7 +5,7 @@
 	"desc": "",
 	"source": "T_NormalMap.dds",
 	"texture_type": "ETT_TEXTURE_2D",
-	"srgb": 1,
+	"srgb": 0,
 	"address_mode": "ETC_CLAMP_TO_EDGE",
 	"lod_bias": 0
 }
