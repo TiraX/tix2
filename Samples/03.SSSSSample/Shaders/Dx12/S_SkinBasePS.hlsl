@@ -6,7 +6,6 @@ struct VSOutput
     float2 uv : TexCoord0;
     float3 normal : Normal;
     float3 tangent : Tangent;
-    float3 bitangent : Bitangent;
 	float3 view : TexCoord1;
 	float3 worldPosition : TexCoord2;
 };
