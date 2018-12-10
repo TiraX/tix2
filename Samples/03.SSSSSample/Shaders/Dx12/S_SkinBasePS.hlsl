@@ -77,7 +77,7 @@ float3 GetWorldSpaceNormal(in float3 objSpaceNormal, in VSOutput input)
 }
 
 [RootSignature(SkinBase_RootSig)]
-float4 main(VSOutput input) : SV_Target0
+float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 {
 	float3 objSpaceNormal = normalize(texNormal.Sample(sampler0, input.uv).xyz * 2.0 - 1.0);
 
@@ -96,7 +96,7 @@ float4 main(VSOutput input) : SV_Target0
 
 	// Initialize the output:
 	float4 color = float4(0.0, 0.0, 0.0, 0.0);
-	float4 specularColor = float4(0.0, 0.0, 0.0, 0.0);
+	specularColor = float4(0.0, 0.0, 0.0, 0.0);
 
 	//*
 	[unroll]
@@ -132,10 +132,10 @@ float4 main(VSOutput input) : SV_Target0
 
 		// Add the diffuse and specular components:
 //#ifdef SEPARATE_SPECULARS
-//		color.rgb += shadow * f2 * diffuse;
-//		specularColor.rgb += shadow * f1 * specular;
+		color.rgb += shadow * f2 * diffuse;
+		specularColor.rgb += shadow * f1 * specular;
 //#else
-		color.rgb += shadow * (f2 * diffuse + f1 * specular);
+//		color.rgb += shadow * (f2 * diffuse + f1 * specular);
 //#endif
 
 		// Add the transmittance component:

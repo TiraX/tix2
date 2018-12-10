@@ -27,6 +27,7 @@ void FSSSSRenderer::InitInRenderThread()
 	RTBasePass->SetResourceName("BasePass");
 #endif
 	RTBasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+	RTBasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1);
 	RTBasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RTBasePass->Compile();
 
