@@ -16,7 +16,7 @@ public:
 
 private:
 protected:
-	FRenderTargetPtr RTTest;
+	FRenderTargetPtr RTBasePass;
 	FFullScreenRender FSRender;
 	FRenderResourceTablePtr RTTextureTable;
 };

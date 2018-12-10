@@ -13,7 +13,7 @@ FSSSSRenderer::FSSSSRenderer()
 FSSSSRenderer::~FSSSSRenderer()
 {
 	RTTextureTable = nullptr;
-	RTTest = nullptr;
+	RTBasePass = nullptr;
 }
 
 void FSSSSRenderer::InitInRenderThread()
@@ -22,23 +22,23 @@ void FSSSSRenderer::InitInRenderThread()
 	FSRender.InitCommonResources(RHI);
 
 	// Render target test case
-	RTTest = FRenderTarget::Create(1280, 720);
+	RTBasePass = FRenderTarget::Create(1600, 900);
 #if defined (TIX_DEBUG)
-	RTTest->SetResourceName("RTTest");
+	RTBasePass->SetResourceName("BasePass");
 #endif
-	RTTest->AddColorBuffer(EPF_BGRA8_SRGB, ERTC_COLOR0);
-	RTTest->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
-	RTTest->Compile();
+	RTBasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+	RTBasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
+	RTBasePass->Compile();
 
 	RTTextureTable = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-	RTTextureTable->PutTextureInTable(RTTest->GetColorBuffer(ERTC_COLOR0).Texture, 0);
+	RTTextureTable->PutTextureInTable(RTBasePass->GetColorBuffer(ERTC_COLOR0).Texture, 0);
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	PrepareViewUniforms(Scene);
 
-	RHI->PushRenderTarget(RTTest);
+	RHI->PushRenderTarget(RTBasePass);
 
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
 	for (const auto& Primitive : Primitives)
