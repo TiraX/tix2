@@ -5,6 +5,7 @@
 
 #pragma once
 
+class SeparableSSS;
 class FSSSSRenderer : public FDefaultRenderer
 {
 public:
@@ -19,4 +20,6 @@ protected:
 	FRenderTargetPtr RTBasePass;
 	FFullScreenRender FSRender;
 	FRenderResourceTablePtr RTTextureTable;
+
+	SeparableSSS* S4Effect;
 };

@@ -5,13 +5,16 @@
 
 #include "stdafx.h"
 #include "SSSSRenderer.h"
+#include "SeparableSSS.h"
 
 FSSSSRenderer::FSSSSRenderer()
 {
+	S4Effect = ti_new SeparableSSS(1600, 900, DEG_TO_RAD(40), 250.f);
 }
 
 FSSSSRenderer::~FSSSSRenderer()
 {
+	ti_delete S4Effect;
 	RTTextureTable = nullptr;
 	RTBasePass = nullptr;
 }
