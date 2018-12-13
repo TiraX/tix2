@@ -28,7 +28,7 @@ cbuffer LightData : register(b5)
 {
 	float4 LightPosition[MAX_LIGHTS];
 	float4 LightColor[MAX_LIGHTS];
-}
+};
 
 SamplerState sampler0 : register(s0);
 

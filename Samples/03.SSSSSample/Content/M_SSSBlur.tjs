@@ -1,0 +1,26 @@
+{
+	"name": "M_SSSBlur",
+	"type": "material",
+	"version": 1,
+	"desc": "",
+	"shaders": [
+		"M_SSSBlur.cso",
+		"M_SSSBlur.cso",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_TEXCOORD0"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "",
+	"shader_binding": "SB_SSSBlur.tres",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": false,
+	"depth_test": false,
+	"two_sides": false
+}

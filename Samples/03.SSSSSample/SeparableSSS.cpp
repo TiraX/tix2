@@ -211,68 +211,64 @@ void SeparableSSS::calculateSsssDiscrSepKernel(const vector<KernelSample> & _ker
 	//V(kernelVariable->SetFloatVectorArray((float *) &kernel.front(), 0, nSamples));
 }
 
-//void SeparableSSS::go(ID3D10RenderTargetView *mainRTV,
-//                      ID3D10ShaderResourceView *mainSRV,
-//                      ID3D10ShaderResourceView *depthSRV,
-//                      ID3D10DepthStencilView *depthDSV,
-//                      ID3D10ShaderResourceView *stregthSRV,
-//                      int32 id) {
-//    HRESULT hr;
-//
-//    // Save the state:
-//    SaveViewportsScope saveViewport(device);
-//    SaveRenderTargetsScope saveRenderTargets(device);
-//    SaveInputLayoutScope saveInputLayout(device);
-//
-//    // Clear the temporal render target:
-//    float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-//    device->ClearRenderTargetView(*tmpRT, clearColor);
-//
-//    // Clear the stencil buffer if it was not available, and thus one must be 
-//    // initialized on the fly:
-//    if (!stencilInitialized)
-//        device->ClearDepthStencilView(depthDSV, D3D10_CLEAR_STENCIL, 1.0, 0);
-//
-//    // Set variables:
-//    V(idVariable->SetInt(id));
-//    V(sssWidthVariable->SetFloat(sssWidth));
-//    V(depthTexVariable->SetResource(depthSRV));
-//    V(strengthTexVariable->SetResource(stregthSRV));
-//
-//    // Set input layout and viewport:
-//    quad->setInputLayout();
-//    tmpRT->setViewport();	
-//
-//	string xshader;
-//	string yshader;
-//
-//	if(useImg2DKernel)
-//	{
-//		// 2D convolution shaders for reference
-//		xshader = "SSSSBlurTex";
-//		yshader = "SSSSBlurTexCopy";
-//	}
-//	else
-//	{
-//		// separable convolution shaders
-//		xshader = "SSSSBlurX";
-//		yshader = "SSSSBlurY";
-//	}
-//
-//	// Run the horizontal pass:
-//	V(colorTexVariable->SetResource(mainSRV));
-//	technique->GetPassByName(xshader.c_str())->Apply(0);
-//	device->OMSetRenderTargets(1, *tmpRT, depthDSV);
-//	quad->draw();
-//	device->OMSetRenderTargets(0, NULL, NULL);
-//	
-//	// And finish with the vertical one:
-//	V(colorTexVariable->SetResource(*tmpRT));
-//	technique->GetPassByName(yshader.c_str())->Apply(0);
-//	device->OMSetRenderTargets(1, &mainRTV, depthDSV);
-//	quad->draw();
-//	device->OMSetRenderTargets(0, NULL, NULL);
-//}
+void SeparableSSS::go(FRHI * RHI, FFullScreenRender& FSRenderer)
+{
+ //   HRESULT hr;
+
+ //   // Save the state:
+ //   SaveViewportsScope saveViewport(device);
+ //   SaveRenderTargetsScope saveRenderTargets(device);
+ //   SaveInputLayoutScope saveInputLayout(device);
+
+ //   // Clear the temporal render target:
+ //   float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+ //   device->ClearRenderTargetView(*tmpRT, clearColor);
+
+ //   // Clear the stencil buffer if it was not available, and thus one must be 
+ //   // initialized on the fly:
+ //   if (!stencilInitialized)
+ //       device->ClearDepthStencilView(depthDSV, D3D10_CLEAR_STENCIL, 1.0, 0);
+
+ //   // Set variables:
+ //   V(idVariable->SetInt(id));
+ //   V(sssWidthVariable->SetFloat(sssWidth));
+ //   V(depthTexVariable->SetResource(depthSRV));
+ //   V(strengthTexVariable->SetResource(stregthSRV));
+
+ //   // Set input layout and viewport:
+ //   quad->setInputLayout();
+ //   tmpRT->setViewport();	
+
+	//string xshader;
+	//string yshader;
+
+	//if(useImg2DKernel)
+	//{
+	//	// 2D convolution shaders for reference
+	//	xshader = "SSSSBlurTex";
+	//	yshader = "SSSSBlurTexCopy";
+	//}
+	//else
+	//{
+	//	// separable convolution shaders
+	//	xshader = "SSSSBlurX";
+	//	yshader = "SSSSBlurY";
+	//}
+
+	//// Run the horizontal pass:
+	//V(colorTexVariable->SetResource(mainSRV));
+	//technique->GetPassByName(xshader.c_str())->Apply(0);
+	//device->OMSetRenderTargets(1, *tmpRT, depthDSV);
+	//quad->draw();
+	//device->OMSetRenderTargets(0, NULL, NULL);
+	//
+	//// And finish with the vertical one:
+	//V(colorTexVariable->SetResource(*tmpRT));
+	//technique->GetPassByName(yshader.c_str())->Apply(0);
+	//device->OMSetRenderTargets(1, &mainRTV, depthDSV);
+	//quad->draw();
+	//device->OMSetRenderTargets(0, NULL, NULL);
+}
 
 /**
  *	Helper function to convert the linear parameter vector used for the translucency profile to its exponential weights and variances

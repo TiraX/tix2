@@ -113,12 +113,7 @@ class SeparableSSS {
          * Note that 'depthSRV' and 'depthDSV' cannot be the views of the same
          * depth-stencil buffer.
          */
-        //void go(ID3D10RenderTargetView *mainRTV,
-        //        ID3D10ShaderResourceView *mainSRV,
-        //        ID3D10ShaderResourceView *depthSRV,
-        //        ID3D10DepthStencilView *depthDSV,
-        //        ID3D10ShaderResourceView *stregthSRV = NULL,
-        //        int id=1);
+        void go(FRHI * RHI, FFullScreenRender& FSRenderer);
 
         /**
          * This parameter specifies the global level of subsurface scattering,
