@@ -17,6 +17,13 @@ namespace tix
 			, W(1.f)
 		{}
 
+		FFloat4(float InX, float InY, float InZ, float InW)
+			: X(InX)
+			, Y(InY)
+			, Z(InZ)
+			, W(InW)
+		{}
+
 		~FFloat4()
 		{}
 

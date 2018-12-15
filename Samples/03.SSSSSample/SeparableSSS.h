@@ -121,6 +121,9 @@ class SeparableSSS {
          */
         void setWidth(float width) { this->sssWidth = width; }
         float getWidth() const { return sssWidth; }
+
+		float getFOV() const { return fov; }
+		float getMaxOffset() const { return maxOffsetMm; }
 		
 		void overrideTranslucencyParameters(const TVector<float> & _kernelData);
 		void overrideSsssDiscrSepKernel(const TVector<float> & _kernelData);
@@ -144,6 +147,8 @@ class SeparableSSS {
 		void calculateGaussianKernel(double _maxSampleMm = 0);
 
 		float sssWidth;
+		float fov;
+		float maxOffsetMm;
         int nSamples;
         bool stencilInitialized;
         vector3df strength;
@@ -156,6 +161,4 @@ class SeparableSSS {
 		TVector<vector3df> translucencyVariances;
 		
         TVector<vector4df> kernel;
-        
-		bool useImg2DKernel;
 };

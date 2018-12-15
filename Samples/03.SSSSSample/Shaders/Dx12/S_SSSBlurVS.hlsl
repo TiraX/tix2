@@ -14,7 +14,7 @@ struct PixelShaderInput
 	float2 uv : TEXCOORD;
 };
 
-//[RootSignature(SSSBlur_RootSig)]
+[RootSignature(SSSBlur_RootSig)]
 PixelShaderInput main(VertexShaderInput vsInput)
 {
 	PixelShaderInput output;

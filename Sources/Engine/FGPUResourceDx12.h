@@ -22,6 +22,11 @@ namespace tix
 		FGPUResourceDx12(D3D12_RESOURCE_STATES InitState);
 		~FGPUResourceDx12();
 
+		bool IsInited() const
+		{
+			return Resource != nullptr;
+		}
+
 		ID3D12Resource* GetResource()
 		{
 			return Resource.Get();

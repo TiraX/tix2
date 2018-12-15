@@ -110,4 +110,11 @@ namespace tix
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}
+
+	void FFullScreenRender::DrawFullScreenQuad(FRHI* RHI)
+	{
+		TI_ASSERT(bInited);
+		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
+	}
 }

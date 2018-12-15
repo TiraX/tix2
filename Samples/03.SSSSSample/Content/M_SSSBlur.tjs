@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"M_SSSBlur.cso",
-		"M_SSSBlur.cso",
+		"S_SSSBlurVS.cso",
+		"S_SSSBlurPS.cso",
 		"",
 		"",
 		""

@@ -859,6 +859,8 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture)
 	{
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+		if (TexDx12->TextureResource.IsInited())
+			return true;
 		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
 		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
@@ -1428,6 +1430,7 @@ namespace tix
 		for (int32 cb = 0; cb < CBCount; ++cb)
 		{
 			FTexturePtr Texture = RT->GetColorBuffer(cb).Texture;
+			TI_ASSERT(Texture != nullptr);	// Color can be NULL ?
 			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
@@ -1435,8 +1438,11 @@ namespace tix
 		// Transition Depth buffer to D3D12_RESOURCE_STATE_DEPTH_WRITE
 		{
 			FTexturePtr Texture = RT->GetDepthStencilBuffer().Texture;
-			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			if (Texture != nullptr)
+			{
+				FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			}
 		}
 		FlushResourceBarriers(CommandList.Get());
 
@@ -1457,7 +1463,7 @@ namespace tix
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv = nullptr;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthDescriptor;
 		FRenderResourceTablePtr DepthTable = RT->GetRTDepthTable();
-		if (DepthTable->GetTableSize() != 0)
+		if (DepthTable != nullptr && DepthTable->GetTableSize() != 0)
 		{
 			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable->GetIndexAt(0));
 			Dsv = &DepthDescriptor;
@@ -1496,6 +1502,7 @@ namespace tix
 		for (int32 cb = 0; cb < CBCount; ++cb)
 		{
 			FTexturePtr Texture = CurrentRT->GetColorBuffer(cb).Texture;
+			TI_ASSERT(Texture != nullptr);
 			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		}
@@ -1503,8 +1510,11 @@ namespace tix
 		// Transition Depth buffer to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
 		{
 			FTexturePtr Texture = CurrentRT->GetDepthStencilBuffer().Texture;
-			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			if (Texture != nullptr)
+			{
+				FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
+				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			}
 		}
 		FlushResourceBarriers(CommandList.Get());
 

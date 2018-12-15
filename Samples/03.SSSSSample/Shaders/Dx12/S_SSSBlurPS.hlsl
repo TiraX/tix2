@@ -20,7 +20,7 @@ Texture2D TexStrength : register(t2);
 SamplerState sampler0 : register(s0);
 
 #define SSSS_N_SAMPLES 17
-float4 kernel[] = {
+static const float4 kernel[] = {
 	float4(0.536343, 0.624624, 0.748867, 0),
 	float4(0.00317394, 0.000134823, 3.77269e-005, -2),
 	float4(0.0100386, 0.000914679, 0.000275702, -1.53125),
@@ -41,7 +41,7 @@ float4 kernel[] = {
 };
 
 // A pass-through function for the (interpolated) color data.
-//[RootSignature(SSSBlur_RootSig)]
+[RootSignature(SSSBlur_RootSig)]
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	// Fetch color of current pixel:
@@ -66,7 +66,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	finalStep *= TexStrength.Sample(sampler0, input.uv).r; // Modulate it using the alpha channel.
 	finalStep *= 1.0 / (2.0 * sssWidth); // sssWidth in mm / world space unit, divided by 2 as uv coords are from [0 1]
 
-										 // Accumulate the center sample:
+	// Accumulate the center sample:
 	float4 colorBlurred = colorM;
 	colorBlurred.rgb *= kernel[0].rgb;
 

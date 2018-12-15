@@ -48,6 +48,8 @@ SeparableSSS::SeparableSSS(int32 width,
                            bool followSurface,
                            bool separateStrengthSource)
 	: sssWidth(sssWidth)
+	, fov(fovy)
+	, maxOffsetMm(0.f)
 	, nSamples(nSamples)
 	, stencilInitialized(stencilInitialized)
 	, strength(vector3df(0.48f, 0.41f, 0.28f))
@@ -204,7 +206,8 @@ void SeparableSSS::calculateSsssDiscrSepKernel(const vector<KernelSample> & _ker
         kernel[i] = kernel[i - 1];
     kernel[0] = t;
 
-	TI_ASSERT(0);
+	maxOffsetMm = RANGE;
+	//TI_ASSERT(0);
 	// set shader vars
 	//HRESULT hr;
 	//V(effect->GetVariableByName("maxOffsetMm")->AsScalar()->SetFloat(RANGE));
@@ -303,8 +306,6 @@ double SeparableSSS::convertLinParamVector(const TVector<float> & _kernelData, T
  */
 void SeparableSSS::overrideSsssDiscrSepKernel(const TVector<float> & _kernelData)
 {	
-	useImg2DKernel = false;
-	
 	// conversion of linear kernel data to sample array
 	vector<KernelSample> k;
 	uint32 size = (uint32)_kernelData.size() / 4;
