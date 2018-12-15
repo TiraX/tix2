@@ -822,7 +822,7 @@ namespace tix
 		}
 	}
 
-	inline DXGI_FORMAT GetDepthFormat(DXGI_FORMAT defaultFormat)
+	inline DXGI_FORMAT GetDepthSrvFormat(DXGI_FORMAT defaultFormat)
 	{
 		switch (defaultFormat)
 		{
@@ -884,7 +884,7 @@ namespace tix
 			ClearValue.DepthStencil.Depth = 1.f;
 			ClearValue.DepthStencil.Stencil = 0;
 		}
-		TextureDx12Desc.Format = DxgiFormat;// GetBaseFormat(DxgiFormat);
+		TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
 		TextureDx12Desc.Width = Desc.Width;
 		TextureDx12Desc.Height = Desc.Height;
 		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -910,7 +910,7 @@ namespace tix
 		//SRVDesc.Format = DxgiFormat;
 		//if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
 		//{
-		//	SRVDesc.Format = GetDepthFormat(DxgiFormat);
+		//	SRVDesc.Format = GetDepthSrvFormat(DxgiFormat);
 		//}
 		//SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		//SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -1281,7 +1281,17 @@ namespace tix
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		SRVDesc.Format = DxgiFormat;
+		DXGI_FORMAT DepthSrvFormat = GetDepthSrvFormat(DxgiFormat);
+		if (DepthSrvFormat != DXGI_FORMAT_UNKNOWN)
+		{
+			// A depth texture
+			SRVDesc.Format = DepthSrvFormat;
+		}
+		else
+		{
+			// This is not a depth related buffer, treat as a normal texture.
+			SRVDesc.Format = DxgiFormat;
+		}
 		SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
 		if (IsCubeMap)
 		{
