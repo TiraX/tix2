@@ -21,11 +21,11 @@ namespace tix
 
 	void FDefaultRenderer::PrepareViewUniforms(FScene* Scene)
 	{
-		if (ViewUniformBuffer == nullptr)
-			ViewUniformBuffer = ti_new FViewUniformBuffer();
-
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
 		{
+			// Always make a new View uniform buffer for on-the-fly rendering
+			ViewUniformBuffer = ti_new FViewUniformBuffer();
+
 			const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
 			ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
 			ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
