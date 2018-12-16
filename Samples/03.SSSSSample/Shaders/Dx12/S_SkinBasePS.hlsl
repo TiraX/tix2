@@ -7,7 +7,7 @@ struct VSOutput
     float3 normal : Normal;
     float3 tangent : Tangent;
 	float3 view : TexCoord1;
-	float3 worldPosition : TexCoord2;
+	float4 worldPosition : TexCoord2;
 };
 
 Texture2D<float4> texDiffuse : register(t0);
@@ -104,7 +104,7 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 	{
 		int Index = LightIndex[i];
 		float3 LColor = LightColor[Index].xyz;
-		float3 light = LightPosition[Index].xyz - input.worldPosition;
+		float3 light = LightPosition[Index].xyz - input.worldPosition.xyz;
 		float distanceSqr = dot(light, light);
 		float3 L = light * rsqrt(distanceSqr);
 
@@ -147,7 +147,8 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 
 	// Add the ambient component:
 	//color.rgb += occlusion * ambient * albedo.rgb * irradianceTex.Sample(LinearSampler, normal).rgb;
-	float3 dir = float3(-normal.x, -normal.y, -normal.z);
+	//float3 dir = float3(-normal.x, -normal.y, -normal.z);
+	float3 dir = normal.xzy;
 	color.rgb += occlusion * albedo.rgb * 0.61 * sqrt(texIrrMap.Sample(sampler0, dir).rgb);
 
 	// Store the SSS strength:
@@ -165,5 +166,6 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 
 	// Compress the velocity for storing it in a 8-bit render target:
 	//color.a = sqrt(5.0 * length(velocity));
+	color.a = input.worldPosition.w;
 	return color;
 }

@@ -53,7 +53,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float4 colorM = TexColor.Sample(sampler0, input.uv);
 	
 	// Fetch linear depth of current pixel:
-	float depthM = TexDepth.Sample(sampler0, input.uv).r;
+	float depthM = colorM.a;// TexDepth.Sample(sampler0, input.uv).r;
 
 	float sssWidth = BlurParam.x;
 	float sssFov = BlurParam.y;
@@ -84,7 +84,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 
 //#if SSSS_FOLLOW_SURFACE == 1
 			// If the difference in depth is huge, we lerp color back to "colorM":
-			float depth = TexDepth.Sample(sampler0, offset).r;
+			float depth = color.a;// TexDepth.Sample(sampler0, offset).r;
 
 			float s = saturate(abs(depthM - depth) / (distanceToProjectionWindow * (maxOffsetMm / sssWidth)));
 			s = min(1, s*1.5); // custom / user definable scaling

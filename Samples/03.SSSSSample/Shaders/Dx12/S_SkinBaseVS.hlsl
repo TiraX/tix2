@@ -22,7 +22,7 @@ struct VSOutput
     float3 normal : Normal;
     float3 tangent : Tangent;
 	float3 view : TexCoord1;
-	float3 worldPosition : TexCoord2;
+	float4 worldPosition : TexCoord2;
 };
 
 [RootSignature(SkinBase_RootSig)]
@@ -37,7 +37,8 @@ VSOutput main(VSInput vsInput)
     vsOutput.normal = vsInput.normal * 2.0 - 1.0;
     vsOutput.tangent = vsInput.tangent * 2.0 - 1.0;
 	vsOutput.view = ViewPos - vsInput.position;
-	vsOutput.worldPosition = vsInput.position;
+	vsOutput.worldPosition.xyz = vsInput.position;
+	vsOutput.worldPosition.w = vsOutput.position.z / vsOutput.position.w;
 
     return vsOutput;
 }
