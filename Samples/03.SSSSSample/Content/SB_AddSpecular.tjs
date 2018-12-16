@@ -1,0 +1,15 @@
+{
+	"name": "SB_AddSpecular",
+	"type": "shader_binding",
+	"version": 1,
+	"desc": "",
+	"parameters": 
+	[
+		{
+			"type": "BINDING_TEXTURE_TABLE",
+			"stage": "ESS_PIXEL_SHADER",
+			"register": 0,
+			"size": 3
+		}
+	]
+}

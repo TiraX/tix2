@@ -1,0 +1,26 @@
+{
+	"name": "M_Combine",
+	"type": "material",
+	"version": 1,
+	"desc": "",
+	"shaders": [
+		"S_CombineVS.cso",
+		"S_CombinePS.cso",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_TEXCOORD0"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "",
+	"shader_binding": "SB_UB1TT13.tres",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": false,
+	"depth_test": false,
+	"two_sides": false
+}

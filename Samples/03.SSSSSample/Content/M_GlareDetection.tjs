@@ -1,0 +1,26 @@
+{
+	"name": "M_GlareDetection",
+	"type": "material",
+	"version": 1,
+	"desc": "",
+	"shaders": [
+		"S_GlareDetectionVS.cso",
+		"S_GlareDetectionPS.cso",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_TEXCOORD0"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "",
+	"shader_binding": "SB_UB1TT11.tres",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": false,
+	"depth_test": false,
+	"two_sides": false
+}

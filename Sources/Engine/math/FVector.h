@@ -27,6 +27,14 @@ namespace tix
 		~FFloat4()
 		{}
 
+		FFloat4& operator = (const vector2df& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+
+			return *this;
+		}
+
 		FFloat4& operator = (const vector3df& Other)
 		{
 			X = Other.X;
