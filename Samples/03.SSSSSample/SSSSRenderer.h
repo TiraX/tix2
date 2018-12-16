@@ -26,7 +26,7 @@ protected:
 
 	FRenderTargetPtr RT_BasePass;
 
-	TMaterialPtr M_SSSBlur;
+	FPipelinePtr PL_SSSBlur;
 	FRenderTargetPtr RT_SSSBlurX;
 	FRenderTargetPtr RT_SSSBlurY;
 	FRenderResourceTablePtr TT_SSSBlurX;

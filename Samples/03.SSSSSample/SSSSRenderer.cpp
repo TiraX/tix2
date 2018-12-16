@@ -12,13 +12,14 @@ FSSSSRenderer::FSSSSRenderer()
 	S4Effect = ti_new SeparableSSS(1600, 900, DEG_TO_RAD(40), 250.f);
 	TI_TODO("Try FoV 20.");
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
-	M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
+	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
+	PL_SSSBlur = M_SSSBlur->PipelineResource;
 }
 
 FSSSSRenderer::~FSSSSRenderer()
 {
 	ti_delete S4Effect;
-	M_SSSBlur = nullptr;
+	PL_SSSBlur = nullptr;
 	RT_BasePass = nullptr;
 	RT_SSSBlurX = nullptr;
 	RT_SSSBlurY = nullptr;
@@ -130,7 +131,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Go SSS Blur Pass
 	{
 		RHI->PushRenderTarget(RT_SSSBlurX);
-		RHI->SetPipeline(M_SSSBlur->PipelineResource);
+		RHI->SetPipeline(PL_SSSBlur);
 		RHI->SetUniformBuffer(0, UB_SSSBlurX->UniformBuffer);
 		RHI->SetRenderResourceTable(1, TT_SSSBlurX);
 		FSRender.DrawFullScreenQuad(RHI);
