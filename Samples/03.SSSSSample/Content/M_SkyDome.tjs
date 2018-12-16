@@ -1,0 +1,27 @@
+{
+	"name": "M_SkyDome",
+	"type": "material",
+	"version": 1,
+	"desc": "",
+	"shaders": [
+		"S_SkyDomeVS.cso",
+		"S_SkyDomePS.cso",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_NORMAL"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F",
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"shader_binding": "SB_SkyDome.tres",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": true,
+	"depth_test": true,
+	"two_sides": false
+}

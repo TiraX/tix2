@@ -84,6 +84,12 @@
     <FxCompile Include="Shaders\Dx12\S_CombineVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyDomePS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyDomeVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Dx12\S_SkinBaseRS.hlsli">

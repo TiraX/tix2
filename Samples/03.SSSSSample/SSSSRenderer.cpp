@@ -10,7 +10,6 @@
 FSSSSRenderer::FSSSSRenderer()
 {
 	S4Effect = ti_new SeparableSSS(1600, 900, DEG_TO_RAD(40), 250.f);
-	TI_TODO("Try FoV 20.");
 
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
 	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
@@ -177,7 +176,7 @@ void FSSSSRenderer::InitInRenderThread()
 	const float BloomIntensity = 1.f;
 	// Combine result
 	RT_Combine = FRenderTarget::Create(ViewWidth, ViewHeight);
-	RT_Combine->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+	RT_Combine->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
 	RT_Combine->Compile();
 	UB_Combine = ti_new FSSSBloomUniformBuffer;
 	UB_Combine->UniformBufferData.BloomParam.X = Exposure;

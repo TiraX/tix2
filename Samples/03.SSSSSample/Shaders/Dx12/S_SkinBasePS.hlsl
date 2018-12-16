@@ -91,7 +91,7 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 	float3 specularAO = texSpecular.Sample(sampler0, input.uv).rgb;
 
 	float occlusion = specularAO.r;
-	float intensity = specularAO.b * 1.0;// specularIntensity;
+	float intensity = specularAO.b * 1.84;// specularIntensity;
 	float roughness = (specularAO.g / 0.3) * 0.3;// specularRoughness;
 
 	// Initialize the output:
@@ -147,7 +147,8 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 
 	// Add the ambient component:
 	//color.rgb += occlusion * ambient * albedo.rgb * irradianceTex.Sample(LinearSampler, normal).rgb;
-	color.rgb += occlusion * albedo.rgb * 0.6;
+	float3 dir = float3(-normal.x, -normal.y, -normal.z);
+	color.rgb += occlusion * albedo.rgb * 0.61 * sqrt(texIrrMap.Sample(sampler0, dir).rgb);
 
 	// Store the SSS strength:
 	specularColor.a = albedo.a;

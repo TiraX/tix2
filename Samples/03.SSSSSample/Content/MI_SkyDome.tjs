@@ -1,0 +1,13 @@
+{
+    "name": "MI_SkyDome", 
+    "type": "material_instance", 
+    "version": 1, 
+    "desc": "", 
+    "linked_material": "M_SkyDome.tres", 
+    "parameters": {
+        "TextureSkyMap": {
+            "type": "texture", 
+            "value": "TC_EnvCubeMap.tres"
+        }
+    }
+}

@@ -15,7 +15,7 @@
 		"EVSSEG_TEXCOORD0"
 	],
 	"rt_colors": [
-		"EPF_RGBA16F"
+		"EPF_RGBA8"
 	],
 	"rt_depth": "",
 	"shader_binding": "SB_UB1TT13.tres",
