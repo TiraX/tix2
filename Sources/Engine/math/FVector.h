@@ -36,6 +36,16 @@ namespace tix
 			return *this;
 		}
 
+		FFloat4& operator = (const vector4df& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+			Z = Other.Z;
+			W = Other.W;
+
+			return *this;
+		}
+
 		FFloat4& operator = (const SColorf& Other)
 		{
 			X = Other.R;

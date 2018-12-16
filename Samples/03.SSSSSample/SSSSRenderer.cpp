@@ -27,6 +27,7 @@ FSSSSRenderer::~FSSSSRenderer()
 	TT_SSSBlurY = nullptr;
 	UB_SSSBlurX = nullptr;
 	UB_SSSBlurY = nullptr;
+	UB_Kernel = nullptr;
 }
 
 void FSSSSRenderer::InitInRenderThread()
@@ -59,10 +60,12 @@ void FSSSSRenderer::InitInRenderThread()
 	// TT BlurX
 	FTexturePtr SceneColor = RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture;
 	FTexturePtr SceneDepth = RT_BasePass->GetDepthStencilBuffer().Texture;
+	FTexturePtr SpecularTex = RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture;
 
-	TT_SSSBlurX = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(2);
+	TT_SSSBlurX = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(3);
 	TT_SSSBlurX->PutTextureInTable(SceneColor, 0);
 	TT_SSSBlurX->PutTextureInTable(SceneDepth, 1);
+	TT_SSSBlurX->PutTextureInTable(SpecularTex, 2);
 
 	// RT BlurY
 	RT_SSSBlurY = FRenderTarget::Create(ViewWidth, ViewHeight);
@@ -74,9 +77,10 @@ void FSSSSRenderer::InitInRenderThread()
 
 	// TT BlurY
 	FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
-	TT_SSSBlurY = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(2);
+	TT_SSSBlurY = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(3);
 	TT_SSSBlurY->PutTextureInTable(TextureBlurX, 0);
 	TT_SSSBlurY->PutTextureInTable(SceneDepth, 1);
+	TT_SSSBlurY->PutTextureInTable(SpecularTex, 2);
 
 	// Uniform buffers
 	//x = sssWidth; y = sssFov; z = maxOffsetMm
@@ -90,6 +94,16 @@ void FSSSSRenderer::InitInRenderThread()
 	UB_SSSBlurY->UniformBufferData.BlurDir = FFloat4(0.f, 1.f, 0.f, 0.f);
 	UB_SSSBlurY->UniformBufferData.BlurParam = FFloat4(S4Effect->getWidth(), S4Effect->getFOV(), S4Effect->getMaxOffset(), 0.f);
 	UB_SSSBlurY->InitUniformBuffer();
+
+	// Fill kernel uniform buffer
+	UB_Kernel = ti_new FSSSBlurKernelUniformBuffer;
+	const TVector<vector4df>& KernelData = S4Effect->getKernel();
+	TI_ASSERT(KernelData.size() == SeparableSSS::SampleCount);
+	for (int32 i = 0 ; i < SeparableSSS::SampleCount; ++ i)
+	{
+		UB_Kernel->UniformBufferData.Kernel[i] = KernelData[i];
+	}
+	UB_Kernel->InitUniformBuffer();
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -133,7 +147,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->PushRenderTarget(RT_SSSBlurX);
 		RHI->SetPipeline(PL_SSSBlur);
 		RHI->SetUniformBuffer(0, UB_SSSBlurX->UniformBuffer);
-		RHI->SetRenderResourceTable(1, TT_SSSBlurX);
+		RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
+		RHI->SetRenderResourceTable(2, TT_SSSBlurX);
 		FSRender.DrawFullScreenQuad(RHI);
 		RHI->PopRenderTarget();
 	}
@@ -141,7 +156,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->PushRenderTarget(RT_SSSBlurY);
 		//RHI->SetPipeline(M_SSSBlur->PipelineResource);
 		RHI->SetUniformBuffer(0, UB_SSSBlurY->UniformBuffer);
-		RHI->SetRenderResourceTable(1, TT_SSSBlurY);
+		RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
+		RHI->SetRenderResourceTable(2, TT_SSSBlurY);
 		FSRender.DrawFullScreenQuad(RHI);
 		RHI->PopRenderTarget();
 	}

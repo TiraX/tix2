@@ -42,6 +42,7 @@ struct KernelSample
 
 class SeparableSSS {
     public:
+		static const int32 SampleCount = 17;
         /**
          * width, height: should match the backbuffer's size.
          *
@@ -73,7 +74,6 @@ class SeparableSSS {
         SeparableSSS(int width, int height,
                      float fovy,
                      float sssWidth,
-                     int nSamples=17,
                      bool stencilInitialized=true,
                      bool followShape=true,
                      bool separateStrengthSource=false);
@@ -124,6 +124,11 @@ class SeparableSSS {
 
 		float getFOV() const { return fov; }
 		float getMaxOffset() const { return maxOffsetMm; }
+
+		const TVector<vector4df>& getKernel() const
+		{
+			return kernel;
+		}
 		
 		void overrideTranslucencyParameters(const TVector<float> & _kernelData);
 		void overrideSsssDiscrSepKernel(const TVector<float> & _kernelData);
@@ -149,7 +154,6 @@ class SeparableSSS {
 		float sssWidth;
 		float fov;
 		float maxOffsetMm;
-        int nSamples;
         bool stencilInitialized;
         vector3df strength;
         vector3df falloff;

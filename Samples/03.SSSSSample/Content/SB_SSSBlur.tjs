@@ -11,6 +11,11 @@
 			"register": 0
 		},
 		{
+			"type": "BINDING_UNIFORMBUFFER",
+			"stage": "ESS_PIXEL_SHADER",
+			"register": 1
+		},
+		{
 			"type": "BINDING_TEXTURE_TABLE",
 			"stage": "ESS_PIXEL_SHADER",
 			"register": 0,

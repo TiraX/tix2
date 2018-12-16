@@ -10,7 +10,7 @@ struct VSOutput
 	float3 worldPosition : TexCoord2;
 };
 
-Texture2D<float3> texDiffuse : register(t0);
+Texture2D<float4> texDiffuse : register(t0);
 Texture2D<float3> texNormal : register(t1);
 Texture2D<float3> texSpecular : register(t2);
 Texture2D<float3> texBeckmann : register(t3);
@@ -87,7 +87,7 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 	float3 view = normalize(input.view);
 
 	// Fetch albedo, specular parameters and static ambient occlusion:
-	float3 albedo = texDiffuse.Sample(sampler0, input.uv);
+	float4 albedo = texDiffuse.Sample(sampler0, input.uv);
 	float3 specularAO = texSpecular.Sample(sampler0, input.uv).rgb;
 
 	float occlusion = specularAO.r;
@@ -150,7 +150,7 @@ float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
 	color.rgb += occlusion * albedo.rgb * 0.6;
 
 	// Store the SSS strength:
-	//specularColor.a = albedo.a;
+	specularColor.a = albedo.a;
 
 	// Store the depth value:
 	//depth = input.svPosition.w;

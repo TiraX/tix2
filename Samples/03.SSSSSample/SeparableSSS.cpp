@@ -43,14 +43,12 @@ SeparableSSS::SeparableSSS(int32 width,
                            int32 height,
                            float fovy,
                            float sssWidth,
-                           int32 nSamples,
                            bool stencilInitialized,
                            bool followSurface,
                            bool separateStrengthSource)
 	: sssWidth(sssWidth)
 	, fov(fovy)
 	, maxOffsetMm(0.f)
-	, nSamples(nSamples)
 	, stencilInitialized(stencilInitialized)
 	, strength(vector3df(0.48f, 0.41f, 0.28f))
 	, falloff(vector3df(1.0f, 0.37f, 0.3f)) 
@@ -167,18 +165,18 @@ void SeparableSSS::calculateSsssDiscrSepKernel(const vector<KernelSample> & _ker
 	
 	// calculate offsets
     vector<float> offsets;
-	calculateOffsets(RANGE, EXPONENT, nSamples, offsets);
+	calculateOffsets(RANGE, EXPONENT, SampleCount, offsets);
 
 	// calculate areas (using importance-sampling) 
 	vector<float> areas;
 	calculateAreas(offsets, areas);
 
-	kernel.resize(nSamples);
+	kernel.resize(SampleCount);
 
 	vector3df sum = vector3df(0,0,0); // weights sum for normalization
 	
 	// compute interpolated weights
-	for(int32 i=0; i<nSamples; i++)
+	for(int32 i=0; i<SampleCount; i++)
 	{
 		float sx = offsets[i];
 
@@ -194,15 +192,15 @@ void SeparableSSS::calculateSsssDiscrSepKernel(const vector<KernelSample> & _ker
 	}
 
 	// Normalize
-    for (int32 i = 0; i < nSamples; i++) {
+    for (int32 i = 0; i < SampleCount; i++) {
         kernel[i].X /= sum.X;
         kernel[i].Y /= sum.Y;
         kernel[i].Z /= sum.Z;
     }
 
 	// TEMP put center at first
-    vector4df t = kernel[nSamples / 2];
-    for (int32 i = nSamples / 2; i > 0; i--)
+    vector4df t = kernel[SampleCount / 2];
+    for (int32 i = SampleCount / 2; i > 0; i--)
         kernel[i] = kernel[i - 1];
     kernel[0] = t;
 
