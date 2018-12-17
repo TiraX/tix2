@@ -290,12 +290,21 @@ namespace tix
 			{
 				Material->SetShaderName((E_SHADER_STAGE)s, GetString(Header->ShaderNames[s]));
 			}
-			Material->SetShaderVsFormat(Header->VsFormat);
-			Material->SetBlendMode((E_BLEND_MODE)Header->BlendMode);
-			Material->EnableDepthWrite(Header->bDepthWrite != 0);
-			Material->EnableDepthTest(Header->bDepthTest != 0);
-			Material->EnableTwoSides(Header->bTwoSides != 0);
 
+			if ((Header->Flags & EPSO_BLEND) != 0)
+				Material->EnableState(EPSO_BLEND);
+			if ((Header->Flags & EPSO_DEPTH) != 0)
+				Material->EnableState(EPSO_DEPTH);
+			if ((Header->Flags & EPSO_DEPTH_TEST) != 0)
+				Material->EnableState(EPSO_DEPTH_TEST);
+			if ((Header->Flags & EPSO_STENCIL) != 0)
+				Material->EnableState(EPSO_STENCIL);
+
+			Material->SetShaderVsFormat(Header->VsFormat);
+			Material->SetBlendState(Header->BlendState);
+			Material->SetRasterizerState(Header->RasterizerDesc);
+			Material->SetDepthStencilState(Header->DepthStencilDesc);
+			
 			// RT info
 			int RTNum = 0;
 			for (int32 cb = 0; cb < ERTC_COUNT; ++cb)

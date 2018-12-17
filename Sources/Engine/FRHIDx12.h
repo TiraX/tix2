@@ -55,7 +55,8 @@ namespace tix
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
-		
+
+		virtual void SetStencilRef(uint32 InRefValue);
 		virtual void DrawPrimitiveIndexedInstanced(
 			uint32 IndexCountPerInstance,
 			uint32 InstanceCount,

@@ -14,8 +14,7 @@ namespace tix
 		EPSO_BLEND = 1 << 0,
 		EPSO_DEPTH = 1 << 1,
 		EPSO_DEPTH_TEST = 1 << 2,
-		EPSO_STENCIL = 1 << 3,
-		EPSO_STENCIL_TEST = 1 << 4
+		EPSO_STENCIL = 1 << 3
 	};
 	enum E_BLEND_FUNC
 	{
@@ -205,9 +204,9 @@ namespace tix
 		{
 			for (int32 i = 0; i < ERTC_COUNT; i++)
 			{
-				RTFormats[i] = FRHIConfig::DefaultBackBufferFormat;
+				RTFormats[i] = EPF_UNKNOWN;
 			}
-			DepthFormat = FRHIConfig::DefaultDepthBufferFormat;
+			DepthFormat = EPF_UNKNOWN;
 		}
 
 		void Enable(E_PIPELINE_STATES_OPTION Option)

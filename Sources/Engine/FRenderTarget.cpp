@@ -61,6 +61,12 @@ namespace tix
 		RTColorBuffers[ColorBufferIndex] = Buffer;
 	}
 
+	void FRenderTarget::AddDepthStencilBuffer(FTexturePtr Texture)
+	{
+		RTDepthStencilBuffer.Texture = Texture;
+		//RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
+	}
+
 	void FRenderTarget::AddDepthStencilBuffer(E_PIXEL_FORMAT Format)
 	{
 		TTextureDesc Desc;

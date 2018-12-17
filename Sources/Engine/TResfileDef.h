@@ -179,12 +179,14 @@ namespace tix
 	struct THeaderMaterial
 	{
 		int32 ShaderNames[ESS_COUNT];
-		uint32 VsFormat;
-		uint8 BlendMode;
-		uint8 bDepthWrite;
-		uint8 bDepthTest;
-		uint8 bTwoSides;
 		int32 ShaderCodeLength[ESS_COUNT];
+
+		uint32 Flags;
+		TBlendState BlendState;
+		TRasterizerDesc RasterizerDesc;
+		TDepthStencilDesc DepthStencilDesc;
+		uint32 VsFormat;
+
 		uint8 ColorBuffers[ERTC_COUNT];
 		int32 DepthBuffer;
 		int32 ShaderBindingStr;

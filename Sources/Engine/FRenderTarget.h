@@ -104,6 +104,7 @@ namespace tix
 
 		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex);
 		TI_API virtual void AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex);
+		TI_API virtual void AddDepthStencilBuffer(FTexturePtr Texture);
 		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format);
 		TI_API virtual void Compile();
 

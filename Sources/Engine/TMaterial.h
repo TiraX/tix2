@@ -50,6 +50,11 @@ namespace tix
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
 
+		void EnableState(E_PIPELINE_STATES_OPTION InState);
+		void SetBlendState(const TBlendState& InBlendState);
+		void SetRasterizerState(const TRasterizerDesc& InRasterizerState);
+		void SetDepthStencilState(const TDepthStencilDesc& InDepthStencilState);
+
 		void SetRTColorBufferCount(int32 Count);
 		void SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer);
 		void SetRTDepth(E_PIXEL_FORMAT Format);

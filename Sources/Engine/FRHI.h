@@ -73,6 +73,7 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		
+		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(
 			uint32 IndexCountPerInstance,
 			uint32 InstanceCount,

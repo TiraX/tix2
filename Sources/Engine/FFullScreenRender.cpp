@@ -86,6 +86,7 @@ namespace tix
 		FSMaterial->EnableDepthWrite(false);
 		FSMaterial->EnableDepthTest(false);
 		FSMaterial->SetShaderVsFormat(FullScreenQuad->GetVSFormat());
+		FSMaterial->SetRTColor(FRHIConfig::DefaultBackBufferFormat, ERTC_COLOR0);
 
 		FullScreenPipeline = RHI->CreatePipeline();
 		FullScreenPipeline->SetShaderBinding(FullScreenBinding);

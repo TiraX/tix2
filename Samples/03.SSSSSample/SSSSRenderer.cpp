@@ -64,6 +64,10 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1);
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RT_BasePass->Compile();
+
+	FTexturePtr SceneColor = RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture;
+	FTexturePtr SceneDepth = RT_BasePass->GetDepthStencilBuffer().Texture;
+	FTexturePtr SpecularTex = RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture;
 	
 	// Setup SSS blur pass render targets and texture tables
 	// RT BlurX
@@ -72,13 +76,10 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_SSSBlurX->SetResourceName("SSSBlurX");
 #endif
 	RT_SSSBlurX->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+	RT_SSSBlurX->AddDepthStencilBuffer(SceneDepth);
 	RT_SSSBlurX->Compile();
 
 	// TT BlurX
-	FTexturePtr SceneColor = RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture;
-	FTexturePtr SceneDepth = RT_BasePass->GetDepthStencilBuffer().Texture;
-	FTexturePtr SpecularTex = RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture;
-
 	TT_SSSBlurX = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(3);
 	TT_SSSBlurX->PutTextureInTable(SceneColor, 0);
 	TT_SSSBlurX->PutTextureInTable(SceneDepth, 1);
@@ -90,6 +91,7 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_SSSBlurY->SetResourceName("SSSBlurY");
 #endif
 	RT_SSSBlurY->AddColorBuffer(SceneColor, ERTC_COLOR0);
+	RT_SSSBlurY->AddDepthStencilBuffer(SceneDepth);
 	RT_SSSBlurY->Compile();
 
 	// TT BlurY
@@ -198,6 +200,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass);
+
+	RHI->SetStencilRef(1);
 
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
 	for (const auto& Primitive : Primitives)

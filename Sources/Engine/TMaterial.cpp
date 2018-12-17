@@ -89,6 +89,26 @@ namespace tix
 		Desc.RasterizerDesc.CullMode = bEnable ? ECM_NONE : ECM_BACK;
 	}
 
+	void TMaterial::EnableState(E_PIPELINE_STATES_OPTION InState)
+	{
+		Desc.Enable(InState);
+	}
+
+	void TMaterial::SetBlendState(const TBlendState& InBlendState)
+	{
+		Desc.BlendState = InBlendState;
+	}
+
+	void TMaterial::SetRasterizerState(const TRasterizerDesc& InRasterizerState)
+	{
+		Desc.RasterizerDesc = InRasterizerState;
+	}
+
+	void TMaterial::SetDepthStencilState(const TDepthStencilDesc& InDepthStencilState)
+	{
+		Desc.DepthStencilDesc = InDepthStencilState;
+	}
+
 	void TMaterial::SetRTColorBufferCount(int32 Count)
 	{
 		Desc.RTCount = Count;

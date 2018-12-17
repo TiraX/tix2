@@ -28,15 +28,10 @@ namespace tix
 	private:
 
 	private:
-		TString Shaders[ESS_COUNT];
-		E_BLEND_MODE BlendMode;
-		uint32 VsFormat;
-		bool bDepthWrite;
-		bool bDepthTest;
-		bool bTwoSides;
-		TVector<E_PIXEL_FORMAT> ColorBuffers;
-		E_PIXEL_FORMAT DepthBuffer;
+		//E_BLEND_MODE BlendMode;
 		TStream ShaderCodes[ESS_COUNT];
 		TString ShaderBinding;
+
+		TPipelineDesc PipelineDesc;
 	};
 }

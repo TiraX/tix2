@@ -344,7 +344,7 @@ namespace tix
 		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
 		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
 		CommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
-		CommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		CommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 		CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 
@@ -1095,8 +1095,15 @@ namespace tix
 		{
 			state.RTVFormats[r] = GetDxPixelFormat(Desc.RTFormats[r]);
 		}
-		state.DSVFormat = GetDxPixelFormat(Desc.DepthFormat);
-		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] && DXGI_FORMAT_UNKNOWN != state.DSVFormat);
+		if (Desc.DepthFormat != EPF_UNKNOWN)
+		{
+			state.DSVFormat = GetDxPixelFormat(Desc.DepthFormat);
+		}
+		else
+		{
+			state.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		}
+		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] || DXGI_FORMAT_UNKNOWN != state.DSVFormat);
 		state.SampleDesc.Count = 1;
 
 		VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
@@ -1403,6 +1410,11 @@ namespace tix
 		TI_ASSERT(0);
 
 		HoldResourceReference(InTexture);
+	}
+
+	void FRHIDx12::SetStencilRef(uint32 InRefValue)
+	{
+		CommandList->OMSetStencilRef(InRefValue);
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(
