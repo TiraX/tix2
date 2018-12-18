@@ -1298,6 +1298,11 @@ namespace tix
 		}
 		else
 		{
+			TI_TODO("Refactor SRGB to Engine Level.");
+			if (Desc.SRGB)
+			{
+				DxgiFormat = GetSRGBFormat(DxgiFormat);
+			}
 			// This is not a depth related buffer, treat as a normal texture.
 			SRVDesc.Format = DxgiFormat;
 		}

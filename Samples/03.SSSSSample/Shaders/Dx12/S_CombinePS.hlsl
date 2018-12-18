@@ -54,6 +54,6 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	color.xyz += bloomIntensity * w[0] * b0.xyz;
 	color.xyz += bloomIntensity * w[1] * b1.xyz;
 
-	color.rgb = DoToneMap(color.rgb);
+	color.rgb = sqrt(DoToneMap(color.rgb));
 	return color;
 }
