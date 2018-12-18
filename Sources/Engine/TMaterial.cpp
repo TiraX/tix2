@@ -89,9 +89,12 @@ namespace tix
 		Desc.RasterizerDesc.CullMode = bEnable ? ECM_NONE : ECM_BACK;
 	}
 
-	void TMaterial::EnableState(E_PIPELINE_STATES_OPTION InState)
+	void TMaterial::EnableState(E_PIPELINE_STATES_OPTION InState, bool bEnable)
 	{
-		Desc.Enable(InState);
+		if (bEnable)
+			Desc.Enable(InState);
+		else
+			Desc.Disable(InState);
 	}
 
 	void TMaterial::SetBlendState(const TBlendState& InBlendState)

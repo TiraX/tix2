@@ -50,7 +50,7 @@ namespace tix
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
 
-		void EnableState(E_PIPELINE_STATES_OPTION InState);
+		void EnableState(E_PIPELINE_STATES_OPTION InState, bool bEnable);
 		void SetBlendState(const TBlendState& InBlendState);
 		void SetRasterizerState(const TRasterizerDesc& InRasterizerState);
 		void SetDepthStencilState(const TDepthStencilDesc& InDepthStencilState);

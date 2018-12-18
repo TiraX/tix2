@@ -291,14 +291,10 @@ namespace tix
 				Material->SetShaderName((E_SHADER_STAGE)s, GetString(Header->ShaderNames[s]));
 			}
 
-			if ((Header->Flags & EPSO_BLEND) != 0)
-				Material->EnableState(EPSO_BLEND);
-			if ((Header->Flags & EPSO_DEPTH) != 0)
-				Material->EnableState(EPSO_DEPTH);
-			if ((Header->Flags & EPSO_DEPTH_TEST) != 0)
-				Material->EnableState(EPSO_DEPTH_TEST);
-			if ((Header->Flags & EPSO_STENCIL) != 0)
-				Material->EnableState(EPSO_STENCIL);
+			Material->EnableState(EPSO_BLEND, (Header->Flags & EPSO_BLEND) != 0);
+			Material->EnableState(EPSO_DEPTH, (Header->Flags & EPSO_DEPTH) != 0);
+			Material->EnableState(EPSO_DEPTH_TEST, (Header->Flags & EPSO_DEPTH_TEST) != 0);
+			Material->EnableState(EPSO_STENCIL, (Header->Flags & EPSO_STENCIL) != 0);
 
 			Material->SetShaderVsFormat(Header->VsFormat);
 			Material->SetBlendState(Header->BlendState);
