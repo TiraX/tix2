@@ -129,6 +129,7 @@ void FSSSSRenderer::InitInRenderThread()
 	// Bloom Glare Detection
 	RT_GlareDetection = FRenderTarget::Create(ViewWidth / 2, ViewHeight / 2);
 	RT_GlareDetection->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+	RT_GlareDetection->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RT_GlareDetection->Compile();
 	UB_GlareParam = ti_new FSSSBloomUniformBuffer;
 	UB_GlareParam->UniformBufferData.BloomParam.X = Exposure;

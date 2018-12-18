@@ -23,7 +23,7 @@
 	"depth_write": false,
 	"depth_test": false,
 	"two_sides": false,
-	"stencil_enable": true,
+	"stencil_enable": false,
 	"stencil_read_mask": 1,
 	"stencil_write_mask": 1,
 	"front_stencil_fail": "ESO_KEEP",
