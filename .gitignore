@@ -10,3 +10,5 @@ Samples/02.MeshConverter/head.tix
 Samples/03.SSSSSample/x64/
 *.cso
 *.tres
+Binary/02.ResConverter.exe
+Binary/TiX.dll
