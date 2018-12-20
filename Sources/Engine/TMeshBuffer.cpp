@@ -89,7 +89,7 @@ namespace tix
 			TMeshBufferPtr, InMeshData, this,
 			{
 				MeshBuffer->SetFromTMeshBuffer(InMeshData);
-				RHI->UpdateHardwareResource(MeshBuffer, InMeshData);
+				FRHI::Get()->UpdateHardwareResource(MeshBuffer, InMeshData);
 			});
 	}
 

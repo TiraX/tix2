@@ -21,7 +21,7 @@ namespace tix
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
 				FPrimitivePtr, Primitive, LinkedPrimitive,
 				{
-					RenderThread->GetRenderScene()->RemovePrimitive(Primitive);
+					FRenderThread::Get()->GetRenderScene()->RemovePrimitive(Primitive);
 				});
 			LinkedPrimitive = nullptr;
 		}
@@ -38,7 +38,7 @@ namespace tix
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitveToScene,
 			FPrimitivePtr, Primitive, Primitive,
 			{
-				RenderThread->GetRenderScene()->AddPrimitive(Primitive);
+				FRenderThread::Get()->GetRenderScene()->AddPrimitive(Primitive);
 			});
 
 

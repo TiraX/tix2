@@ -25,7 +25,7 @@ namespace tix
 				FUniformBufferPtr, UniformBuffer, UniformBuffer,
 				TStreamPtr, UniformBufferData, ParamValueBuffer,
 				{
-					RHI->UpdateHardwareResource(UniformBuffer, UniformBufferData->GetBuffer());
+					FRHI::Get()->UpdateHardwareResource(UniformBuffer, UniformBufferData->GetBuffer());
 				});
 		}
 		if (ParamTextures.size() > 0)
@@ -42,7 +42,7 @@ namespace tix
 				FRenderResourceTablePtr, MI_TextureResourceTable, TextureResourceTable,
 				TVector<FTexturePtr>, Textures, Textures,
 				{
-					RHI->GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(MI_TextureResourceTable);
+					FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(MI_TextureResourceTable);
 					for (int32 t = 0; t < (int32)Textures.size(); ++t)
 					{
 						FTexturePtr Texture = Textures[t];

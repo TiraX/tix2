@@ -50,7 +50,7 @@ namespace tix
 			TTexturePtr, TextureData, this,
 			{
 				Texture_RT->InitTextureInfo(TextureData);
-				RHI->UpdateHardwareResource(Texture_RT, TextureData);
+				FRHI::Get()->UpdateHardwareResource(Texture_RT, TextureData);
 			});
 	}
 

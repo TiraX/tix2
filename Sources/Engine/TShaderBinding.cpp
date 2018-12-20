@@ -24,7 +24,7 @@ namespace tix
 			FShaderBindingPtr, ShaderBindingResource, ShaderBindingResource,
 			TVector<TBindingParamInfo>, BindingInfos, Bindings,
 			{
-				RHI->UpdateHardwareResource(ShaderBindingResource, BindingInfos);
+				FRHI::Get()->UpdateHardwareResource(ShaderBindingResource, BindingInfos);
 			});
 	}
 

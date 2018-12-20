@@ -68,7 +68,7 @@ namespace tix
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateViewProjectionRenderThread,
 				FViewProjectionInfo, ViewProjectionInfo, Info,
 				{
-					FScene * Scene = RenderThread->GetRenderScene();
+					FScene * Scene = FRenderThread::Get()->GetRenderScene();
 					Scene->SetViewProjection(ViewProjectionInfo);
 				});
 		}

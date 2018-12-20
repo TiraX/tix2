@@ -131,7 +131,7 @@ namespace tix
 			{
 				ENQUEUE_UNIQUE_RENDER_COMMAND(InitSceneLightsUniformBuffer,
 					{
-						RenderThread->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
+						FRenderThread::Get()->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
 					});
 			}
 

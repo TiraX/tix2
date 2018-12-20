@@ -125,7 +125,7 @@ namespace tix
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddRendererInRenderThread, 
 			FRenderer*, Renderer, Renderer,
 			{
-				RenderThread->AddRenderer(Renderer);
+				FRenderThread::Get()->AddRenderer(Renderer);
 			});
 	}
 

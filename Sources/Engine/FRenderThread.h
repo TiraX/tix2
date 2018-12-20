@@ -19,10 +19,6 @@ namespace tix
 #define RENDERTHREAD_TASK_FUNCTION(Code) \
 	virtual void Execute() override \
 	{ \
-		FRenderThread * RenderThread = FRenderThread::Get(); \
-		FRHI * RHI = FRHI::Get(); \
-        RenderThread = RenderThread; \
-        RHI = RHI; \
 		Code; \
 	}
 
