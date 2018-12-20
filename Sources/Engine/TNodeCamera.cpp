@@ -76,7 +76,7 @@ namespace tix
 
 	//! Sets the projection matrix of the camera. The matrix4 class has some methods
 	//! to build a projection matrix. e.g: matrix4::buildProjectionMatrixPerspectiveFov
-	//! \param projection: The newly projection matrix of the camera. 
+	//! \param projection The newly projection matrix of the camera.
 	void TNodeCamera::SetProjectionMatrix(const matrix4& projection, bool isOrthogonal)
 	{
 		//IsOrthogonal = isOrthogonal;
@@ -99,7 +99,7 @@ namespace tix
 	}
 
 	//! Sets the look at tarGet of the camera
-	//! \param pos: Look at tarGet of the camera.
+	//! \param pos Look at tarGet of the camera.
 	void TNodeCamera::SetTarget(const vector3df& pos)
 	{
 		Target = pos;
@@ -114,7 +114,7 @@ namespace tix
 	}
 
 	//! Sets the up vector of the camera
-	//! \param pos: New upvector of the camera.
+	//! \param pos New upvector of the camera.
 	void TNodeCamera::SetUpVector(const vector3df& pos)
 	{
 		UpVector = pos;
@@ -202,7 +202,7 @@ namespace tix
 	void TNodeCamera::RecalculateProjectionMatrix()
 	{
 		ViewArea.Matrices[ETS_PROJECTION] = buildProjectionMatrixPerspectiveFov(Fovy, Aspect, ZNear, ZFar);
-		const matrix4& mat	= ViewArea.Matrices[ETS_PROJECTION];
+		//const matrix4& mat	= ViewArea.Matrices[ETS_PROJECTION];
 
 		ViewArea.setTransformState(ETS_PROJECTION);
 	}

@@ -10,6 +10,9 @@ namespace tix
 	class TTicker
 	{
 	public:
+        TTicker() {}
+        virtual ~TTicker() {}
+        
 		virtual void Tick(float Dt) = 0;
 	};
 }

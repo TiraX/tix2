@@ -47,7 +47,7 @@ namespace tix
 
 		//! Adds a point to the bounding box
 		/** The box grows bigger, if point was outside of the box.
-			\param p: Point to add into the box. */
+			\param p Point to add into the box. */
 		void addInternalPoint(const vector3d<T>& p)
 		{
 			addInternalPoint(p.getX(), p.getY(), p.getZ());
@@ -55,7 +55,7 @@ namespace tix
 
 		//! Adds another bounding box
 		/** The box grows bigger, if the newly box was outside of the box.
-			\param b: Other bounding box to add into this box. */
+			\param b Other bounding box to add into this box. */
 		void addInternalBox(const aabbox3d<T>& b)
 		{
 			addInternalPoint(b.MaxEdge);
@@ -116,7 +116,7 @@ namespace tix
 		}
 
 		//! Determines if a point is within this box.
-		/** \param p: Point to check.
+		/** \param p Point to check.
 			\return True if the point is within the box and false if not */
 		bool isPointInside(const vector3d<T>& p) const
 		{
@@ -126,7 +126,7 @@ namespace tix
 		}
 
 		//! Determines if a point is within this box and its borders.
-		/** \param p: Point to check.
+		/** \param p Point to check.
 			\return True if the point is within the box and false if not. */
 		bool isPointTotalInside(const vector3d<T>& p) const
 		{
@@ -136,7 +136,7 @@ namespace tix
 		}
 
 		//! Determines if the box intersects with another box.
-		/** \param other: Other box to check a intersection with.
+		/** \param other Other box to check a intersection with.
 			\return True if there is an intersection with the other box,
 			otherwise false. */
 		bool intersectsWithBox(const aabbox3d<T>& other) const
@@ -145,7 +145,7 @@ namespace tix
 		}
 
 		//! Check if this box is completely inside the 'other' box.
-		/** \param other: Other box to check against.
+		/** \param other Other box to check against.
 			\return True if this box is completly inside the other box,
 			otherwise false. */
 		bool isFullInside(const aabbox3d<T>& other) const
@@ -154,7 +154,7 @@ namespace tix
 		}
 
 		//! Tests if the box intersects with a point
-		/** \param point: Point to test intersection with.
+		/** \param point Point to test intersection with.
 			\return True if there is an intersection , else false. */
 		bool intersectsWithPoint(const vector3d<T>& point) const
 		{
@@ -198,8 +198,7 @@ namespace tix
 		}
 
 		//! Tests if the box intersects with a line segment in 1D
-		/** \param line: Line to test intersection with.
-			\return True if there is an intersection , else false. */
+		/** \return True if there is an intersection , else false. */
 		bool intersectsWithLine_impl_1d (T  bmin,		// min value of the bounding box
 										 T  bmax,		// max value of the bounding box
 										 T  si,		    // start of the line segment
@@ -242,7 +241,7 @@ namespace tix
 
 	
 		//! Tests if the box intersects with a line
-		/** \param line: Line to test intersection with.
+		/** \param line Line to test intersection with.
 			\return True if there is an intersection , else false. */
 		bool intersectsWithLine(const line3d<T>& line) const
 		{
@@ -251,7 +250,7 @@ namespace tix
 		}
 
 		//! Tests if the box intersects with a segment
-		/** \param line: Line to test intersection with.
+		/** \param line Line to test intersection with.
 			\return True if there is an intersection , else false. 
 			Also returns two values which are the relative distance to the collision with the 
 			nearest plane (steping in) and the relative distance to the far plane (steping out).
@@ -300,7 +299,7 @@ namespace tix
 
 
 		//! Stores all 8 edges of the box into an array
-		/** \param edges: Pointer to array of 8 edges. */
+		/** \param edges Pointer to array of 8 edges. */
 		void getEdges(vector3d<T> *edges) const
 		{
 			const vector3d<T> middle = getCenter();
@@ -355,8 +354,8 @@ namespace tix
 		}
 
 		//! Calculates a newly interpolated bounding box.
-		/** \param other: other box to interpolate between
-			\param d: value between 0.0f and 1.0f.
+		/** \param other other box to interpolate between
+			\param d value between 0.0f and 1.0f.
 			\return Interpolated box. */
 		aabbox3d<T> getInterpolated(const aabbox3d<T>& other, float32 d) const
 		{

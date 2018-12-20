@@ -7,7 +7,7 @@
 
 #include "TInput.h"
 
-#define _EVENT_LOG	//_LOG
+#define _EVENT_LOG(...)	//_LOG
 
 namespace tix
 {

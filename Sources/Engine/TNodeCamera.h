@@ -57,7 +57,7 @@ namespace tix
 		virtual const matrix4& GetViewMatrix() const;
 
 		//! sets the look at target of the camera
-		//! \param pos: Look at target of the camera.
+		//! \param pos Look at target of the camera.
 		virtual void SetTarget(const vector3df& pos);
 
 		//! Gets the current look at target of the camera
@@ -65,7 +65,7 @@ namespace tix
 		virtual const vector3df& GetTarget() const;
 
 		//! Sets the up vector of the camera.
-		//! \param pos: New upvector of the camera.
+		//! \param pos New upvector of the camera.
 		virtual void SetUpVector(const vector3df& pos);
 
 		//! Gets the up vector of the camera.

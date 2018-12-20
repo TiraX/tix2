@@ -53,7 +53,7 @@ namespace tix
 #if defined (TIX_DEBUG)
 		{
 			int8 NameBuf[64];
-			sprintf_s(NameBuf, 64, "-CB%d", ColorBufferIndex);
+			sprintf(NameBuf, "-CB%d", ColorBufferIndex);
 			Texture->SetResourceName(GetResourceName() + NameBuf);
 		}
 #endif

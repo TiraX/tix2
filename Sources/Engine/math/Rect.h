@@ -95,7 +95,6 @@ namespace tix
 		}
 
 		//! Returns if a 2d point is within this rectangle.
-		//! \param pos: Position to test if it lies within this rectangle.
 		//! \return Returns true if the position is within the rectangle, false if not.
 		bool isPointInside(T x, T y) const
 		{
@@ -289,7 +288,7 @@ namespace tix
 
 		//! Adds a point to the rectangle, causing it to grow bigger,
 		//! if point is outside of the box
-		//! \param p: Point to add into the box.
+		//! \param p Point to add into the box.
 		void addInternalPoint(const vector2d<T>& p)
 		{
 			addInternalPoint(p.getX(), p.getY());
@@ -297,8 +296,8 @@ namespace tix
 
 		//! Adds a point to the bounding rectangle, causing it to grow bigger,
 		//! if point is outside of the box.
-		//! \param x: X Coordinate of the point to add to this box.
-		//! \param y: Y Coordinate of the point to add to this box.
+		//! \param x X Coordinate of the point to add to this box.
+		//! \param y Y Coordinate of the point to add to this box.
 		void addInternalPoint(T x, T y)
 		{
 			if (x > Right)

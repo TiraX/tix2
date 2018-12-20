@@ -57,8 +57,6 @@
 		2775A3A321CAA52500E0AD35 /* TEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39721CAA52500E0AD35 /* TEngine.cpp */; };
 		2775A3A421CAA52500E0AD35 /* TPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39A21CAA52500E0AD35 /* TPath.cpp */; };
 		2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39E21CAA52500E0AD35 /* stdafx.cpp */; };
-		27D47F5921CA9B8E00109AB5 /* TiX2.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D47F5821CA9B8E00109AB5 /* TiX2.m */; };
-		27D47F5A21CA9B8E00109AB5 /* TiX2.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D47F5721CA9B8E00109AB5 /* TiX2.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -68,13 +66,13 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				27D47F5A21CA9B8E00109AB5 /* TiX2.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2712CF7221CBBAA300773C5B /* TiX2.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TiX2.pch; sourceTree = "<group>"; };
 		2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TINIParser.cpp; path = ../../../Sources/Engine/TINIParser.cpp; sourceTree = "<group>"; };
 		2775A2E221CAA32D00E0AD35 /* TDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TDevice.cpp; path = ../../../Sources/Engine/TDevice.cpp; sourceTree = "<group>"; };
 		2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = IInstrusivePtr.hpp; path = ../../../Sources/Engine/IInstrusivePtr.hpp; sourceTree = "<group>"; };
@@ -83,7 +81,7 @@
 		2775A2E621CAA32D00E0AD35 /* TLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TLog.cpp; path = ../../../Sources/Engine/TLog.cpp; sourceTree = "<group>"; };
 		2775A2E721CAA32D00E0AD35 /* TInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TInput.cpp; path = ../../../Sources/Engine/TInput.cpp; sourceTree = "<group>"; };
 		2775A2E821CAA32D00E0AD35 /* TTicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTicker.h; path = ../../../Sources/Engine/TTicker.h; sourceTree = "<group>"; };
-		2775A2E921CAA32D00E0AD35 /* TThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TThread.cpp; path = ../../../Sources/Engine/TThread.cpp; sourceTree = "<group>"; };
+		2775A2E921CAA32D00E0AD35 /* TThread.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TThread.cpp; path = ../../../Sources/Engine/TThread.cpp; sourceTree = "<group>"; };
 		2775A2EA21CAA32E00E0AD35 /* TResFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TResFile.cpp; path = ../../../Sources/Engine/TResFile.cpp; sourceTree = "<group>"; };
 		2775A2EB21CAA32E00E0AD35 /* TStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TStream.h; path = ../../../Sources/Engine/TStream.h; sourceTree = "<group>"; };
 		2775A2EC21CAA32E00E0AD35 /* TInputEventType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TInputEventType.h; path = ../../../Sources/Engine/TInputEventType.h; sourceTree = "<group>"; };
@@ -216,8 +214,6 @@
 		2775A3A121CAA52500E0AD35 /* TVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TVersion.h; path = ../../../Sources/Engine/TVersion.h; sourceTree = "<group>"; };
 		2775A3A221CAA52500E0AD35 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = ../../../Sources/Engine/stdafx.h; sourceTree = "<group>"; };
 		27D47F5421CA9B8E00109AB5 /* libTiX2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTiX2.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		27D47F5721CA9B8E00109AB5 /* TiX2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TiX2.h; sourceTree = "<group>"; };
-		27D47F5821CA9B8E00109AB5 /* TiX2.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TiX2.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -454,8 +450,7 @@
 			isa = PBXGroup;
 			children = (
 				27314DA621CA9C750073836A /* Sources */,
-				27D47F5721CA9B8E00109AB5 /* TiX2.h */,
-				27D47F5821CA9B8E00109AB5 /* TiX2.m */,
+				2712CF7221CBBAA300773C5B /* TiX2.pch */,
 			);
 			path = TiX2;
 			sourceTree = "<group>";
@@ -561,7 +556,6 @@
 				2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */,
 				2775A37E21CAA4A300E0AD35 /* TShaderBinding.cpp in Sources */,
 				2775A37121CAA4A300E0AD35 /* TPipeline.cpp in Sources */,
-				27D47F5921CA9B8E00109AB5 /* TiX2.m in Sources */,
 				2775A31221CAA32F00E0AD35 /* TCrc.cpp in Sources */,
 				2775A37421CAA4A300E0AD35 /* FRenderResourceTable.cpp in Sources */,
 				2775A39321CAA4EF00E0AD35 /* TNodeStaticMesh.cpp in Sources */,
@@ -690,10 +684,19 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PY586U82MR;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = TiX2/TiX2.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					IPHONEOS,
+					"$(inherited)",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e";
 			};
 			name = Debug;
 		};
@@ -702,10 +705,15 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = PY586U82MR;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = TiX2/TiX2.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = IPHONEOS;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e";
 			};
 			name = Release;
 		};

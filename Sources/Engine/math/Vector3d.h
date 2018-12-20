@@ -217,8 +217,8 @@ namespace tix
 		}
 
 		//! Rotates the vector by a specified number of degrees around the Z axis and the specified center.
-		/** \param degrees: Number of degrees to rotate around the Z axis.
-			\param center: The center of the rotation. */
+		/** \param degrees Number of degrees to rotate around the Z axis.
+			\param center The center of the rotation. */
 		void rotateXYBy(float64 degrees, const vector3d<T>& center=vector3d<T>())
 		{
 			degrees *= DEGTORAD64;
@@ -232,8 +232,8 @@ namespace tix
 		}
 
 		//! Rotates the vector by a specified number of degrees around the X axis and the specified center.
-		/** \param degrees: Number of degrees to rotate around the X axis.
-			\param center: The center of the rotation. */
+		/** \param degrees Number of degrees to rotate around the X axis.
+			\param center The center of the rotation. */
 		void rotateYZBy(float64 degrees, const vector3d<T>& center=vector3d<T>())
 		{
 			degrees *= DEGTORAD64;

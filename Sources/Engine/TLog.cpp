@@ -35,7 +35,7 @@ namespace tix
 #	ifdef TI_PLATFORM_WIN32
 		vsprintf_s(tmp, 65536, Format, marker);
 #	else
-		vsprintf_s(tmp, 1024, Format, marker);
+		vsprintf(tmp, Format, marker);
 #	endif
 		va_end(marker);
 
@@ -57,7 +57,7 @@ namespace tix
 		}
 #	endif
 
-		printf(tmp);
+		printf("%s", tmp);
 
 #	ifdef TI_PLATFORM_WIN32
 		ti_delete[] tmp;

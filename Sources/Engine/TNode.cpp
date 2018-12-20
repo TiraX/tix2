@@ -146,15 +146,16 @@ namespace tix
 
 	TNode* TNode::GetParent(E_NODE_TYPE type)
 	{
-		TNode* parent = this;
-		while (parent = parent->GetParent())
+		TNode* parent = GetParent();
+		while (parent != nullptr)
 		{
 			if (parent->GetType() == type)
 			{
 				return parent;
 			}
+            parent = parent->GetParent();
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	const matrix4& TNode::GetAbsoluteTransformation() const

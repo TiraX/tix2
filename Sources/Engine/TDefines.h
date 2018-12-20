@@ -10,14 +10,20 @@
 #	define TIX_DEBUG
 #endif
 
+#if defined (TI_PLATFORM_WIN32)
 // overload operator new to debug.
-#define DEBUG_OPERATOR_NEW 0
-#if DEBUG_OPERATOR_NEW
+#   define DEBUG_OPERATOR_NEW 0
+#   if DEBUG_OPERATOR_NEW
 void * operator new (std::size_t count);
+#   endif
 #endif
 
 #ifdef TIX_DEBUG
-#	define ti_new new( _NORMAL_BLOCK, __FILE__, __LINE__)
+#   if defined (TI_PLATFORM_WIN32)
+#	    define ti_new new( _NORMAL_BLOCK, __FILE__, __LINE__)
+#   else
+#       define ti_new new
+#   endif
 // Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
 //allocations to be of _CLIENT_BLOCK type
 #	define ti_delete delete
@@ -44,7 +50,7 @@ void * operator new (std::size_t count);
 #if defined TI_PLATFORM_WIN32
 #	define TI_TODO(msg) __pragma( message( TODO_MESSAGE_STRING(msg) ) )
 #else
-#	define TI_TODO
+#	define TI_TODO(msg)
 #endif
 
 #ifndef SAFE_DELETE

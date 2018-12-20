@@ -1092,7 +1092,7 @@ namespace half_float
 		HALF_CONSTEXPR half() HALF_NOEXCEPT : data_() {}
 
 		/// Copy constructor.
-		/// \tparam T type of concrete half expression
+		/// \t param T type of concrete half expression
 		/// \param rhs half expression to copy from
 		half(detail::expr rhs) : data_(detail::float2half<round_style>(static_cast<float>(rhs))) {}
 
@@ -1105,7 +1105,7 @@ namespace half_float
 		operator float() const { return detail::half2float<float>(data_); }
 
 		/// Assignment operator.
-		/// \tparam T type of concrete half expression
+		/// \t param T type of concrete half expression
 		/// \param rhs half expression to copy from
 		/// \return reference to this half
 		half& operator=(detail::expr rhs) { return *this = static_cast<float>(rhs); }
@@ -1675,9 +1675,17 @@ namespace half_float
 			{
 				int m = arg.data_ & 0x7FFF, e = -14;
 				if(m >= 0x7C00 || !m)
-					return *exp = 0, arg;
-				for(; m<0x400; m<<=1,--e) ;
-				return *exp = e+(m>>10), half(binary, (arg.data_&0x8000)|0x3800|(m&0x3FF));
+                {
+                    *exp = 0;
+                    return arg;
+					//return *exp = 0, arg;
+                }
+				for(; m<0x400; m<<=1,--e)
+                    ;
+                
+                *exp = e+(m>>10);
+                return half(binary, (arg.data_&0x8000)|0x3800|(m&0x3FF));
+				//return *exp = e+(m>>10), half(binary, (arg.data_&0x8000)|0x3800|(m&0x3FF));
 			}
 
 			/// Decompression implementation.
@@ -1688,9 +1696,17 @@ namespace half_float
 			{
 				unsigned int e = arg.data_ & 0x7FFF;
 				if(e >= 0x6400)
-					return *iptr = arg, half(binary, arg.data_&(0x8000U|-(e>0x7C00)));
+                {
+                    *iptr = arg;
+                    return half(binary, arg.data_&(0x8000U|-(e>0x7C00)));
+					//return *iptr = arg, half(binary, arg.data_&(0x8000U|-(e>0x7C00)));
+                }
 				if(e < 0x3C00)
-					return iptr->data_ = arg.data_ & 0x8000, arg;
+                {
+                    iptr->data_ = arg.data_ & 0x8000;
+                    return arg;
+					//return iptr->data_ = arg.data_ & 0x8000, arg;
+                }
 				e >>= 10;
 				unsigned int mask = (1<<(25-e)) - 1, m = arg.data_ & mask;
 				iptr->data_ = arg.data_ & ~mask;

@@ -38,12 +38,17 @@ namespace tix
 		Close();
 		Filename = filename;
 
+#if defined (TI_PLATFORM_WIN32)
 		errno_t ret = fopen_s(&File, filename.c_str(), k_file_access[access]);
+#else
+        File = fopen(filename.c_str(), k_file_access[access]);
+        errno_t ret = (File == nullptr) ? 1 : 0;
+#endif
 
 		if (ret == 0)
 		{
 			fseek(File, 0, SEEK_END);
-			Size = ftell(File);
+			Size = (int32)ftell(File);
 			fseek(File, 0, SEEK_SET);
 			return true;
 		}
@@ -82,18 +87,18 @@ namespace tix
 
 	int32 TFile::Tell() const
 	{
-		return ftell(File);
+		return (int32)ftell(File);
 	}
 
 	bool TFile::IsEnd() const
 	{
-		int32 pos = ftell(File);
+		int32 pos = (int32)ftell(File);
 		return pos >= Size;
 	}
 
 	int32 TFile::BytesLeft() const
 	{
-		int32 pos = ftell(File);
+		int32 pos = (int32)ftell(File);
 		return Size - pos;
 	}
 	

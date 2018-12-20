@@ -21,6 +21,8 @@ namespace tix
 	{ \
 		FRenderThread * RenderThread = FRenderThread::Get(); \
 		FRHI * RHI = FRHI::Get(); \
+        RenderThread = RenderThread; \
+        RHI = RHI; \
 		Code; \
 	}
 

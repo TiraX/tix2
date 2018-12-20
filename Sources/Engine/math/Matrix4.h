@@ -285,17 +285,17 @@ namespace tix
 		T getDeterminant() const;
 
 		//! Inverts a primitive matrix which only contains a translation and a rotation
-		/** \param out: where result matrix is written to. */
+		/** \param out where result matrix is written to. */
 		bool getInversePrimitive(CMatrix4<T>& out) const;
 
 		//! Gets the inversed matrix of this one
-		/** \param out: where result matrix is written to.
+		/** \param out where result matrix is written to.
 			\return Returns false if there is no inverse matrix. */
 		bool getInverse(CMatrix4<T>& out) const;
 
 		//! Creates a newly matrix as interpolated matrix from two other ones.
-		/** \param b: other matrix to interpolate with
-			\param time: Must be a value between 0 and 1. */
+		/** \param b other matrix to interpolate with
+			\param time Must be a value between 0 and 1. */
 		CMatrix4<T> interpolate(const CMatrix4<T>& b, T time) const;
 
 		//! Gets transposed matrix
@@ -1849,7 +1849,7 @@ namespace tix
 	}
 
 	////! Builds a matrix that flattens geometry into a plane.
-	///** \param light: light source
+	///** \param light light source
 	//	\param plane: plane into which the geometry if flattened into
 	//	\param point: value between 0 and 1, describing the light source.
 	//	If this is 1, it is a point light, if it is 0, it is a directional light. */

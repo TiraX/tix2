@@ -1,0 +1,22 @@
+//
+//  TiX2.pch
+//  TiX2
+//
+//  Created by Tirax on 2018/12/20.
+//  Copyright © 2018 zhaoshuai. All rights reserved.
+//
+
+#ifndef TiX2_pch
+#define TiX2_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __cplusplus
+#   include "stdafx.h"
+#endif
+
+#endif /* TiX2_pch */

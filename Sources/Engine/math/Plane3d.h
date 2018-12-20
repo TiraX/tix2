@@ -193,7 +193,7 @@ namespace tix
 			the given direction.
 			Note that this only works if the normal is Normalized.
 			Do not use this method with points as it will give wrong results!
-			\param lookDirection: Look direction.
+			\param lookDirection Look direction.
 			\return True if the plane is front facing and
 			false if it is backfacing. */
 		bool isFrontFacing(const vector3d<T>& lookDirection) const

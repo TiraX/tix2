@@ -18,6 +18,18 @@
 
 namespace tix
 {
+//#if defined (TI_PLATFORM_WIN32)
+//#   define TI_LOCALTIME() \
+//    const time_t _time = time(0); \
+//    struct tm _t, *t; \
+//    localtime_s(&_t, &_time); \
+//    t = &_t
+//#else
+//#   define TI_LOCALTIME() \
+//    const time_t _time = time(0); \
+//    struct tm *tm; \
+//    tm = localtime(&time)
+//#endif
 	const long long TTimer::GetCurrentTimeMillis()
 	{
 #if defined (TI_PLATFORM_WIN32)
@@ -41,32 +53,55 @@ namespace tix
 	const int TTimer::GetCurrentTimeSeconds()
 	{
 		const time_t _time	= time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
 
 		return	t.tm_hour * 60 * 60 + t.tm_min * 60 + t.tm_sec;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        return tm->tm_hour * 60 * 60 + tm->tm_min * 60 + tm->tm_sec;
+#endif
 	}
 
 	const int TTimer::GetCurrentTimeSeconds(int& h, int& m, int& s)
 	{
 		const time_t _time	= time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
 
-		h		= t.tm_hour;
-		m		= t.tm_min;
-		s		= t.tm_sec;
+		h = t.tm_hour;
+		m = t.tm_min;
+		s = t.tm_sec;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        h = tm->tm_hour;
+        m = tm->tm_min;
+        s = tm->tm_sec;
+#endif
 
-		return	t.tm_hour * 60 * 60 + t.tm_min * 60 + t.tm_sec;
+		return	h * 60 * 60 + m * 60 + s;
 	}
 
 	const int TTimer::GetCurrentDate()
 	{
-		const time_t _time	= time(0);        
+		const time_t _time	= time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
         
         return t.tm_year * 366 + t.tm_mon * 31 + t.tm_mday;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        return tm->tm_year * 366 + tm->tm_mon * 31 + tm->tm_mday;
+#endif
 	}
 
 	const void TTimer::GetYMDFromDate(int date, int& y, int& m, int& d)
@@ -80,33 +115,57 @@ namespace tix
 	const int TTimer::GetCurrentDate(int& y, int& m, int& d)
 	{
 		const time_t _time = time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
 
-		y	= t.tm_year;
-		m	= t.tm_mon;
-		d	= t.tm_mday;
+		y = t.tm_year;
+		m = t.tm_mon;
+        d = t.tm_mday;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        y = tm->tm_year;
+        m = tm->tm_mon;
+        d = tm->tm_mday;
+#endif
 
-		return t.tm_year * 366 + t.tm_mon * 31 + t.tm_mday;
+		return y * 366 + m * 31 + d;
 	}
 
-	void	TTimer::GetCurrentWeekDay(int& d)
+	void TTimer::GetCurrentWeekDay(int& d)
 	{
 		const time_t _time = time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
 
-		d		= t.tm_wday;
+        d = t.tm_wday;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        d = tm->tm_wday;
+#endif
 	}
 
 	void TTimer::GetCurrentDateAndSeconds(int& d, int& s)
 	{
 		const time_t _time = time(0);
+#if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
 
-		d		= t.tm_year * 366 + t.tm_mon * 31 + t.tm_mday;
-		s       = t.tm_hour * 60 * 60 + t.tm_min * 60 + t.tm_sec;
+		d = t.tm_year * 366 + t.tm_mon * 31 + t.tm_mday;
+		s = t.tm_hour * 60 * 60 + t.tm_min * 60 + t.tm_sec;
+#else
+        struct tm *tm;
+        tm = localtime(&_time);
+        
+        d = tm->tm_year * 366 + tm->tm_mon * 31 + tm->tm_mday;
+        s = tm->tm_hour * 60 * 60 + tm->tm_min * 60 + tm->tm_sec;
+#endif
 	}
 
 	bool TTimer::IsLeapYear(int year)

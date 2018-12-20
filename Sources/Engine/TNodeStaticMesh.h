@@ -19,7 +19,7 @@ namespace tix
 		void LinkMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
 
 	protected:
-		virtual void UpdateAbsoluteTransformation();
+		virtual void UpdateAbsoluteTransformation() override;
 
 	protected:
 		FPrimitivePtr LinkedPrimitive;

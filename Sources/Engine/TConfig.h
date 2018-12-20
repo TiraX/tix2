@@ -18,7 +18,7 @@
 
 // Renderers
 #ifdef TI_PLATFORM_WIN32
-#	define COMPILE_WITH_RHI_DX12	1
+#	define COMPILE_WITH_RHI_DX12 1
 #elif defined (TI_PLATFORM_IOS)
 #	define COMPILE_WITH_RHI_METAL 1
 #endif

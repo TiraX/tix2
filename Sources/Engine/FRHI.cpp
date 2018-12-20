@@ -22,6 +22,8 @@ namespace tix
 		TI_ASSERT(RHI == nullptr);
 #if defined (TI_PLATFORM_WIN32) && (COMPILE_WITH_RHI_DX12)
 		RHI = ti_new FRHIDx12;
+#elif defined (TI_PLATFORM_IOS) && (COMPILE_WITH_RHI_METAL)
+        TI_ASSERT(0);
 #else
 #error("No avaible RHI for this platform.")
 #endif
