@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2713373F21CCAFA5001BAE3A /* TDeviceIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2713373D21CCAFA5001BAE3A /* TDeviceIOS.cpp */; };
+		2713374A21CCB398001BAE3A /* FMetalView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2713374721CCB398001BAE3A /* FMetalView.mm */; };
+		2713374E21CCB7D2001BAE3A /* TViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2713374D21CCB7D2001BAE3A /* TViewController.mm */; };
 		2775A30821CAA32F00E0AD35 /* TINIParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */; };
 		2775A30921CAA32F00E0AD35 /* TDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E221CAA32D00E0AD35 /* TDevice.cpp */; };
 		2775A30A21CAA32F00E0AD35 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E621CAA32D00E0AD35 /* TLog.cpp */; };
@@ -73,6 +76,12 @@
 
 /* Begin PBXFileReference section */
 		2712CF7221CBBAA300773C5B /* TiX2.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TiX2.pch; sourceTree = "<group>"; };
+		2713373D21CCAFA5001BAE3A /* TDeviceIOS.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TDeviceIOS.cpp; path = ../../../Sources/Engine/TDeviceIOS.cpp; sourceTree = "<group>"; };
+		2713373E21CCAFA5001BAE3A /* TDeviceIOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TDeviceIOS.h; path = ../../../Sources/Engine/TDeviceIOS.h; sourceTree = "<group>"; };
+		2713374521CCB398001BAE3A /* FMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FMetalView.h; path = ../../../Sources/Engine/FMetalView.h; sourceTree = "<group>"; };
+		2713374721CCB398001BAE3A /* FMetalView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = FMetalView.mm; path = ../../../Sources/Engine/FMetalView.mm; sourceTree = "<group>"; };
+		2713374C21CCB7D2001BAE3A /* TViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TViewController.h; path = ../../../Sources/Engine/TViewController.h; sourceTree = "<group>"; };
+		2713374D21CCB7D2001BAE3A /* TViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = TViewController.mm; path = ../../../Sources/Engine/TViewController.mm; sourceTree = "<group>"; };
 		2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TINIParser.cpp; path = ../../../Sources/Engine/TINIParser.cpp; sourceTree = "<group>"; };
 		2775A2E221CAA32D00E0AD35 /* TDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TDevice.cpp; path = ../../../Sources/Engine/TDevice.cpp; sourceTree = "<group>"; };
 		2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = IInstrusivePtr.hpp; path = ../../../Sources/Engine/IInstrusivePtr.hpp; sourceTree = "<group>"; };
@@ -253,6 +262,8 @@
 		2775A2E021CAA28100E0AD35 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				2713374521CCB398001BAE3A /* FMetalView.h */,
+				2713374721CCB398001BAE3A /* FMetalView.mm */,
 				2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */,
 				2775A2F221CAA32E00E0AD35 /* IReferenceCounted.h */,
 				2775A2EE21CAA32E00E0AD35 /* TConsoleVariable.cpp */,
@@ -262,6 +273,8 @@
 				2775A2EF21CAA32E00E0AD35 /* TCVars.cpp */,
 				2775A2E221CAA32D00E0AD35 /* TDevice.cpp */,
 				2775A30621CAA32F00E0AD35 /* TDevice.h */,
+				2713373D21CCAFA5001BAE3A /* TDeviceIOS.cpp */,
+				2713373E21CCAFA5001BAE3A /* TDeviceIOS.h */,
 				2775A2F421CAA32E00E0AD35 /* TFile.cpp */,
 				2775A2E421CAA32D00E0AD35 /* TFile.h */,
 				2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */,
@@ -292,6 +305,8 @@
 				2775A2FD21CAA32E00E0AD35 /* TTypeRenderResource.h */,
 				2775A2F521CAA32E00E0AD35 /* TTypes.h */,
 				2775A2E521CAA32D00E0AD35 /* TUtils.h */,
+				2713374C21CCB7D2001BAE3A /* TViewController.h */,
+				2713374D21CCB7D2001BAE3A /* TViewController.mm */,
 			);
 			name = Common;
 			sourceTree = "<group>";
@@ -322,6 +337,8 @@
 		2775A32521CAA3C700E0AD35 /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				2775A32621CAA3CF00E0AD35 /* Metal */,
+				2775A32721CAA3DF00E0AD35 /* Shaders */,
 				2775A33C21CAA4A100E0AD35 /* FDefaultRenderer.cpp */,
 				2775A33F21CAA4A100E0AD35 /* FDefaultRenderer.h */,
 				2775A32B21CAA4A000E0AD35 /* FFrameResources.cpp */,
@@ -381,8 +398,6 @@
 				2775A34B21CAA4A200E0AD35 /* TShaderBinding.h */,
 				2775A34D21CAA4A200E0AD35 /* TTexture.cpp */,
 				2775A35321CAA4A200E0AD35 /* TTexture.h */,
-				2775A32721CAA3DF00E0AD35 /* Shaders */,
-				2775A32621CAA3CF00E0AD35 /* Metal */,
 			);
 			name = Render;
 			sourceTree = "<group>";
@@ -514,6 +529,7 @@
 				2775A31021CAA32F00E0AD35 /* TFile.cpp in Sources */,
 				2775A30D21CAA32F00E0AD35 /* TResFile.cpp in Sources */,
 				2775A39121CAA4EF00E0AD35 /* TNode.cpp in Sources */,
+				2713374A21CCB398001BAE3A /* FMetalView.mm in Sources */,
 				2775A37621CAA4A300E0AD35 /* TTexture.cpp in Sources */,
 				2775A39021CAA4EF00E0AD35 /* FScene.cpp in Sources */,
 				2775A36B21CAA4A300E0AD35 /* FRenderTarget.cpp in Sources */,
@@ -522,6 +538,7 @@
 				2775A37F21CAA4A300E0AD35 /* FRHI.cpp in Sources */,
 				2775A3A421CAA52500E0AD35 /* TPath.cpp in Sources */,
 				2775A37021CAA4A300E0AD35 /* FDefaultRenderer.cpp in Sources */,
+				2713373F21CCAFA5001BAE3A /* TDeviceIOS.cpp in Sources */,
 				2775A36D21CAA4A300E0AD35 /* FLight.cpp in Sources */,
 				2775A30C21CAA32F00E0AD35 /* TThread.cpp in Sources */,
 				2775A37521CAA4A300E0AD35 /* FFullScreenRender.cpp in Sources */,
@@ -557,6 +574,7 @@
 				2775A37E21CAA4A300E0AD35 /* TShaderBinding.cpp in Sources */,
 				2775A37121CAA4A300E0AD35 /* TPipeline.cpp in Sources */,
 				2775A31221CAA32F00E0AD35 /* TCrc.cpp in Sources */,
+				2713374E21CCB7D2001BAE3A /* TViewController.mm in Sources */,
 				2775A37421CAA4A300E0AD35 /* FRenderResourceTable.cpp in Sources */,
 				2775A39321CAA4EF00E0AD35 /* TNodeStaticMesh.cpp in Sources */,
 				2775A30921CAA32F00E0AD35 /* TDevice.cpp in Sources */,

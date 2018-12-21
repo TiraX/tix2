@@ -43,6 +43,7 @@ namespace tix
 		TI_API void AddRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);
 
+        TI_API void LowMemoryWarning() {};
 
 	private:
 		TEngine();
