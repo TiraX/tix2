@@ -62,7 +62,7 @@ namespace tix
 	void FRenderThread::CreateRenderComponents()
 	{
 		// Create RHI to submit commands to GPU
-		FRHI::CreateRHI(ERHI_DX12);
+		FRHI::CreateRHI();
 		RHI = FRHI::Get();
 
 		// Create render scene

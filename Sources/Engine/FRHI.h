@@ -14,6 +14,7 @@ namespace tix
 	enum E_RHI_TYPE
 	{
 		ERHI_DX12 = 0,
+		ERHI_METAL = 1,
 
 		ERHI_NUM,
 	};
@@ -36,7 +37,7 @@ namespace tix
 	{
 	public: 
 		TI_API static FRHI* Get();
-		static void CreateRHI(E_RHI_TYPE RhiType);
+		static void CreateRHI();
 		static void ReleaseRHI();
 
 		virtual void InitRHI() = 0;

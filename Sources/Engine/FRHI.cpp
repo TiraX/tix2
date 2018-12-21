@@ -17,7 +17,7 @@ namespace tix
 		return RHI;
 	}
 
-	void FRHI::CreateRHI(E_RHI_TYPE RHIType)
+	void FRHI::CreateRHI()
 	{
 		TI_ASSERT(RHI == nullptr);
 #if defined (TI_PLATFORM_WIN32) && (COMPILE_WITH_RHI_DX12)
