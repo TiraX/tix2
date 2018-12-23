@@ -1,0 +1,22 @@
+//
+//  SSSSSample-Prefix.pch
+//  SSSSSample
+//
+//  Created by Tirax on 2018/12/23.
+//  Copyright © 2018 zhaoshuai. All rights reserved.
+//
+
+#ifndef SSSSSample_Prefix_pch
+#define SSSSSample_Prefix_pch
+
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __cplusplus
+#   include "TiX.h"
+#endif
+
+#endif /* SSSSSample_Prefix_pch */

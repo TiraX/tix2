@@ -16,7 +16,29 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    // Init TiX Engine
+    CGRect bounds = [[UIScreen mainScreen] bounds];
+    
+    TEngineDesc Desc;
+    Desc.Name = "SSSS Sample App";
+    Desc.Width = bounds.size.width;
+    Desc.Height = bounds.size.height;
+    
+    TEngine::InitEngine(Desc);
+    
+    // before tick and render
+    //TEngine::Get()->AddTicker(ti_new TSSSSTicker());
+    //TEngine::Get()->AddRenderer(ti_new FSSSSRenderer());
+    
+    // Setup scenes
+    //SetupScene();
+    
+    // start tick and render
+    
+    // Start Loop
+    //TEngine::Get()->Start();
+    
+    //[[TiDirectorCaller sharedDirectorCaller] startMainLoopWithInterval: 1.0f / 60.f];
     return YES;
 }
 
