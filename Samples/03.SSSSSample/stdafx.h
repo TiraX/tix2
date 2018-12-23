@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "targetver.h"
-
 #define _CRTDBG_MAP_ALLOC
 
 #include "TiX.h"
