@@ -14,7 +14,7 @@
 
 namespace tix
 {
-	TIOSDevice::TIOSDevice(int32 w, int32 h)
+	TDeviceIOS::TDeviceIOS(int32 w, int32 h)
         : TDevice(w, h)
         , Window(nil)
         , ViewController(nil)
@@ -28,23 +28,23 @@ namespace tix
         FindDeviceType();
 	}
     
-	TIOSDevice::~TIOSDevice()
+	TDeviceIOS::~TDeviceIOS()
 	{
         Window = nil;
 	}
     
-	void TIOSDevice::Resize(int32 w, int32 h)
+	void TDeviceIOS::Resize(int32 w, int32 h)
 	{
 		TDevice::Resize(w, h);
 	}
     
 	//! runs the device. Returns false if device wants to be deleted
-	bool TIOSDevice::Run()
+	bool TDeviceIOS::Run()
 	{
         return true;
 	}
     
-    void TIOSDevice::FindDeviceType()
+    void TDeviceIOS::FindDeviceType()
     {
         //struct utsname systemInfo;
         //uname(&systemInfo);
@@ -52,7 +52,7 @@ namespace tix
         //NSString* device = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     }
     
-    int32 TIOSDevice::GetPreferredLanguage()
+    int32 TDeviceIOS::GetPreferredLanguage()
     {
         //float ios_version = [[UIDevice currentDevice].systemVersion floatValue];
         //NSUserDefaults* defs = [NSUserDefaults standardUserDefaults];
@@ -63,7 +63,7 @@ namespace tix
         return 0;
     }
     
-    void TIOSDevice::Create()
+    void TDeviceIOS::Create()
     {
         FMetalView *_View = nil;
         Window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, Width, Height)];
@@ -78,7 +78,7 @@ namespace tix
         [_View setMultipleTouchEnabled:YES];
     }
     
-    void TIOSDevice::Show()
+    void TDeviceIOS::Show()
     {
         TI_ASSERT(Window != nil);
         [Window makeKeyAndVisible];
