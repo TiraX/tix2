@@ -3,6 +3,13 @@
    version = "1.0">
    <Group
       location = "container:"
+      name = "03.SSSSSample">
+      <FileRef
+         location = "group:../../Samples/03.SSSSSample/SSSSSample.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "container:"
       name = "TiX2">
       <FileRef
          location = "group:TiX2.xcodeproj">
