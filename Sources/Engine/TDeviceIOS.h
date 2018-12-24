@@ -12,16 +12,15 @@
 @class TViewController;
 namespace tix
 {
-	class TIOSDevice : public TDevice
+	class TDeviceIOS : public TDevice
 	{
 	public:
-		TIOSDevice(int32 w, int32 h);
-		virtual ~TIOSDevice();
+		TDeviceIOS(int32 w, int32 h);
+		virtual ~TDeviceIOS();
         
 		virtual bool Run();
 		virtual void Resize(int w, int h);
         virtual int32 GetPreferredLanguage();
-        void Show();
         
         TViewController* GetViewController()
         {

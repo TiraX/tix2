@@ -5,8 +5,10 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "FMetalView.h"
+#include "FRHIConfig.h"
+#include "Metal/FRHIMetalConversion.h"
 
-#if COMPILE_WITH_RENDERER_METAL
+#if COMPILE_WITH_RHI_METAL
 static FMetalView *view = nil;
 
 @interface FMetalView (Private)
@@ -34,6 +36,11 @@ static FMetalView *view = nil;
 {
     if((self = [super initWithFrame:frame]))
     {
+        if( ![self setupSurface] )
+        {
+            return nil;
+        }
+        isFramebufferInited = NO;
     }
     else
     {
@@ -51,7 +58,7 @@ static FMetalView *view = nil;
     
     CAMetalLayer *_metalLayer = (CAMetalLayer *)self.layer;
     
-    _metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    _metalLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
     
     // this is the default but if we wanted to perform compute on the final rendering layer we could set this to no
     _metalLayer.framebufferOnly = YES;
@@ -64,7 +71,7 @@ static FMetalView *view = nil;
     if (!isFramebufferInited)
     {
         // init metal
-        CAMetalLayer* layer = (CAMetalLayer*)self.layer;
+        //CAMetalLayer* layer = (CAMetalLayer*)self.layer;
         TI_ASSERT(0);
         //TiRendererMetal* rendererMetal  = (TiRendererMetal*)TEngine::Get()->GetRenderer()->GetActiveRenderer();
         //rendererMetal->InitMetalWithLayer(layer);
@@ -75,7 +82,6 @@ static FMetalView *view = nil;
 - (void) dealloc
 {
     view = nil;
-    [super dealloc];
 }
 
 - (void) layoutSubviews
@@ -88,7 +94,7 @@ static FMetalView *view = nil;
 
 struct TouchTrack
 {
-    void* m_touchPointer;
+    UITouch* m_touchPointer;
     
     TouchTrack()
     {
@@ -96,12 +102,12 @@ struct TouchTrack
     }
 };
 
-const int MAX_TOUCHES = 5;
+const int32 MAX_TOUCHES = 5;
 TouchTrack g_touchTracker[MAX_TOUCHES];
 
-int GetFingerTrackIDByTouch(void* touch)
+int32 GetFingerTrackIDByTouch(UITouch* touch)
 {
-    for (int i=0; i < MAX_TOUCHES; i++)
+    for (int32 i=0; i < MAX_TOUCHES; i++)
     {
         if (g_touchTracker[i].m_touchPointer == touch)
         {
@@ -112,9 +118,9 @@ int GetFingerTrackIDByTouch(void* touch)
     return -1;
 }
 
-int AddNewTouch(void* touch)
+int32 AddNewTouch(UITouch* touch)
 {
-    for (int i=0; i < MAX_TOUCHES; i++)
+    for (int32 i=0; i < MAX_TOUCHES; i++)
     {
         if (!g_touchTracker[i].m_touchPointer)
         {
@@ -125,11 +131,11 @@ int AddNewTouch(void* touch)
     return -1;
 }
 
-int GetTouchesActive()
+int32 GetTouchesActive()
 {
-    int count = 0;
+    int32 count = 0;
     
-    for (int i=0; i < MAX_TOUCHES; i++)
+    for (int32 i=0; i < MAX_TOUCHES; i++)
     {
         if (g_touchTracker[i].m_touchPointer)
         {
@@ -143,12 +149,12 @@ int GetTouchesActive()
 {
     long long time_stamp;
     time_stamp = TTimer::GetCurrentTimeMillis();
-    TInput* input = TEngine::Get()->GetDevice(0)->GetInput();
-    const int count = [touches count];
+    TInput* input = TEngine::Get()->GetDevice()->GetInput();
+    const int32 count = (int32)[touches count];
     
     for (UITouch *touch in touches)
     {
-        int fingerID = GetFingerTrackIDByTouch(touch);
+        int32 fingerID = GetFingerTrackIDByTouch(touch);
         
         if (fingerID == -1)
         {
@@ -173,12 +179,12 @@ int GetTouchesActive()
 {
     long long time_stamp;
     time_stamp = TTimer::GetCurrentTimeMillis();
-    TInput* input = TEngine::Get()->GetDevice(0)->GetInput();
-    const int count = [touches count];
+    TInput* input = TEngine::Get()->GetDevice()->GetInput();
+    //const int32 count = (int32)[touches count];
     
     for (UITouch *touch in touches)
     {
-        int fingerID = GetFingerTrackIDByTouch(touch);
+        int32 fingerID = GetFingerTrackIDByTouch(touch);
         if (fingerID != -1)
         {
             //found it
@@ -202,12 +208,12 @@ int GetTouchesActive()
 {
     long long time_stamp;
     time_stamp = TTimer::GetCurrentTimeMillis();
-    TInput* input = TEngine::Get()->GetDevice(0)->GetInput();
-    const int count = [touches count];
+    TInput* input = TEngine::Get()->GetDevice()->GetInput();
+    const int32 count = (int32)[touches count];
     
     for (UITouch *touch in touches)
     {
-        int fingerID = GetFingerTrackIDByTouch(touch);
+        int32 fingerID = GetFingerTrackIDByTouch(touch);
         if (fingerID != -1)
         {
             g_touchTracker[fingerID].m_touchPointer = NULL; //clear it
@@ -233,12 +239,12 @@ int GetTouchesActive()
 {
     long long time_stamp;
     time_stamp = TTimer::GetCurrentTimeMillis();
-    TInput* input = TEngine::Get()->GetDevice(0)->GetInput();
-    const int count = [touches count];
+    TInput* input = TEngine::Get()->GetDevice()->GetInput();
+    const int32 count = (int32)[touches count];
     
     for (UITouch *touch in touches)
     {
-        int fingerID = GetFingerTrackIDByTouch(touch);
+        int32 fingerID = GetFingerTrackIDByTouch(touch);
         if (fingerID != -1)
         {
             g_touchTracker[fingerID].m_touchPointer = NULL; //clear it
@@ -260,4 +266,4 @@ int GetTouchesActive()
 
 @end
 
-#endif //COMPILE_WITH_RENDERER_METAL
+#endif //COMPILE_WITH_RHI_METAL

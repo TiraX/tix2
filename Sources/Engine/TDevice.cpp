@@ -8,6 +8,7 @@
 
 #include "TDevice.h"
 #include "TDeviceWin32.h"
+#include "TDeviceIOS.h"
 
 namespace tix
 {
@@ -17,9 +18,7 @@ namespace tix
 #ifdef TI_PLATFORM_WIN32
 		device = ti_new TDeviceWin32(Width, Height, nullptr, Name.c_str());
 #elif defined (TI_PLATFORM_IOS)
-        TI_ASSERT(0);
-		//TiIOSDevice::CheckFeatures();
-		//device = ti_new TiIOSDevice(w, h);
+		device = ti_new TDeviceIOS(Width, Height);
 #elif defined (TI_PLATFORM_ANDROID)
 		device = ti_new TiAndroidDevice(w, h);
 #else

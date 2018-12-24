@@ -9,6 +9,8 @@
 
 @interface FMetalView : UIView<UIGestureRecognizerDelegate>
 {
+@protected
+    BOOL isFramebufferInited;
 }
 
 // create View
