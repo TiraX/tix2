@@ -246,22 +246,22 @@ inline int32 ti_align16(int32 n)
 	return ti_align(n, 16);
 }
 
-#include "math/half.hpp"
+#include "Math/half.hpp"
 using namespace half_float;
 typedef half float16;
 
-#include "math/Vector2d.h"
-#include "math/Vector3d.h"
-#include "math/Vector4d.h"
-#include "math/Line2d.h"
-#include "math/Line3d.h"
-#include "math/Rect.h"
-#include "math/Aabbox3d.h"
-#include "math/Plane3d.h"
-#include "math/Matrix3.h"
-#include "math/Matrix4.h"
-#include "math/Quaternion.h"
-#include "math/SViewFrustum.h"
-#include "math/Triangle3d.h"
-#include "math/FMatrix.h"
-#include "math/FVector.h"
+#include "Math/Vector2d.h"
+#include "Math/Vector3d.h"
+#include "Math/Vector4d.h"
+#include "Math/Line2d.h"
+#include "Math/Line3d.h"
+#include "Math/Rect.h"
+#include "Math/Aabbox3d.h"
+#include "Math/Plane3d.h"
+#include "Math/Matrix3.h"
+#include "Math/Matrix4.h"
+#include "Math/Quaternion.h"
+#include "Math/SViewFrustum.h"
+#include "Math/Triangle3d.h"
+#include "Math/FMatrix.h"
+#include "Math/FVector.h"
