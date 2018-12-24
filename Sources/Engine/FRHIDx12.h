@@ -56,7 +56,7 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 
-		virtual void SetStencilRef(uint32 InRefValue);
+		virtual void SetStencilRef(uint32 InRefValue) override;
 		virtual void DrawPrimitiveIndexedInstanced(
 			uint32 IndexCountPerInstance,
 			uint32 InstanceCount,
@@ -64,9 +64,9 @@ namespace tix
 			int32 BaseVertexLocation,
 			uint32 StartInstanceLocation) override;
 
-		virtual void SetViewport(const FViewport& InViewport);
-		virtual void PushRenderTarget(FRenderTargetPtr RT);
-		virtual FRenderTargetPtr PopRenderTarget();
+		virtual void SetViewport(const FViewport& InViewport) override;
+		virtual void PushRenderTarget(FRenderTargetPtr RT) override;
+		virtual FRenderTargetPtr PopRenderTarget() override;
 
 		ComPtr<ID3D12Device> GetD3dDevice()
 		{
