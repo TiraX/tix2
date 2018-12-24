@@ -19,37 +19,37 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FPipelineDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRenderTargetDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FGPUResourceDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResourceHeap.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResourceTable.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FRenderTargetDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FRootSignatureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FSceneLights.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FUniformBuffer.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FUniformBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -87,40 +87,40 @@
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FPipelineDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRenderTargetDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12Conversion.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FFrameResources.h" />
-    <ClInclude Include="..\..\Sources\Engine\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h" />
-    <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FLight.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
-    <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
-    <ClInclude Include="..\..\Sources\Engine\FPipelineDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FPrimitive.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResourceHeap.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResourceTable.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderTarget.h" />
-    <ClInclude Include="..\..\Sources\Engine\FRenderTargetDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
-    <ClInclude Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.h" />
-    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h" />
-    <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h" />
-    <ClInclude Include="..\..\Sources\Engine\FRootSignatureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />
-    <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h" />
     <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
-    <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBuffer.h" />
-    <ClInclude Include="..\..\Sources\Engine\FUniformBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBufferView.h" />
     <ClInclude Include="..\..\Sources\Engine\FViewport.h" />
     <ClInclude Include="..\..\Sources\Engine\IInstrusivePtr.hpp" />
@@ -295,7 +295,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Externals\pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -332,7 +332,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Externals\pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

@@ -70,12 +70,6 @@
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FMeshBufferDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FRHIDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
@@ -84,15 +78,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp">
       <Filter>Sources\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FFrameResourcesDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FShaderDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FTextureDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TNode.cpp">
       <Filter>Sources\Scene</Filter>
@@ -127,17 +112,11 @@
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FPipelineDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TMeshBuffer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FUniformBuffer.cpp">
       <Filter>Sources\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FUniformBufferDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp">
       <Filter>Sources\Render</Filter>
@@ -169,20 +148,8 @@
     <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FRenderTargetDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FGPUResourceDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp">
       <Filter>Sources\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FRootSignatureDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TNodeLight.cpp">
       <Filter>Sources\Scene</Filter>
@@ -213,6 +180,39 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp">
       <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FPipelineDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRenderTargetDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -345,12 +345,6 @@
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FMeshBufferDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRHIDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FShader.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
@@ -360,23 +354,14 @@
     <ClInclude Include="..\..\Sources\Engine\FFrameResources.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FFrameResourcesDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TUtils.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTypeRenderResource.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FShaderDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h">
       <Filter>Sources\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FTextureDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TNode.h">
       <Filter>Sources\Scene</Filter>
@@ -420,14 +405,8 @@
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FPipelineDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TMeshBuffer.h">
       <Filter>Sources\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRHIDx12Conversion.h">
-      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h">
       <Filter>Sources\Render</Filter>
@@ -437,9 +416,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FUniformBufferView.h">
       <Filter>Sources\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FUniformBufferDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h">
       <Filter>Sources\Render</Filter>
@@ -480,23 +456,11 @@
     <ClInclude Include="..\..\Sources\Engine\FRenderTarget.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRenderTargetDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRHIDescriptorHeapDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FViewport.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FGPUResourceDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h">
       <Filter>Sources\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FRootSignatureDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\FVector.h">
       <Filter>Sources\Math</Filter>
@@ -527,6 +491,42 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TShaderBinding.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FPipelineDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRenderTargetDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12Conversion.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

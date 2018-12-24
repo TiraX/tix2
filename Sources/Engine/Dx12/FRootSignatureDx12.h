@@ -7,7 +7,7 @@
 
 #if COMPILE_WITH_RHI_DX12
 
-#include "Dx12/d3dx12.h"
+#include "d3dx12.h"
 
 using namespace Microsoft::WRL;
 

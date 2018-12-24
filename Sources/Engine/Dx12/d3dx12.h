@@ -14,7 +14,6 @@
 #include <dxgi1_4.h>
 #include <d3d12.h>
 #include <pix.h>
-#include "dx12/d3dx12.h"
 #if defined(TIX_DEBUG)
 #include <dxgidebug.h>
 #endif

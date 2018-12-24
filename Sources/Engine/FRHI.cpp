@@ -6,7 +6,7 @@
 #include "stdafx.h"
 #include "FRHI.h"
 #include "FRenderTarget.h"
-#include "FRHIDx12.h"
+#include "Dx12/FRHIDx12.h"
 #include "Metal/FRHIMetal.h"
 
 namespace tix
