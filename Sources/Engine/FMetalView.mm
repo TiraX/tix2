@@ -5,6 +5,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "FMetalView.h"
+#include "FRHIConfig.h"
+#include "Metal/FRHIMetalConversion.h"
 
 #if COMPILE_WITH_RHI_METAL
 static FMetalView *view = nil;
@@ -34,6 +36,10 @@ static FMetalView *view = nil;
 {
     if((self = [super initWithFrame:frame]))
     {
+        if( ![self setupSurface] )
+        {
+            return nil;
+        }
         isFramebufferInited = NO;
     }
     else
@@ -52,7 +58,7 @@ static FMetalView *view = nil;
     
     CAMetalLayer *_metalLayer = (CAMetalLayer *)self.layer;
     
-    _metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    _metalLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
     
     // this is the default but if we wanted to perform compute on the final rendering layer we could set this to no
     _metalLayer.framebufferOnly = YES;

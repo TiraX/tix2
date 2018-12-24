@@ -76,16 +76,7 @@ namespace tix
         // Set RootViewController to window
         [Window setRootViewController:ViewController];
         [_View setMultipleTouchEnabled:YES];
-    }
-    
-    void TDeviceIOS::Show()
-    {
-        TI_ASSERT(Window != nil);
         [Window makeKeyAndVisible];
-        
-        if ([FMetalView sharedMetalView]) {
-            [[FMetalView sharedMetalView] generateBuffers];
-        }
     }
 }
 

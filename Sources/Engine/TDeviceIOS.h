@@ -21,7 +21,6 @@ namespace tix
 		virtual bool Run();
 		virtual void Resize(int w, int h);
         virtual int32 GetPreferredLanguage();
-        void Show();
         
         TViewController* GetViewController()
         {

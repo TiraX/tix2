@@ -60,6 +60,7 @@
 		2775A3A321CAA52500E0AD35 /* TEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39721CAA52500E0AD35 /* TEngine.cpp */; };
 		2775A3A421CAA52500E0AD35 /* TPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39A21CAA52500E0AD35 /* TPath.cpp */; };
 		2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39E21CAA52500E0AD35 /* stdafx.cpp */; };
+		27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -222,6 +223,9 @@
 		2775A3A021CAA52500E0AD35 /* TEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TEngine.h; path = ../../../Sources/Engine/TEngine.h; sourceTree = "<group>"; };
 		2775A3A121CAA52500E0AD35 /* TVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TVersion.h; path = ../../../Sources/Engine/TVersion.h; sourceTree = "<group>"; };
 		2775A3A221CAA52500E0AD35 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = ../../../Sources/Engine/stdafx.h; sourceTree = "<group>"; };
+		27A3DC9921D1263A00CF52C1 /* FRHIMetalConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRHIMetalConversion.h; path = ../../../Sources/Engine/Metal/FRHIMetalConversion.h; sourceTree = "<group>"; };
+		27A3DC9A21D1263A00CF52C1 /* FRHIMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRHIMetal.h; path = ../../../Sources/Engine/Metal/FRHIMetal.h; sourceTree = "<group>"; };
+		27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FRHIMetal.cpp; path = ../../../Sources/Engine/Metal/FRHIMetal.cpp; sourceTree = "<group>"; };
 		27D47F5421CA9B8E00109AB5 /* libTiX2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTiX2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -405,6 +409,9 @@
 		2775A32621CAA3CF00E0AD35 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
+				27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */,
+				27A3DC9A21D1263A00CF52C1 /* FRHIMetal.h */,
+				27A3DC9921D1263A00CF52C1 /* FRHIMetalConversion.h */,
 			);
 			name = Metal;
 			sourceTree = "<group>";
@@ -554,6 +561,7 @@
 				2775A39421CAA4EF00E0AD35 /* TNodeCamera.cpp in Sources */,
 				2775A37721CAA4A300E0AD35 /* FShaderBinding.cpp in Sources */,
 				2775A36421CAA4A300E0AD35 /* FMeshBuffer.cpp in Sources */,
+				27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */,
 				2775A39521CAA4EF00E0AD35 /* TNodeCameraNav.cpp in Sources */,
 				2775A37C21CAA4A300E0AD35 /* FShaderParamValue.cpp in Sources */,
 				2775A36A21CAA4A300E0AD35 /* FRenderResourceHeap.cpp in Sources */,
