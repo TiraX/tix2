@@ -196,7 +196,7 @@
 		2775A36021CAA4A300E0AD35 /* TShaderBinding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TShaderBinding.cpp; path = ../../../Sources/Engine/TShaderBinding.cpp; sourceTree = "<group>"; };
 		2775A36121CAA4A300E0AD35 /* FRHI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRHI.h; path = ../../../Sources/Engine/FRHI.h; sourceTree = "<group>"; };
 		2775A36221CAA4A300E0AD35 /* FSceneLights.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FSceneLights.h; path = ../../../Sources/Engine/FSceneLights.h; sourceTree = "<group>"; };
-		2775A36321CAA4A300E0AD35 /* FRHI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FRHI.cpp; path = ../../../Sources/Engine/FRHI.cpp; sourceTree = "<group>"; };
+		2775A36321CAA4A300E0AD35 /* FRHI.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FRHI.cpp; path = ../../../Sources/Engine/FRHI.cpp; sourceTree = "<group>"; };
 		2775A38221CAA4EF00E0AD35 /* TScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TScene.h; path = ../../../Sources/Engine/TScene.h; sourceTree = "<group>"; };
 		2775A38321CAA4EF00E0AD35 /* FScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FScene.h; path = ../../../Sources/Engine/FScene.h; sourceTree = "<group>"; };
 		2775A38421CAA4EF00E0AD35 /* FScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FScene.cpp; path = ../../../Sources/Engine/FScene.cpp; sourceTree = "<group>"; };

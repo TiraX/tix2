@@ -6,6 +6,8 @@
 #pragma once
 
 #if COMPILE_WITH_RHI_METAL
+#import <QuartzCore/CAMetalLayer.h>
+#import <Metal/Metal.h>
 
 namespace tix
 {
@@ -64,8 +66,17 @@ namespace tix
 		FRHIMetal();
 
 	private:
+        id <MTLDevice> MtlDevice;
+        id <CAMetalDrawable> CurrentDrawable;
         
-	private:
+        id <MTLCommandQueue> CommandQueue;
+        id <MTLLibrary> DefaultLibrary;
+        
+        id <MTLCommandBuffer> CommandBuffer;
+        id <MTLRenderCommandEncoder> RenderEncoder;
+        
+        dispatch_semaphore_t InflightSemaphore;
+        
 		friend class FRHI;
 	};
 }

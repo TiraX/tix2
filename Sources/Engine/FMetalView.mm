@@ -6,10 +6,10 @@
 #import <QuartzCore/QuartzCore.h>
 #import "FMetalView.h"
 #include "FRHIConfig.h"
-#include "Metal/FRHIMetalConversion.h"
+#include "FRHIMetalConversion.h"
 
 #if COMPILE_WITH_RHI_METAL
-static FMetalView *view = nil;
+static FMetalView * s_view = nil;
 
 @interface FMetalView (Private)
 - (BOOL) setupSurface;
@@ -29,25 +29,26 @@ static FMetalView *view = nil;
 
 + (id) sharedMetalView
 {
-    return view;
+    return s_view;
 }
 
 - (id) initWithFrame:(CGRect)frame
 {
+    TI_ASSERT(s_view == nil);
     if((self = [super initWithFrame:frame]))
     {
+        self.MtlDevice = nil;
         if( ![self setupSurface] )
         {
             return nil;
         }
-        isFramebufferInited = NO;
     }
     else
     {
         return nil;
     }
     
-    view = self;
+    s_view = self;
     return self;
 }
 
@@ -56,32 +57,19 @@ static FMetalView *view = nil;
     self.opaque  = YES;
     self.backgroundColor = nil;
     
-    CAMetalLayer *_metalLayer = (CAMetalLayer *)self.layer;
+    // Init metal layer and create default Metal Device
+    CAMetalLayer * MetalLayer = (CAMetalLayer *)self.layer;
+    self.MtlDevice = MTLCreateSystemDefaultDevice();
+    MetalLayer.device = self.MtlDevice;
+    MetalLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
+    MetalLayer.framebufferOnly = YES;
     
-    _metalLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
-    
-    // this is the default but if we wanted to perform compute on the final rendering layer we could set this to no
-    _metalLayer.framebufferOnly = YES;
-
     return YES;
-}
-
-- (void) generateBuffers
-{
-    if (!isFramebufferInited)
-    {
-        // init metal
-        //CAMetalLayer* layer = (CAMetalLayer*)self.layer;
-        TI_ASSERT(0);
-        //TiRendererMetal* rendererMetal  = (TiRendererMetal*)TEngine::Get()->GetRenderer()->GetActiveRenderer();
-        //rendererMetal->InitMetalWithLayer(layer);
-        isFramebufferInited = YES;
-    }
 }
 
 - (void) dealloc
 {
-    view = nil;
+    s_view = nil;
 }
 
 - (void) layoutSubviews

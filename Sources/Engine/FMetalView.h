@@ -8,18 +8,12 @@
 #import <Metal/Metal.h>
 
 @interface FMetalView : UIView<UIGestureRecognizerDelegate>
-{
-@protected
-    BOOL isFramebufferInited;
-}
 
+@property (strong, nonatomic) id <MTLDevice> MtlDevice;
 // create View
 + (id) viewWithFrame:(CGRect)frame;
 
 // get the view object
 +(id) sharedMetalView;
-
-/** create frame buffer and depth buffer */
--(void) generateBuffers;
 
 @end

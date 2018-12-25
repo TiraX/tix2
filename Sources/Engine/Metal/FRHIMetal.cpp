@@ -8,6 +8,8 @@
 
 #if COMPILE_WITH_RHI_METAL
 #include "TDeviceIOS.h"
+#import "FMetalView.h"
+#include "FRHIMetalConversion.h"
 
 namespace tix
 {
@@ -18,12 +20,32 @@ namespace tix
 
 	FRHIMetal::~FRHIMetal()
 	{
+        _LOG(Log, "  RHI Metal destroy.\n");
 	}
 
 	void FRHIMetal::InitRHI()
 	{
-        TI_ASSERT(0);
-
+        FMetalView * MetalView = [FMetalView sharedMetalView];
+        TI_ASSERT(MetalView != nil);
+        
+        //int32 w = (int32)(MetalLayer.bounds.size.width);
+        //int32 h = (int32)(MetalLayer.bounds.size.height);
+        
+        // Grab a metal device
+        MtlDevice = MetalView.MtlDevice;
+        
+        // Create Command Queue
+        CommandQueue = [MtlDevice newCommandQueue];
+        
+        // Create Metal Default Library
+        NSFileManager* fm = [NSFileManager defaultManager];
+        NSString* curr_path = [NSString stringWithString: fm.currentDirectoryPath];
+        [fm changeCurrentDirectoryPath:@"/"];
+        DefaultLibrary = [MtlDevice newDefaultLibrary];
+        [fm changeCurrentDirectoryPath:curr_path];
+        
+        InflightSemaphore = dispatch_semaphore_create(FRHIConfig::FrameBufferNum);
+        
 		_LOG(Log, "  RHI Metal inited.\n");
 	}
     
