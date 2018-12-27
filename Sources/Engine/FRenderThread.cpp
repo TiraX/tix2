@@ -100,7 +100,10 @@ namespace tix
 		
 		RHI->BeginFrame();
 		// Do render thread tasks
+#ifndef TI_PLATFORM_IOS
 		DoRenderTasks();
+#endif
+        TI_TODO("Do Task for iOS");
 
 		// Go through each renderer
 		for (auto Renderer : Renderers)

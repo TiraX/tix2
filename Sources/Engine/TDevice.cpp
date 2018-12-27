@@ -23,7 +23,6 @@ namespace tix
 		device = ti_new TiAndroidDevice(w, h);
 #else
 		TI_ASSERT(0);
-		TI_TODO("implement other devices");
 #endif
 		return device;
 	}

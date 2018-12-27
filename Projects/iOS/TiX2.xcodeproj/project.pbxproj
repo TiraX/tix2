@@ -212,7 +212,7 @@
 		2775A38D21CAA4EF00E0AD35 /* TNodeStaticMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNodeStaticMesh.h; path = ../../../Sources/Engine/TNodeStaticMesh.h; sourceTree = "<group>"; };
 		2775A38E21CAA4EF00E0AD35 /* TNodeCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNodeCamera.h; path = ../../../Sources/Engine/TNodeCamera.h; sourceTree = "<group>"; };
 		2775A38F21CAA4EF00E0AD35 /* TScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TScene.cpp; path = ../../../Sources/Engine/TScene.cpp; sourceTree = "<group>"; };
-		2775A39721CAA52500E0AD35 /* TEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TEngine.cpp; path = ../../../Sources/Engine/TEngine.cpp; sourceTree = "<group>"; };
+		2775A39721CAA52500E0AD35 /* TEngine.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TEngine.cpp; path = ../../../Sources/Engine/TEngine.cpp; sourceTree = "<group>"; };
 		2775A39821CAA52500E0AD35 /* TEngineDesc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TEngineDesc.h; path = ../../../Sources/Engine/TEngineDesc.h; sourceTree = "<group>"; };
 		2775A39921CAA52500E0AD35 /* TConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TConfig.h; path = ../../../Sources/Engine/TConfig.h; sourceTree = "<group>"; };
 		2775A39A21CAA52500E0AD35 /* TPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TPath.cpp; path = ../../../Sources/Engine/TPath.cpp; sourceTree = "<group>"; };

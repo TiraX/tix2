@@ -9,6 +9,7 @@
 #include "TVersion.h"
 #include "TConsoleVariable.h"
 #include "FRenderThread.h"
+#import "TDirectorCaller.h"
 
 #if DEBUG_OPERATOR_NEW
 void * operator new (std::size_t count)
@@ -142,12 +143,18 @@ namespace tix
 
 		LastFrameTime = TTimer::GetCurrentTimeMillis();
 
+#if defined (TI_PLATFORM_WIN32)
 		while (Device->Run())
 		{
 			Tick();
 		}
 
 		TEngine::Destroy();
+#elif defined (TI_PLATFORM_IOS)
+        [[TDirectorCaller sharedDirectorCaller] startMainLoopWithInterval: 1.0f / 60.f];
+#else
+#error("Not supported platfor")
+#endif
 	}
 
 	void TEngine::BeginFrame()
@@ -160,6 +167,13 @@ namespace tix
 		// Tick finished, trigger render thread
 		TickFinished();
 	}
+    
+#if defined (TI_PLATFORM_IOS)
+    void TEngine::TickIOS()
+    {
+        Tick();
+    }
+#endif
 
 	void TEngine::Tick()
 	{

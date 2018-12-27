@@ -20,6 +20,16 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FSSSBloomUniformBuffer)
 END_UNIFORM_BUFFER_STRUCT(FSSSBloomUniformBuffer)
 
 
+class FS4TempRenderer : public FDefaultRenderer
+{
+public:
+    FS4TempRenderer();
+    virtual ~FS4TempRenderer();
+    
+    virtual void InitInRenderThread() override;
+    virtual void Render(FRHI* RHI, FScene* Scene) override;
+};
+
 class FSSSSRenderer : public FDefaultRenderer
 {
 public:

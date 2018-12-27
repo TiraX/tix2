@@ -59,7 +59,7 @@ static id s_sharedDirectorCaller = nil;
                       
 -(void) doCaller: (id) sender
 {
-    NSLog(@"doCaller");
+    TEngine::Get()->TickIOS();
 }
 
 @end

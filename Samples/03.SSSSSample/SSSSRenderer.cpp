@@ -7,6 +7,24 @@
 #include "SSSSRenderer.h"
 #include "SeparableSSS.h"
 
+FS4TempRenderer::FS4TempRenderer()
+{
+}
+
+FS4TempRenderer::~FS4TempRenderer()
+{
+}
+
+void FS4TempRenderer::InitInRenderThread()
+{
+}
+
+void FS4TempRenderer::Render(FRHI* RHI, FScene* Scene)
+{
+    _LOG(Log, "FS4TempRenderer .\n");
+}
+
+
 FSSSSRenderer::FSSSSRenderer()
 {
 	S4Effect = ti_new SeparableSSS(1600, 900, DEG_TO_RAD(40), 250.f);

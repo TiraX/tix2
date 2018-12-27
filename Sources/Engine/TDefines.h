@@ -50,7 +50,7 @@ void * operator new (std::size_t count);
 #if defined TI_PLATFORM_WIN32
 #	define TI_TODO(msg) __pragma( message( TODO_MESSAGE_STRING(msg) ) )
 #else
-#	define TI_TODO(msg)
+#	define TI_TODO(msg) 
 #endif
 
 #ifndef SAFE_DELETE

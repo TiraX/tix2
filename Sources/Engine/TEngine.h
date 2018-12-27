@@ -44,6 +44,10 @@ namespace tix
 		TI_API void AddTicker(TTicker* Ticker);
 
         TI_API void LowMemoryWarning() {};
+        
+#if defined (TI_PLATFORM_IOS)
+        void TickIOS();
+#endif
 
 	private:
 		TEngine();
