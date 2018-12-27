@@ -50,13 +50,38 @@ namespace tix
 	}
     
 	void FRHIMetal::BeginFrame()
-	{
-        TI_ASSERT(0);
+    {
+        TI_ASSERT(CommandBuffer == nil);
+        TI_ASSERT(RenderEncoder == nil);
+        
+        dispatch_semaphore_wait(InflightSemaphore, DISPATCH_TIME_FOREVER);
+        
+        CommandBuffer = [CommandQueue commandBuffer];
 	}
 
 	void FRHIMetal::EndFrame()
-	{
-        TI_ASSERT(0);
+    {
+        TI_ASSERT(CommandBuffer != nil);
+        TI_ASSERT(RenderEncoder != nil);
+        TI_ASSERT(CurrentDrawable != nil);
+        
+        [RenderEncoder endEncoding];
+        
+        // call the view's completion handler which is required by the view since it will signal its semaphore and set up the next buffer
+        __block dispatch_semaphore_t block_sema = InflightSemaphore;
+        [CommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+            
+            // GPU has completed rendering the frame and is done using the contents of any buffers previously encoded on the CPU for that frame.
+            // Signal the semaphore and allow the CPU to proceed and construct the next frame.
+            dispatch_semaphore_signal(block_sema);
+        }];
+        
+        [CommandBuffer presentDrawable:CurrentDrawable];
+        [CommandBuffer commit];
+        
+        RenderEncoder = nil;
+        CommandBuffer = nil;
+        CurrentDrawable = nil;
 	}
 
 	FTexturePtr FRHIMetal::CreateTexture()

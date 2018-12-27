@@ -61,6 +61,7 @@
 		2775A3A421CAA52500E0AD35 /* TPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39A21CAA52500E0AD35 /* TPath.cpp */; };
 		2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39E21CAA52500E0AD35 /* stdafx.cpp */; };
 		27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */; };
+		27BE848621D5109100E1F9FA /* TDirectorCaller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27BE848521D5109000E1F9FA /* TDirectorCaller.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -226,6 +227,8 @@
 		27A3DC9921D1263A00CF52C1 /* FRHIMetalConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRHIMetalConversion.h; path = ../../../Sources/Engine/Metal/FRHIMetalConversion.h; sourceTree = "<group>"; };
 		27A3DC9A21D1263A00CF52C1 /* FRHIMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRHIMetal.h; path = ../../../Sources/Engine/Metal/FRHIMetal.h; sourceTree = "<group>"; };
 		27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FRHIMetal.cpp; path = ../../../Sources/Engine/Metal/FRHIMetal.cpp; sourceTree = "<group>"; };
+		27BE848421D5109000E1F9FA /* TDirectorCaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TDirectorCaller.h; path = ../../../Sources/Engine/TDirectorCaller.h; sourceTree = "<group>"; };
+		27BE848521D5109000E1F9FA /* TDirectorCaller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = TDirectorCaller.mm; path = ../../../Sources/Engine/TDirectorCaller.mm; sourceTree = "<group>"; };
 		27D47F5421CA9B8E00109AB5 /* libTiX2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTiX2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -279,6 +282,8 @@
 				2775A30621CAA32F00E0AD35 /* TDevice.h */,
 				2713373D21CCAFA5001BAE3A /* TDeviceIOS.cpp */,
 				2713373E21CCAFA5001BAE3A /* TDeviceIOS.h */,
+				27BE848421D5109000E1F9FA /* TDirectorCaller.h */,
+				27BE848521D5109000E1F9FA /* TDirectorCaller.mm */,
 				2775A2F421CAA32E00E0AD35 /* TFile.cpp */,
 				2775A2E421CAA32D00E0AD35 /* TFile.h */,
 				2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */,
@@ -550,6 +555,7 @@
 				2775A30C21CAA32F00E0AD35 /* TThread.cpp in Sources */,
 				2775A37521CAA4A300E0AD35 /* FFullScreenRender.cpp in Sources */,
 				2775A39621CAA4EF00E0AD35 /* TScene.cpp in Sources */,
+				27BE848621D5109100E1F9FA /* TDirectorCaller.mm in Sources */,
 				2775A39221CAA4EF00E0AD35 /* TNodeLight.cpp in Sources */,
 				2775A37321CAA4A300E0AD35 /* TResource.cpp in Sources */,
 				2775A36921CAA4A300E0AD35 /* TMaterialInstance.cpp in Sources */,

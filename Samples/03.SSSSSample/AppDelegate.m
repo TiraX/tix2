@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#include "SSSSTicker.h"
+#include "SSSSRenderer.h"
 
 @interface AppDelegate ()
 
@@ -27,7 +29,7 @@
     TEngine::InitEngine(Desc);
     
     // before tick and render
-    //TEngine::Get()->AddTicker(ti_new TSSSSTicker());
+    TEngine::Get()->AddTicker(ti_new TSSSSTicker());
     //TEngine::Get()->AddRenderer(ti_new FSSSSRenderer());
     
     // Setup scenes
