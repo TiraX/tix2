@@ -13,5 +13,7 @@ public:
 
 	virtual void Tick(float Dt) override;
 
+	static void SetupScene();
+
 protected:
 };
