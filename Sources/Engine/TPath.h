@@ -11,7 +11,5 @@ namespace tix
 	{
 	public:
 		static TI_API TString GetAbsolutePath(const TString& RelativePath);
-
-		static TString WorkPath;
 	};
 }

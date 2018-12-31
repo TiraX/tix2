@@ -170,6 +170,14 @@ namespace tix
 		Create(windowName);
 		s_win32device	= this;
 		ExternalWindow	= (handle != NULL);
+
+		// Get app current work dir.
+		int8 szFilePath[MAX_PATH + 1] = { 0 };
+		GetCurrentDirectory(MAX_PATH, szFilePath);
+		TString WorkPath = szFilePath;
+		// Change work to Cooked directory.
+		AbsolutePath = WorkPath + "\\Cooked\\Windows\\";
+		SetCurrentDirectory(AbsolutePath.c_str());
 	}
 
 	TDeviceWin32::~TDeviceWin32()

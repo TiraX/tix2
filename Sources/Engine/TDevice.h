@@ -10,7 +10,7 @@ namespace tix
 	class TDevice
 	{
 	public:
-		static TDevice* CreateDevice(const TString& Name, int Width, int Height);
+		static TDevice* CreateDevice(const TString& Name, int32 Width, int32 Height);
 		static void DestoryDevice(TDevice* Device);
 
 		virtual bool Run() = 0;
@@ -20,12 +20,12 @@ namespace tix
 			return vector2di(Width, Height);
 		}
 
-		int GetWidth()
+		int32 GetWidth()
 		{
 			return Width;
 		}
 
-		int GetHeight()
+		int32 GetHeight()
 		{
 			return Height;
 		}
@@ -34,16 +34,23 @@ namespace tix
 		{
 			return Input;
 		}
-		virtual void	Resize(int w, int h);
+
+		const TString& GetAbsolutePath() const
+		{
+			return AbsolutePath;
+		}
+
+		virtual void Resize(int32 w, int32 h);
 
 	protected:
-		TDevice(int w, int h);
+		TDevice(int32 w, int32 h);
 		virtual ~TDevice();
 
 	protected:
-		int			Width;
-		int			Height;
+		int32 Width;
+		int32 Height;
 
-		TInput*		Input;
+		TInput* Input;
+		TString AbsolutePath;
 	};
 }

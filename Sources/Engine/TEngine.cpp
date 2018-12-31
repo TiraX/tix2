@@ -9,7 +9,9 @@
 #include "TVersion.h"
 #include "TConsoleVariable.h"
 #include "FRenderThread.h"
+#if defined TI_PLATFORM_IOS
 #import "TDirectorCaller.h"
+#endif
 
 #if DEBUG_OPERATOR_NEW
 void * operator new (std::size_t count)

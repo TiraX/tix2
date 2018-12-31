@@ -12,7 +12,7 @@
 
 namespace tix
 {
-	TDevice* TDevice::CreateDevice(const TString& Name, int Width, int Height)
+	TDevice* TDevice::CreateDevice(const TString& Name, int32 Width, int32 Height)
 	{
 		TDevice* device = nullptr;
 #ifdef TI_PLATFORM_WIN32
@@ -32,7 +32,7 @@ namespace tix
 		ti_delete Device;
 	}
 
-	TDevice::TDevice(int w, int h)
+	TDevice::TDevice(int32 w, int32 h)
 		: Width(w)
 		, Height(h)
 	{
@@ -44,7 +44,7 @@ namespace tix
 		ti_delete Input;
 	}
 
-	void TDevice::Resize(int w, int h)
+	void TDevice::Resize(int32 w, int32 h)
 	{
 		Width	= w;
 		Height	= h;

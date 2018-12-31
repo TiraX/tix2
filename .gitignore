@@ -12,3 +12,4 @@ Samples/03.SSSSSample/x64/
 *.tres
 Binary/02.ResConverter.exe
 Binary/TiX.dll
+Samples/03.SSSSSample/Content/Cooked/

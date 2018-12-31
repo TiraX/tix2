@@ -24,6 +24,18 @@ namespace tix
         // change dir to app base dir
         NSString* path = [[NSBundle mainBundle] resourcePath];
         chdir([path UTF8String]);
+
+		AbsolutePath = [path UTF8String];
+		if (AbsolutePath.at(AbsolutePath.size() - 1) != '/')
+		{
+			// Make path format correct.
+			TStringReplace(AbsolutePath, "\\", "/");
+			if (AbsolutePath.at(AbsolutePath.size() - 1) != '/')
+			{
+				AbsolutePath += '/';
+			}
+		}
+
         
         FindDeviceType();
 	}
