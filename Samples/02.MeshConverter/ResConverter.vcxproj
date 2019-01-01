@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dds.h" />
+    <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
     <ClInclude Include="ResMaterialInstanceHelper.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MainWin32.cpp" />
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />
