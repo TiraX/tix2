@@ -5,25 +5,25 @@
 
 #pragma once
 
-typedef unsigned char	uint8;
-typedef char			int8;
+typedef unsigned char uint8;
+typedef char int8;
 
-typedef unsigned short	uint16;
-typedef short			int16;
+typedef unsigned short uint16;
+typedef short int16;
 
-typedef unsigned int	uint32;
-typedef int				int32;
+typedef unsigned int uint32;
+typedef int int32;
 
 #if defined (TI_PLATFORM_WIN32)
-typedef __int64				int64;
-typedef unsigned __int64	uint64;
+typedef __int64 int64;
+typedef unsigned __int64 uint64;
 #else
-typedef unsigned long long	uint64;
-typedef long long			int64;
+typedef unsigned long long uint64;
+typedef long long int64;
 #endif
 
-typedef float	float32;
-typedef double	float64;
+typedef float float32;
+typedef double float64;
 
 #define TVector std::vector
 #define TList std::list

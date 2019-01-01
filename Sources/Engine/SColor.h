@@ -86,12 +86,18 @@ namespace tix
 			return GetDataPtr()[i];
 		}
 
+		uint32 PackValue() const
+		{
+			return (A << 24) | (R << 16) | (G << 8) | (B << 0);
+		}
+
 		//!
 		const uint8& operator [] (uint32 i) const
 		{
 			TI_ASSERT(i < 4);
 			return GetDataPtr()[i];
 		}
+
 		inline uint8* GetDataPtr()
 		{
 			return reinterpret_cast<uint8*>(this);
@@ -153,6 +159,50 @@ namespace tix
 		{
 			TI_ASSERT(i < 4);
 			return GetDataPtr()[i];
+		}
+
+		SColorf operator + (const SColorf& Other)
+		{
+			SColorf c;
+			c.A = A + Other.A;
+			c.R = R + Other.R;
+			c.G = G + Other.G;
+			c.B = B + Other.B;
+
+			return c;
+		}
+
+		SColorf operator * (float a)
+		{
+			SColorf c;
+			c.A = A * a;
+			c.R = R * a;
+			c.G = G * a;
+			c.B = B * a;
+
+			return c;
+		}
+
+		SColorf operator / (float a)
+		{
+			SColorf c;
+			c.A = A / a;
+			c.R = R / a;
+			c.G = G / a;
+			c.B = B / a;
+
+			return c;
+		}
+
+		SColorf operator * (const SColorf& Other)
+		{
+			SColorf c;
+			c.A = A * Other.A;
+			c.R = R * Other.R;
+			c.G = G * Other.G;
+			c.B = B * Other.B;
+
+			return c;
 		}
 
 		inline float* GetDataPtr()

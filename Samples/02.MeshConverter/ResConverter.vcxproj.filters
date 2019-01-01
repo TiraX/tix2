@@ -46,6 +46,9 @@
     <ClInclude Include="..\..\Sources\Engine\TCrc.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
+    <ClInclude Include="TImage.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -86,6 +89,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
       <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="ResTextureHelperAstc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResTextureHelpeDXTDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TImageLoaderTGA.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

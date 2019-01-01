@@ -9,9 +9,6 @@
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "dds.h"
-#include <d3d12.h>
-
-using namespace DirectX;
 
 namespace tix
 {
@@ -289,8 +286,6 @@ namespace tix
 		{
 		case DXGI_FORMAT_BC1_UNORM:
 			return EPF_DDS_DXT1;
-		case DXGI_FORMAT_BC2_UNORM:
-			return EPF_DDS_DXT3;
 		case DXGI_FORMAT_BC3_UNORM:
 			return EPF_DDS_DXT5;
 		case DXGI_FORMAT_BC5_UNORM:
@@ -906,6 +901,7 @@ namespace tix
 		Texture->Name = Name;
 		Texture->Path = Path;
 
+		ti_delete[] FileBuffer;
 		return Texture;
 	}
 }
