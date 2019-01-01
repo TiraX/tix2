@@ -3,7 +3,7 @@
 rem Cook to Cooked/Windows directory
 
 set CurrPath=%CD%
-set BinaryPath=%CurrPath%\..\..\..\Binary
+set BinaryPath=%CurrPath%\..\..\..\Binary\Windows
 set path=%path%;%BinaryPath%
 set Converter=%BinaryPath%\02.ResConverter.exe
 
