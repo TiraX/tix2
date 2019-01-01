@@ -234,7 +234,6 @@ namespace tix
 			FillZero4(DataStream);
 
 			// - Indices
-			const int32 IndexStart = DataStream.GetLength();
 			TI_ASSERT(Mesh.Faces.Count == MeshHeader.PrimitiveCount * 3);
 			if (MeshHeader.IndexType == EIT_16BIT)
 			{
@@ -252,13 +251,10 @@ namespace tix
 					DataStream.Put(&Index, sizeof(uint32));
 				}
 			}
-			const int32 IndexEnd = DataStream.GetLength();
 			FillZero4(DataStream);
 
 			// Fill header
-			const int32 HeaderStart = HeaderStream.GetLength();
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
-			const int32 HeaderEnd = HeaderStream.GetLength();
 			FillZero4(HeaderStream);
 		}
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
@@ -274,11 +270,11 @@ namespace tix
 		TResMeshHelper ResMesh;
 
 		TString Name = Doc["name"].GetString();
-		int32 Version = Doc["version"].GetInt();
+		//int32 Version = Doc["version"].GetInt();
 
-		int32 VCount = Doc["vertex_count_total"].GetInt();
-		int32 ICount = Doc["index_count_total"].GetInt();
-		int32 UVCount = Doc["texcoord_count"].GetInt();
+		//int32 VCount = Doc["vertex_count_total"].GetInt();
+		//int32 ICount = Doc["index_count_total"].GetInt();
+		//int32 UVCount = Doc["texcoord_count"].GetInt();
 
 		Value& Sections = Doc["sections"];
 

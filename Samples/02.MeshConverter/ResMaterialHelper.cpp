@@ -177,6 +177,9 @@ namespace tix
 			PipelineDesc.BlendState.DestBlendAlpha = EBF_ZERO;
 			PipelineDesc.BlendState.BlendOpAlpha = EBE_FUNC_ADD;
 			break;
+        default:
+            TI_ASSERT(0);
+            break;
 		}
 	}
 
@@ -254,7 +257,6 @@ namespace tix
 			{
 				if (ShaderCodes[s].GetLength() > 0)
 				{
-					int32 write_len = ti_align4(ShaderCodes[s].GetLength());
 					DataStream.Put(ShaderCodes[s].GetBuffer(), ShaderCodes[s].GetLength());
 					FillZero4(DataStream);
 				}

@@ -25,7 +25,7 @@ namespace tix
 		TResShaderBindingHelper Helper;
 
 		// MPB Name
-		Value& MPBName = Doc["name"];
+		//Value& MPBName = Doc["name"];
 		//Helper.SetMaterialInstanceName(MIName.GetString());
 		
 		Value& Parameters = Doc["parameters"];

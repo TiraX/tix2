@@ -30,10 +30,10 @@ namespace tix
 	bool TResTextureHelper::LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TString Name = Doc["name"].GetString();
-		int32 Version = Doc["version"].GetInt();
+		//int32 Version = Doc["version"].GetInt();
 
-		TString TType = Doc["texture_type"].GetString();
-		E_TEXTURE_TYPE TextureType = GetTextureType(TType);
+		//TString TType = Doc["texture_type"].GetString();
+		//E_TEXTURE_TYPE TextureType = GetTextureType(TType);
 
 		int32 SRgb = Doc["srgb"].GetInt();
 		TString AddressModeStr = Doc["address_mode"].GetString();

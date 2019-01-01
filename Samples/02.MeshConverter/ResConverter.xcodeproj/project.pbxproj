@@ -11,7 +11,6 @@
 		27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */; };
 		27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */; };
 		27745B3A21DB68FC006CDD60 /* ResMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */; };
-		27745B3B21DB68FC006CDD60 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2921DB68FB006CDD60 /* main.m */; };
 		27745B3C21DB68FC006CDD60 /* ResMeshHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */; };
 		27745B3D21DB68FC006CDD60 /* ResConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2F21DB68FB006CDD60 /* ResConverter.cpp */; };
 		27745B3E21DB68FC006CDD60 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3121DB68FC006CDD60 /* stdafx.cpp */; };
@@ -20,6 +19,8 @@
 		27745B4121DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3421DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp */; };
 		27745B4221DB68FC006CDD60 /* ResTextureHelperDds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */; };
 		27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */; };
+		277E9DF721DB818800F1C00B /* TCrc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF521DB818800F1C00B /* TCrc.cpp */; };
+		277E9DFA21DB819900F1C00B /* TFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF921DB819800F1C00B /* TFile.cpp */; };
 		27D5252B21DB628E0006D934 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D5252A21DB628E0006D934 /* main.m */; };
 /* End PBXBuildFile section */
 
@@ -43,7 +44,6 @@
 		27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMeshHelperObj.cpp; sourceTree = SOURCE_ROOT; };
 		27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMaterialHelper.cpp; sourceTree = SOURCE_ROOT; };
 		27745B2721DB68FB006CDD60 /* ResMeshHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMeshHelper.h; sourceTree = SOURCE_ROOT; };
-		27745B2921DB68FB006CDD60 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		27745B2A21DB68FB006CDD60 /* ResTextureHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResTextureHelper.h; sourceTree = SOURCE_ROOT; };
 		27745B2B21DB68FB006CDD60 /* ResHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResHelper.h; sourceTree = SOURCE_ROOT; };
 		27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMeshHelper.cpp; sourceTree = SOURCE_ROOT; };
@@ -59,6 +59,10 @@
 		27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperDds.cpp; sourceTree = SOURCE_ROOT; };
 		27745B4421DB69F4006CDD60 /* ResConverter-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ResConverter-Prefix.pch"; sourceTree = "<group>"; };
 		27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperAstc.cpp; sourceTree = SOURCE_ROOT; };
+		277E9DF521DB818800F1C00B /* TCrc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TCrc.cpp; path = ../../../Sources/Engine/TCrc.cpp; sourceTree = "<group>"; };
+		277E9DF621DB818800F1C00B /* TCrc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCrc.h; path = ../../../Sources/Engine/TCrc.h; sourceTree = "<group>"; };
+		277E9DF821DB819800F1C00B /* TFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TFile.h; path = ../../../Sources/Engine/TFile.h; sourceTree = "<group>"; };
+		277E9DF921DB819800F1C00B /* TFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TFile.cpp; path = ../../../Sources/Engine/TFile.cpp; sourceTree = "<group>"; };
 		27D5252721DB628E0006D934 /* ResConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResConverter; sourceTree = BUILT_PRODUCTS_DIR; };
 		27D5252A21DB628E0006D934 /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -84,10 +88,21 @@
 		27745B2821DB68FB006CDD60 /* ResConverter */ = {
 			isa = PBXGroup;
 			children = (
+				27D5252A21DB628E0006D934 /* main.m */,
 				27745B4421DB69F4006CDD60 /* ResConverter-Prefix.pch */,
-				27745B2921DB68FB006CDD60 /* main.m */,
 			);
 			name = ResConverter;
+			sourceTree = "<group>";
+		};
+		277E9DF421DB816E00F1C00B /* TiX2 */ = {
+			isa = PBXGroup;
+			children = (
+				277E9DF521DB818800F1C00B /* TCrc.cpp */,
+				277E9DF621DB818800F1C00B /* TCrc.h */,
+				277E9DF921DB819800F1C00B /* TFile.cpp */,
+				277E9DF821DB819800F1C00B /* TFile.h */,
+			);
+			name = TiX2;
 			sourceTree = "<group>";
 		};
 		27D5251E21DB628E0006D934 = {
@@ -110,7 +125,7 @@
 		27D5252921DB628E0006D934 /* ResConverter */ = {
 			isa = PBXGroup;
 			children = (
-				27D5252A21DB628E0006D934 /* main.m */,
+				277E9DF421DB816E00F1C00B /* TiX2 */,
 				27745B2821DB68FB006CDD60 /* ResConverter */,
 				27745B2F21DB68FB006CDD60 /* ResConverter.cpp */,
 				27745B2221DB68FB006CDD60 /* ResConverter.h */,
@@ -200,12 +215,13 @@
 				27745B3C21DB68FC006CDD60 /* ResMeshHelper.cpp in Sources */,
 				27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */,
 				27D5252B21DB628E0006D934 /* main.m in Sources */,
+				277E9DF721DB818800F1C00B /* TCrc.cpp in Sources */,
 				27745B4221DB68FC006CDD60 /* ResTextureHelperDds.cpp in Sources */,
 				27745B3D21DB68FC006CDD60 /* ResConverter.cpp in Sources */,
+				277E9DFA21DB819900F1C00B /* TFile.cpp in Sources */,
 				27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */,
 				27745B4121DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp in Sources */,
 				27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */,
-				27745B3B21DB68FC006CDD60 /* main.m in Sources */,
 				27745B3A21DB68FC006CDD60 /* ResMaterialHelper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
