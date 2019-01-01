@@ -7,6 +7,9 @@
 
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
+#if defined (TI_PLATFORM_IOS)
+#include <mach-o/dyld.h>
+#endif
 
 namespace tix
 {
@@ -17,7 +20,7 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		::GetModuleFileName(NULL, Path, 512);
 #elif defined (TI_PLATFORM_IOS)
-		int32 BufferSize = 512;
+		uint32 BufferSize = 512;
 		_NSGetExecutablePath(Path, &BufferSize);
 		TI_ASSERT(BufferSize <= 512);
 #endif
@@ -66,6 +69,10 @@ namespace tix
 		// Convert to astc
 		int ret = system(ASTCConverter.c_str());
 
+        if (ret == 0)
+        {
+            
+        }
 		return nullptr;
 	}
 }

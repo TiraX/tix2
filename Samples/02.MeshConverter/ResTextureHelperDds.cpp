@@ -5,7 +5,6 @@
 
 #include "stdafx.h"
 
-#if defined (TI_PLATFORM_WIN32)
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "dds.h"
@@ -229,35 +228,35 @@ namespace tix
 
 
 	//--------------------------------------------------------------------------------------
-	static DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format)
-	{
-		switch (format)
-		{
-		case DXGI_FORMAT_R8G8B8A8_UNORM:
-			return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-
-		case DXGI_FORMAT_BC1_UNORM:
-			return DXGI_FORMAT_BC1_UNORM_SRGB;
-
-		case DXGI_FORMAT_BC2_UNORM:
-			return DXGI_FORMAT_BC2_UNORM_SRGB;
-
-		case DXGI_FORMAT_BC3_UNORM:
-			return DXGI_FORMAT_BC3_UNORM_SRGB;
-
-		case DXGI_FORMAT_B8G8R8A8_UNORM:
-			return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-
-		case DXGI_FORMAT_B8G8R8X8_UNORM:
-			return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-
-		case DXGI_FORMAT_BC7_UNORM:
-			return DXGI_FORMAT_BC7_UNORM_SRGB;
-
-		default:
-			return format;
-		}
-	}
+//    static DXGI_FORMAT MakeSRGB(DXGI_FORMAT format)
+//    {
+//        switch (format)
+//        {
+//        case DXGI_FORMAT_R8G8B8A8_UNORM:
+//            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_BC1_UNORM:
+//            return DXGI_FORMAT_BC1_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_BC2_UNORM:
+//            return DXGI_FORMAT_BC2_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_BC3_UNORM:
+//            return DXGI_FORMAT_BC3_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_B8G8R8A8_UNORM:
+//            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_B8G8R8X8_UNORM:
+//            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+//
+//        case DXGI_FORMAT_BC7_UNORM:
+//            return DXGI_FORMAT_BC7_UNORM_SRGB;
+//
+//        default:
+//            return format;
+//        }
+//    }
 
 	E_TEXTURE_TYPE GetTixTypeFromDdsType(uint32 ResDim, bool isCube)
 	{
@@ -296,14 +295,15 @@ namespace tix
 			return EPF_RGBA32F;
 		case DXGI_FORMAT_B8G8R8A8_UNORM:
 			return EPF_RGBA8;
+        default:
+            return EPF_UNKNOWN;
 		}
-		return EPF_UNKNOWN;
 	}
 
 	//--------------------------------------------------------------------------------------
 	// Return the BPP for a particular format
 	//--------------------------------------------------------------------------------------
-	uint32 BitsPerPixel(_In_ DXGI_FORMAT fmt)
+	uint32 BitsPerPixel(DXGI_FORMAT fmt)
 	{
 		switch (fmt)
 		{
@@ -523,6 +523,8 @@ namespace tix
 			planar = true;
 			bpe = 4;
 			break;
+        default:
+            break;
 
 		}
 
@@ -792,7 +794,7 @@ namespace tix
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;
 			uint32 RowBytes = 0;
-			uint32 index = 0;
+			//uint32 index = 0;
 			for (uint32 j = 0; j < arraySize; j++)
 			{
 				uint32 w = width;
@@ -905,4 +907,3 @@ namespace tix
 		return Texture;
 	}
 }
-#endif  //TI_PLATFORM_WIN32

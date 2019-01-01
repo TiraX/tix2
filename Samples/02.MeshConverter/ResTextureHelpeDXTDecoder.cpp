@@ -18,12 +18,12 @@ namespace tix
 		{
 		case EPF_DDS_DXT1:
 			return 8;
-
 		case EPF_DDS_DXT5:
 			return 16;
+        default:
+            return 0;
 		}
-		return 0;
-	}
+    }
 
 	inline SColor GetColor565(uint16 ColorValue)
 	{
