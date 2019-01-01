@@ -528,6 +528,9 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h">
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TMeshBufferSemantic.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">

@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\TiX2">
+      <UniqueIdentifier>{d92e03a0-f089-455a-9aab-6aeb25dfa336}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResMeshHelper.h">
@@ -36,6 +39,12 @@
     </ClInclude>
     <ClInclude Include="ResConverter.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TFile.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TCrc.h">
+      <Filter>Source Files\TiX2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="MainWin32.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TFile.cpp">
+      <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
+      <Filter>Source Files\TiX2</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

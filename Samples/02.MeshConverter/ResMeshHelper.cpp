@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "ResHelper.h"
 #include "ResMeshHelper.h"
+#include "TMeshBufferSemantic.h"
 
 void ConvertJArrayToArray(const Value& JArray, TVector<float>& OutArray)
 {
