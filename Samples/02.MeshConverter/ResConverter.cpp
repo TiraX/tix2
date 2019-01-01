@@ -19,15 +19,15 @@ void ShowUsage()
 	printf("ResConverter src_filename dst_filename\n");
 }
 
-bool ParseParams(int argc, _TCHAR* argv[])
+bool ParseParams(int argc, int8* argv[])
 {
 	for (int i = 1; i < argc; ++i)
 	{
-		if (FilenameSrc == _T(""))
+		if (FilenameSrc == (""))
 		{
 			FilenameSrc = argv[i];
 		}
-		else if (FilenameDst == _T(""))
+		else if (FilenameDst == (""))
 		{
 			FilenameDst = argv[i];
 		}
@@ -71,67 +71,6 @@ bool ParseParams(int argc, _TCHAR* argv[])
 	return true;
 }
 
-enum {
-	EXT_UNKNOWN,
-	EXT_MESH,
-	EXT_TEXTURE,
-	EXT_JSON,
-};
-
-bool CompareString(const TString& A, const TString& B)
-{
-	TString StrLower = A;
-	transform(StrLower.begin(), StrLower.end(), StrLower.begin(), tolower);
-	return StrLower == B;
-}
-
-static const _TCHAR* mesh_ext[] =
-{
-	"obj"
-};
-
-static const _TCHAR* tex_ext[] =
-{
-	"dds"
-};
-
-static const _TCHAR* json_ext[] =
-{
-	"tjs"
-};
-
-int32 CheckExtension(const TString& Filename)
-{
-	TString Ext = Filename.substr(Filename.rfind('.') + 1);
-	const int32 mesh_ext_count = sizeof(mesh_ext) / sizeof(_TCHAR*);
-	const int32 tex_ext_count = sizeof(tex_ext) / sizeof(_TCHAR*);
-	const int32 json_ext_count = sizeof(json_ext) / sizeof(_TCHAR*);
-
-	//return EXT_MATERIAL;
-	for (int32 i = 0; i < mesh_ext_count; ++i)
-	{
-		if (CompareString(Ext, mesh_ext[i]))
-		{
-			return EXT_MESH;
-		}
-	}
-	for (int32 i = 0; i < tex_ext_count; ++i)
-	{
-		if (CompareString(Ext, tex_ext[i]))
-		{
-			return EXT_TEXTURE;
-		}
-	}
-	for (int32 i = 0; i < json_ext_count; ++i)
-	{
-		if (CompareString(Ext, json_ext[i]))
-		{
-			return EXT_JSON;
-		}
-	}
-	return EXT_UNKNOWN;
-}
-
 int32 DoConvert(int32 argc, int8* argv[])
 {
 	if (argc < 2 || !ParseParams(argc, argv))
@@ -141,21 +80,6 @@ int32 DoConvert(int32 argc, int8* argv[])
 	}
 
 	TResFileHelper Resfile;
-	int32 ExtResult = CheckExtension(FilenameSrc);
-
-	if (ExtResult == EXT_MESH)
-	{
-		printf("Unknown ext.\n");
-		//TStream& MeshStream = Resfile.GetChunk(ECL_MESHES);
-		//TResMeshHelper::LoadObjFile(FilenameSrc, MeshStream, Resfile.Strings);
-	}
-	else if (ExtResult == EXT_TEXTURE)
-	{
-		printf("Unknown ext.\n");
-		//TStream& TextureStream = Resfile.GetChunk(ECL_TEXTURES);
-		//TResTextureHelper::LoadDdsFile(FilenameSrc, TextureStream, Resfile.Strings);
-	}
-	else if (ExtResult == EXT_JSON)
 	{
 		// Read json file.
 		TFile f;
@@ -207,10 +131,6 @@ int32 DoConvert(int32 argc, int8* argv[])
 		{
 			printf("Error: Failed to open file : %s.\n", FilenameSrc.c_str());
 		}
-	}
-	else
-	{
-		printf("Error: Unknown file extension: %s\n", FilenameSrc.substr(FilenameSrc.rfind('.')).c_str());
 	}
 
 	Resfile.SaveFile(FilenameDst);

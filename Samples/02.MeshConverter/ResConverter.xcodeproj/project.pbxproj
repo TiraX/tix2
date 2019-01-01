@@ -1,0 +1,389 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */; };
+		27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */; };
+		27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */; };
+		27745B3A21DB68FC006CDD60 /* ResMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */; };
+		27745B3B21DB68FC006CDD60 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2921DB68FB006CDD60 /* main.m */; };
+		27745B3C21DB68FC006CDD60 /* ResMeshHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */; };
+		27745B3D21DB68FC006CDD60 /* ResConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2F21DB68FB006CDD60 /* ResConverter.cpp */; };
+		27745B3E21DB68FC006CDD60 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3121DB68FC006CDD60 /* stdafx.cpp */; };
+		27745B3F21DB68FC006CDD60 /* ResHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3221DB68FC006CDD60 /* ResHelper.cpp */; };
+		27745B4021DB68FC006CDD60 /* ResPipelineHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3321DB68FC006CDD60 /* ResPipelineHelper.cpp */; };
+		27745B4121DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3421DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp */; };
+		27745B4221DB68FC006CDD60 /* ResTextureHelperDds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */; };
+		27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */; };
+		27D5252B21DB628E0006D934 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D5252A21DB628E0006D934 /* main.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		27D5252521DB628E0006D934 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResShaderBindingHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B2221DB68FB006CDD60 /* ResConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResConverter.h; sourceTree = SOURCE_ROOT; };
+		27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B2421DB68FB006CDD60 /* ResShaderBindingHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResShaderBindingHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMeshHelperObj.cpp; sourceTree = SOURCE_ROOT; };
+		27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMaterialHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B2721DB68FB006CDD60 /* ResMeshHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMeshHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B2921DB68FB006CDD60 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		27745B2A21DB68FB006CDD60 /* ResTextureHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResTextureHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B2B21DB68FB006CDD60 /* ResHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMeshHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B2D21DB68FB006CDD60 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = SOURCE_ROOT; };
+		27745B2E21DB68FB006CDD60 /* ResMaterialInstanceHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMaterialInstanceHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B2F21DB68FB006CDD60 /* ResConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResConverter.cpp; sourceTree = SOURCE_ROOT; };
+		27745B3021DB68FB006CDD60 /* ResMaterialHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMaterialHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B3121DB68FC006CDD60 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = SOURCE_ROOT; };
+		27745B3221DB68FC006CDD60 /* ResHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B3321DB68FC006CDD60 /* ResPipelineHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResPipelineHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B3421DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMaterialInstanceHelper.cpp; sourceTree = SOURCE_ROOT; };
+		27745B3521DB68FC006CDD60 /* ResPipelineHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResPipelineHelper.h; sourceTree = SOURCE_ROOT; };
+		27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperDds.cpp; sourceTree = SOURCE_ROOT; };
+		27745B4421DB69F4006CDD60 /* ResConverter-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ResConverter-Prefix.pch"; sourceTree = "<group>"; };
+		27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperAstc.cpp; sourceTree = SOURCE_ROOT; };
+		27D5252721DB628E0006D934 /* ResConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResConverter; sourceTree = BUILT_PRODUCTS_DIR; };
+		27D5252A21DB628E0006D934 /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = main.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		27D5252421DB628E0006D934 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2718BADD21DB7106007E008B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		27745B2821DB68FB006CDD60 /* ResConverter */ = {
+			isa = PBXGroup;
+			children = (
+				27745B4421DB69F4006CDD60 /* ResConverter-Prefix.pch */,
+				27745B2921DB68FB006CDD60 /* main.m */,
+			);
+			name = ResConverter;
+			sourceTree = "<group>";
+		};
+		27D5251E21DB628E0006D934 = {
+			isa = PBXGroup;
+			children = (
+				27D5252921DB628E0006D934 /* ResConverter */,
+				27D5252821DB628E0006D934 /* Products */,
+				2718BADD21DB7106007E008B /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		27D5252821DB628E0006D934 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				27D5252721DB628E0006D934 /* ResConverter */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		27D5252921DB628E0006D934 /* ResConverter */ = {
+			isa = PBXGroup;
+			children = (
+				27D5252A21DB628E0006D934 /* main.m */,
+				27745B2821DB68FB006CDD60 /* ResConverter */,
+				27745B2F21DB68FB006CDD60 /* ResConverter.cpp */,
+				27745B2221DB68FB006CDD60 /* ResConverter.h */,
+				27745B3221DB68FC006CDD60 /* ResHelper.cpp */,
+				27745B2B21DB68FB006CDD60 /* ResHelper.h */,
+				27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */,
+				27745B3021DB68FB006CDD60 /* ResMaterialHelper.h */,
+				27745B3421DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp */,
+				27745B2E21DB68FB006CDD60 /* ResMaterialInstanceHelper.h */,
+				27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */,
+				27745B2721DB68FB006CDD60 /* ResMeshHelper.h */,
+				27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */,
+				27745B3321DB68FC006CDD60 /* ResPipelineHelper.cpp */,
+				27745B3521DB68FC006CDD60 /* ResPipelineHelper.h */,
+				27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */,
+				27745B2421DB68FB006CDD60 /* ResShaderBindingHelper.h */,
+				27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */,
+				27745B2A21DB68FB006CDD60 /* ResTextureHelper.h */,
+				27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */,
+				27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */,
+				27745B3121DB68FC006CDD60 /* stdafx.cpp */,
+				27745B2D21DB68FB006CDD60 /* stdafx.h */,
+			);
+			path = ResConverter;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		27D5252621DB628E0006D934 /* ResConverter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 27D5252E21DB628E0006D934 /* Build configuration list for PBXNativeTarget "ResConverter" */;
+			buildPhases = (
+				27D5252321DB628E0006D934 /* Sources */,
+				27D5252421DB628E0006D934 /* Frameworks */,
+				27D5252521DB628E0006D934 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ResConverter;
+			productName = ResConverter;
+			productReference = 27D5252721DB628E0006D934 /* ResConverter */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		27D5251F21DB628E0006D934 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = zhaoshuai;
+				TargetAttributes = {
+					27D5252621DB628E0006D934 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 27D5252221DB628E0006D934 /* Build configuration list for PBXProject "ResConverter" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 27D5251E21DB628E0006D934;
+			productRefGroup = 27D5252821DB628E0006D934 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				27D5252621DB628E0006D934 /* ResConverter */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		27D5252321DB628E0006D934 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				27745B3F21DB68FC006CDD60 /* ResHelper.cpp in Sources */,
+				27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */,
+				27745B3E21DB68FC006CDD60 /* stdafx.cpp in Sources */,
+				27745B4021DB68FC006CDD60 /* ResPipelineHelper.cpp in Sources */,
+				27745B3C21DB68FC006CDD60 /* ResMeshHelper.cpp in Sources */,
+				27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */,
+				27D5252B21DB628E0006D934 /* main.m in Sources */,
+				27745B4221DB68FC006CDD60 /* ResTextureHelperDds.cpp in Sources */,
+				27745B3D21DB68FC006CDD60 /* ResConverter.cpp in Sources */,
+				27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */,
+				27745B4121DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp in Sources */,
+				27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */,
+				27745B3B21DB68FC006CDD60 /* main.m in Sources */,
+				27745B3A21DB68FC006CDD60 /* ResMaterialHelper.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		27D5252C21DB628E0006D934 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		27D5252D21DB628E0006D934 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		27D5252F21DB628E0006D934 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PY586U82MR;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ResConverter/ResConverter-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					IPHONEOS,
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					../../Sources/Engine,
+					../../Sources/Externals,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = x86_64;
+			};
+			name = Debug;
+		};
+		27D5253021DB628E0006D934 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PY586U82MR;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "ResConverter/ResConverter-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = IPHONEOS;
+				HEADER_SEARCH_PATHS = (
+					../../Sources/Engine,
+					../../Sources/Externals,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = x86_64;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		27D5252221DB628E0006D934 /* Build configuration list for PBXProject "ResConverter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27D5252C21DB628E0006D934 /* Debug */,
+				27D5252D21DB628E0006D934 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		27D5252E21DB628E0006D934 /* Build configuration list for PBXNativeTarget "ResConverter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				27D5252F21DB628E0006D934 /* Debug */,
+				27D5253021DB628E0006D934 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 27D5251F21DB628E0006D934 /* Project object */;
+}

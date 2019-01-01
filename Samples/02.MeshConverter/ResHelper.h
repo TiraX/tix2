@@ -13,8 +13,8 @@ namespace tix
 	{
 		if (!text.empty())
 		{
-			text.erase(0, text.find_first_not_of(_T(" \n\r\t")));
-			text.erase(text.find_last_not_of(_T(" \n\r\t")) + 1);
+			text.erase(0, text.find_first_not_of(" \n\r\t"));
+			text.erase(text.find_last_not_of(" \n\r\t") + 1);
 		}
 		return text;
 	}
@@ -28,7 +28,7 @@ namespace tix
 
 		int str_len = (int)strlen(value.c_str()) + 1;
 		char* str_cpy = ti_new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
+		strcpy(str_cpy, value.c_str());
 		char *start, *end;
 		start = str_cpy;
 		end = start;
@@ -65,7 +65,7 @@ namespace tix
 
 		int str_len = (int)strlen(value.c_str()) + 1;
 		char* str_cpy = ti_new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
+		strcpy(str_cpy, value.c_str());
 		char *start, *end;
 		start = str_cpy;
 		end = start;
@@ -102,7 +102,7 @@ namespace tix
 
 		int str_len = (int)strlen(value.c_str()) + 1;
 		char* str_cpy = ti_new char[str_len];
-		strcpy_s(str_cpy, str_len, value.c_str());
+		strcpy(str_cpy, value.c_str());
 		char *start, *end;
 		start = str_cpy;
 		end = start;

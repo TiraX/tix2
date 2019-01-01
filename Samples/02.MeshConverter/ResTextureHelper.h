@@ -30,7 +30,11 @@ namespace tix
 		~TResTextureHelper();
 
 		static bool LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+#if defined (TI_PLATFORM_WIN32)
 		static TResTextureDefine* LoadDdsFile(const TString& Filename);
+#elif defined (TI_PLATFORM_IOS)
+        static TResTextureDefine* LoadAstcFile(const TString& Filename);
+#endif
 
 		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);

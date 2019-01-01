@@ -5,7 +5,7 @@
       location = "container:"
       name = "02.ResConverter">
       <FileRef
-         location = "group:../../Samples/02.MeshConverter/ResConverter/ResConverter.xcodeproj">
+         location = "group:../../Samples/02.MeshConverter/ResConverter.xcodeproj">
       </FileRef>
    </Group>
    <Group

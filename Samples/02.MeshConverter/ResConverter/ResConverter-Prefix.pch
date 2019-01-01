@@ -1,0 +1,22 @@
+//
+//  ResConverter-Prefix.pch
+//  ResConverter
+//
+//  Created by Tirax on 2019/1/1.
+//  Copyright © 2019 zhaoshuai. All rights reserved.
+//
+
+#ifndef ResConverter_Prefix_pch
+#define ResConverter_Prefix_pch
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __cplusplus
+#include "TiX.h"
+#include "rapidjson/document.h"
+#endif
+
+
+#endif /* ResConverter_Prefix_pch */

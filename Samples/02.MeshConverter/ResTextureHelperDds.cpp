@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 
+#if defined (TI_PLATFORM_WIN32)
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "dds.h"
@@ -908,3 +909,4 @@ namespace tix
 		return Texture;
 	}
 }
+#endif  //TI_PLATFORM_WIN32
