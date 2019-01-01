@@ -343,7 +343,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)..\..\Binary</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)..\..\Binary\Windows</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
