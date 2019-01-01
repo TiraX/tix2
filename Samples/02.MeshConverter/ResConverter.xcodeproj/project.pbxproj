@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		274A654C21DB85BC00C08668 /* ResConverter in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D5252721DB628E0006D934 /* ResConverter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */; };
 		27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */; };
 		27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */; };
@@ -27,12 +28,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		27D5252521DB628E0006D934 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			buildActionMask = 12;
+			dstPath = "$(PROJECT_DIR)/../../Binary/Mac";
 			dstSubfolderSpec = 0;
 			files = (
+				274A654C21DB85BC00C08668 /* ResConverter in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -356,6 +358,7 @@
 					../../Sources/Engine,
 					../../Sources/Externals,
 				);
+				INSTALL_PATH = "$(PROJECT_DIR)/../../Binary/Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};
@@ -373,6 +376,7 @@
 					../../Sources/Engine,
 					../../Sources/Externals,
 				);
+				INSTALL_PATH = "$(PROJECT_DIR)/../../Binary/Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};
