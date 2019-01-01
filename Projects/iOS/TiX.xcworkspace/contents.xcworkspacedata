@@ -3,6 +3,13 @@
    version = "1.0">
    <Group
       location = "container:"
+      name = "02.ResConverter">
+      <FileRef
+         location = "group:../../Samples/02.MeshConverter/ResConverter/ResConverter.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "container:"
       name = "03.SSSSSample">
       <FileRef
          location = "group:../../Samples/03.SSSSSample/SSSSSample.xcodeproj">
