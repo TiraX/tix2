@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#include "ResConverter.h"
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        // insert code here...
-        NSLog(@"Hello, World!");
+        DoConvert(argc, argv);
     }
     return 0;
 }

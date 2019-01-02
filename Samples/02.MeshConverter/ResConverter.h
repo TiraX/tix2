@@ -5,4 +5,9 @@
 
 #pragma once
 
-int32 DoConvert(int32 argc, int8* argv[]);
+#if defined (TI_PLATFORM_IOS)
+#   define RES_CONVERTER_CONST const
+#else
+#   define RES_CONVERTER_CONST
+#endif
+int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[]);

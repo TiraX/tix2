@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 
+#include "ResConverter.h"
 #include "ResHelper.h"
 #include "ResMeshHelper.h"
 #include "ResTextureHelper.h"
@@ -19,7 +20,7 @@ void ShowUsage()
 	printf("ResConverter src_filename dst_filename\n");
 }
 
-bool ParseParams(int argc, int8* argv[])
+bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 {
 	for (int i = 1; i < argc; ++i)
 	{
@@ -71,7 +72,7 @@ bool ParseParams(int argc, int8* argv[])
 	return true;
 }
 
-int32 DoConvert(int32 argc, int8* argv[])
+int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 {
 	if (argc < 2 || !ParseParams(argc, argv))
 	{
