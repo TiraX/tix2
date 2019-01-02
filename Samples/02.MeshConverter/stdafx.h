@@ -82,11 +82,12 @@ namespace tix
 		ReturnEnumValue(name, EPF_DDS_DXT3);
 		ReturnEnumValue(name, EPF_DDS_DXT5);
 		ReturnEnumValue(name, EPF_DDS_BC5);
-		ReturnEnumValue(name, EPF_COMPRESSED_ASTC1);
-		ReturnEnumValue(name, EPF_COMPRESSED_ASTC2);
-		ReturnEnumValue(name, EPF_COMPRESSED_ASTC3);
-		ReturnEnumValue(name, EPF_COMPRESSED_ASTC4);
-		ReturnEnumValue(name, EPF_COMPRESSED_ETC);
+		ReturnEnumValue(name, EPF_ASTC4x4);
+		ReturnEnumValue(name, EPF_ASTC4x4_SRGB);
+		ReturnEnumValue(name, EPF_ASTC6x6);
+		ReturnEnumValue(name, EPF_ASTC6x6_SRGB);
+		ReturnEnumValue(name, EPF_ASTC8x8);
+		ReturnEnumValue(name, EPF_ASTC8x8_SRGB);
 
 		return EPF_UNKNOWN;
 	}
