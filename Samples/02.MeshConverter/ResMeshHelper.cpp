@@ -231,6 +231,10 @@ namespace tix
 
 			// 8 bytes align
 			TI_ASSERT((VertexEnd - VertexStart) % 4 == 0);
+            if ((VertexEnd - VertexStart) % 4 != 0)
+            {
+                printf("Error: Not aligned vertices.\n");
+            }
 			FillZero4(DataStream);
 
 			// - Indices
