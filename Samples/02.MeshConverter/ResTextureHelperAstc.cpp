@@ -7,6 +7,7 @@
 
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
+#include "TImage.h"
 #if defined (TI_PLATFORM_IOS)
 #include <mach-o/dyld.h>
 #endif
@@ -109,109 +110,94 @@ namespace tix
 		return Format;
 	}
 
-	static TResTextureDefine* CreateTextureFromASTC(
-		const uint8* Data,
-		uint32 DataSize)
+	static TResTextureDefine* CreateTextureFromASTC(const TVector<TStreamPtr>& AstcBuffers)
 	{
-		TASTCHeader *ASTCHeader = (TASTCHeader *)(Data);
+		if (AstcBuffers.size() == 0)
+			return nullptr;
+
+		TStreamPtr BaseMipmap = AstcBuffers[0];
+
+		TASTCHeader *ASTCHeader = (TASTCHeader *)(BaseMipmap->GetBuffer());
 
 		if (ASTCHeader->magic != ASTCMagic)
 		{
 			return nullptr;
 		}
 
-		uint32 width = (ASTCHeader->xSize[2] << 16) + (ASTCHeader->xSize[1] << 8) + ASTCHeader->xSize[0];
-		uint32 height = (ASTCHeader->ySize[2] << 16) + (ASTCHeader->ySize[1] << 8) + ASTCHeader->ySize[0];
-		uint32 depth = (ASTCHeader->zSize[2] << 16) + (ASTCHeader->zSize[1] << 8) + ASTCHeader->zSize[0];
+		uint32 Width = (ASTCHeader->xSize[2] << 16) + (ASTCHeader->xSize[1] << 8) + ASTCHeader->xSize[0];
+		uint32 Height = (ASTCHeader->ySize[2] << 16) + (ASTCHeader->ySize[1] << 8) + ASTCHeader->ySize[0];
+		uint32 Depth = (ASTCHeader->zSize[2] << 16) + (ASTCHeader->zSize[1] << 8) + ASTCHeader->zSize[0];
 
-		uint32 widthInBlocks = (width + ASTCHeader->blockDimX - 1) / ASTCHeader->blockDimX;
-		uint32 heightInBlocks = (height + ASTCHeader->blockDimY - 1) / ASTCHeader->blockDimY;
-		uint32 depthInBlocks = (depth + ASTCHeader->blockDimZ - 1) / ASTCHeader->blockDimZ;
+		int32 BlockDimX = ASTCHeader->blockDimX;
+		int32 BlockDimY = ASTCHeader->blockDimY;
+		int32 BlockDimZ = ASTCHeader->blockDimZ;
 
-		uint32 blockSize = 4 * 4;
-		uint32 dataLength = widthInBlocks * heightInBlocks * depthInBlocks * blockSize;
-
+		// Create the texture
+		TResTextureDefine* Texture = ti_new TResTextureDefine();
+		Texture->Desc.Type = ETT_TEXTURE_2D;
+		if (Texture->Desc.Type == ETT_TEXTURE_UNKNOWN)
 		{
-			// Create the texture
-			TResTextureDefine* Texture = ti_new TResTextureDefine();
-			Texture->Desc.Type = ETT_TEXTURE_2D;
-
-			if (Texture->Desc.Type == ETT_TEXTURE_UNKNOWN)
-			{
-				printf("Error: unknown texture type.\n");
-				TI_ASSERT(0);
-			}
-			Texture->Desc.Format = GetASTCFormatByDimension(ASTCHeader->blockDimX, ASTCHeader->blockDimY, false);
-			if (Texture->Desc.Format == EPF_UNKNOWN)
-			{
-				printf("Error: unknown texture pixel format.\n");
-				TI_ASSERT(0);
-			}
-			Texture->Desc.Width = width;
-			Texture->Desc.Height = height;
-			Texture->Desc.AddressMode = ETC_REPEAT;
-			Texture->Desc.SRGB = 0;
-			Texture->Desc.Mips = 1;
-
-			Texture->Surfaces.resize(1 * 1);
-
-			TI_TODO("ASTC Mipmaps.");
-
-			const uint8* SrcData = Data + sizeof(TASTCHeader);
-			for (uint32 j = 0; j < 1; j++)
-			{
-				uint32 w = width;
-				uint32 h = height;
-				uint32 d = depth;
-				for (uint32 i = 0; i < 1; i++)
-				{
-					TResSurfaceData& Surface = Texture->Surfaces[j * 1 + i];
-					Surface.W = w;
-					Surface.H = h;
-					Surface.RowPitch = 0;
-					Surface.Data.Put(SrcData, dataLength);
-
-					SrcData += dataLength;
-
-					w = w >> 1;
-					h = h >> 1;
-					d = d >> 1;
-					if (w == 0)
-					{
-						w = 1;
-					}
-					if (h == 0)
-					{
-						h = 1;
-					}
-					if (d == 0)
-					{
-						d = 1;
-					}
-				}
-			}
-			return Texture;
+			printf("Error: unknown texture type.\n");
+			TI_ASSERT(0);
 		}
+		Texture->Desc.Format = GetASTCFormatByDimension(BlockDimX, BlockDimY, false);
+		if (Texture->Desc.Format == EPF_UNKNOWN)
+		{
+			printf("Error: unknown texture pixel format.\n");
+			TI_ASSERT(0);
+		}
+		Texture->Desc.Width = Width;
+		Texture->Desc.Height = Height;
+		Texture->Desc.AddressMode = ETC_REPEAT;
+		Texture->Desc.SRGB = 0;
+		Texture->Desc.Mips = (int32)AstcBuffers.size();
+		Texture->Surfaces.resize((int32)AstcBuffers.size());
+
+		const uint32 BlockSize = 4 * 4;
+
+		for (int32 mip = 0 ; mip < (int32)AstcBuffers.size() ; ++ mip)
+		{
+			TStreamPtr FileBuffer = AstcBuffers[mip];
+			TASTCHeader* Header = (TASTCHeader*)FileBuffer->GetBuffer();
+
+			uint32 W = (Header->xSize[2] << 16) + (Header->xSize[1] << 8) + Header->xSize[0];
+			uint32 H = (Header->ySize[2] << 16) + (Header->ySize[1] << 8) + Header->ySize[0];
+			uint32 D = (Header->zSize[2] << 16) + (Header->zSize[1] << 8) + Header->zSize[0];
+
+			uint32 WidthInBlocks = (W + Header->blockDimX - 1) / Header->blockDimX;
+			uint32 HeightInBlocks = (H + Header->blockDimY - 1) / Header->blockDimY;
+			uint32 DepthInBlocks = (D + Header->blockDimZ - 1) / Header->blockDimZ;
+
+			uint32 DataLength = WidthInBlocks * HeightInBlocks * DepthInBlocks * BlockSize;
+
+			TI_ASSERT(W == Width && H == Height);
+
+			const uint8* SrcData = (const uint8*)FileBuffer->GetBuffer() + sizeof(TASTCHeader);
+			TResSurfaceData& Surface = Texture->Surfaces[mip];
+			Surface.W = W;
+			Surface.H = H;
+			Surface.RowPitch = 0;
+			Surface.Data.Put(SrcData, DataLength);
+
+			Width /= 2;
+			Height /= 2;
+		}
+
+		return Texture;
 	}
 
 	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename)
 	{
-		TString TextureName;
-		TString TGAName;
+		TVector<TImage*> Images;
 		// if src format is dds, decode it first
 		if (Filename.rfind(".dds") != TString::npos)
 		{
-			TGAName = Filename.substr(0, Filename.rfind(".dds")) + ".tga";
-			if (!DecodeDXT(Filename, TGAName))
+			DecodeDXT(Filename, Images);
+			if (Images.size() == 0)
 			{
 				printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());
 				return nullptr;
 			}
-			TextureName = TGAName;
-		}
-		else if (Filename.rfind(".tga") != TString::npos)
-		{
-			TextureName = Filename;
 		}
 		else
 		{
@@ -219,54 +205,78 @@ namespace tix
 			return nullptr;
 		}
 
-		TString ASTCName = TextureName.substr(0, TextureName.rfind('.')) + ".astc";
+		int32 w = Images[0]->GetWidth();
+		int32 h = Images[0]->GetHeight();
 
 		// Find ASTC converter
 		TString ExePath = GetExecutablePath();
 		TString ASTCConverter = ExePath + "astcenc -c ";
-		ASTCConverter += TextureName + " ";
-		ASTCConverter += ASTCName + " 6x6 -medium -silentmode";
-		printf("Converting ASTC: %s\n", ASTCConverter.c_str());
+		const TString& TempTGAName = "Temp.tga";
+		const TString& TempASTCName = "Temp.astc";
+		const TString ConvertParam = " 6x6 -medium -silentmode";
+		ASTCConverter += TempTGAName + " ";
+		ASTCConverter += TempASTCName + ConvertParam;
+		printf("Converting [%s] to ASTC:\n  %s\n", Filename.c_str(), ASTCConverter.c_str());
 
-		// Convert to astc
-		int ret = system(ASTCConverter.c_str());
-
-        if (ret == 0)
+		TVector<TStreamPtr> AstcFileBuffers;
+		for (int32 i = 0; i < (int32)Images.size(); ++i)
 		{
-			TFile f;
-			if (!f.Open(ASTCName, EFA_READ))
-			{
-				return nullptr;
-			}
+			TImage* Image = Images[i];
+			TI_ASSERT(Image->GetWidth() == w && Image->GetHeight() == h);
+			Image->SaveToTga(TempTGAName.c_str());
 
-			// Load file to memory
-			const int32 FileSize = f.GetSize();
-			uint8* FileBuffer = ti_new uint8[FileSize];
-			f.Read(FileBuffer, FileSize, FileSize);
-			f.Close();
+			// Convert to astc
+			int ret = system(ASTCConverter.c_str());
 
-			TString Name, Path;
-			size_t Mark = ASTCName.rfind('/');
-			if (Mark == TString::npos)
+			if (ret == 0)
 			{
-				Name = ASTCName;
+				TFile f;
+				if (!f.Open(TempASTCName, EFA_READ))
+				{
+					printf("Error: failed to read converted astc file.\n");
+					break;
+				}
+
+				TStreamPtr FileStream = ti_new TStream;
+
+				// Load file to memory
+				const int32 FileSize = f.GetSize();
+				uint8* FileBuffer = ti_new uint8[FileSize];
+				f.Read(FileBuffer, FileSize, FileSize);
+				f.Close();
+
+				FileStream->Put(FileBuffer, FileSize);
+				ti_delete[] FileBuffer;
+				AstcFileBuffers.push_back(FileStream);
 			}
 			else
 			{
-				Name = ASTCName.substr(Mark + 1);
-				Path = ASTCName.substr(0, Mark);
+				printf("Error: failed to convert astc file.\n");
 			}
 
-			TResTextureDefine* Texture = CreateTextureFromASTC(FileBuffer, FileSize);
-			Texture->Name = Name;
-			Texture->Path = Path;
+			w /= 2;
+			h /= 2;
+		}
 
-			ti_delete[] FileBuffer;
+		TString Name, Path;
+		size_t Mark = Filename.rfind('/');
+		if (Mark == TString::npos)
+		{
+			Name = Filename;
+		}
+		else
+		{
+			Name = Filename.substr(Mark + 1);
+			Path = Filename.substr(0, Mark);
+		}
 
-			DeleteTempFile(TGAName);
-			DeleteTempFile(ASTCName);
-			return Texture;
-        }
-		return nullptr;
+		TResTextureDefine* Texture = CreateTextureFromASTC(AstcFileBuffers);
+		Texture->Name = Name;
+		Texture->Path = Path;
+
+		DeleteTempFile(TempTGAName);
+		DeleteTempFile(TempASTCName);
+
+		return Texture;
 	}
 }

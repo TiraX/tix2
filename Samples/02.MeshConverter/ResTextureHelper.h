@@ -23,6 +23,7 @@ namespace tix
 		TVector<TResSurfaceData> Surfaces;
 	};
 
+	class TImage;
 	class TResTextureHelper
 	{
 	public:
@@ -42,5 +43,5 @@ namespace tix
 		TVector<TResTextureDefine*> Textures;
 	};
 
-	bool DecodeDXT(const TString& SrcName, const TString& DstName);
+	void DecodeDXT(const TString& SrcName, TVector<TImage*>& Images);
 }

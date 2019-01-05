@@ -106,7 +106,7 @@ namespace tix
 		}
 	}
 
-	TImage* DecompressDXT1(TResTextureDefine* Texture) 
+	void DecompressDXT1(TResTextureDefine* Texture, TVector<TImage*>& Images) 
 	{
 		uint32 BlockW = (Texture->Desc.Width + 3) >> 2;
 		uint32 BlockH = (Texture->Desc.Height + 3) >> 2;
@@ -116,41 +116,54 @@ namespace tix
 		if (BlockSize == 0)
 		{
 			printf("Error: Invalid block size.\n");
-			return nullptr;
+			return;
 		}
 
-		// Only decode mipmap 0
-		uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[0].Data.GetBuffer());
-		TImage* TGAImage = ti_new TImage(EPF_RGB8, Texture->Desc.Width, Texture->Desc.Height);
-		
-		SColor BlockColor[16];
-		memset(BlockColor, 0xFF, sizeof(BlockColor));
+		// decode mipmaps
+		int32 Width = Texture->Desc.Width;
+		int32 Height = Texture->Desc.Height;
 
-		for (uint32 h = 0; h < BlockH; h++) 
+		for (int32 mip = 0; mip < (int32)Texture->Surfaces.size(); ++mip)
 		{
-			for (uint32 w = 0; w < BlockW; w++) 
+			uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[mip].Data.GetBuffer());
+			TImage* TGAImage = ti_new TImage(EPF_RGB8, Width, Height);
+
+			SColor BlockColor[16];
+			memset(BlockColor, 0xFF, sizeof(BlockColor));
+
+			BlockW = (Width + 3) >> 2;
+			BlockH = (Height + 3) >> 2;
+
+			for (uint32 h = 0; h < BlockH; h++)
 			{
-				uint32 Offset = (h * BlockW + w) * BlockSize;
-				DecompressDXT1Block(InputData + Offset, BlockColor, true);
-
-				uint32 DecompWidth = ti_min(4, Texture->Desc.Width - w * 4);
-				uint32 DecompHeight = ti_min(4, Texture->Desc.Height - h * 4);
-
-				for (uint32 y = 0; y < DecompHeight; y++)
+				for (uint32 w = 0; w < BlockW; w++)
 				{
-					for (uint32 x = 0; x < DecompWidth; x++)
+					uint32 Offset = (h * BlockW + w) * BlockSize;
+					DecompressDXT1Block(InputData + Offset, BlockColor, true);
+
+					uint32 DecompWidth = ti_min(4, Width - w * 4);
+					uint32 DecompHeight = ti_min(4, Height - h * 4);
+
+					for (uint32 y = 0; y < DecompHeight; y++)
 					{
-						int32 StartX = w * 4;
-						int32 StartY = h * 4;
-						TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+						for (uint32 x = 0; x < DecompWidth; x++)
+						{
+							int32 StartX = w * 4;
+							int32 StartY = h * 4;
+							TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+						}
 					}
 				}
 			}
+
+			Width /= 2;
+			Height /= 2;
+
+			Images.push_back(TGAImage);
 		}
-		return TGAImage;
 	}
 
-	TImage* DecompressDXT5(TResTextureDefine* Texture)
+	void DecompressDXT5(TResTextureDefine* Texture, TVector<TImage*>& Images)
 	{
 		uint32 BlockW = (Texture->Desc.Width + 3) >> 2;
 		uint32 BlockH = (Texture->Desc.Height + 3) >> 2;
@@ -160,58 +173,60 @@ namespace tix
 		if (BlockSize == 0)
 		{
 			printf("Error: Invalid block size.\n");
-			return nullptr;
+			return;
 		}
 
-		// Only decode mipmap 0
-		uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[0].Data.GetBuffer());
-		TImage* TGAImage = ti_new TImage(EPF_RGBA8, Texture->Desc.Width, Texture->Desc.Height);
-
-		SColor BlockColor[16];
-		memset(BlockColor, 0xFF, sizeof(BlockColor));
-
-		for (uint32 h = 0; h < BlockH; h++) 
+		// Decode mipmaps
+		for (int32 mip = 0; mip < (int32)Texture->Surfaces.size(); ++mip)
 		{
-			for (uint32 w = 0; w < BlockW; w++) 
+			uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[mip].Data.GetBuffer());
+			TImage* TGAImage = ti_new TImage(EPF_RGBA8, Texture->Desc.Width, Texture->Desc.Height);
+
+			SColor BlockColor[16];
+			memset(BlockColor, 0xFF, sizeof(BlockColor));
+
+			for (uint32 h = 0; h < BlockH; h++)
 			{
-				uint32 Offset = (h * BlockW + w) * BlockSize;
-				DecompressDXT5Block(InputData + Offset, BlockColor);
-				DecompressDXT1Block(InputData + Offset + BlockSize / 2, BlockColor, false);
-
-				uint32 decompWidth = ti_min(4, Texture->Desc.Width - w * 4);
-				uint32 decompHeight = ti_min(4, Texture->Desc.Height - h * 4);
-
-				for (uint32 y = 0; y < decompHeight; y++)
+				for (uint32 w = 0; w < BlockW; w++)
 				{
-					for (uint32 x = 0; x < decompWidth; x++) 
+					uint32 Offset = (h * BlockW + w) * BlockSize;
+					DecompressDXT5Block(InputData + Offset, BlockColor);
+					DecompressDXT1Block(InputData + Offset + BlockSize / 2, BlockColor, false);
+
+					uint32 decompWidth = ti_min(4, Texture->Desc.Width - w * 4);
+					uint32 decompHeight = ti_min(4, Texture->Desc.Height - h * 4);
+
+					for (uint32 y = 0; y < decompHeight; y++)
 					{
-						int32 StartX = w * 4;
-						int32 StartY = h * 4;
-						TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+						for (uint32 x = 0; x < decompWidth; x++)
+						{
+							int32 StartX = w * 4;
+							int32 StartY = h * 4;
+							TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+						}
 					}
 				}
 			}
+			Images.push_back(TGAImage);
 		}
-		return TGAImage;
 	}
 
-	bool DecodeDXT(const TString& SrcName, const TString& DstName)
+	void DecodeDXT(const TString& SrcName, TVector<TImage*>& Images)
 	{
 		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(SrcName);
 
 		if (Texture == nullptr)
 		{
-			return false;
+			return;
 		}
 
-		TImage* TGAImage = nullptr;
 		if (Texture->Desc.Format == EPF_DDS_DXT1)
 		{
-			TGAImage = DecompressDXT1(Texture);
+			DecompressDXT1(Texture, Images);
 		}
 		else if (Texture->Desc.Format == EPF_DDS_DXT5)
 		{
-			TGAImage = DecompressDXT5(Texture);
+			DecompressDXT5(Texture, Images);
 		}
 		else
 		{
@@ -219,13 +234,13 @@ namespace tix
 			printf("Error: Unsupported dds format.\n");
 		}
 
-		if (TGAImage != nullptr)
+		if (Images.size() > 0)
 		{
-			TGAImage->FlipY();
-			TGAImage->SaveToTga(DstName.c_str());
-			ti_delete TGAImage;
+			for (int32 i = 0; i < (int32)Images.size(); ++i)
+			{
+				TImage* TGAImage = Images[i];
+				TGAImage->FlipY();
+			}
 		}
-
-		return true;
 	}
 }
