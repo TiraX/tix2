@@ -10,6 +10,7 @@
 #include "TImage.h"
 #if defined (TI_PLATFORM_IOS)
 #include <mach-o/dyld.h>
+#include <unistd.h>
 #endif
 
 namespace tix
@@ -20,13 +21,18 @@ namespace tix
 		int8 Path[512];
 #if defined (TI_PLATFORM_WIN32)
 		::GetModuleFileName(NULL, Path, 512);
+        Ret = Path;
+        TStringReplace(Ret, "\\", "/");
 #elif defined (TI_PLATFORM_IOS)
 		uint32 BufferSize = 512;
 		_NSGetExecutablePath(Path, &BufferSize);
 		TI_ASSERT(BufferSize <= 512);
+        Ret = Path;
+        if (Ret.find("/Binary") == TString::npos && Ret.find("tix2/") == TString::npos)
+        {
+            Ret = getcwd(NULL, 0);
+        }
 #endif
-		Ret = Path;
-		TStringReplace(Ret, "\\", "/");
 
 		Ret = Ret.substr(0, Ret.rfind('/'));
 
@@ -126,11 +132,11 @@ namespace tix
 
 		uint32 Width = (ASTCHeader->xSize[2] << 16) + (ASTCHeader->xSize[1] << 8) + ASTCHeader->xSize[0];
 		uint32 Height = (ASTCHeader->ySize[2] << 16) + (ASTCHeader->ySize[1] << 8) + ASTCHeader->ySize[0];
-		uint32 Depth = (ASTCHeader->zSize[2] << 16) + (ASTCHeader->zSize[1] << 8) + ASTCHeader->zSize[0];
+		//uint32 Depth = (ASTCHeader->zSize[2] << 16) + (ASTCHeader->zSize[1] << 8) + ASTCHeader->zSize[0];
 
 		int32 BlockDimX = ASTCHeader->blockDimX;
 		int32 BlockDimY = ASTCHeader->blockDimY;
-		int32 BlockDimZ = ASTCHeader->blockDimZ;
+		//int32 BlockDimZ = ASTCHeader->blockDimZ;
 
 		// Create the texture
 		TResTextureDefine* Texture = ti_new TResTextureDefine();
