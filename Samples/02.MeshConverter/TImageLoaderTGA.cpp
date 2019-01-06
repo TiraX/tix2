@@ -54,6 +54,62 @@ namespace tix
 #endif
 
 
+	enum TTgaType
+	{
+		TGA_COLORMAP_NONE = 0x00,
+		/* other color map type codes are reserved */
+
+		TGA_IMAGETYPE_NONE = 0,		/* no image data */
+		TGA_IMAGETYPE_PSEUDOCOLOR = 1,	/* color-mapped image */
+		TGA_IMAGETYPE_TRUECOLOR = 2,	/* true-color image */
+		TGA_IMAGETYPE_GREYSCALE = 3,	/* true-color single channel */
+		TGA_IMAGETYPE_RLE_PSEUDOCOLOR = 9,	/* RLE color-mapped image */
+		TGA_IMAGETYPE_RLE_TRUECOLOR = 10,	/* RLE true color */
+		TGA_IMAGETYPE_RLE_GREYSCALE = 11,	/* RLE true grey */
+
+		HTGA_IMAGETYPE_TRUECOLOR = 0x82,
+		HTGA_IMAGETYPE_GREYSCALE = 0x83,
+	};
+
+	void GetTgaTypeAndPixelBits(E_PIXEL_FORMAT Format, TTgaType& TgaType, int32& PixelBits)
+	{
+		switch (Format)
+		{
+		case EPF_A8:
+			TgaType = TGA_IMAGETYPE_GREYSCALE;
+			PixelBits = 8;
+			break;
+		case EPF_RGB8:
+			TgaType = TGA_IMAGETYPE_TRUECOLOR;
+			PixelBits = 24;
+			break;
+		case EPF_RGBA8:
+			TgaType = TGA_IMAGETYPE_TRUECOLOR;
+			PixelBits = 32;
+			break;
+		case EPF_RGB16F:
+			TgaType = HTGA_IMAGETYPE_TRUECOLOR;
+			PixelBits = 48;
+			break;
+		case EPF_RGBA16F:
+			TgaType = HTGA_IMAGETYPE_TRUECOLOR;
+			PixelBits = 64;
+			break;
+		case EPF_R16F:
+			TgaType = HTGA_IMAGETYPE_GREYSCALE;
+			PixelBits = 16;
+			break;
+		case EPF_R32F:
+			TgaType = HTGA_IMAGETYPE_GREYSCALE;
+			PixelBits = 32;
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+	}
+
+
 #define ARGB1565_TO_RGBA8(pSrc, pDst)	()
 #define BGRA8_TO_RGBA8(pSrc, pDst)	{\
 									uint8 tmp = *pSrc;\
@@ -163,7 +219,7 @@ namespace tix
 			void* src = image->Lock();
 
 			// read image
-			if (header.ImageType == 2)
+			if (header.ImageType == TGA_IMAGETYPE_TRUECOLOR)
 			{
 				const int imageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
 				FileInput.Read(src, imageSize, imageSize);
@@ -171,7 +227,7 @@ namespace tix
 					dstFmt, srcFmt,
 					header.ImageWidth, header.ImageHeight);
 			}
-			else if (header.ImageType == 3)
+			else if (header.ImageType == TGA_IMAGETYPE_GREYSCALE)
 			{
 				const int32 imageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
 				FileInput.Read(src, imageSize, imageSize);
@@ -197,62 +253,107 @@ namespace tix
 			return false;
 		}
 
+		TTgaType TgaType;
+		int32 BitsPerPixel;
+		GetTgaTypeAndPixelBits(GetFormat(), TgaType, BitsPerPixel);
+
 		STGAHeader header;
 		memset(&header, 0, sizeof(STGAHeader));
-		header.ImageType = GetFormat() == EPF_A8 ? 3 : 2;
+		header.ImageType = TgaType;
 		header.ImageWidth = Width;
 		header.ImageHeight = Height;
-		if (GetFormat() == EPF_A8)
-			header.PixelDepth = 8;
-		else if (GetFormat() == EPF_RGB8)
-			header.PixelDepth = 24;
-		else if (GetFormat() == EPF_RGBA8)
-			header.PixelDepth = 32;
-		else
-		{
-			TI_ASSERT(0);
-		}
+		header.PixelDepth = BitsPerPixel;
 		header.ImageDescriptor = 8;
 
 		fwrite( &header, sizeof(STGAHeader) , 1, fp);
 
 		TStream pixelBuffer;
-		uint8 pixelfmt[4];
+		uint8 PixelLDR[4];
+		float PixelFloat[4];
+		half PixelHalf[4];
 
 		const int32 image_size	= Width * Height;
+
+		float* FData = (float*)Data;
+		half* HData = (half*)Data;
 
 		// convert RGBA to BGRA
 		if (GetFormat() == EPF_RGB8)
 		{
 			for( int32 i = 0; i < image_size; i++ )
 			{
-				pixelfmt[0]	= Data[i * 3 + 2];
-				pixelfmt[1]	= Data[i * 3 + 1];
-				pixelfmt[2]	= Data[i * 3 + 0];
+				PixelLDR[0]	= Data[i * 3 + 2];
+				PixelLDR[1]	= Data[i * 3 + 1];
+				PixelLDR[2]	= Data[i * 3 + 0];
 
-				pixelBuffer.Put(pixelfmt, 3);
+				pixelBuffer.Put(PixelLDR, 3);
 			}
 		}
 		else if (GetFormat() == EPF_RGBA8)
 		{
 			for( int32 i = 0; i < image_size; i++ )
 			{
-				pixelfmt[0]	= Data[i * 4 + 2];
-				pixelfmt[1]	= Data[i * 4 + 1];
-				pixelfmt[2]	= Data[i * 4 + 0];
-				pixelfmt[3]	= Data[i * 4 + 3];
+				PixelLDR[0]	= Data[i * 4 + 2];
+				PixelLDR[1]	= Data[i * 4 + 1];
+				PixelLDR[2]	= Data[i * 4 + 0];
+				PixelLDR[3]	= Data[i * 4 + 3];
 
-				pixelBuffer.Put(pixelfmt, 4);
+				pixelBuffer.Put(PixelLDR, 4);
 			}
 		}
 		else if (GetFormat() == EPF_A8)
 		{
 			for( int32 i = 0; i < image_size; i++ )
 			{
-				pixelfmt[0]	= Data[i];
+				PixelLDR[0]	= Data[i];
 
-				pixelBuffer.Put(pixelfmt, 1);
+				pixelBuffer.Put(PixelLDR, 1);
 			}
+		}
+		else if (GetFormat() == EPF_RGB16F)
+		{
+			for (int32 i = 0; i < image_size; i++)
+			{
+				PixelHalf[0] = HData[i * 3 + 2];
+				PixelHalf[1] = HData[i * 3 + 1];
+				PixelHalf[2] = HData[i * 3 + 0];
+
+				pixelBuffer.Put(PixelHalf, 3 * sizeof(half));
+			}
+		}
+		else if (GetFormat() == EPF_RGBA16F)
+		{
+			for (int32 i = 0; i < image_size; i++)
+			{
+				PixelHalf[0] = HData[i * 4 + 2];
+				PixelHalf[1] = HData[i * 4 + 1];
+				PixelHalf[2] = HData[i * 4 + 0];
+				PixelHalf[3] = HData[i * 4 + 3];
+
+				pixelBuffer.Put(PixelHalf, 4 * sizeof(half));
+			}
+		}
+		else if (GetFormat() == EPF_R16F)
+		{
+			for (int32 i = 0; i < image_size; i++)
+			{
+				PixelHalf[0] = HData[i];
+
+				pixelBuffer.Put(PixelHalf, 1 * sizeof(half));
+			}
+		}
+		else if (GetFormat() == EPF_R32F)
+		{
+			for (int32 i = 0; i < image_size; i++)
+			{
+				PixelFloat[0] = FData[i];
+
+				pixelBuffer.Put(PixelFloat, 1 * sizeof(float));
+			}
+		}
+		else
+		{
+			TI_ASSERT(0);
 		}
 
 

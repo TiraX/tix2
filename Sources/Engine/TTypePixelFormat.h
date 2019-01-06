@@ -20,6 +20,7 @@ namespace tix
 		// Float formats
 		EPF_R16F,
 		EPF_RG16F,
+		EPF_RGB16F,	// HTGA need it
 		EPF_RGBA16F,
 		EPF_R32F,
 		EPF_RG32F,

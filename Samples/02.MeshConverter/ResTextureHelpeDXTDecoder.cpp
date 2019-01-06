@@ -261,11 +261,11 @@ namespace tix
 			// make sure alpha have value
 			uint8* Data = (uint8*)Texture->Surfaces[0].Data.GetBuffer();
 			bool HasAlpha = false;
-			for (int32 h = 0; h < H; ++ h)
+			for (int32 y = 0; y < H; ++ y)
 			{
-				for (int32 w = 0; w < W; ++w)
+				for (int32 x = 0; x < W; ++x)
 				{
-					uint8* c = Data + (h * W + w) * 4;
+					uint8* c = Data + (y * W + x) * 4;
 					if (c[3] > 0)
 					{
 						HasAlpha = true;
@@ -279,17 +279,61 @@ namespace tix
 				TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA8 : EPF_RGB8, W, H);
 				TI_ASSERT(W * H * 4 == MipData.Data.GetLength());
 
-				for (int32 h = 0; h < H; ++h)
+				for (int32 y = 0; y < H; ++y)
 				{
-					for (int32 w = 0; w < W; ++w)
+					for (int32 x = 0; x < W; ++x)
 					{
-						uint8* cd = Data + (h * W + w) * 4;
+						uint8* cd = Data + (y * W + x) * 4;
 						SColor c;
 						c.R = cd[2];
 						c.G = cd[1];
 						c.B = cd[0];
 						c.A = cd[3];
-						Image->SetPixel(w, h, c);
+						Image->SetPixel(x, y, c);
+					}
+				}
+
+				W /= 2;
+				H /= 2;
+				Images.push_back(Image);
+			}
+		}
+		else if (Texture->Desc.Format == EPF_RGBA32F)
+		{
+			int32 W = Texture->Desc.Width;
+			int32 H = Texture->Desc.Height;
+			// make sure alpha have value
+			float* Data = (float*)Texture->Surfaces[0].Data.GetBuffer();
+			bool HasAlpha = false;
+			for (int32 y = 0; y < H; ++y)
+			{
+				for (int32 x = 0; x < W; ++x)
+				{
+					float* c = Data + (y * W + x) * 4;
+					if (c[3] < 1.f)
+					{
+						HasAlpha = true;
+						break;
+					}
+				}
+			}
+			for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+			{
+				TResSurfaceData& MipData = Texture->Surfaces[mip];
+				TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
+				TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
+
+				for (int32 y = 0; y < H; ++y)
+				{
+					for (int32 x = 0; x < W; ++x)
+					{
+						float* cd = Data + (y * W + x) * 4;
+						SColorf c;
+						c.R = cd[2];
+						c.G = cd[1];
+						c.B = cd[0];
+						c.A = cd[3];
+						Image->SetPixel(x, y, c);
 					}
 				}
 

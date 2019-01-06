@@ -195,10 +195,12 @@ namespace tix
 	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename, int32 LodBias)
 	{
 		TVector<TImage*> Images;
+		E_PIXEL_FORMAT ImageFormat = EPF_UNKNOWN;
 		// if src format is dds, decode it first
 		if (Filename.rfind(".dds") != TString::npos)
 		{
 			TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(Filename, LodBias);
+			ImageFormat = Texture->Desc.Format;
 
 			DecodeDXT(Texture, Images);
 
@@ -217,10 +219,19 @@ namespace tix
 		int32 w = Images[0]->GetWidth();
 		int32 h = Images[0]->GetHeight();
 
+		TString TempTGAName;
+		if (ImageFormat >= EPF_R16F && ImageFormat <= EPF_RGBA32F)
+		{
+			TempTGAName = "Temp.htga";
+		}
+		else
+		{
+			TempTGAName = "Temp.tga";
+		}
+
 		// Find ASTC converter
 		TString ExePath = GetExecutablePath();
 		TString ASTCConverter = ExePath + "/astcenc -c ";
-		const TString& TempTGAName = "Temp.tga";
 		const TString& TempASTCName = "Temp.astc";
 		const TString ConvertParam = " 6x6 -medium -silentmode";
 		ASTCConverter += TempTGAName + " ";
