@@ -27,8 +27,6 @@ namespace tix
 			return 2;
 		case EPF_RG16F:
 			return 4;
-		case EPF_RGB16F:
-			return 6;
 		case EPF_RGBA16F:
 			return 8;
 		case EPF_R32F:
@@ -123,11 +121,6 @@ namespace tix
 			fdata[1] = c.G;
 			fdata[2] = c.B;
 			fdata[3] = c.A;
-			break;
-		case EPF_RGB16F:
-			hdata[0] = half(c.R);
-			hdata[1] = half(c.G);
-			hdata[2] = half(c.B);
 			break;
 		case EPF_RGBA16F:
 			hdata[0] = half(c.R);

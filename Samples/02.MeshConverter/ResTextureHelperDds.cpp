@@ -840,6 +840,27 @@ namespace tix
 					}
 				}
 			}
+
+			// Convert RGBA32F Image to RGBA16F
+			if (Texture->Desc.Format == EPF_RGBA32F)
+			{
+				TStream Buffer;
+				for (auto& Surface : Texture->Surfaces)
+				{
+					Buffer.Reset();
+					Buffer.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());
+					Surface.Data.Reset();
+
+					const int32 DataNum = Buffer.GetLength() / sizeof(float);
+					const float* Data = (const float*)Buffer.GetBuffer();
+					for (int i = 0; i < DataNum; ++i)
+					{
+						half hf = half(Data[i]);
+						Surface.Data.Put(&hf, sizeof(half));
+					}
+				}
+				Texture->Desc.Format = EPF_RGBA16F;
+			}
 			return Texture;
 		}
 	}

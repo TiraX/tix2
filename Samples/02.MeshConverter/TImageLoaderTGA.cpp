@@ -87,10 +87,6 @@ namespace tix
 			TgaType = TGA_IMAGETYPE_TRUECOLOR;
 			PixelBits = 32;
 			break;
-		case EPF_RGB16F:
-			TgaType = HTGA_IMAGETYPE_TRUECOLOR;
-			PixelBits = 48;
-			break;
 		case EPF_RGBA16F:
 			TgaType = HTGA_IMAGETYPE_TRUECOLOR;
 			PixelBits = 64;
@@ -308,17 +304,6 @@ namespace tix
 				PixelLDR[0]	= Data[i];
 
 				pixelBuffer.Put(PixelLDR, 1);
-			}
-		}
-		else if (GetFormat() == EPF_RGB16F)
-		{
-			for (int32 i = 0; i < image_size; i++)
-			{
-				PixelHalf[0] = HData[i * 3 + 2];
-				PixelHalf[1] = HData[i * 3 + 1];
-				PixelHalf[2] = HData[i * 3 + 0];
-
-				pixelBuffer.Put(PixelHalf, 3 * sizeof(half));
 			}
 		}
 		else if (GetFormat() == EPF_RGBA16F)

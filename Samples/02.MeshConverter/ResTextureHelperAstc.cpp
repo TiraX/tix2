@@ -210,12 +210,6 @@ namespace tix
 			DDSTexture = TResTextureHelper::LoadDdsFile(Filename, LodBias);
 
 			DecodeDXT(DDSTexture, Images);
-
-			if (Images.size() == 0)
-			{
-				printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());
-				return nullptr;
-			}
 		}
 		else
 		{
@@ -223,19 +217,21 @@ namespace tix
 			return nullptr;
 		}
 
-		TString TempTGAName;
 		if (DDSTexture->Desc.Format >= EPF_R16F && DDSTexture->Desc.Format <= EPF_RGBA32F)
 		{
-			TempTGAName = "Temp.htga";
-		}
-		else
-		{
-			TempTGAName = "Temp.tga";
+			// HDR save as dds directly
+			return DDSTexture;
 		}
 
-		// Find ASTC converter
+		if (Images.size() == 0)
+		{
+			printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());
+			return nullptr;
+		}
+		// Find ASTC converter and do convert for LDR image
 		TString ExePath = GetExecutablePath();
 		TString ASTCConverter = ExePath + "/astcenc -c ";
+		const TString& TempTGAName = "Temp.tga";
 		const TString& TempASTCName = "Temp.astc";
 		const TString ConvertParam = " 6x6 -medium -silentmode";
 		ASTCConverter += TempTGAName + " ";

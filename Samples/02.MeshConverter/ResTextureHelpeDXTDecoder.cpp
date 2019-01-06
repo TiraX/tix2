@@ -329,64 +329,67 @@ namespace tix
 				}
 			}
 		}
-		else if (Texture->Desc.Format == EPF_RGBA32F)
+		else if (Texture->Desc.Format == EPF_RGBA32F ||
+			Texture->Desc.Format == EPF_RGBA16F)
 		{
-			int32 W = Texture->Desc.Width;
-			int32 H = Texture->Desc.Height;
-			// make sure alpha have value
-			bool HasAlpha = false;
+			// HDR Astc is not supported by Metal
 
-			int32 Faces = 1;
-			if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
-				Faces = 6;
+			//int32 W = Texture->Desc.Width;
+			//int32 H = Texture->Desc.Height;
+			//// make sure alpha have value
+			//bool HasAlpha = false;
 
-			for (int32 f = 0; f < Faces; ++f)
-			{
-				float* Data = (float*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
-				for (int32 y = 0; y < H; ++y)
-				{
-					for (int32 x = 0; x < W; ++x)
-					{
-						float* c = Data + (y * W + x) * 4;
-						if (c[3] < 1.f)
-						{
-							HasAlpha = true;
-							break;
-						}
-					}
-				}
-			}
+			//int32 Faces = 1;
+			//if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
+			//	Faces = 6;
 
-			for (int32 f = 0; f < Faces; ++f)
-			{
-				W = Texture->Desc.Width;
-				H = Texture->Desc.Height;
-				for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
-				{
-					TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
-					float* Data = (float*)MipData.Data.GetBuffer();
-					TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
-					TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
+			//for (int32 f = 0; f < Faces; ++f)
+			//{
+			//	float* Data = (float*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
+			//	for (int32 y = 0; y < H; ++y)
+			//	{
+			//		for (int32 x = 0; x < W; ++x)
+			//		{
+			//			float* c = Data + (y * W + x) * 4;
+			//			if (c[3] < 1.f)
+			//			{
+			//				HasAlpha = true;
+			//				break;
+			//			}
+			//		}
+			//	}
+			//}
 
-					for (int32 y = 0; y < H; ++y)
-					{
-						for (int32 x = 0; x < W; ++x)
-						{
-							float* cd = Data + (y * W + x) * 4;
-							SColorf c;
-							c.R = cd[2];
-							c.G = cd[1];
-							c.B = cd[0];
-							c.A = cd[3];
-							Image->SetPixel(x, y, c);
-						}
-					}
+			//for (int32 f = 0; f < Faces; ++f)
+			//{
+			//	W = Texture->Desc.Width;
+			//	H = Texture->Desc.Height;
+			//	for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+			//	{
+			//		TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
+			//		float* Data = (float*)MipData.Data.GetBuffer();
+			//		TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
+			//		TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
 
-					W /= 2;
-					H /= 2;
-					Images.push_back(Image);
-				}
-			}
+			//		for (int32 y = 0; y < H; ++y)
+			//		{
+			//			for (int32 x = 0; x < W; ++x)
+			//			{
+			//				float* cd = Data + (y * W + x) * 4;
+			//				SColorf c;
+			//				c.R = cd[2];
+			//				c.G = cd[1];
+			//				c.B = cd[0];
+			//				c.A = cd[3];
+			//				Image->SetPixel(x, y, c);
+			//			}
+			//		}
+
+			//		W /= 2;
+			//		H /= 2;
+			//		Images.push_back(Image);
+			//	}
+			//}
 		}
 		else
 		{
