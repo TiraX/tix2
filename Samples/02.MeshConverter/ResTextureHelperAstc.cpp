@@ -43,9 +43,9 @@ namespace tix
 			TI_ASSERT(root_pos != TString::npos);
 			Ret = Ret.substr(0, root_pos + 5) + "Binary/";
 #if defined (TI_PLATFORM_WIN32)
-			Ret += "Windows/";
+			Ret += "Windows";
 #elif defined (TI_PLATFORM_IOS)
-			Ret += "Mac/";
+			Ret += "Mac";
 #endif
 		}
 
@@ -216,7 +216,7 @@ namespace tix
 
 		// Find ASTC converter
 		TString ExePath = GetExecutablePath();
-		TString ASTCConverter = ExePath + "astcenc -c ";
+		TString ASTCConverter = ExePath + "/astcenc -c ";
 		const TString& TempTGAName = "Temp.tga";
 		const TString& TempASTCName = "Temp.astc";
 		const TString ConvertParam = " 6x6 -medium -silentmode";
