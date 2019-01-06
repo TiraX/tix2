@@ -27,7 +27,7 @@ namespace tix
 		Textures.push_back(Texture);
 	}
 
-	bool TResTextureHelper::LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	bool TResTextureHelper::LoadTextureFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TString Name = Doc["name"].GetString();
 		//int32 Version = Doc["version"].GetInt();

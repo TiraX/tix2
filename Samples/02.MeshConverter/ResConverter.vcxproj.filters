@@ -49,6 +49,9 @@
     <ClInclude Include="TImage.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TJSON.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

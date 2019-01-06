@@ -13,7 +13,7 @@ namespace tix
 		TResMaterialHelper();
 		~TResMaterialHelper();
 
-		static void LoadMaterial(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+		static void LoadMaterial(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);

@@ -20,29 +20,27 @@ namespace tix
 	{
 	}
 
-	void TResShaderBindingHelper::LoadShaderBinding(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResShaderBindingHelper::LoadShaderBinding(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResShaderBindingHelper Helper;
 
 		// MPB Name
-		//Value& MPBName = Doc["name"];
+		//TJSONNode MPBName = Doc["name"];
 		//Helper.SetMaterialInstanceName(MIName.GetString());
 		
-		Value& Parameters = Doc["parameters"];
+		TJSONNode Parameters = Doc["parameters"];
 		TI_ASSERT(Parameters.IsArray());
 		Helper.Bindings.resize(Parameters.Size());
-		for (SizeType p = 0; p < Parameters.Size(); ++p)
+		for (int32 p = 0; p < Parameters.Size(); ++p)
 		{
-			Value& Parameter = Parameters[p];
-			Value& BindingType = Parameter["type"];
-			Value& BindingStage = Parameter["stage"];
-			Value& BindingRegister = Parameter["register"];
+			TJSONNode Parameter = Parameters[p];
+			TJSONNode BindingType = Parameter["type"];
+			TJSONNode BindingStage = Parameter["stage"];
+			TJSONNode BindingRegister = Parameter["register"];
 
-			int32 ParamSize = 1;
-			if (Parameter.FindMember("size") != Parameter.MemberEnd())
-			{
-				ParamSize = Parameter["size"].GetInt();
-			}
+			int32 ParamSize = Parameter["size"].GetInt();
+			if (ParamSize == 0)
+				ParamSize = 1;
 
 			TI_ASSERT(ParamSize < 255);
 			TBindingParamInfo& Binding = Helper.Bindings[p];

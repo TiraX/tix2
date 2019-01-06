@@ -10,13 +10,14 @@
 
 // TODO: reference additional headers your program requires here
 #include "TiX.h"
-#include "rapidjson/document.h"
-using namespace rapidjson;
+#include "TJSON.h"
 
 #define ReturnEnumValue(Str, EnumValue) if (Str == #EnumValue) {return EnumValue;}
 
 namespace tix
 {
+	class TJSON;
+
 	inline E_VERTEX_STREAM_SEGMENT GetVertexSegment(const TString& name)
 	{
 		ReturnEnumValue(name, EVSSEG_POSITION);

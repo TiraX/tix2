@@ -90,41 +90,41 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 			f.Read(content, f.GetSize(), f.GetSize());
 			content[f.GetSize()] = 0;
 			f.Close();
+			
+			TJSON JsonDoc;
+			JsonDoc.Parse(content);
 
-			Document tjs;
-			tjs.Parse(content);
-			Value& s = tjs["type"];
-			const char* type = s.GetString();
+			const int8* type = JsonDoc["type"].GetString();
 
 			if (strcmp(type, "static_mesh") == 0)
 			{
 				// Static Mesh
 				TStream& MeshStream = Resfile.GetChunk(ECL_MESHES);
-				TResMeshHelper::LoadMeshFile(tjs, MeshStream, Resfile.Strings);
+				TResMeshHelper::LoadMeshFile(JsonDoc, MeshStream, Resfile.Strings);
 			}
 			else if (strcmp(type, "texture") == 0)
 			{
 				// Texture
 				TStream& TextureStream = Resfile.GetChunk(ECL_TEXTURES);
-				TResTextureHelper::LoadTextureFile(tjs, TextureStream, Resfile.Strings);
+				TResTextureHelper::LoadTextureFile(JsonDoc, TextureStream, Resfile.Strings);
 			}
 			else if (strcmp(type, "material") == 0)
 			{
 				// Material
 				TStream& MaterialStream = Resfile.GetChunk(ECL_MATERIAL);
-				TResMaterialHelper::LoadMaterial(tjs, MaterialStream, Resfile.Strings);
+				TResMaterialHelper::LoadMaterial(JsonDoc, MaterialStream, Resfile.Strings);
 			}
 			else if (strcmp(type, "material_instance") == 0)
 			{
 				// Material Instance
 				TStream& MIStream = Resfile.GetChunk(ECL_MATERIAL_INSTANCE);
-				TResMaterialInstanceHelper::LoadMaterialInstance(tjs, MIStream, Resfile.Strings);
+				TResMaterialInstanceHelper::LoadMaterialInstance(JsonDoc, MIStream, Resfile.Strings);
 			}
 			else if (strcmp(type, "shader_binding") == 0)
 			{
 				// Material Parameter Binding
 				TStream& MIStream = Resfile.GetChunk(ECL_SHADER_BINDING);
-				TResShaderBindingHelper::LoadShaderBinding(tjs, MIStream, Resfile.Strings);
+				TResShaderBindingHelper::LoadShaderBinding(JsonDoc, MIStream, Resfile.Strings);
 			}
 			ti_delete[] content;
 		}

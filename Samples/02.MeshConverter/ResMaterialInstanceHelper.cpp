@@ -20,27 +20,27 @@ namespace tix
 	{
 	}
 
-	void TResMaterialInstanceHelper::LoadMaterialInstance(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResMaterialInstanceHelper::LoadMaterialInstance(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResMaterialInstanceHelper Helper;
 
 		// MI Name
-		Value& MIName = Doc["name"];
+		TJSONNode MIName = Doc["name"];
 		Helper.SetMaterialInstanceName(MIName.GetString());
 
 		// linked material
-		Value& LinkedMaterial = Doc["linked_material"];
+		TJSONNode LinkedMaterial = Doc["linked_material"];
 		Helper.SetMaterialRes(LinkedMaterial.GetString());
 
-		Value& Parameters = Doc["parameters"];
+		TJSONNode Parameters = Doc["parameters"];
 		TI_ASSERT(Parameters.IsObject()); 
-		for (Value::ConstMemberIterator itr = Parameters.MemberBegin();
+		for (TJSONNodeIterator itr = Parameters.MemberBegin();
 			itr != Parameters.MemberEnd(); ++itr)
 		{
-			TString ParamName = itr->name.GetString();
-			Value& Param = Parameters[ParamName.c_str()];
+			TString ParamName = itr.Name();
+			TJSONNode Param = Parameters[ParamName.c_str()];
 			TString ParamType = Param["type"].GetString();
-			Value& ParamValue = Param["value"];
+			TJSONNode ParamValue = Param["value"];
 			if (ParamType == "int")
 			{
 				Helper.AddParameter(ParamName, ParamValue.GetInt());
@@ -53,7 +53,7 @@ namespace tix
 			{
 				TI_ASSERT(ParamValue.IsArray() && ParamValue.Size() <= 4);
 				quaternion q;
-				for (SizeType pv = 0; pv < ParamValue.Size(); ++pv)
+				for (int32 pv = 0; pv < ParamValue.Size(); ++pv)
 					q[pv] = ParamValue[pv].GetFloat();
 				Helper.AddParameter(ParamName, q);
 			}

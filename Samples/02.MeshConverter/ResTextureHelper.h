@@ -30,7 +30,7 @@ namespace tix
 		TResTextureHelper();
 		~TResTextureHelper();
 
-		static bool LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+		static bool LoadTextureFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static TResTextureDefine* LoadDdsFile(const TString& Filename, int32 LodBias);
         static TResTextureDefine* LoadAstcFile(const TString& Filename, int32 LodBias);
 

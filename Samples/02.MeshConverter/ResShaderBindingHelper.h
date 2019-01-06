@@ -13,7 +13,7 @@ namespace tix
 		TResShaderBindingHelper();
 		~TResShaderBindingHelper();
 
-		static void LoadShaderBinding(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+		static void LoadShaderBinding(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 
 		void OutputShaderBinding(TStream& OutStream, TVector<TString>& OutStrings);
 	private:

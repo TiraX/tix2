@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TJSON.h" />
     <ClInclude Include="dds.h" />
     <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />

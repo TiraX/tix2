@@ -8,32 +8,32 @@
 #include "ResMeshHelper.h"
 #include "TMeshBufferSemantic.h"
 
-void ConvertJArrayToArray(const Value& JArray, TVector<float>& OutArray)
+void ConvertJArrayToArray(TJSONNode& JArray, TVector<float>& OutArray)
 {
 	TI_ASSERT(JArray.IsArray());
-	SizeType JArraySize = JArray.Size();
+	int32 JArraySize = JArray.Size();
 	OutArray.reserve(JArraySize);
-	for (SizeType i = 0; i < JArraySize; ++i)
+	for (int32 i = 0; i < JArraySize; ++i)
 	{
 		OutArray.push_back(JArray[i].GetFloat());
 	}
 }
-void ConvertJArrayToArray(const Value& JArray, TVector<int32>& OutArray)
+void ConvertJArrayToArray(TJSONNode& JArray, TVector<int32>& OutArray)
 {
 	TI_ASSERT(JArray.IsArray());
-	SizeType JArraySize = JArray.Size();
+	int32 JArraySize = JArray.Size();
 	OutArray.reserve(JArraySize);
-	for (SizeType i = 0; i < JArraySize; ++i)
+	for (int32 i = 0; i < JArraySize; ++i)
 	{
 		OutArray.push_back(JArray[i].GetInt());
 	}
 }
-void ConvertJArrayToArray(const Value& JArray, TVector<TString>& OutArray)
+void ConvertJArrayToArray(TJSONNode& JArray, TVector<TString>& OutArray)
 {
 	TI_ASSERT(JArray.IsArray());
-	SizeType JArraySize = JArray.Size();
+	int32 JArraySize = JArray.Size();
 	OutArray.reserve(JArraySize);
-	for (SizeType i = 0; i < JArraySize; ++i)
+	for (int32 i = 0; i < JArraySize; ++i)
 	{
 		OutArray.push_back(JArray[i].GetString());
 	}
@@ -269,7 +269,7 @@ namespace tix
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 
-	bool TResMeshHelper::LoadMeshFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	bool TResMeshHelper::LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResMeshHelper ResMesh;
 
@@ -280,7 +280,7 @@ namespace tix
 		//int32 ICount = Doc["index_count_total"].GetInt();
 		//int32 UVCount = Doc["texcoord_count"].GetInt();
 
-		Value& Sections = Doc["sections"];
+		TJSONNode Sections = Doc["sections"];
 
 		TVector<float> Vertices;
 		TVector<int32> Indices;
@@ -288,13 +288,13 @@ namespace tix
 
 		// Only support 1 section for now.
 		TI_ASSERT(Sections.Size() == 1);
-		for (SizeType i = 0; i < Sections.Size(); ++i)
+		for (int32 i = 0; i < Sections.Size(); ++i)
 		{
-			Value& Section = Sections[i];
+			TJSONNode Section = Sections[i];
 			int32 VertexCount = Section["vertex_count"].GetInt();
-			Value& JVertices = Section["vertices"];
-			Value& JIndices = Section["indices"];
-			Value& JVsFormat = Section["vs_format"];
+			TJSONNode JVertices = Section["vertices"];
+			TJSONNode JIndices = Section["indices"];
+			TJSONNode JVsFormat = Section["vs_format"];
 
 			Vertices.clear();
 			Indices.clear();
@@ -359,7 +359,7 @@ namespace tix
 			}
 			Mesh.SetFaces(&Indices[0], (int32)Indices.size());
 
-			Value& JMaterial = Section["material"];
+			TJSONNode JMaterial = Section["material"];
 			if (!JMaterial.IsNull())
 			{
 				TString MaterialName = JMaterial.GetString();

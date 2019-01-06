@@ -20,12 +20,12 @@ namespace tix
 	{
 	}
 
-	void TResMaterialHelper::LoadMaterial(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings)
+	void TResMaterialHelper::LoadMaterial(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResMaterialHelper Helper;
 
 		// shaders
-		Value& Shaders = Doc["shaders"];
+		TJSONNode Shaders = Doc["shaders"];
 		TI_ASSERT(Shaders.IsArray() && Shaders.Size() == ESS_COUNT);
 		for (int32 s = 0; s < ESS_COUNT; ++s)
 		{
@@ -33,31 +33,31 @@ namespace tix
 		}
 
 		// vs format
-		Value& VSFormat = Doc["vs_format"];
+		TJSONNode VSFormat = Doc["vs_format"];
 		TI_ASSERT(VSFormat.IsArray());
 		uint32 Format = 0;
-		for (SizeType vs = 0; vs < VSFormat.Size(); ++vs)
+		for (int32 vs = 0; vs < VSFormat.Size(); ++vs)
 		{
 			Format |= GetVertexSegment(VSFormat[vs].GetString());
 		}
 		Helper.SetShaderVsFormat(Format);
 
 		// blend mode
-		Value& BM = Doc["blend_mode"];
+		TJSONNode BM = Doc["blend_mode"];
 		Helper.SetBlendMode(GetBlendMode(BM.IsNull() ? "null" : BM.GetString()));
 
 		// depth write / depth test / two sides
-		Value& depth_write = Doc["depth_write"];
+		TJSONNode depth_write = Doc["depth_write"];
 		Helper.EnableDepthWrite(depth_write.IsNull() ? true : depth_write.GetBool());
 
-		Value& depth_test = Doc["depth_test"];
+		TJSONNode depth_test = Doc["depth_test"];
 		Helper.EnableDepthTest(depth_test.IsNull() ? true : depth_test.GetBool());
 
-		Value& two_sides = Doc["two_sides"];
+		TJSONNode two_sides = Doc["two_sides"];
 		Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
 
 		// stencil state
-		Value& stencil_enable = Doc["stencil_enable"];
+		TJSONNode stencil_enable = Doc["stencil_enable"];
 		if (!stencil_enable.IsNull())
 		{
 			if (stencil_enable.GetBool())
@@ -66,80 +66,80 @@ namespace tix
 				Helper.PipelineDesc.Disable(EPSO_STENCIL);
 		}
 
-		Value& stencil_read_mask = Doc["stencil_read_mask"];
+		TJSONNode stencil_read_mask = Doc["stencil_read_mask"];
 		if (!stencil_read_mask.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.StencilReadMask = (uint8)stencil_read_mask.GetInt();
 		}
 
-		Value& stencil_write_mask = Doc["stencil_write_mask"];
+		TJSONNode stencil_write_mask = Doc["stencil_write_mask"];
 		if (!stencil_write_mask.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.StencilWriteMask = (uint8)stencil_write_mask.GetInt();
 		}
 
-		Value& front_stencil_fail = Doc["front_stencil_fail"];
+		TJSONNode front_stencil_fail = Doc["front_stencil_fail"];
 		if (!front_stencil_fail.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFailOp = GetStencilOp(front_stencil_fail.GetString());
 		}
 
-		Value& front_stencil_depth_fail = Doc["front_stencil_depth_fail"];
+		TJSONNode front_stencil_depth_fail = Doc["front_stencil_depth_fail"];
 		if (!front_stencil_depth_fail.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilDepthFailOp = GetStencilOp(front_stencil_depth_fail.GetString());
 		}
 
-		Value& front_stencil_pass = Doc["front_stencil_pass"];
+		TJSONNode front_stencil_pass = Doc["front_stencil_pass"];
 		if (!front_stencil_pass.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilPassOp = GetStencilOp(front_stencil_pass.GetString());
 		}
 
-		Value& front_stencil_func = Doc["front_stencil_func"];
+		TJSONNode front_stencil_func = Doc["front_stencil_func"];
 		if (!front_stencil_func.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFunc = GetComparisonFunc(front_stencil_func.GetString());
 		}
 
-		Value& back_stencil_fail = Doc["back_stencil_fail"];
+		TJSONNode back_stencil_fail = Doc["back_stencil_fail"];
 		if (!back_stencil_fail.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFailOp = GetStencilOp(back_stencil_fail.GetString());
 		}
 
-		Value& back_stencil_depth_fail = Doc["back_stencil_depth_fail"];
+		TJSONNode back_stencil_depth_fail = Doc["back_stencil_depth_fail"];
 		if (!back_stencil_depth_fail.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilDepthFailOp = GetStencilOp(back_stencil_depth_fail.GetString());
 		}
 
-		Value& back_stencil_pass = Doc["back_stencil_pass"];
+		TJSONNode back_stencil_pass = Doc["back_stencil_pass"];
 		if (!back_stencil_pass.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilPassOp = GetStencilOp(back_stencil_pass.GetString());
 		}
 
-		Value& back_stencil_func = Doc["back_stencil_func"];
+		TJSONNode back_stencil_func = Doc["back_stencil_func"];
 		if (!back_stencil_func.IsNull())
 		{
 			Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFunc = GetComparisonFunc(back_stencil_func.GetString());
 		}
 
 		// shader binding
-		Value& shader_binding = Doc["shader_binding"];
+		TJSONNode shader_binding = Doc["shader_binding"];
 		Helper.SetShaderBinding(shader_binding.IsNull() ? "" : shader_binding.GetString());
 
 		// rt format
-		Value& RT_Colors = Doc["rt_colors"];
+		TJSONNode RT_Colors = Doc["rt_colors"];
 		TI_ASSERT(RT_Colors.IsArray() && RT_Colors.Size() <= 4);
 
 		Helper.PipelineDesc.RTCount = (int32)RT_Colors.Size();
-		for (SizeType cb = 0; cb < RT_Colors.Size(); ++cb)
+		for (int32 cb = 0; cb < RT_Colors.Size(); ++cb)
 		{
 			Helper.PipelineDesc.RTFormats[cb] = GetPixelFormat(RT_Colors[cb].GetString());
 		}
-		Value& RT_Depth = Doc["rt_depth"];
+		TJSONNode RT_Depth = Doc["rt_depth"];
 		Helper.PipelineDesc.DepthFormat = GetPixelFormat(RT_Depth.GetString());
 
 		Helper.OutputMaterial(OutStream, OutStrings);
