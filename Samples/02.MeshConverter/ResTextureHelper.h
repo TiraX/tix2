@@ -31,8 +31,8 @@ namespace tix
 		~TResTextureHelper();
 
 		static bool LoadTextureFile(rapidjson::Document& Doc, TStream& OutStream, TVector<TString>& OutStrings);
-		static TResTextureDefine* LoadDdsFile(const TString& Filename);
-        static TResTextureDefine* LoadAstcFile(const TString& Filename);
+		static TResTextureDefine* LoadDdsFile(const TString& Filename, int32 LodBias);
+        static TResTextureDefine* LoadAstcFile(const TString& Filename, int32 LodBias);
 
 		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);
@@ -43,5 +43,5 @@ namespace tix
 		TVector<TResTextureDefine*> Textures;
 	};
 
-	void DecodeDXT(const TString& SrcName, TVector<TImage*>& Images);
+	void DecodeDXT(TResTextureDefine* Texture, TVector<TImage*>& Images);
 }

@@ -172,8 +172,7 @@ namespace tix
 		uint8 SRGB;
 		uint8 Mips;
 		uint8 Surfaces;
-		uint8 LodBias;
-		uint8 padding[2];
+		uint8 padding[3];
 	};
 
 	struct THeaderMaterial

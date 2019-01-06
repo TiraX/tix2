@@ -192,13 +192,16 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename)
+	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename, int32 LodBias)
 	{
 		TVector<TImage*> Images;
 		// if src format is dds, decode it first
 		if (Filename.rfind(".dds") != TString::npos)
 		{
-			DecodeDXT(Filename, Images);
+			TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(Filename, LodBias);
+
+			DecodeDXT(Texture, Images);
+
 			if (Images.size() == 0)
 			{
 				printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());

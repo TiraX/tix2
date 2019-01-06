@@ -199,10 +199,19 @@ namespace tix
 
 		STGAHeader header;
 		memset(&header, 0, sizeof(STGAHeader));
-		header.ImageType = 2;
+		header.ImageType = GetFormat() == EPF_A8 ? 3 : 2;
 		header.ImageWidth = Width;
 		header.ImageHeight = Height;
-		header.PixelDepth = GetFormat() == EPF_RGB8 ? 24 : 32;
+		if (GetFormat() == EPF_A8)
+			header.PixelDepth = 8;
+		else if (GetFormat() == EPF_RGB8)
+			header.PixelDepth = 24;
+		else if (GetFormat() == EPF_RGBA8)
+			header.PixelDepth = 32;
+		else
+		{
+			TI_ASSERT(0);
+		}
 		header.ImageDescriptor = 8;
 
 		fwrite( &header, sizeof(STGAHeader) , 1, fp);
@@ -224,7 +233,7 @@ namespace tix
 				pixelBuffer.Put(pixelfmt, 3);
 			}
 		}
-		else
+		else if (GetFormat() == EPF_RGBA8)
 		{
 			for( int32 i = 0; i < image_size; i++ )
 			{
@@ -234,6 +243,15 @@ namespace tix
 				pixelfmt[3]	= Data[i * 4 + 3];
 
 				pixelBuffer.Put(pixelfmt, 4);
+			}
+		}
+		else if (GetFormat() == EPF_A8)
+		{
+			for( int32 i = 0; i < image_size; i++ )
+			{
+				pixelfmt[0]	= Data[i];
+
+				pixelBuffer.Put(pixelfmt, 1);
 			}
 		}
 

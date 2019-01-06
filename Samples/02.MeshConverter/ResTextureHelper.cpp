@@ -43,11 +43,11 @@ namespace tix
 
 		TString TextureSource = Doc["source"].GetString();
 
-#if defined (TI_PLATFORM_WIN32)
-		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource);
-#elif defined (TI_PLATFORM_IOS)
-        TResTextureDefine* Texture = TResTextureHelper::LoadAstcFile(TextureSource);
-#endif
+//#if defined (TI_PLATFORM_WIN32)
+//		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource, LodBias);
+//#elif defined (TI_PLATFORM_IOS)
+        TResTextureDefine* Texture = TResTextureHelper::LoadAstcFile(TextureSource, LodBias);
+//#endif
 		if (Texture != nullptr)
 		{
 			TI_ASSERT(LodBias < Texture->Desc.Mips);
@@ -93,13 +93,13 @@ namespace tix
 
 			TextureHeader.StrId_Name = AddStringToList(OutStrings, Define->Name);
 			TextureHeader.Format = Define->Desc.Format;
-			TextureHeader.Width = Define->Desc.Width >> Define->LodBias;
-			TextureHeader.Height = Define->Desc.Height >> Define->LodBias;
+			TextureHeader.Width = Define->Desc.Width;
+			TextureHeader.Height = Define->Desc.Height;
 			TextureHeader.Type = Define->Desc.Type;
 			TextureHeader.AddressMode = Define->Desc.AddressMode;
 			TextureHeader.SRGB = Define->Desc.SRGB;
-			TextureHeader.Mips = Define->Desc.Mips - Define->LodBias;
-			TextureHeader.Surfaces = (uint32)Define->Surfaces.size() - Define->LodBias * Faces;
+			TextureHeader.Mips = Define->Desc.Mips;
+			TextureHeader.Surfaces = (uint32)Define->Surfaces.size();
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
 			FillZero4(HeaderStream);
@@ -107,8 +107,7 @@ namespace tix
 			const TVector<TResSurfaceData>& Surfaces = Define->Surfaces;
 			for (int32 f = 0; f < Faces; ++f)
 			{
-				uint32 mip = Define->LodBias;
-				for (; mip < Define->Desc.Mips; ++mip)
+				for (uint32 mip = 0; mip < Define->Desc.Mips; ++mip)
 				{
 					int32 SurfaceIndex = f * Define->Desc.Mips + mip;
 

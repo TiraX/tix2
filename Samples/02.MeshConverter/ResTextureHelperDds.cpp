@@ -587,7 +587,8 @@ namespace tix
 	static TResTextureDefine* CreateTextureFromDDS(
 		const DDS_HEADER* header,
 		const uint8* Data,
-		uint32 DataSize)
+		uint32 DataSize,
+		int32 LodBias)
 	{
 		uint32 width = header->width;
 		uint32 height = header->height;
@@ -603,6 +604,7 @@ namespace tix
 		{
 			mipCount = 1;
 		}
+		TI_ASSERT(mipCount > (uint32)LodBias);
 
 		if ((header->ddspf.flags & DDS_FOURCC) && (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC))
 		{
@@ -783,13 +785,13 @@ namespace tix
 				printf("Error: unknown texture pixel format.\n");
 				TI_ASSERT(0);
 			}
-			Texture->Desc.Width = width;
-			Texture->Desc.Height = height;
+			Texture->Desc.Width = width >> LodBias;
+			Texture->Desc.Height = height >> LodBias;
 			Texture->Desc.AddressMode = ETC_REPEAT;
 			Texture->Desc.SRGB = 0;
-			Texture->Desc.Mips = mipCount;
+			Texture->Desc.Mips = mipCount - LodBias;
 
-			Texture->Surfaces.resize(mipCount * arraySize);
+			Texture->Surfaces.resize((mipCount - LodBias) * arraySize);
 
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;
@@ -810,11 +812,14 @@ namespace tix
 						nullptr
 					);
 
-					TResSurfaceData& Surface = Texture->Surfaces[j * mipCount + i];
-					Surface.W = w;
-					Surface.H = h;
-					Surface.RowPitch = RowBytes;
-					Surface.Data.Put(SrcData, NumBytes);
+					if (i >= (uint32)LodBias)
+					{
+						TResSurfaceData& Surface = Texture->Surfaces[j * (mipCount - LodBias) + (i - LodBias)];
+						Surface.W = w;
+						Surface.H = h;
+						Surface.RowPitch = RowBytes;
+						Surface.Data.Put(SrcData, NumBytes);
+					}
 
 					SrcData += NumBytes * d;
 
@@ -839,7 +844,7 @@ namespace tix
 		}
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadDdsFile(const TString& Filename)
+	TResTextureDefine* TResTextureHelper::LoadDdsFile(const TString& Filename, int32 LodBias)
 	{
 		TFile f;
 		if (!f.Open(Filename, EFA_READ))
@@ -899,7 +904,7 @@ namespace tix
 			Path = Filename.substr(0, Mark);
 		}
 
-		TResTextureDefine* Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset);
+		TResTextureDefine* Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset, LodBias);
 		Texture->Name = Name;
 		Texture->Path = Path;
 
