@@ -119,6 +119,12 @@ namespace tix
 			return;
 		}
 
+		if (Texture->Desc.Type != ETT_TEXTURE_2D)
+		{
+			printf("Error: Not support DXT1 format other than Texture2D.");
+			return;
+		}
+
 		// decode mipmaps
 		int32 Width = Texture->Desc.Width;
 		int32 Height = Texture->Desc.Height;
@@ -173,6 +179,12 @@ namespace tix
 		if (BlockSize == 0)
 		{
 			printf("Error: Invalid block size.\n");
+			return;
+		}
+
+		if (Texture->Desc.Type != ETT_TEXTURE_2D)
+		{
+			printf("Error: Not support DXT5 format other than Texture2D.");
 			return;
 		}
 
@@ -238,6 +250,11 @@ namespace tix
 		}
 		else if (Texture->Desc.Format == EPF_A8)
 		{
+			if (Texture->Desc.Type != ETT_TEXTURE_2D)
+			{
+				printf("Error: Not support EPF_A8 format other than Texture2D.");
+				return;
+			}
 			// Copy pixel data to TImage directly
 			int32 W = Texture->Desc.Width;
 			int32 H = Texture->Desc.Height;
@@ -259,43 +276,57 @@ namespace tix
 			int32 W = Texture->Desc.Width;
 			int32 H = Texture->Desc.Height;
 			// make sure alpha have value
-			uint8* Data = (uint8*)Texture->Surfaces[0].Data.GetBuffer();
 			bool HasAlpha = false;
-			for (int32 y = 0; y < H; ++ y)
-			{
-				for (int32 x = 0; x < W; ++x)
-				{
-					uint8* c = Data + (y * W + x) * 4;
-					if (c[3] > 0)
-					{
-						HasAlpha = true;
-						break;
-					}
-				}
-			}
-			for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
-			{
-				TResSurfaceData& MipData = Texture->Surfaces[mip];
-				TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA8 : EPF_RGB8, W, H);
-				TI_ASSERT(W * H * 4 == MipData.Data.GetLength());
 
+			int32 Faces = 1;
+			if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
+				Faces = 6;
+
+			for (int32 f = 0; f < Faces; ++f)
+			{
+				uint8* Data = (uint8*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
 				for (int32 y = 0; y < H; ++y)
 				{
 					for (int32 x = 0; x < W; ++x)
 					{
-						uint8* cd = Data + (y * W + x) * 4;
-						SColor c;
-						c.R = cd[2];
-						c.G = cd[1];
-						c.B = cd[0];
-						c.A = cd[3];
-						Image->SetPixel(x, y, c);
+						uint8* c = Data + (y * W + x) * 4;
+						if (c[3] > 0)
+						{
+							HasAlpha = true;
+							break;
+						}
 					}
 				}
+			}
+			for (int32 f = 0; f < Faces; ++f)
+			{
+				W = Texture->Desc.Width;
+				H = Texture->Desc.Height;
+				for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+				{
+					TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
+					uint8* Data = (uint8*)MipData.Data.GetBuffer();
+					TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA8 : EPF_RGB8, W, H);
+					TI_ASSERT(W * H * 4 == MipData.Data.GetLength());
 
-				W /= 2;
-				H /= 2;
-				Images.push_back(Image);
+					for (int32 y = 0; y < H; ++y)
+					{
+						for (int32 x = 0; x < W; ++x)
+						{
+							uint8* cd = Data + (y * W + x) * 4;
+							SColor c;
+							c.R = cd[2];
+							c.G = cd[1];
+							c.B = cd[0];
+							c.A = cd[3];
+							Image->SetPixel(x, y, c);
+						}
+					}
+
+					W /= 2;
+					H /= 2;
+					Images.push_back(Image);
+				}
 			}
 		}
 		else if (Texture->Desc.Format == EPF_RGBA32F)
@@ -303,43 +334,58 @@ namespace tix
 			int32 W = Texture->Desc.Width;
 			int32 H = Texture->Desc.Height;
 			// make sure alpha have value
-			float* Data = (float*)Texture->Surfaces[0].Data.GetBuffer();
 			bool HasAlpha = false;
-			for (int32 y = 0; y < H; ++y)
-			{
-				for (int32 x = 0; x < W; ++x)
-				{
-					float* c = Data + (y * W + x) * 4;
-					if (c[3] < 1.f)
-					{
-						HasAlpha = true;
-						break;
-					}
-				}
-			}
-			for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
-			{
-				TResSurfaceData& MipData = Texture->Surfaces[mip];
-				TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
-				TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
 
+			int32 Faces = 1;
+			if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
+				Faces = 6;
+
+			for (int32 f = 0; f < Faces; ++f)
+			{
+				float* Data = (float*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
 				for (int32 y = 0; y < H; ++y)
 				{
 					for (int32 x = 0; x < W; ++x)
 					{
-						float* cd = Data + (y * W + x) * 4;
-						SColorf c;
-						c.R = cd[2];
-						c.G = cd[1];
-						c.B = cd[0];
-						c.A = cd[3];
-						Image->SetPixel(x, y, c);
+						float* c = Data + (y * W + x) * 4;
+						if (c[3] < 1.f)
+						{
+							HasAlpha = true;
+							break;
+						}
 					}
 				}
+			}
 
-				W /= 2;
-				H /= 2;
-				Images.push_back(Image);
+			for (int32 f = 0; f < Faces; ++f)
+			{
+				W = Texture->Desc.Width;
+				H = Texture->Desc.Height;
+				for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+				{
+					TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
+					float* Data = (float*)MipData.Data.GetBuffer();
+					TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
+					TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
+
+					for (int32 y = 0; y < H; ++y)
+					{
+						for (int32 x = 0; x < W; ++x)
+						{
+							float* cd = Data + (y * W + x) * 4;
+							SColorf c;
+							c.R = cd[2];
+							c.G = cd[1];
+							c.B = cd[0];
+							c.A = cd[3];
+							Image->SetPixel(x, y, c);
+						}
+					}
+
+					W /= 2;
+					H /= 2;
+					Images.push_back(Image);
+				}
 			}
 		}
 		else
