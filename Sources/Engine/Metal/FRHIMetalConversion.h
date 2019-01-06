@@ -43,24 +43,22 @@ namespace tix
 			return MTLPixelFormatDepth32Float;
 		case EPF_DEPTH24_STENCIL8:
 			return MTLPixelFormatDepth32Float_Stencil8;
-		case EPF_COMPRESSED_ASTC1:
+		case EPF_ASTC4x4:
 			return MTLPixelFormatASTC_4x4_LDR;
-        case EPF_RGB32F:
-        case EPF_DEPTH16:
-        case EPF_DDS_DXT1:
-        case EPF_DDS_DXT3:
-        case EPF_DDS_DXT5:
-        case EPF_DDS_BC5:
-        case EPF_COMPRESSED_ASTC2:
-        case EPF_COMPRESSED_ASTC3:
-        case EPF_COMPRESSED_ASTC4:
-        case EPF_COMPRESSED_ETC:
-        case EPF_UNKNOWN:
-        case EPF_COUNT:
-            break;
+        case EPF_ASTC4x4_SRGB:
+            return MTLPixelFormatASTC_4x4_sRGB;
+        case EPF_ASTC6x6:
+            return MTLPixelFormatASTC_6x6_LDR;
+        case EPF_ASTC6x6_SRGB:
+            return MTLPixelFormatASTC_6x6_sRGB;
+        case EPF_ASTC8x8:
+            return MTLPixelFormatASTC_8x8_LDR;
+        case EPF_ASTC8x8_SRGB:
+            return MTLPixelFormatASTC_8x8_sRGB;
+        default:
+            TI_ASSERT(0);
+            return MTLPixelFormatInvalid;
 		}
-		TI_ASSERT(0);
-		return MTLPixelFormatInvalid;
 	};
 
     /*
