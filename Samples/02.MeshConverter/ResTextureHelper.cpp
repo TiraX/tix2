@@ -43,11 +43,11 @@ namespace tix
 
 		TString TextureSource = Doc["source"].GetString();
 
-//#if defined (TI_PLATFORM_WIN32)
-//		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource, LodBias);
-//#elif defined (TI_PLATFORM_IOS)
+#if defined (TI_PLATFORM_WIN32)
+		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource, LodBias);
+#elif defined (TI_PLATFORM_IOS)
         TResTextureDefine* Texture = TResTextureHelper::LoadAstcFile(TextureSource, LodBias);
-//#endif
+#endif
 		if (Texture != nullptr)
 		{
 			TI_ASSERT(LodBias < Texture->Desc.Mips);
