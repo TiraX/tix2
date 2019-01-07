@@ -31,10 +31,10 @@
     // before tick and render
     TEngine::Get()->AddTicker(ti_new TSSSSTicker());
     //TEngine::Get()->AddRenderer(ti_new FSSSSRenderer());
-    TEngine::Get()->AddRenderer(ti_new FS4TempRenderer());
+    TEngine::Get()->AddRenderer(ti_new FSSSSRenderer());
     
     // Setup scenes
-    //TSSSSTicker::SetupScene();
+    TSSSSTicker::SetupScene();
     
     // start tick and render
     

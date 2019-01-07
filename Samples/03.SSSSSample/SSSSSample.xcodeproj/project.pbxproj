@@ -16,6 +16,7 @@
 		276723ED21CFB72A000BA266 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 276723EC21CFB72A000BA266 /* ViewController.m */; };
 		276723F221CFB72B000BA266 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 276723F121CFB72B000BA266 /* Assets.xcassets */; };
 		276723F821CFB72B000BA266 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 276723F721CFB72B000BA266 /* main.m */; };
+		27F2B58E21E38E300026C0A2 /* iOS in Resources */ = {isa = PBXBuildFile; fileRef = 27F2B58D21E38E300026C0A2 /* iOS */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		276723F121CFB72B000BA266 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		276723F621CFB72B000BA266 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		276723F721CFB72B000BA266 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		27F2B58D21E38E300026C0A2 /* iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = iOS; path = Content/Cooked/iOS; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +121,7 @@
 		27B0E48221CFB7E800E4C5E1 /* SSSSSample */ = {
 			isa = PBXGroup;
 			children = (
+				27F2B58D21E38E300026C0A2 /* iOS */,
 				273A37D421CFC40D006D9A4B /* SSSS */,
 				276723E821CFB72A000BA266 /* AppDelegate.h */,
 				276723E921CFB72A000BA266 /* AppDelegate.m */,
@@ -206,6 +209,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27F2B58E21E38E300026C0A2 /* iOS in Resources */,
 				276723F221CFB72B000BA266 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -23,6 +23,7 @@ namespace tix
         
         // change dir to app base dir
         NSString* path = [[NSBundle mainBundle] resourcePath];
+        path = [path stringByAppendingString: @"/iOS/"];
         chdir([path UTF8String]);
 
 		AbsolutePath = [path UTF8String];

@@ -10,6 +10,10 @@
 #include "TDeviceIOS.h"
 #import "FMetalView.h"
 #include "FRHIMetalConversion.h"
+#include "FTextureMetal.h"
+#include "FShaderBindingMetal.h"
+#include "FPipelineMetal.h"
+#include "FMeshBufferMetal.h"
 
 namespace tix
 {
@@ -86,8 +90,7 @@ namespace tix
 
 	FTexturePtr FRHIMetal::CreateTexture()
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FTextureMetal;
 	}
 
 	FTexturePtr FRHIMetal::CreateTexture(const TTextureDesc& Desc)
@@ -104,14 +107,12 @@ namespace tix
 
 	FMeshBufferPtr FRHIMetal::CreateMeshBuffer()
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FMeshBufferMetal;
 	}
 
 	FPipelinePtr FRHIMetal::CreatePipeline()
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FPipelineMetal;
 	}
 
 	//FRenderTargetPtr FRHIMetal::CreateRenderTarget(int32 W, int32 H)
@@ -121,8 +122,7 @@ namespace tix
 
 	FShaderBindingPtr FRHIMetal::CreateShaderBinding(uint32 NumBindings)
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FShaderBindingMetal(NumBindings);
 	}
 
 	// Wait for pending GPU work to complete.

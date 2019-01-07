@@ -62,6 +62,10 @@
 		2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A39E21CAA52500E0AD35 /* stdafx.cpp */; };
 		27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */; };
 		27BE848621D5109100E1F9FA /* TDirectorCaller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 27BE848521D5109000E1F9FA /* TDirectorCaller.mm */; };
+		27F2B59121E392240026C0A2 /* FTextureMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B58F21E392240026C0A2 /* FTextureMetal.cpp */; };
+		27F2B59421E393890026C0A2 /* FShaderBindingMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59221E393890026C0A2 /* FShaderBindingMetal.cpp */; };
+		27F2B59721E394F20026C0A2 /* FPipelineMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59621E394F20026C0A2 /* FPipelineMetal.cpp */; };
+		27F2B59A21E395E10026C0A2 /* FMeshBufferMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -230,6 +234,14 @@
 		27BE848421D5109000E1F9FA /* TDirectorCaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TDirectorCaller.h; path = ../../../Sources/Engine/TDirectorCaller.h; sourceTree = "<group>"; };
 		27BE848521D5109000E1F9FA /* TDirectorCaller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = TDirectorCaller.mm; path = ../../../Sources/Engine/TDirectorCaller.mm; sourceTree = "<group>"; };
 		27D47F5421CA9B8E00109AB5 /* libTiX2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTiX2.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		27F2B58F21E392240026C0A2 /* FTextureMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FTextureMetal.cpp; path = ../../../Sources/Engine/Metal/FTextureMetal.cpp; sourceTree = "<group>"; };
+		27F2B59021E392240026C0A2 /* FTextureMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTextureMetal.h; path = ../../../Sources/Engine/Metal/FTextureMetal.h; sourceTree = "<group>"; };
+		27F2B59221E393890026C0A2 /* FShaderBindingMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FShaderBindingMetal.cpp; path = ../../../Sources/Engine/Metal/FShaderBindingMetal.cpp; sourceTree = "<group>"; };
+		27F2B59321E393890026C0A2 /* FShaderBindingMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FShaderBindingMetal.h; path = ../../../Sources/Engine/Metal/FShaderBindingMetal.h; sourceTree = "<group>"; };
+		27F2B59521E394F20026C0A2 /* FPipelineMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FPipelineMetal.h; path = ../../../Sources/Engine/Metal/FPipelineMetal.h; sourceTree = "<group>"; };
+		27F2B59621E394F20026C0A2 /* FPipelineMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FPipelineMetal.cpp; path = ../../../Sources/Engine/Metal/FPipelineMetal.cpp; sourceTree = "<group>"; };
+		27F2B59821E395E10026C0A2 /* FMeshBufferMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FMeshBufferMetal.h; path = ../../../Sources/Engine/Metal/FMeshBufferMetal.h; sourceTree = "<group>"; };
+		27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FMeshBufferMetal.cpp; path = ../../../Sources/Engine/Metal/FMeshBufferMetal.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -414,9 +426,17 @@
 		2775A32621CAA3CF00E0AD35 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
+				27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */,
+				27F2B59821E395E10026C0A2 /* FMeshBufferMetal.h */,
+				27F2B59621E394F20026C0A2 /* FPipelineMetal.cpp */,
+				27F2B59521E394F20026C0A2 /* FPipelineMetal.h */,
 				27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */,
 				27A3DC9A21D1263A00CF52C1 /* FRHIMetal.h */,
 				27A3DC9921D1263A00CF52C1 /* FRHIMetalConversion.h */,
+				27F2B59221E393890026C0A2 /* FShaderBindingMetal.cpp */,
+				27F2B59321E393890026C0A2 /* FShaderBindingMetal.h */,
+				27F2B58F21E392240026C0A2 /* FTextureMetal.cpp */,
+				27F2B59021E392240026C0A2 /* FTextureMetal.h */,
 			);
 			name = Metal;
 			sourceTree = "<group>";
@@ -558,6 +578,7 @@
 				27BE848621D5109100E1F9FA /* TDirectorCaller.mm in Sources */,
 				2775A39221CAA4EF00E0AD35 /* TNodeLight.cpp in Sources */,
 				2775A37321CAA4A300E0AD35 /* TResource.cpp in Sources */,
+				27F2B59121E392240026C0A2 /* FTextureMetal.cpp in Sources */,
 				2775A36921CAA4A300E0AD35 /* TMaterialInstance.cpp in Sources */,
 				2775A36F21CAA4A300E0AD35 /* FTexture.cpp in Sources */,
 				2775A36621CAA4A300E0AD35 /* FUniformBuffer.cpp in Sources */,
@@ -565,9 +586,12 @@
 				2775A37821CAA4A300E0AD35 /* TMeshBuffer.cpp in Sources */,
 				2775A30B21CAA32F00E0AD35 /* TInput.cpp in Sources */,
 				2775A39421CAA4EF00E0AD35 /* TNodeCamera.cpp in Sources */,
+				27F2B59A21E395E10026C0A2 /* FMeshBufferMetal.cpp in Sources */,
 				2775A37721CAA4A300E0AD35 /* FShaderBinding.cpp in Sources */,
 				2775A36421CAA4A300E0AD35 /* FMeshBuffer.cpp in Sources */,
+				27F2B59721E394F20026C0A2 /* FPipelineMetal.cpp in Sources */,
 				27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */,
+				27F2B59421E393890026C0A2 /* FShaderBindingMetal.cpp in Sources */,
 				2775A39521CAA4EF00E0AD35 /* TNodeCameraNav.cpp in Sources */,
 				2775A37C21CAA4A300E0AD35 /* FShaderParamValue.cpp in Sources */,
 				2775A36A21CAA4A300E0AD35 /* FRenderResourceHeap.cpp in Sources */,
