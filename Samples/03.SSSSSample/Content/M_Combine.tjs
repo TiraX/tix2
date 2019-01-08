@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"S_CombineVS.cso",
-		"S_CombinePS.cso",
+		"S_CombineVS",
+		"S_CombinePS",
 		"",
 		"",
 		""

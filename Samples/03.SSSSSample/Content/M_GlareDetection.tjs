@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"S_GlareDetectionVS.cso",
-		"S_GlareDetectionPS.cso",
+		"S_GlareDetectionVS",
+		"S_GlareDetectionPS",
 		"",
 		"",
 		""

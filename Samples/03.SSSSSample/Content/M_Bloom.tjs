@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"S_BloomVS.cso",
-		"S_BloomPS.cso",
+		"S_BloomVS",
+		"S_BloomPS",
 		"",
 		"",
 		""

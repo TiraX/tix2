@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"S_AddSpecularVS.cso",
-		"S_AddSpecularPS.cso",
+		"S_AddSpecularVS",
+		"S_AddSpecularPS",
 		"",
 		"",
 		""

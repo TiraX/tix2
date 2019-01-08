@@ -15,6 +15,7 @@
 #include "FPipelineDx12.h"
 #include "FUniformBufferDx12.h"
 #include "FRenderTargetDx12.h"
+#include "FShaderDx12.h"
 #include <DirectXColors.h>
 
 // link libraries
@@ -420,6 +421,11 @@ namespace tix
 	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings)
 	{
 		return ti_new FRootSignatureDx12(NumBindings, FRHIConfig::StaticSamplerNum);
+	}
+
+	FShaderPtr FRHIDx12::CreateShader(const TString& ShaderName)
+	{
+		return ti_new FShaderDx12(ShaderName);
 	}
 
 	// Wait for pending GPU work to complete.
@@ -1030,6 +1036,15 @@ namespace tix
 		return true;
 	}
 
+	inline FShaderDx12* GetDx12Shader(TPipelinePtr Pipeline, E_SHADER_STAGE Stage)
+	{
+		if (Pipeline->GetDesc().Shaders[Stage] != nullptr)
+		{
+			return static_cast<FShaderDx12*>(Pipeline->GetDesc().Shaders[Stage]->ShaderResource.get());
+		}
+		return nullptr;
+	}
+
 	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
 #if defined (TIX_DEBUG)
@@ -1065,23 +1080,30 @@ namespace tix
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
 		state.pRootSignature = PipelineRS->Get();
-		TI_ASSERT(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength() > 0);
-		state.VS = { InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_VERTEX_SHADER].GetLength()) };
-		if (InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength() > 0)
+		TI_ASSERT(InPipelineDesc->GetDesc().Shaders[ESS_VERTEX_SHADER] != nullptr);
+
+		FShaderDx12 * ShaderVS = GetDx12Shader(InPipelineDesc, ESS_VERTEX_SHADER);
+		FShaderDx12 * ShaderPS = GetDx12Shader(InPipelineDesc, ESS_PIXEL_SHADER);
+		FShaderDx12 * ShaderDS = GetDx12Shader(InPipelineDesc, ESS_DOMAIN_SHADER);
+		FShaderDx12 * ShaderHS = GetDx12Shader(InPipelineDesc, ESS_HULL_SHADER);
+		FShaderDx12 * ShaderGS = GetDx12Shader(InPipelineDesc, ESS_GEOMETRY_SHADER);
+
+		state.VS = { ShaderVS->Shader.GetBuffer(), uint32(ShaderVS->Shader.GetLength()) };
+		if (ShaderPS != nullptr)
 		{
-			state.PS = { InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_PIXEL_SHADER].GetLength()) };
+			state.PS = { ShaderPS->Shader.GetBuffer(), uint32(ShaderPS->Shader.GetLength()) };
 		}
-		if (InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetLength() > 0)
+		if (ShaderDS != nullptr)
 		{
-			state.DS = { InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_DOMAIN_SHADER].GetLength()) };
+			state.DS = { ShaderDS->Shader.GetBuffer(), uint32(ShaderDS->Shader.GetLength()) };
 		}
-		if (InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetLength() > 0)
+		if (ShaderHS != nullptr)
 		{
-			state.HS = { InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_HULL_SHADER].GetLength()) };
+			state.HS = { ShaderHS->Shader.GetBuffer(), uint32(ShaderHS->Shader.GetLength()) };
 		}
-		if (InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetLength() > 0)
+		if (ShaderGS != nullptr)
 		{
-			state.GS = { InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetBuffer(), uint32(InPipelineDesc->ShaderCode[ESS_GEOMETRY_SHADER].GetLength()) };
+			state.GS = { ShaderGS->Shader.GetBuffer(), uint32(ShaderGS->Shader.GetLength()) };
 		}
 		MakeDx12RasterizerDesc(Desc, state.RasterizerState);
 		MakeDx12BlendState(Desc, state.BlendState);
@@ -1110,10 +1132,15 @@ namespace tix
 		DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
 
 		// Shader data can be deleted once the pipeline state is created.
-		for (int32 s = 0; s < ESS_COUNT; ++s)
-		{
-			InPipelineDesc->ShaderCode[s].Destroy();
-		}
+		ShaderVS->ReleaseShaderCode();
+		if (ShaderPS != nullptr)
+			ShaderPS->ReleaseShaderCode();
+		if (ShaderDS != nullptr)
+			ShaderDS->ReleaseShaderCode();
+		if (ShaderHS != nullptr)
+			ShaderHS->ReleaseShaderCode();
+		if (ShaderGS != nullptr)
+			ShaderGS->ReleaseShaderCode();
 		HoldResourceReference(Pipeline);
 
 		return true;
@@ -1201,6 +1228,28 @@ namespace tix
 
 		HoldResourceReference(ShaderBindingResource);
 
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource)
+	{
+		// Dx12 shader only need load byte code.
+		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
+		TString ShaderName = ShaderDx12->GetShaderName();
+		if (ShaderName.rfind(".cso") == TString::npos)
+			ShaderName += ".cso";
+
+		// Load shader code
+		TFile File;
+		if (File.Open(ShaderName, EFA_READ))
+		{
+			ShaderDx12->Shader.Put(File);
+			File.Close();
+		}
+		else
+		{
+			_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+		}
 		return true;
 	}
 

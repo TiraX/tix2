@@ -11,14 +11,19 @@
 
 namespace tix
 {
-	//FShaderDx12::FShaderDx12()
-	//	: FShader(ERF_Dx12)
-	//{
-	//}
+	FShaderDx12::FShaderDx12(const TString& InShaderName)
+		: FShader(InShaderName)
+	{
+	}
 
-	//FShaderDx12::~FShaderDx12()
-	//{
-	//}
+	FShaderDx12::~FShaderDx12()
+	{
+	}
+
+	void FShaderDx12::ReleaseShaderCode()
+	{
+		Shader.Destroy();
+	}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

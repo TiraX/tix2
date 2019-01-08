@@ -54,6 +54,22 @@ namespace tix
 		}
 	}
 
+	TResourcePtr TResourceLibrary::CreateShaderResource(const TString& ShaderName)
+	{
+		if (Resources.find(ShaderName) == Resources.end())
+		{
+			// Create a shader resource
+			TShaderPtr ShaderRes = ti_new TShader(ShaderName);
+			ShaderRes->InitRenderThreadResource();
+			Resources[ShaderName] = ShaderRes;
+			return ShaderRes;
+		}
+		else
+		{
+			return Resources[ShaderName];
+		}
+	}
+
 	void TResourceLibrary::RemoveUnusedResources()
 	{
 		MapResources::iterator it = Resources.begin();

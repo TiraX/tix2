@@ -29,6 +29,7 @@ namespace tix
 
 	private:
 		//E_BLEND_MODE BlendMode;
+		TString ShaderNames[ESS_COUNT];
 		TStream ShaderCodes[ESS_COUNT];
 		TString ShaderBinding;
 

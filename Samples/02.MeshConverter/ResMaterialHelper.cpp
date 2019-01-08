@@ -148,7 +148,7 @@ namespace tix
 
 	void TResMaterialHelper::SetShaderName(E_SHADER_STAGE Stage, const TString& Name)
 	{
-		PipelineDesc.ShaderName[Stage] = Name;
+		ShaderNames[Stage] = Name;
 	}
 
 	void TResMaterialHelper::SetBlendMode(E_BLEND_MODE InBlendMode)
@@ -230,7 +230,7 @@ namespace tix
 			THeaderMaterial Define;
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
-				Define.ShaderNames[s] = AddStringToList(OutStrings, PipelineDesc.ShaderName[s]);
+				Define.ShaderNames[s] = AddStringToList(OutStrings, ShaderNames[s]);
 				Define.ShaderCodeLength[s] = ShaderCodes[s].GetLength();
 			}
 

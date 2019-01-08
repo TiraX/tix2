@@ -4,7 +4,16 @@
 */
 
 #include "stdafx.h"
+#include "FShader.h"
 
 namespace tix
 {
+	FShader::FShader(const TString& InShaderName)
+		: ShaderName(InShaderName)
+	{
+	}
+
+	FShader::~FShader()
+	{
+	}
 }

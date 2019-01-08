@@ -41,9 +41,6 @@ namespace tix
 		TMaterial();
 		virtual ~TMaterial();
 
-		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
-		void SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length);
-		void SetShaderCode(E_SHADER_STAGE Stage, TFile& File);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
 		void EnableDepthWrite(bool bEnable);
@@ -60,10 +57,6 @@ namespace tix
 		void SetRTDepth(E_PIXEL_FORMAT Format);
 
 	private:
-		TString ShaderNames[ESS_COUNT];
-
-		//TMaterialRTInfo RTInfo;
-
 		friend class TPipeline;
 		friend class TResFile;
 	};

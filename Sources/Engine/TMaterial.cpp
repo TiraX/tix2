@@ -14,24 +14,6 @@ namespace tix
 	{
 	}
 
-
-	void TMaterial::SetShaderName(E_SHADER_STAGE Stage, const TString& Name)
-	{
-		ShaderNames[Stage] = Name;
-	}
-
-	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, const uint8* CodeBuffer, int32 Length)
-	{
-		ShaderCode[Stage].Reset();
-		ShaderCode[Stage].Put(CodeBuffer, Length);
-	}
-
-	void TMaterial::SetShaderCode(E_SHADER_STAGE Stage, TFile& File)
-	{
-		ShaderCode[Stage].Reset();
-		ShaderCode[Stage].Put(File);
-	}
-
 	void TMaterial::SetBlendMode(E_BLEND_MODE InBlendMode)
 	{
 		switch (InBlendMode)

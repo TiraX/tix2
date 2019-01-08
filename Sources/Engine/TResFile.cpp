@@ -286,9 +286,10 @@ namespace tix
 			TMaterialPtr Material = ti_new TMaterial;
 
 			// Load material
+			TString ShaderNames[ESS_COUNT];
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
-				Material->SetShaderName((E_SHADER_STAGE)s, GetString(Header->ShaderNames[s]));
+				ShaderNames[s] = GetString(Header->ShaderNames[s]);
 			}
 
 			Material->EnableState(EPSO_BLEND, (Header->Flags & EPSO_BLEND) != 0);
@@ -326,26 +327,17 @@ namespace tix
 				if (Header->ShaderCodeLength[s] > 0)
 				{
 					// Load from res file
-					Material->SetShaderCode((E_SHADER_STAGE)s, CodeDataStart + CodeOffset, Header->ShaderCodeLength[s]);
+					//Material->SetShaderCode((E_SHADER_STAGE)s, CodeDataStart + CodeOffset, Header->ShaderCodeLength[s]);
+					TI_ASSERT(0);
 					CodeOffset += ti_align4(Header->ShaderCodeLength[s]);
 				}
 				else
 				{
 					// Load from single file
-					if (!Material->ShaderNames[s].empty())
+					if (!ShaderNames[s].empty())
 					{
-						TString ShaderPath = TPath::GetAbsolutePath(Material->ShaderNames[s]);
-
-						TFile f;
-						if (f.Open(ShaderPath, EFA_READ))
-						{
-							Material->SetShaderCode((E_SHADER_STAGE)s, f);
-							f.Close();
-						}
-						else
-						{
-							_LOG(Error, "Failed to load shader [%s].\n", ShaderPath.c_str());
-						}
+						TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames[s]).get());
+						Material->SetShader((E_SHADER_STAGE)s, Shader);
 					}
 				}
 			}

@@ -4,8 +4,8 @@
 	"version": 1,
 	"desc": "",
 	"shaders": [
-		"S_SkyDomeVS.cso",
-		"S_SkyDomePS.cso",
+		"S_SkyDomeVS",
+		"S_SkyDomePS",
 		"",
 		"",
 		""

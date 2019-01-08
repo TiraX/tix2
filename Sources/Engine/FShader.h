@@ -7,4 +7,20 @@
 
 namespace tix
 {
+	class FShader : public FRenderResource
+	{
+	public:
+		FShader(const TString& InShaderName);
+		virtual ~FShader();
+
+		const TString& GetShaderName() const
+		{
+			return ShaderName;
+		}
+
+	protected:
+
+	protected:
+		TString ShaderName;
+	};
 }

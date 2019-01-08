@@ -858,6 +858,7 @@ namespace tix
 						half hf = half(Data[i]);
 						Surface.Data.Put(&hf, sizeof(half));
 					}
+					Surface.RowPitch = Texture->Desc.Width * 8;
 				}
 				Texture->Desc.Format = EPF_RGBA16F;
 			}

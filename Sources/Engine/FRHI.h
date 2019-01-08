@@ -54,6 +54,7 @@ namespace tix
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H);
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) = 0;
+		virtual FShaderPtr CreateShader(const TString& ShaderName) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
@@ -62,6 +63,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget);
 		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) = 0;
+		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) = 0;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;

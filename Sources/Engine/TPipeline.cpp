@@ -17,10 +17,9 @@ namespace tix
 	{
 	}
 
-	void TPipeline::SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength)
+	void TPipeline::SetShader(E_SHADER_STAGE ShaderStage, TShaderPtr Shader)
 	{
-		Desc.ShaderName[ShaderStage] = ShaderName;
-		ShaderCode[ShaderStage].Put(InShaderCode, CodeLength);
+		Desc.Shaders[ShaderStage] = Shader;
 	}
 	
 	void TPipeline::InitRenderThreadResource()

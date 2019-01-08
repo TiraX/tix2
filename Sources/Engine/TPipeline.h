@@ -184,13 +184,14 @@ namespace tix
 	};
 	struct TPipelineDesc
 	{
-		TString ShaderName[ESS_COUNT];
 		uint32 Flags;
 		TBlendState BlendState;
 		TRasterizerDesc RasterizerDesc;
 		TDepthStencilDesc DepthStencilDesc;
 		uint32 VsFormat;
 		uint32 PrimitiveType;
+
+		TShaderPtr Shaders[ESS_COUNT];
 
 		int32 RTCount;
 		E_PIXEL_FORMAT RTFormats[ERTC_COUNT];
@@ -231,7 +232,7 @@ namespace tix
 		TPipeline();
 		virtual ~TPipeline();
 
-		void SetShader(E_SHADER_STAGE ShaderStage, const TString& ShaderName, const int8* InShaderCode, int32 CodeLength);
+		void SetShader(E_SHADER_STAGE ShaderStage, TShaderPtr Shader);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
@@ -242,7 +243,6 @@ namespace tix
 		{
 			return Desc;
 		}
-		TStream ShaderCode[ESS_COUNT];
 	protected:
 
 	protected:

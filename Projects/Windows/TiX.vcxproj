@@ -78,6 +78,7 @@
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="..\..\Sources\Engine\TResource.h" />
     <ClInclude Include="..\..\Sources\Engine\TResourceLibrary.h" />
     <ClInclude Include="..\..\Sources\Engine\TScene.h" />
+    <ClInclude Include="..\..\Sources\Engine\TShader.h" />
     <ClInclude Include="..\..\Sources\Engine\TShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\TStringExt.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
