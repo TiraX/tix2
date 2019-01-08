@@ -277,7 +277,7 @@ namespace tix
 		}
 
 		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* CodeDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
+		//const uint8* CodeDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
 		
 		TMaterialPtr Result;
 		for (int32 i = 0; i < MaterialCount; ++i)

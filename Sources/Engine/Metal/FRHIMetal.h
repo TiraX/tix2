@@ -31,6 +31,7 @@ namespace tix
 		virtual FPipelinePtr CreatePipeline() override;
 		//virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) override;
+        virtual FShaderPtr CreateShader(const TString& ShaderName) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
@@ -38,6 +39,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
 		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) override;
+        virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) override;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;

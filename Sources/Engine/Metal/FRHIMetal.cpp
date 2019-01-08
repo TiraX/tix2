@@ -14,6 +14,7 @@
 #include "FShaderBindingMetal.h"
 #include "FPipelineMetal.h"
 #include "FMeshBufferMetal.h"
+#include "FShaderMetal.h"
 
 namespace tix
 {
@@ -124,6 +125,11 @@ namespace tix
 	{
         return ti_new FShaderBindingMetal(NumBindings);
 	}
+    
+    FShaderPtr FRHIMetal::CreateShader(const TString &ShaderName)
+    {
+        return ti_new FShaderMetal(ShaderName);
+    }
 
 	// Wait for pending GPU work to complete.
 	void FRHIMetal::WaitingForGpu()
@@ -171,6 +177,12 @@ namespace tix
         TI_ASSERT(0);
 		return true;
 	}
+    
+    bool FRHIMetal::UpdateHardwareResource(FShaderPtr ShaderResource)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
     
 	void FRHIMetal::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{

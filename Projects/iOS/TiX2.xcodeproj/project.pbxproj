@@ -10,6 +10,8 @@
 		2713373F21CCAFA5001BAE3A /* TDeviceIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2713373D21CCAFA5001BAE3A /* TDeviceIOS.cpp */; };
 		2713374A21CCB398001BAE3A /* FMetalView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2713374721CCB398001BAE3A /* FMetalView.mm */; };
 		2713374E21CCB7D2001BAE3A /* TViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2713374D21CCB7D2001BAE3A /* TViewController.mm */; };
+		27219D4021E4F32000E690D2 /* TShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27219D3E21E4F31F00E690D2 /* TShader.cpp */; };
+		27219D4321E4F48800E690D2 /* FShaderMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27219D4121E4F48800E690D2 /* FShaderMetal.cpp */; };
 		2775A30821CAA32F00E0AD35 /* TINIParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */; };
 		2775A30921CAA32F00E0AD35 /* TDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E221CAA32D00E0AD35 /* TDevice.cpp */; };
 		2775A30A21CAA32F00E0AD35 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E621CAA32D00E0AD35 /* TLog.cpp */; };
@@ -90,6 +92,10 @@
 		2713374721CCB398001BAE3A /* FMetalView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = FMetalView.mm; path = ../../../Sources/Engine/FMetalView.mm; sourceTree = "<group>"; };
 		2713374C21CCB7D2001BAE3A /* TViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TViewController.h; path = ../../../Sources/Engine/TViewController.h; sourceTree = "<group>"; };
 		2713374D21CCB7D2001BAE3A /* TViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = TViewController.mm; path = ../../../Sources/Engine/TViewController.mm; sourceTree = "<group>"; };
+		27219D3E21E4F31F00E690D2 /* TShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TShader.cpp; path = ../../../Sources/Engine/TShader.cpp; sourceTree = "<group>"; };
+		27219D3F21E4F31F00E690D2 /* TShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TShader.h; path = ../../../Sources/Engine/TShader.h; sourceTree = "<group>"; };
+		27219D4121E4F48800E690D2 /* FShaderMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FShaderMetal.cpp; path = ../../../Sources/Engine/Metal/FShaderMetal.cpp; sourceTree = "<group>"; };
+		27219D4221E4F48800E690D2 /* FShaderMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FShaderMetal.h; path = ../../../Sources/Engine/Metal/FShaderMetal.h; sourceTree = "<group>"; };
 		2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TINIParser.cpp; path = ../../../Sources/Engine/TINIParser.cpp; sourceTree = "<group>"; };
 		2775A2E221CAA32D00E0AD35 /* TDevice.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TDevice.cpp; path = ../../../Sources/Engine/TDevice.cpp; sourceTree = "<group>"; };
 		2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = IInstrusivePtr.hpp; path = ../../../Sources/Engine/IInstrusivePtr.hpp; sourceTree = "<group>"; };
@@ -421,6 +427,8 @@
 				2775A33E21CAA4A100E0AD35 /* TResource.h */,
 				2775A33721CAA4A100E0AD35 /* TResourceLibrary.cpp */,
 				2775A35821CAA4A300E0AD35 /* TResourceLibrary.h */,
+				27219D3E21E4F31F00E690D2 /* TShader.cpp */,
+				27219D3F21E4F31F00E690D2 /* TShader.h */,
 				2775A36021CAA4A300E0AD35 /* TShaderBinding.cpp */,
 				2775A34B21CAA4A200E0AD35 /* TShaderBinding.h */,
 				2775A34D21CAA4A200E0AD35 /* TTexture.cpp */,
@@ -432,21 +440,23 @@
 		2775A32621CAA3CF00E0AD35 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
-				27F2B59B21E4F2480026C0A2 /* FRenderTargetMetal.cpp */,
-				27F2B59E21E4F2490026C0A2 /* FRenderTargetMetal.h */,
-				27F2B59C21E4F2480026C0A2 /* FUniformBufferMetal.cpp */,
-				27F2B59D21E4F2480026C0A2 /* FUniformBufferMetal.h */,
 				27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */,
 				27F2B59821E395E10026C0A2 /* FMeshBufferMetal.h */,
 				27F2B59621E394F20026C0A2 /* FPipelineMetal.cpp */,
 				27F2B59521E394F20026C0A2 /* FPipelineMetal.h */,
+				27F2B59B21E4F2480026C0A2 /* FRenderTargetMetal.cpp */,
+				27F2B59E21E4F2490026C0A2 /* FRenderTargetMetal.h */,
 				27A3DC9B21D1263A00CF52C1 /* FRHIMetal.cpp */,
 				27A3DC9A21D1263A00CF52C1 /* FRHIMetal.h */,
 				27A3DC9921D1263A00CF52C1 /* FRHIMetalConversion.h */,
 				27F2B59221E393890026C0A2 /* FShaderBindingMetal.cpp */,
 				27F2B59321E393890026C0A2 /* FShaderBindingMetal.h */,
+				27219D4121E4F48800E690D2 /* FShaderMetal.cpp */,
+				27219D4221E4F48800E690D2 /* FShaderMetal.h */,
 				27F2B58F21E392240026C0A2 /* FTextureMetal.cpp */,
 				27F2B59021E392240026C0A2 /* FTextureMetal.h */,
+				27F2B59C21E4F2480026C0A2 /* FUniformBufferMetal.cpp */,
+				27F2B59D21E4F2480026C0A2 /* FUniformBufferMetal.h */,
 			);
 			name = Metal;
 			sourceTree = "<group>";
@@ -597,12 +607,14 @@
 				2775A37821CAA4A300E0AD35 /* TMeshBuffer.cpp in Sources */,
 				2775A30B21CAA32F00E0AD35 /* TInput.cpp in Sources */,
 				2775A39421CAA4EF00E0AD35 /* TNodeCamera.cpp in Sources */,
+				27219D4321E4F48800E690D2 /* FShaderMetal.cpp in Sources */,
 				27F2B59A21E395E10026C0A2 /* FMeshBufferMetal.cpp in Sources */,
 				2775A37721CAA4A300E0AD35 /* FShaderBinding.cpp in Sources */,
 				2775A36421CAA4A300E0AD35 /* FMeshBuffer.cpp in Sources */,
 				27F2B59721E394F20026C0A2 /* FPipelineMetal.cpp in Sources */,
 				27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */,
 				27F2B59421E393890026C0A2 /* FShaderBindingMetal.cpp in Sources */,
+				27219D4021E4F32000E690D2 /* TShader.cpp in Sources */,
 				2775A39521CAA4EF00E0AD35 /* TNodeCameraNav.cpp in Sources */,
 				2775A37C21CAA4A300E0AD35 /* FShaderParamValue.cpp in Sources */,
 				2775A36A21CAA4A300E0AD35 /* FRenderResourceHeap.cpp in Sources */,
