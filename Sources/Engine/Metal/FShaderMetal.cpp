@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FShaderMetal::FShaderMetal(const TString& InShaderName)
-		: FShader(InShaderName)
+	FShaderMetal::FShaderMetal(const TShaderNames& InNames)
+		: FShader(InNames)
 	{
 	}
 

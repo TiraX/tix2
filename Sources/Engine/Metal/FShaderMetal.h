@@ -12,7 +12,7 @@ namespace tix
 	class FShaderMetal : public FShader
 	{
 	public:
-		FShaderMetal(const TString& InShaderName);
+		FShaderMetal(const TShaderNames& InNames);
 		virtual ~FShaderMetal();
 
 	protected:

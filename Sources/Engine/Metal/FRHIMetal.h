@@ -31,7 +31,7 @@ namespace tix
 		virtual FPipelinePtr CreatePipeline() override;
 		//virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) override;
-        virtual FShaderPtr CreateShader(const TString& ShaderName) override;
+        virtual FShaderPtr CreateShader(const TShaderNames& ShaderNames) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;

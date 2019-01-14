@@ -126,9 +126,9 @@ namespace tix
         return ti_new FShaderBindingMetal(NumBindings);
 	}
     
-    FShaderPtr FRHIMetal::CreateShader(const TString &ShaderName)
+    FShaderPtr FRHIMetal::CreateShader(const TShaderNames& ShaderNames)
     {
-        return ti_new FShaderMetal(ShaderName);
+        return ti_new FShaderMetal(ShaderNames);
     }
 
 	// Wait for pending GPU work to complete.
@@ -180,7 +180,7 @@ namespace tix
     
     bool FRHIMetal::UpdateHardwareResource(FShaderPtr ShaderResource)
     {
-        TI_ASSERT(0);
+        // Metal shader only need names. Do not need hard ware resource.
         return true;
     }
     
