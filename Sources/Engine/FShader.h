@@ -10,17 +10,17 @@ namespace tix
 	class FShader : public FRenderResource
 	{
 	public:
-		FShader(const TString& InShaderName);
+		FShader(const TShaderNames& InNames);
 		virtual ~FShader();
 
-		const TString& GetShaderName() const
+		const TString& GetShaderName(E_SHADER_STAGE Stage) const
 		{
-			return ShaderName;
+			return ShaderNames.ShaderNames[Stage];
 		}
 
 	protected:
 
 	protected:
-		TString ShaderName;
+		const TShaderNames& ShaderNames;
 	};
 }

@@ -8,8 +8,8 @@
 
 namespace tix
 {
-	FShader::FShader(const TString& InShaderName)
-		: ShaderName(InShaderName)
+	FShader::FShader(const TShaderNames& InNames)
+		: ShaderNames(InNames)
 	{
 	}
 

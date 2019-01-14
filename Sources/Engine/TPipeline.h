@@ -191,7 +191,7 @@ namespace tix
 		uint32 VsFormat;
 		uint32 PrimitiveType;
 
-		TShaderPtr Shaders[ESS_COUNT];
+		TShaderPtr Shader;
 
 		int32 RTCount;
 		E_PIXEL_FORMAT RTFormats[ERTC_COUNT];
@@ -232,7 +232,7 @@ namespace tix
 		TPipeline();
 		virtual ~TPipeline();
 
-		void SetShader(E_SHADER_STAGE ShaderStage, TShaderPtr Shader);
+		void SetShader(TShaderPtr Shader);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;

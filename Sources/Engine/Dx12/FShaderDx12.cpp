@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FShaderDx12::FShaderDx12(const TString& InShaderName)
-		: FShader(InShaderName)
+	FShaderDx12::FShaderDx12(const TShaderNames& InNames)
+		: FShader(InNames)
 	{
 	}
 
@@ -22,7 +22,10 @@ namespace tix
 
 	void FShaderDx12::ReleaseShaderCode()
 	{
-		Shader.Destroy();
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			ShaderCodes[s].Destroy();
+		}
 	}
 }
 

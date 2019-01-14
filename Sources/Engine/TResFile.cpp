@@ -286,10 +286,10 @@ namespace tix
 			TMaterialPtr Material = ti_new TMaterial;
 
 			// Load material
-			TString ShaderNames[ESS_COUNT];
+			TShaderNames ShaderNames;
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
-				ShaderNames[s] = GetString(Header->ShaderNames[s]);
+				ShaderNames.ShaderNames[s] = GetString(Header->ShaderNames[s]);
 			}
 
 			Material->EnableState(EPSO_BLEND, (Header->Flags & EPSO_BLEND) != 0);
@@ -334,11 +334,8 @@ namespace tix
 				else
 				{
 					// Load from single file
-					if (!ShaderNames[s].empty())
-					{
-						TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames[s]).get());
-						Material->SetShader((E_SHADER_STAGE)s, Shader);
-					}
+					TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames).get());
+					Material->SetShader(Shader);
 				}
 			}
 

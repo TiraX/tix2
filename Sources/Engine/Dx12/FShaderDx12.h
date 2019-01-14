@@ -12,14 +12,14 @@ namespace tix
 	class FShaderDx12 : public FShader
 	{
 	public:
-		FShaderDx12(const TString& InShaderName);
+		FShaderDx12(const TShaderNames& InNames);
 		virtual ~FShaderDx12();
 
 		void ReleaseShaderCode();
 	protected:
 
 	protected:
-		TStream Shader;
+		TStream ShaderCodes[ESS_COUNT];
 
 		friend class FRHIDx12;
 	};

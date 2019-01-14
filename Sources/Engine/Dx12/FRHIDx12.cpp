@@ -423,9 +423,9 @@ namespace tix
 		return ti_new FRootSignatureDx12(NumBindings, FRHIConfig::StaticSamplerNum);
 	}
 
-	FShaderPtr FRHIDx12::CreateShader(const TString& ShaderName)
+	FShaderPtr FRHIDx12::CreateShader(const TShaderNames& InNames)
 	{
-		return ti_new FShaderDx12(ShaderName);
+		return ti_new FShaderDx12(InNames);
 	}
 
 	// Wait for pending GPU work to complete.
@@ -1038,9 +1038,10 @@ namespace tix
 
 	inline FShaderDx12* GetDx12Shader(TPipelinePtr Pipeline, E_SHADER_STAGE Stage)
 	{
-		if (Pipeline->GetDesc().Shaders[Stage] != nullptr)
+		TI_ASSERT(0);
+		if (Pipeline->GetDesc().Shader != nullptr)
 		{
-			return static_cast<FShaderDx12*>(Pipeline->GetDesc().Shaders[Stage]->ShaderResource.get());
+			//return static_cast<FShaderDx12*>(Pipeline->GetDesc().Shaders[Stage]->ShaderResource.get());
 		}
 		return nullptr;
 	}
@@ -1080,31 +1081,28 @@ namespace tix
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
 		state.pRootSignature = PipelineRS->Get();
-		TI_ASSERT(InPipelineDesc->GetDesc().Shaders[ESS_VERTEX_SHADER] != nullptr);
+		TI_ASSERT(InPipelineDesc->GetDesc().Shader != nullptr);
 
-		FShaderDx12 * ShaderVS = GetDx12Shader(InPipelineDesc, ESS_VERTEX_SHADER);
-		FShaderDx12 * ShaderPS = GetDx12Shader(InPipelineDesc, ESS_PIXEL_SHADER);
-		FShaderDx12 * ShaderDS = GetDx12Shader(InPipelineDesc, ESS_DOMAIN_SHADER);
-		FShaderDx12 * ShaderHS = GetDx12Shader(InPipelineDesc, ESS_HULL_SHADER);
-		FShaderDx12 * ShaderGS = GetDx12Shader(InPipelineDesc, ESS_GEOMETRY_SHADER);
+		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(InPipelineDesc->GetDesc().Shader->ShaderResource.get());
 
-		state.VS = { ShaderVS->Shader.GetBuffer(), uint32(ShaderVS->Shader.GetLength()) };
-		if (ShaderPS != nullptr)
+		state.VS = { ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetLength()) };
+		if (ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength() > 0)
 		{
-			state.PS = { ShaderPS->Shader.GetBuffer(), uint32(ShaderPS->Shader.GetLength()) };
+			state.PS = { ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength()) };
 		}
-		if (ShaderDS != nullptr)
+		if (ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength() > 0)
 		{
-			state.DS = { ShaderDS->Shader.GetBuffer(), uint32(ShaderDS->Shader.GetLength()) };
+			state.PS = { ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength()) };
 		}
-		if (ShaderHS != nullptr)
+		if (ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength() > 0)
 		{
-			state.HS = { ShaderHS->Shader.GetBuffer(), uint32(ShaderHS->Shader.GetLength()) };
+			state.PS = { ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength()) };
 		}
-		if (ShaderGS != nullptr)
+		if (ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength() > 0)
 		{
-			state.GS = { ShaderGS->Shader.GetBuffer(), uint32(ShaderGS->Shader.GetLength()) };
+			state.PS = { ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength()) };
 		}
+
 		MakeDx12RasterizerDesc(Desc, state.RasterizerState);
 		MakeDx12BlendState(Desc, state.BlendState);
 		MakeDx12DepthStencilState(Desc, state.DepthStencilState);
@@ -1132,15 +1130,7 @@ namespace tix
 		DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
 
 		// Shader data can be deleted once the pipeline state is created.
-		ShaderVS->ReleaseShaderCode();
-		if (ShaderPS != nullptr)
-			ShaderPS->ReleaseShaderCode();
-		if (ShaderDS != nullptr)
-			ShaderDS->ReleaseShaderCode();
-		if (ShaderHS != nullptr)
-			ShaderHS->ReleaseShaderCode();
-		if (ShaderGS != nullptr)
-			ShaderGS->ReleaseShaderCode();
+		ShaderDx12->ReleaseShaderCode();
 		HoldResourceReference(Pipeline);
 
 		return true;
@@ -1235,21 +1225,30 @@ namespace tix
 	{
 		// Dx12 shader only need load byte code.
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
-		TString ShaderName = ShaderDx12->GetShaderName();
-		if (ShaderName.rfind(".cso") == TString::npos)
-			ShaderName += ".cso";
 
-		// Load shader code
-		TFile File;
-		if (File.Open(ShaderName, EFA_READ))
+		for (int32 s = 0; s < ESS_COUNT; ++s)
 		{
-			ShaderDx12->Shader.Put(File);
-			File.Close();
+			TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
+			if (!ShaderName.empty())
+			{
+				if (ShaderName.rfind(".cso") == TString::npos)
+					ShaderName += ".cso";
+
+				// Load shader code
+				TFile File;
+				if (File.Open(ShaderName, EFA_READ))
+				{
+					ShaderDx12->ShaderCodes[s].Reset();
+					ShaderDx12->ShaderCodes[s].Put(File);
+					File.Close();
+				}
+				else
+				{
+					_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+				}
+			}
 		}
-		else
-		{
-			_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
-		}
+
 		return true;
 	}
 

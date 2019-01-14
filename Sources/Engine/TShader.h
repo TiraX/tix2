@@ -7,10 +7,24 @@
 
 namespace tix
 {
+	struct TShaderNames
+	{
+		TString ShaderNames[ESS_COUNT];
+
+		TString GetSearchKey() const
+		{
+			return ShaderNames[ESS_VERTEX_SHADER] +
+				ShaderNames[ESS_PIXEL_SHADER] +
+				ShaderNames[ESS_DOMAIN_SHADER] +
+				ShaderNames[ESS_HULL_SHADER] +
+				ShaderNames[ESS_GEOMETRY_SHADER];
+		}
+	};
+
 	class TShader : public TResource
 	{
 	public:
-		TShader(const TString& InName);
+		TShader(const TShaderNames& InNames);
 		virtual ~TShader();
 
 		virtual void InitRenderThreadResource() override;
@@ -19,6 +33,6 @@ namespace tix
 		FShaderPtr ShaderResource;
 
 	protected:
-		TString Name;
+		TShaderNames Names;
 	};
 }

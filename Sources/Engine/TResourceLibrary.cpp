@@ -54,19 +54,20 @@ namespace tix
 		}
 	}
 
-	TResourcePtr TResourceLibrary::CreateShaderResource(const TString& ShaderName)
+	TResourcePtr TResourceLibrary::CreateShaderResource(const TShaderNames& ShaderNames)
 	{
-		if (Resources.find(ShaderName) == Resources.end())
+		TString ShaderKey = ShaderNames.GetSearchKey();
+		if (Resources.find(ShaderKey) == Resources.end())
 		{
 			// Create a shader resource
-			TShaderPtr ShaderRes = ti_new TShader(ShaderName);
+			TShaderPtr ShaderRes = ti_new TShader(ShaderNames);
 			ShaderRes->InitRenderThreadResource();
-			Resources[ShaderName] = ShaderRes;
+			Resources[ShaderKey] = ShaderRes;
 			return ShaderRes;
 		}
 		else
 		{
-			return Resources[ShaderName];
+			return Resources[ShaderKey];
 		}
 	}
 

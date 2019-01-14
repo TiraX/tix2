@@ -8,10 +8,13 @@
 
 namespace tix
 {
-	TShader::TShader(const TString& InName)
+	TShader::TShader(const TShaderNames& InNames)
 		: TResource(ERES_SHADER)
-		, Name(InName)
 	{
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			Names.ShaderNames[s] = InNames.ShaderNames[s];
+		}
 	}
 
 	TShader::~TShader()
@@ -21,7 +24,7 @@ namespace tix
 	void TShader::InitRenderThreadResource()
 	{
 		TI_ASSERT(ShaderResource == nullptr);
-		ShaderResource = FRHI::Get()->CreateShader(Name);
+		ShaderResource = FRHI::Get()->CreateShader(Names);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TShaderUpdateResource,
 			FShaderPtr, Shader_RT, ShaderResource,

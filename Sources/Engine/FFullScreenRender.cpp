@@ -58,24 +58,16 @@ namespace tix
 		// Create full screen render pipeline
 		TMaterialPtr FSMaterial = ti_new TMaterial();
 		FSMaterial->SetResourceName("FullScreenMaterial");
-		const TString ShaderNames[ESS_COUNT] = {
-			"FullScreenVS",
-			"FullScreenPS",
-			"",
-			"",
-			""
-		};
-		for (int32 s = 0; s < ESS_COUNT; ++s)
-		{
-			if (ShaderNames[s].empty())
-				continue;
 
-			TShaderPtr Shader = ti_new TShader(ShaderNames[s]);
-			Shader->ShaderResource = RHI->CreateShader(ShaderNames[s]);
-			RHI->UpdateHardwareResource(Shader->ShaderResource);
+		TShaderNames ShaderNames;
+		ShaderNames.ShaderNames[ESS_VERTEX_SHADER] = "FullScreenVS";
+		ShaderNames.ShaderNames[ESS_PIXEL_SHADER] = "FullScreenPS";
 
-			FSMaterial->SetShader((E_SHADER_STAGE)s, Shader);
-		}
+		TShaderPtr Shader = ti_new TShader(ShaderNames);
+		Shader->ShaderResource = RHI->CreateShader(ShaderNames);
+		RHI->UpdateHardwareResource(Shader->ShaderResource);
+		FSMaterial->SetShader(Shader);
+
 		FSMaterial->EnableDepthWrite(false);
 		FSMaterial->EnableDepthTest(false);
 		FSMaterial->SetShaderVsFormat(FullScreenQuad->GetVSFormat());
