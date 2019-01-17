@@ -12,6 +12,7 @@
 		2713374E21CCB7D2001BAE3A /* TViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2713374D21CCB7D2001BAE3A /* TViewController.mm */; };
 		27219D4021E4F32000E690D2 /* TShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27219D3E21E4F31F00E690D2 /* TShader.cpp */; };
 		27219D4321E4F48800E690D2 /* FShaderMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27219D4121E4F48800E690D2 /* FShaderMetal.cpp */; };
+		274275AE21F0D4D60031F4EE /* M_FullScreen.metal in Sources */ = {isa = PBXBuildFile; fileRef = 274275AD21F0D4D60031F4EE /* M_FullScreen.metal */; };
 		2775A30821CAA32F00E0AD35 /* TINIParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */; };
 		2775A30921CAA32F00E0AD35 /* TDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E221CAA32D00E0AD35 /* TDevice.cpp */; };
 		2775A30A21CAA32F00E0AD35 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E621CAA32D00E0AD35 /* TLog.cpp */; };
@@ -96,6 +97,7 @@
 		27219D3F21E4F31F00E690D2 /* TShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TShader.h; path = ../../../Sources/Engine/TShader.h; sourceTree = "<group>"; };
 		27219D4121E4F48800E690D2 /* FShaderMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FShaderMetal.cpp; path = ../../../Sources/Engine/Metal/FShaderMetal.cpp; sourceTree = "<group>"; };
 		27219D4221E4F48800E690D2 /* FShaderMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FShaderMetal.h; path = ../../../Sources/Engine/Metal/FShaderMetal.h; sourceTree = "<group>"; };
+		274275AD21F0D4D60031F4EE /* M_FullScreen.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = M_FullScreen.metal; path = ../../../Sources/Engine/Shaders/Metal/M_FullScreen.metal; sourceTree = "<group>"; };
 		2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TINIParser.cpp; path = ../../../Sources/Engine/TINIParser.cpp; sourceTree = "<group>"; };
 		2775A2E221CAA32D00E0AD35 /* TDevice.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TDevice.cpp; path = ../../../Sources/Engine/TDevice.cpp; sourceTree = "<group>"; };
 		2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = IInstrusivePtr.hpp; path = ../../../Sources/Engine/IInstrusivePtr.hpp; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 		2775A32821CAA3E600E0AD35 /* Metal */ = {
 			isa = PBXGroup;
 			children = (
+				274275AD21F0D4D60031F4EE /* M_FullScreen.metal */,
 			);
 			name = Metal;
 			sourceTree = "<group>";
@@ -628,6 +631,7 @@
 				2775A3A321CAA52500E0AD35 /* TEngine.cpp in Sources */,
 				2775A30F21CAA32F00E0AD35 /* TCVars.cpp in Sources */,
 				2775A36721CAA4A300E0AD35 /* FRenderer.cpp in Sources */,
+				274275AE21F0D4D60031F4EE /* M_FullScreen.metal in Sources */,
 				2775A36521CAA4A300E0AD35 /* FFrameResources.cpp in Sources */,
 				2775A37921CAA4A300E0AD35 /* FPipeline.cpp in Sources */,
 				2775A37D21CAA4A300E0AD35 /* FShader.cpp in Sources */,
