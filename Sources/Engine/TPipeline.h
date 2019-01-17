@@ -196,6 +196,7 @@ namespace tix
 		int32 RTCount;
 		E_PIXEL_FORMAT RTFormats[ERTC_COUNT];
 		E_PIXEL_FORMAT DepthFormat;
+        E_PIXEL_FORMAT StencilFormat;   // For metal
 
 		TPipelineDesc()
 			: Flags(EPSO_DEPTH | EPSO_DEPTH_TEST)
@@ -208,6 +209,7 @@ namespace tix
 				RTFormats[i] = EPF_UNKNOWN;
 			}
 			DepthFormat = EPF_UNKNOWN;
+            TI_TODO("Set stencil format for metal.");
 		}
 
 		void Enable(E_PIPELINE_STATES_OPTION Option)

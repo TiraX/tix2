@@ -158,9 +158,131 @@ namespace tix
 	}
 
 	bool FRHIMetal::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
-	{
-        TI_ASSERT(0);
-
+    {
+        FPipelineMetal * PipelineMetal = static_cast<FPipelineMetal*>(Pipeline.get());
+        const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
+        
+        MTLRenderPipelineDescriptor * PipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
+#if defined (TIX_DEBUG)
+        Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
+        NSString * PipelineName = [NSString stringWithUTF8String:InPipelineDesc->GetResourceName().c_str()];
+        PipelineStateDesc.label = PipelineName;
+#endif
+        PipelineStateDesc.sampleCount = 1;
+        
+        // Load vertex function and pixel function
+        id <MTLFunction> VertexProgram = nil, FragmentProgram = nil;
+        FShaderPtr Shader = InPipelineDesc->GetDesc().Shader->ShaderResource;
+        NSString * VertexShader = nil;
+        TI_ASSERT(!Shader->GetShaderName(ESS_VERTEX_SHADER).empty());
+        VertexShader = [NSString stringWithUTF8String:Shader->GetShaderName(ESS_VERTEX_SHADER).c_str()];
+        NSString * FragmentShader = nil;
+        if (!Shader->GetShaderName(ESS_PIXEL_SHADER).empty())
+        {
+            FragmentShader = [NSString stringWithUTF8String:Shader->GetShaderName(ESS_PIXEL_SHADER).c_str()];
+        }
+        
+        VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
+        if(VertexProgram == nil)
+        {
+            _LOG(Fatal, "Can not load vertex function %s.\n", Shader->GetShaderName(ESS_VERTEX_SHADER).c_str());
+            TI_ASSERT(0);
+        }
+        
+        if (FragmentShader != nil)
+        {
+            FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
+        }
+        
+        PipelineStateDesc.vertexFunction = VertexProgram;
+        PipelineStateDesc.fragmentFunction = FragmentProgram;
+        
+        // Set vertex layout
+        TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+        MTLVertexDescriptor * VertexDesc = [[MTLVertexDescriptor alloc] init];
+        
+        uint32 VertexDataOffset = 0;
+        for (uint32 i = 0; i < (uint32)Streams.size(); ++i)
+        {
+            E_MESH_STREAM_INDEX Stream = Streams[i];
+            VertexDesc.attributes[i].format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
+            VertexDesc.attributes[i].bufferIndex = 0;
+            VertexDesc.attributes[i].offset = VertexDataOffset;
+            VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
+        }
+        VertexDesc.layouts[0].stride = TMeshBuffer::GetStrideFromFormat(Desc.VsFormat);
+        VertexDesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+        PipelineStateDesc.vertexDescriptor = VertexDesc;
+        
+        // Set color, depth, stencil attachments format
+        TI_ASSERT(Desc.RTCount > 0);
+        for (int32 r = 0 ; r < Desc.RTCount; ++r)
+        {
+            PipelineStateDesc.colorAttachments[0].pixelFormat = GetMetalPixelFormat(Desc.RTFormats[r]);
+        }
+        if (Desc.DepthFormat != EPF_UNKNOWN)
+        {
+            PipelineStateDesc.depthAttachmentPixelFormat = GetMetalPixelFormat(Desc.DepthFormat);
+        }
+        else
+        {
+            PipelineStateDesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+        }
+        if (Desc.StencilFormat != EPF_UNKNOWN)
+        {
+            PipelineStateDesc.stencilAttachmentPixelFormat = GetMetalPixelFormat(Desc.StencilFormat);
+        }
+        else
+        {
+            PipelineStateDesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+        }
+        
+        for (int32 r = 0 ; r < Desc.RTCount; ++r)
+        {
+            if (Desc.IsEnabled(EPSO_BLEND))
+            {
+                PipelineStateDesc.colorAttachments[r].blendingEnabled = YES;
+                PipelineStateDesc.colorAttachments[r].rgbBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOp];
+                PipelineStateDesc.colorAttachments[r].alphaBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOpAlpha];
+                PipelineStateDesc.colorAttachments[r].sourceRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlend];
+                PipelineStateDesc.colorAttachments[r].sourceAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlendAlpha];
+                PipelineStateDesc.colorAttachments[r].destinationRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlend];
+                PipelineStateDesc.colorAttachments[r].destinationAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlendAlpha];
+            }
+            else
+            {
+                PipelineStateDesc.colorAttachments[r].blendingEnabled = NO;
+            }
+        }
+        
+        NSError* Err  = nil;
+        //MTLRenderPipelineReflection * ReflectionObj = nil;
+        //PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDescriptor options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
+        PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionNone reflection:nil error:&Err];
+        
+        MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
+        DepthStateDesc.depthCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
+        DepthStateDesc.depthWriteEnabled = Desc.IsEnabled(EPSO_DEPTH);
+        
+        if (Desc.IsEnabled(EPSO_STENCIL))
+        {
+            DepthStateDesc.frontFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.FrontFace.StencilFunc];
+            DepthStateDesc.frontFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilFailOp];
+            DepthStateDesc.frontFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilDepthFailOp];
+            DepthStateDesc.frontFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilPassOp];
+            DepthStateDesc.frontFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
+            DepthStateDesc.frontFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+            
+            DepthStateDesc.backFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.BackFace.StencilFunc];
+            DepthStateDesc.backFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilFailOp];
+            DepthStateDesc.backFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilDepthFailOp];
+            DepthStateDesc.backFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilPassOp];
+            DepthStateDesc.backFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
+            DepthStateDesc.backFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+        }
+        
+        PipelineMetal->DepthState = [MtlDevice newDepthStencilStateWithDescriptor:DepthStateDesc];
+        
 		return true;
 	}
 
@@ -174,7 +296,7 @@ namespace tix
 
 	bool FRHIMetal::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
 	{
-        TI_ASSERT(0);
+        //TI_ASSERT(0);
 		return true;
 	}
     

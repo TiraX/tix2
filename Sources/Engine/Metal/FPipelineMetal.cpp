@@ -13,6 +13,8 @@ namespace tix
 {
 	FPipelineMetal::FPipelineMetal()
 	{
+        PipelineState = nil;
+        DepthState = nil;
 	}
 
 	FPipelineMetal::~FPipelineMetal()
