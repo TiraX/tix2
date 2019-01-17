@@ -165,8 +165,8 @@ namespace tix
 
 	inline void MakeDx12DepthStencilState(const TPipelineDesc& Desc, D3D12_DEPTH_STENCIL_DESC& DepthStencilState)
 	{
-		DepthStencilState.DepthEnable = Desc.IsEnabled(EPSO_DEPTH);
-		DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		DepthStencilState.DepthEnable = Desc.IsEnabled(EPSO_DEPTH) || Desc.IsEnabled(EPSO_DEPTH_TEST);
+		DepthStencilState.DepthWriteMask = Desc.IsEnabled(EPSO_DEPTH) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 		DepthStencilState.DepthFunc = k_COMPARISON_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
 		DepthStencilState.StencilEnable = Desc.IsEnabled(EPSO_STENCIL);
 		DepthStencilState.StencilReadMask = Desc.DepthStencilDesc.StencilReadMask;

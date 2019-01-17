@@ -66,6 +66,12 @@ namespace tix
 				Helper.PipelineDesc.Disable(EPSO_STENCIL);
 		}
 
+		// Not enable depth test, then set depth compare function to Always
+		if (!Helper.PipelineDesc.IsEnabled(EPSO_DEPTH_TEST))
+		{
+			Helper.PipelineDesc.DepthStencilDesc.DepthFunc = ECF_ALWAYS;
+		}
+
 		TJSONNode stencil_read_mask = Doc["stencil_read_mask"];
 		if (!stencil_read_mask.IsNull())
 		{
