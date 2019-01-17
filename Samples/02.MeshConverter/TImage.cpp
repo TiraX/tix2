@@ -44,6 +44,8 @@ namespace tix
 		case EPF_DEPTH32:
 		case EPF_DEPTH24_STENCIL8:
 			return 4;
+		case EPF_STENCIL8:
+			return 1;
 		default:
 			return 0;
 		}

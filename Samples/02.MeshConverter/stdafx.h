@@ -79,6 +79,7 @@ namespace tix
 		ReturnEnumValue(name, EPF_DEPTH16);
 		ReturnEnumValue(name, EPF_DEPTH32);
 		ReturnEnumValue(name, EPF_DEPTH24_STENCIL8);
+		ReturnEnumValue(name, EPF_STENCIL8);
 		ReturnEnumValue(name, EPF_DDS_DXT1);
 		ReturnEnumValue(name, EPF_DDS_DXT3);
 		ReturnEnumValue(name, EPF_DDS_DXT5);

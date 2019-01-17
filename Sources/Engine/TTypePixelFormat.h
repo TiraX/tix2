@@ -30,6 +30,7 @@ namespace tix
 		EPF_DEPTH16,
 		EPF_DEPTH32,
 		EPF_DEPTH24_STENCIL8,
+		EPF_STENCIL8,
 
 		// Compressed formats
 		// DXT formats

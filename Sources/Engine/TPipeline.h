@@ -209,7 +209,7 @@ namespace tix
 				RTFormats[i] = EPF_UNKNOWN;
 			}
 			DepthFormat = EPF_UNKNOWN;
-            TI_TODO("Set stencil format for metal.");
+			StencilFormat = EPF_UNKNOWN;
 		}
 
 		void Enable(E_PIPELINE_STATES_OPTION Option)
