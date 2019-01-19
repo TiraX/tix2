@@ -17,6 +17,8 @@ namespace tix
 	protected:
 
 	private:
+        id<MTLBuffer> VertexBuffer;
+        id<MTLBuffer> IndexBuffer;
 		friend class FRHIMetal;
 	};
 }

@@ -66,6 +66,8 @@ namespace tix
 
 	protected: 
 		FRHIMetal();
+        
+        void HoldResourceReference(FRenderResourcePtr InResource);
 
 	private:
         id <MTLDevice> MtlDevice;
@@ -77,6 +79,7 @@ namespace tix
         id <MTLCommandBuffer> CommandBuffer;
         id <MTLRenderCommandEncoder> RenderEncoder;
         
+        int32 CurrentFrame;
         dispatch_semaphore_t InflightSemaphore;
         
 		friend class FRHI;

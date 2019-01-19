@@ -16,6 +16,14 @@
 		276723ED21CFB72A000BA266 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 276723EC21CFB72A000BA266 /* ViewController.m */; };
 		276723F221CFB72B000BA266 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 276723F121CFB72B000BA266 /* Assets.xcassets */; };
 		276723F821CFB72B000BA266 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 276723F721CFB72B000BA266 /* main.m */; };
+		27672E6521F2D3A50045103B /* S_SSSBlur.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6421F2D3A50045103B /* S_SSSBlur.metal */; };
+		27672E6C21F2D4690045103B /* S_SkinBase.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6621F2D4690045103B /* S_SkinBase.metal */; };
+		27672E6D21F2D4690045103B /* S_AddSpecular.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6721F2D4690045103B /* S_AddSpecular.metal */; };
+		27672E6E21F2D4690045103B /* S_Combine.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6821F2D4690045103B /* S_Combine.metal */; };
+		27672E6F21F2D4690045103B /* S_Bloom.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6921F2D4690045103B /* S_Bloom.metal */; };
+		27672E7021F2D4690045103B /* S_GlareDetection.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6A21F2D4690045103B /* S_GlareDetection.metal */; };
+		27672E7121F2D4690045103B /* S_SkyDome.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E6B21F2D4690045103B /* S_SkyDome.metal */; };
+		27672E7521F2E3900045103B /* S_FullScreen.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27672E7421F2E3900045103B /* S_FullScreen.metal */; };
 		27F2B58E21E38E300026C0A2 /* iOS in Resources */ = {isa = PBXBuildFile; fileRef = 27F2B58D21E38E300026C0A2 /* iOS */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +63,14 @@
 		276723F121CFB72B000BA266 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		276723F621CFB72B000BA266 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		276723F721CFB72B000BA266 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		27672E6421F2D3A50045103B /* S_SSSBlur.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = S_SSSBlur.metal; path = Shaders/Metal/S_SSSBlur.metal; sourceTree = "<group>"; };
+		27672E6621F2D4690045103B /* S_SkinBase.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_SkinBase.metal; path = Shaders/Metal/S_SkinBase.metal; sourceTree = "<group>"; };
+		27672E6721F2D4690045103B /* S_AddSpecular.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_AddSpecular.metal; path = Shaders/Metal/S_AddSpecular.metal; sourceTree = "<group>"; };
+		27672E6821F2D4690045103B /* S_Combine.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_Combine.metal; path = Shaders/Metal/S_Combine.metal; sourceTree = "<group>"; };
+		27672E6921F2D4690045103B /* S_Bloom.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_Bloom.metal; path = Shaders/Metal/S_Bloom.metal; sourceTree = "<group>"; };
+		27672E6A21F2D4690045103B /* S_GlareDetection.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_GlareDetection.metal; path = Shaders/Metal/S_GlareDetection.metal; sourceTree = "<group>"; };
+		27672E6B21F2D4690045103B /* S_SkyDome.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_SkyDome.metal; path = Shaders/Metal/S_SkyDome.metal; sourceTree = "<group>"; };
+		27672E7421F2E3900045103B /* S_FullScreen.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_FullScreen.metal; path = Shaders/Metal/S_FullScreen.metal; sourceTree = "<group>"; };
 		27F2B58D21E38E300026C0A2 /* iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = iOS; path = Content/Cooked/iOS; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -88,6 +104,7 @@
 		273A37D421CFC40D006D9A4B /* SSSS */ = {
 			isa = PBXGroup;
 			children = (
+				27672E6321F2D34D0045103B /* Shaders */,
 				273A37CE21CFC409006D9A4B /* SeparableSSS.cpp */,
 				273A37CC21CFC408006D9A4B /* SeparableSSS.h */,
 				273A37CD21CFC409006D9A4B /* SSSSRenderer.cpp */,
@@ -116,6 +133,21 @@
 				276723E521CFB72A000BA266 /* SSSSSample.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		27672E6321F2D34D0045103B /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				27672E7421F2E3900045103B /* S_FullScreen.metal */,
+				27672E6721F2D4690045103B /* S_AddSpecular.metal */,
+				27672E6921F2D4690045103B /* S_Bloom.metal */,
+				27672E6821F2D4690045103B /* S_Combine.metal */,
+				27672E6A21F2D4690045103B /* S_GlareDetection.metal */,
+				27672E6621F2D4690045103B /* S_SkinBase.metal */,
+				27672E6B21F2D4690045103B /* S_SkyDome.metal */,
+				27672E6421F2D3A50045103B /* S_SSSBlur.metal */,
+			);
+			name = Shaders;
 			sourceTree = "<group>";
 		};
 		27B0E48221CFB7E800E4C5E1 /* SSSSSample */ = {
@@ -221,8 +253,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27672E6521F2D3A50045103B /* S_SSSBlur.metal in Sources */,
+				27672E6F21F2D4690045103B /* S_Bloom.metal in Sources */,
+				27672E7121F2D4690045103B /* S_SkyDome.metal in Sources */,
+				27672E7021F2D4690045103B /* S_GlareDetection.metal in Sources */,
 				273A37D121CFC409006D9A4B /* SSSSRenderer.cpp in Sources */,
 				273A37D221CFC409006D9A4B /* SeparableSSS.cpp in Sources */,
+				27672E6C21F2D4690045103B /* S_SkinBase.metal in Sources */,
+				27672E6E21F2D4690045103B /* S_Combine.metal in Sources */,
+				27672E7521F2E3900045103B /* S_FullScreen.metal in Sources */,
+				27672E6D21F2D4690045103B /* S_AddSpecular.metal in Sources */,
 				276723ED21CFB72A000BA266 /* ViewController.m in Sources */,
 				273A37D321CFC409006D9A4B /* SSSSTicker.cpp in Sources */,
 				276723F821CFB72B000BA266 /* main.m in Sources */,

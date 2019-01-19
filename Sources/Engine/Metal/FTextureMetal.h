@@ -18,7 +18,8 @@ namespace tix
 
 	protected:
 
-	private:
+    private:
+        id <MTLTexture> Texture;
 		friend class FRHIMetal;
 	};
 }

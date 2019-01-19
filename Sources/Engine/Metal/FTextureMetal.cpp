@@ -13,6 +13,7 @@ namespace tix
 {
 	FTextureMetal::FTextureMetal()
 	{
+        Texture = nil;
 	}
 
 	FTextureMetal::FTextureMetal(const TTextureDesc& Desc)

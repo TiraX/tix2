@@ -55,6 +55,8 @@ namespace tix
             return MTLPixelFormatASTC_8x8_LDR;
         case EPF_ASTC8x8_SRGB:
             return MTLPixelFormatASTC_8x8_sRGB;
+        case EPF_UNKNOWN:
+            return MTLPixelFormatInvalid;
         default:
             TI_ASSERT(0);
             return MTLPixelFormatInvalid;

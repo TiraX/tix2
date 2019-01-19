@@ -20,12 +20,24 @@ namespace tix
 {
 	FRHIMetal::FRHIMetal()
 		: FRHI(ERHI_METAL)
+        , CurrentFrame(0)
 	{
+        // Create frame resource holders
+        for (int32 i = 0 ; i < FRHIConfig::FrameBufferNum; ++ i)
+        {
+            FrameResources[i] = ti_new FFrameResources;
+        }
 	}
 
 	FRHIMetal::~FRHIMetal()
 	{
         _LOG(Log, "  RHI Metal destroy.\n");
+        // Delete frame resource holders
+        for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
+        {
+            ti_delete FrameResources[i];
+            FrameResources[i] = nullptr;
+        }
 	}
 
 	void FRHIMetal::InitRHI()
@@ -79,6 +91,8 @@ namespace tix
             // GPU has completed rendering the frame and is done using the contents of any buffers previously encoded on the CPU for that frame.
             // Signal the semaphore and allow the CPU to proceed and construct the next frame.
             dispatch_semaphore_signal(block_sema);
+            FrameResources[CurrentFrame]->RemoveAllReferences();
+            CurrentFrame = (CurrentFrame + 1) % FRHIConfig::FrameBufferNum;
         }];
         
         [CommandBuffer presentDrawable:CurrentDrawable];
@@ -96,8 +110,7 @@ namespace tix
 
 	FTexturePtr FRHIMetal::CreateTexture(const TTextureDesc& Desc)
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FTextureMetal(Desc);
 	}
 
 	FUniformBufferPtr FRHIMetal::CreateUniformBuffer(uint32 InStructSize)
@@ -139,22 +152,90 @@ namespace tix
 
 	bool FRHIMetal::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
-        TI_ASSERT(0);
-		return true;
+#if defined (TIX_DEBUG)
+        MeshBuffer->SetResourceName(InMeshData->GetResourceName());
+#endif
+        FMeshBufferMetal * MBMetal = static_cast<FMeshBufferMetal*>(MeshBuffer.get());
+        
+        // Create Vertex Buffer
+        const int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
+        MBMetal->VertexBuffer = [MtlDevice newBufferWithBytes:InMeshData->GetVSData() length:BufferSize options:MTLResourceCPUCacheModeDefaultCache];
+        
+        const uint32 IndexBufferSize = (InMeshData->GetIndicesCount() * (InMeshData->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
+        MBMetal->IndexBuffer = [MtlDevice newBufferWithBytes:InMeshData->GetPSData() length:IndexBufferSize options:MTLResourceCPUCacheModeDefaultCache];
+        
+        // Hold resources used here
+        HoldResourceReference(MeshBuffer);
+        
+        return true;
 	}
 
     
 	bool FRHIMetal::UpdateHardwareResource(FTexturePtr Texture)
 	{
-        TI_ASSERT(0);
+        FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
+        TI_ASSERT(TexMetal->Texture == nil);
+        
+        const TTextureDesc& Desc = Texture->GetDesc();
+        
+        MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
+        // Only support texture 2d for now
+        TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
+        TI_ASSERT(Desc.Mips == 1);
 
-		return true;
+        MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:NO];
+        TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        
+        HoldResourceReference(Texture);
+        
+        return true;
 	}
 
 	bool FRHIMetal::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
 	{
-        TI_ASSERT(0);
-		return true;
+        FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
+        TI_ASSERT(TexMetal->Texture == nil);
+        
+        const TTextureDesc& Desc = InTexData->GetDesc();
+        
+        MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
+        const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
+        MTLTextureDescriptor * TextureDesc;
+        if (IsCubeMap)
+        {
+            TI_ASSERT(Desc.Width == Desc.Height);
+            TextureDesc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MtlFormat size:Desc.Width mipmapped:Desc.Mips > 1];
+        }
+        else
+        {
+            TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
+        }
+        TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        
+        int32 Faces = 1;
+        if (IsCubeMap)
+            Faces = 6;
+        
+        const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
+        for (int32 face = 0 ; face < Faces; ++ face)
+        {
+            int32 W = Desc.Width;
+            int32 H = Desc.Height;
+            for (int32 mip = 0; mip < Desc.Mips; ++ mip)
+            {
+                MTLRegion Region = MTLRegionMake2D(0, 0, W, H);
+                const int32 SurfaceIndex = face * Desc.Mips + mip;
+                const TTexture::TSurface* Surface = TextureSurfaces[SurfaceIndex];
+                TI_ASSERT(Surface->RowPitch != 0);
+                [TexMetal->Texture replaceRegion:Region mipmapLevel:mip slice:face withBytes:Surface->Data bytesPerRow:Surface->RowPitch bytesPerImage:0];
+                W /= 2;
+                H /= 2;
+            }
+        }
+
+        HoldResourceReference(Texture);
+        
+        return true;
 	}
 
 	bool FRHIMetal::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
@@ -218,24 +299,10 @@ namespace tix
         TI_ASSERT(Desc.RTCount > 0);
         for (int32 r = 0 ; r < Desc.RTCount; ++r)
         {
-            PipelineStateDesc.colorAttachments[0].pixelFormat = GetMetalPixelFormat(Desc.RTFormats[r]);
+            PipelineStateDesc.colorAttachments[r].pixelFormat = GetMetalPixelFormat(Desc.RTFormats[r]);
         }
-        if (Desc.DepthFormat != EPF_UNKNOWN)
-        {
-            PipelineStateDesc.depthAttachmentPixelFormat = GetMetalPixelFormat(Desc.DepthFormat);
-        }
-        else
-        {
-            PipelineStateDesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-        }
-        if (Desc.StencilFormat != EPF_UNKNOWN)
-        {
-            PipelineStateDesc.stencilAttachmentPixelFormat = GetMetalPixelFormat(Desc.StencilFormat);
-        }
-        else
-        {
-            PipelineStateDesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
-        }
+        PipelineStateDesc.depthAttachmentPixelFormat = GetMetalPixelFormat(Desc.DepthFormat);
+        PipelineStateDesc.stencilAttachmentPixelFormat = GetMetalPixelFormat(Desc.StencilFormat);
         
         for (int32 r = 0 ; r < Desc.RTCount; ++r)
         {
@@ -384,5 +451,10 @@ namespace tix
         TI_ASSERT(0);
         return nullptr;
 	}
+    
+    void FRHIMetal::HoldResourceReference(FRenderResourcePtr InResource)
+    {
+        FrameResources[CurrentFrame]->HoldReference(InResource);
+    }
 }
 #endif	// COMPILE_WITH_RHI_METAL

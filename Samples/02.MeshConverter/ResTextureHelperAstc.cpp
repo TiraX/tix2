@@ -188,7 +188,7 @@ namespace tix
 				TResSurfaceData& Surface = Texture->Surfaces[mip];
 				Surface.W = W;
 				Surface.H = H;
-				Surface.RowPitch = 0;
+				Surface.RowPitch = WidthInBlocks * BlockSize;
 				Surface.Data.Put(SrcData, DataLength);
 
 				Width /= 2;

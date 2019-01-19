@@ -13,6 +13,8 @@ namespace tix
 {
 	FMeshBufferMetal::FMeshBufferMetal()
 	{
+        VertexBuffer = nil;
+        IndexBuffer = nil;
 	}
 
 	FMeshBufferMetal::~FMeshBufferMetal()
