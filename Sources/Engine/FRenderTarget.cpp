@@ -24,7 +24,7 @@ namespace tix
 	{
 	}
 
-	void FRenderTarget::AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex)
+	void FRenderTarget::AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction)
 	{
 		TTextureDesc Desc;
 		Desc.Format = Format;
@@ -34,10 +34,10 @@ namespace tix
 
 		FRHI * RHI = FRHI::Get();
 		FTexturePtr Texture = RHI->CreateTexture(Desc);
-		AddColorBuffer(Texture, ColorBufferIndex);
+		AddColorBuffer(Texture, ColorBufferIndex, LoadAction, StoreAction);
 	}
 
-	void FRenderTarget::AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex)
+	void FRenderTarget::AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction)
 	{
 		if (RTColorBuffers[ColorBufferIndex].BufferIndex == ERTC_INVALID)
 		{
@@ -49,6 +49,8 @@ namespace tix
 		//Buffer.RTResource = ti_new FRenderTargetResource(EHT_RENDERTARGET);
 		Buffer.Texture->SetTextureFlag(ETF_RT_COLORBUFFER, true);
 		Buffer.BufferIndex = ColorBufferIndex;
+		Buffer.LoadAction = LoadAction;
+		Buffer.StoreAction = StoreAction;
 
 #if defined (TIX_DEBUG)
 		{
@@ -61,13 +63,15 @@ namespace tix
 		RTColorBuffers[ColorBufferIndex] = Buffer;
 	}
 
-	void FRenderTarget::AddDepthStencilBuffer(FTexturePtr Texture)
+	void FRenderTarget::AddDepthStencilBuffer(FTexturePtr Texture, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction)
 	{
 		RTDepthStencilBuffer.Texture = Texture;
+		RTDepthStencilBuffer.LoadAction = LoadAction;
+		RTDepthStencilBuffer.StoreAction = StoreAction;
 		//RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
 	}
 
-	void FRenderTarget::AddDepthStencilBuffer(E_PIXEL_FORMAT Format)
+	void FRenderTarget::AddDepthStencilBuffer(E_PIXEL_FORMAT Format, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction)
 	{
 		TTextureDesc Desc;
 		Desc.Format = Format;
@@ -82,8 +86,7 @@ namespace tix
 		Texture->SetResourceName(GetResourceName() + "-DS");
 #endif
 
-		RTDepthStencilBuffer.Texture = Texture;
-		//RTDepthStencilBuffer.RTResource = ti_new FRenderTargetResource(EHT_DEPTHSTENCIL);
+		AddDepthStencilBuffer(Texture, LoadAction, StoreAction);
 	}
 
 	void FRenderTarget::Compile()

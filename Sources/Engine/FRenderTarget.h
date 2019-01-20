@@ -61,9 +61,13 @@ namespace tix
 			FTexturePtr Texture;
 			//FRenderTargetResourcePtr RTResource;
 			E_RT_COLOR_BUFFER BufferIndex;
+			E_RT_LOAD_ACTION LoadAction;
+			E_RT_STORE_ACTION StoreAction;
 
 			RTBuffer()
 				: BufferIndex(ERTC_INVALID)
+				, LoadAction(ERT_LOAD_DONTCARE)
+				, StoreAction(ERT_STORE_DONTCARE)
 			{}
 			~RTBuffer()
 			{
@@ -102,10 +106,10 @@ namespace tix
 			return RTDepthTable;
 		}
 
-		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex);
-		TI_API virtual void AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex);
-		TI_API virtual void AddDepthStencilBuffer(FTexturePtr Texture);
-		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format);
+		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction = ERT_LOAD_DONTCARE, E_RT_STORE_ACTION StoreAction = ERT_STORE_DONTCARE);
+		TI_API virtual void AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction = ERT_LOAD_DONTCARE, E_RT_STORE_ACTION StoreAction = ERT_STORE_DONTCARE);
+		TI_API virtual void AddDepthStencilBuffer(FTexturePtr Texture, E_RT_LOAD_ACTION LoadAction = ERT_LOAD_DONTCARE, E_RT_STORE_ACTION StoreAction = ERT_STORE_DONTCARE);
+		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format, E_RT_LOAD_ACTION LoadAction = ERT_LOAD_DONTCARE, E_RT_STORE_ACTION StoreAction = ERT_STORE_DONTCARE);
 		TI_API virtual void Compile();
 
 	protected:
