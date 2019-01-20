@@ -61,7 +61,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget);
+		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) = 0;
 		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) = 0;
 

@@ -413,10 +413,10 @@ namespace tix
 		return ti_new FPipelineDx12();
 	}
 
-	//FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
-	//{
-	//	return ti_new FRenderTargetDx12(W, H);
-	//}
+	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
+	{
+		return ti_new FRenderTargetDx12(W, H);
+	}
 
 	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings)
 	{
@@ -1174,6 +1174,33 @@ namespace tix
 		return true;
 	}
 
+	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+	{
+		FRenderTargetDx12 * RTDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
+		// Create render target render resource tables
+		int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
+		TI_ASSERT(RTDx12->RTColorTable == nullptr);
+		RTDx12->RTColorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(ColorBufferCount);
+		for (int32 i = 0; i < ColorBufferCount; ++i)
+		{
+			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+			RTDx12->RTColorTable->PutRTColorInTable(ColorBuffer.Texture, i);
+		}
+
+		// Depth stencil buffers
+		{
+			const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
+			FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
+			if (DSBufferTexture != nullptr)
+			{
+				TI_ASSERT(RTDx12->RTDepthTable == nullptr);
+				RTDx12->RTDepthTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
+				RTDx12->RTDepthTable->PutRTDepthInTable(DSBufferTexture, 0);
+			}
+		}
+		return true;
+	}
+
 	bool FRHIDx12::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
 	{
 		FRootSignatureDx12 * RootSignatureDx12 = static_cast<FRootSignatureDx12*>(ShaderBindingResource.get());
@@ -1491,6 +1518,7 @@ namespace tix
 	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
 	{
 		// Transition Color buffer to D3D12_RESOURCE_STATE_RENDER_TARGET
+		FRenderTargetDx12 * RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
 		const int32 CBCount = RT->GetColorBufferCount();
 		for (int32 cb = 0; cb < CBCount; ++cb)
 		{
@@ -1515,7 +1543,7 @@ namespace tix
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
 		if (CBCount > 0)
 		{
-			FRenderResourceTablePtr ColorTable = RT->GetRTColorTable();
+			FRenderResourceTablePtr ColorTable = RTDx12->RTColorTable;
 			RTVDescriptors.reserve(CBCount); 
 			for (int32 cb = 0 ; cb < CBCount ; ++ cb)
 			{
@@ -1527,7 +1555,7 @@ namespace tix
 
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv = nullptr;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthDescriptor;
-		FRenderResourceTablePtr DepthTable = RT->GetRTDepthTable();
+		FRenderResourceTablePtr DepthTable = RTDx12->RTDepthTable;
 		if (DepthTable != nullptr && DepthTable->GetTableSize() != 0)
 		{
 			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable->GetIndexAt(0));

@@ -11,25 +11,15 @@
 
 namespace tix
 {
-	//FRenderTargetDx12::FRenderTargetDx12(int32 W, int32 H)
-	//	: FRenderTarget(W, H)
-	//{
-	//	for (int32 i = 0; i < ERTC_COUNT; ++i)
-	//	{
-	//		RTColorDescriptor[i].ptr = 0;
-	//	}
-	//	RTDSDescriptor.ptr = 0;
-	//}
+	FRenderTargetDx12::FRenderTargetDx12(int32 W, int32 H)
+		: FRenderTarget(W, H)
+	{
+	}
 
-	//FRenderTargetDx12::~FRenderTargetDx12()
-	//{
-	//	Destroy();
-	//}
-
-	//void FRenderTargetDx12::Destroy()
-	//{
-	//	TI_ASSERT(IsRenderThread());
-	//}
+	FRenderTargetDx12::~FRenderTargetDx12()
+	{
+		TI_ASSERT(IsRenderThread());
+	}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

@@ -9,21 +9,20 @@
 
 namespace tix
 {
-	//class FRenderTargetDx12 : public FRenderTarget
-	//{
-	//public:
-	//	FRenderTargetDx12(int32 W, int32 H);
-	//	virtual ~FRenderTargetDx12();
+	class FRenderTargetDx12 : public FRenderTarget
+	{
+	public:
+		FRenderTargetDx12(int32 W, int32 H);
+		virtual ~FRenderTargetDx12();
 
-	//	virtual void Destroy() override;
-	//protected:
+	protected:
 
-	//private:
-	//	// hold color buffer and depth buffer descriptor for easy access
-	//	D3D12_CPU_DESCRIPTOR_HANDLE RTColorDescriptor[ERTC_COUNT];
-	//	D3D12_CPU_DESCRIPTOR_HANDLE RTDSDescriptor;
-	//	friend class FRHIDx12;
-	//};
+	private:
+		FRenderResourceTablePtr RTColorTable;
+		FRenderResourceTablePtr RTDepthTable;
+
+		friend class FRHIDx12;
+	};
 }
 
 #endif	// COMPILE_WITH_RHI_DX12
