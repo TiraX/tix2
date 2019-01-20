@@ -5,25 +5,22 @@
 
 #pragma once
 
-#if COMPILE_WITH_RHI_DX12
+#if COMPILE_WITH_RHI_METAL
 
 namespace tix
 {
-	//class FRenderTargetDx12 : public FRenderTarget
-	//{
-	//public:
-	//	FRenderTargetDx12(int32 W, int32 H);
-	//	virtual ~FRenderTargetDx12();
+    class FRenderTargetMetal : public FRenderTarget
+    {
+    public:
+        FRenderTargetMetal(int32 W, int32 H);
+        virtual ~FRenderTargetMetal();
+        
+    protected:
 
-	//	virtual void Destroy() override;
-	//protected:
-
-	//private:
-	//	// hold color buffer and depth buffer descriptor for easy access
-	//	D3D12_CPU_DESCRIPTOR_HANDLE RTColorDescriptor[ERTC_COUNT];
-	//	D3D12_CPU_DESCRIPTOR_HANDLE RTDSDescriptor;
-	//	friend class FRHIDx12;
-	//};
+    private:
+        MTLRenderPassDescriptor * RenderPassDesc;
+        friend class FRHIMetal;
+    };
 }
 
-#endif	// COMPILE_WITH_RHI_DX12
+#endif	// COMPILE_WITH_RHI_METAL

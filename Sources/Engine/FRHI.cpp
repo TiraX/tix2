@@ -56,10 +56,10 @@ namespace tix
 		Viewport = InViewport;
 	}
 	
-	FRenderTargetPtr FRHI::CreateRenderTarget(int32 W, int32 H)
-	{
-		return ti_new FRenderTarget(W, H);
-	}
+	//FRenderTargetPtr FRHI::CreateRenderTarget(int32 W, int32 H)
+	//{
+	//	return ti_new FRenderTarget(W, H);
+	//}
 
 	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize)
 	{

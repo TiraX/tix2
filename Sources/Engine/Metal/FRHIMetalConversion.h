@@ -313,5 +313,20 @@ namespace tix
 //    {
 //        return TiX2DxShaderStage[ShaderStage];
 //    }
+    
+    static const MTLLoadAction k_LOAD_ACTION_MAP[ERT_LOAD_ACTION_NUM] =
+    {
+        MTLLoadActionDontCare,    //ERT_LOAD_DONTCARE,
+        MTLLoadActionLoad,    //ERT_LOAD_LOAD,
+        MTLLoadActionClear,    //ERT_LOAD_CLEAR,
+    };
+    
+    static const MTLStoreAction k_STORE_ACTION_MAP[ERT_STORE_ACTION_NUM] =
+    {
+        MTLStoreActionDontCare, //ERT_STORE_DONTCARE,
+        MTLStoreActionStore,    //ERT_STORE_STORE,
+        MTLStoreActionMultisampleResolve,   //ERT_STORE_MULTISAMPLE_RESOLVE,
+        MTLStoreActionStoreAndMultisampleResolve,   //ERT_STORE_STORE_AND_MULTISAMPLE_RESOLVE,
+    };
 }
 #endif	// COMPILE_WITH_RHI_METAL

@@ -7,29 +7,20 @@
 #include "FRHIMetal.h"
 #include "FRenderTargetMetal.h"
 
-#if COMPILE_WITH_RHI_DX12
+#if COMPILE_WITH_RHI_METAL
 
 namespace tix
 {
-	//FRenderTargetDx12::FRenderTargetDx12(int32 W, int32 H)
-	//	: FRenderTarget(W, H)
-	//{
-	//	for (int32 i = 0; i < ERTC_COUNT; ++i)
-	//	{
-	//		RTColorDescriptor[i].ptr = 0;
-	//	}
-	//	RTDSDescriptor.ptr = 0;
-	//}
+    FRenderTargetMetal::FRenderTargetMetal(int32 W, int32 H)
+        : FRenderTarget(W, H)
+    {
+        RenderPassDesc = nil;
+    }
 
-	//FRenderTargetDx12::~FRenderTargetDx12()
-	//{
-	//	Destroy();
-	//}
-
-	//void FRenderTargetDx12::Destroy()
-	//{
-	//	TI_ASSERT(IsRenderThread());
-	//}
+    FRenderTargetMetal::~FRenderTargetMetal()
+    {
+        TI_ASSERT(IsRenderThread());
+    }
 }
 
-#endif	// COMPILE_WITH_RHI_DX12
+#endif	// COMPILE_WITH_RHI_METAL

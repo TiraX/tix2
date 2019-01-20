@@ -26,6 +26,8 @@ namespace tix
 		ERT_LOAD_DONTCARE,
 		ERT_LOAD_LOAD,
 		ERT_LOAD_CLEAR,
+        
+        ERT_LOAD_ACTION_NUM,
 	};
 
 	enum E_RT_STORE_ACTION
@@ -33,6 +35,9 @@ namespace tix
 		ERT_STORE_DONTCARE,
 		ERT_STORE_STORE,
 		ERT_STORE_MULTISAMPLE_RESOLVE,
+        ERT_STORE_STORE_AND_MULTISAMPLE_RESOLVE,
+        
+        ERT_STORE_ACTION_NUM,
 	};
 
 	//class FRenderTargetResource : public FRenderResource

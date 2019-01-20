@@ -51,7 +51,7 @@ namespace tix
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline() = 0;
-		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H);
+		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) = 0;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;

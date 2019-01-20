@@ -15,6 +15,7 @@
 #include "FPipelineMetal.h"
 #include "FMeshBufferMetal.h"
 #include "FShaderMetal.h"
+#include "FRenderTargetMetal.h"
 
 namespace tix
 {
@@ -129,10 +130,10 @@ namespace tix
         return ti_new FPipelineMetal;
 	}
 
-	//FRenderTargetPtr FRHIMetal::CreateRenderTarget(int32 W, int32 H)
-	//{
-	//	return ti_new FRenderTargetDx12(W, H);
-	//}
+	FRenderTargetPtr FRHIMetal::CreateRenderTarget(int32 W, int32 H)
+	{
+		return ti_new FRenderTargetMetal(W, H);
+	}
 
 	FShaderBindingPtr FRHIMetal::CreateShaderBinding(uint32 NumBindings)
 	{
@@ -360,6 +361,42 @@ namespace tix
 
 		return true;
 	}
+    
+    bool FRHIMetal::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+    {
+        FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RenderTarget.get());
+        TI_ASSERT(RTMetal->RenderPassDesc == nil);
+        RTMetal->RenderPassDesc = [MTLRenderPassDescriptor renderPassDescriptor];
+        
+        int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
+        for (int32 i = 0 ; i < ColorBufferCount ; ++ i)
+        {
+            const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+            MTLRenderPassColorAttachmentDescriptor * ColorAttachment = RTMetal->RenderPassDesc.colorAttachments[i];
+            TI_ASSERT(ColorBuffer.Texture != nullptr);
+            FTextureMetal * TextureMetal = static_cast<FTextureMetal*>(ColorBuffer.Texture.get());
+            ColorAttachment.texture = TextureMetal->GetMetalTexture();
+            ColorAttachment.loadAction = k_LOAD_ACTION_MAP[ColorBuffer.LoadAction];
+            ColorAttachment.storeAction = k_STORE_ACTION_MAP[ColorBuffer.StoreAction];
+            ColorAttachment.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+        }
+        
+        // Depth stencil buffers
+        {
+            const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
+            FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
+            if (DSBufferTexture != nullptr)
+            {
+                MTLRenderPassDepthAttachmentDescriptor* DepthAttachment = RTMetal->RenderPassDesc.depthAttachment;
+                FTextureMetal * TextureMetal = static_cast<FTextureMetal*>(DSBufferTexture.get());
+                DepthAttachment.texture = TextureMetal->GetMetalTexture();
+                DepthAttachment.clearDepth = 1.0;
+                DepthAttachment.loadAction = k_LOAD_ACTION_MAP[DepthStencilBuffer.LoadAction];
+                DepthAttachment.storeAction = k_STORE_ACTION_MAP[DepthStencilBuffer.StoreAction];
+            }
+        }
+        return true;
+    }
 
 	bool FRHIMetal::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
 	{
