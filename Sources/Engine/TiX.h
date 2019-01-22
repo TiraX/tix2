@@ -1,5 +1,5 @@
 /*
-	TiX Engine v2.0 Copyright (C) 2018
+	TiX Engine v2.0 Copyright (C) 2018~2019
 	By ZhaoShuai tirax.cn@gmail.com
 */
 
@@ -75,6 +75,7 @@ using namespace std;
 #include "FTexture.h"
 #include "FPipeline.h"
 #include "FUniformBuffer.h"
+#include "FArgumentBuffer.h"
 #include "FRenderTarget.h"
 #include "FFrameResources.h"
 #include "FRHI.h"

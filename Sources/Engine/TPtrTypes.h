@@ -1,5 +1,5 @@
 /*
-	TiX Engine v2.0 Copyright (C) 2018
+	TiX Engine v2.0 Copyright (C) 2018~2019
 	By ZhaoShuai tirax.cn@gmail.com
 */
 
@@ -29,6 +29,7 @@ namespace tix
 	DECLARE_INSTRUSIVE_PTR(FPrimitive);
 	DECLARE_INSTRUSIVE_PTR(FLight);
 	DECLARE_INSTRUSIVE_PTR(FUniformBuffer);
+	DECLARE_INSTRUSIVE_PTR(FArgumentBuffer);
 	DECLARE_INSTRUSIVE_PTR(FRenderTarget);
 	DECLARE_INSTRUSIVE_PTR(FShaderBinding);
 	DECLARE_INSTRUSIVE_PTR(FShaderParamValue);

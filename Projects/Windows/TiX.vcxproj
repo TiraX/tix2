@@ -30,6 +30,7 @@
     <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FArgumentBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FArgumentBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FFrameResources.h" />
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h" />

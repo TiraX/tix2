@@ -4,8 +4,15 @@
 */
 
 #include "stdafx.h"
-#include "TResource.h"
+#include "FArgumentBuffer.h"
 
 namespace tix
 {
+	FArgumentBuffer::FArgumentBuffer()
+	{
+	}
+
+	FArgumentBuffer::~FArgumentBuffer()
+	{
+	}
 }

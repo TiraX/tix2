@@ -217,6 +217,9 @@
     <ClCompile Include="..\..\Sources\Engine\TShader.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FArgumentBuffer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -535,6 +538,9 @@
       <Filter>Sources\Render</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TShader.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FArgumentBuffer.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
