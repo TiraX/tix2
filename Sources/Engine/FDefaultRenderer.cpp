@@ -53,11 +53,11 @@ namespace tix
 			{
 				FMeshBufferPtr MB = Primitive->MeshBuffers[m];
 				FPipelinePtr PL = Primitive->Pipelines[m];
-				FUniformBufferPtr UB = Primitive->Uniforms[m];
+				FArgumentBufferPtr AB = Primitive->Arguments[m];
 
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
-				RHI->SetUniformBuffer(0, UB);
+				RHI->SetArgumentBuffer(AB);
 
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}

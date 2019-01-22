@@ -31,8 +31,7 @@ namespace tix
 		static int32 GetParamTypeBytes(E_MI_PARAM_TYPE Type);
 
 		TMaterialPtr LinkedMaterial;
-		FUniformBufferPtr UniformBuffer;
-		FRenderResourceTablePtr TextureResourceTable;
+		FArgumentBufferPtr ArgumentBuffer;
 
 	protected:
 

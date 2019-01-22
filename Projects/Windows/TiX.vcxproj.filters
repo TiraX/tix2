@@ -220,6 +220,9 @@
     <ClCompile Include="..\..\Sources\Engine\FArgumentBuffer.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -542,6 +545,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FArgumentBuffer.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

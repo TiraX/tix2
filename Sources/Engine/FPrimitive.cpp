@@ -36,14 +36,10 @@ namespace tix
 		TI_ASSERT(Material->PipelineResource != nullptr);
 		Pipelines.push_back(Material->PipelineResource);
 
-		// Instance uniform buffer
-		Uniforms.push_back(InMInstance->UniformBuffer);
+		// Instance material argument buffer
+		Arguments.push_back(InMInstance->ArgumentBuffer);
 
-		// Texture resource table
-		TextureTables.push_back(InMInstance->TextureResourceTable);
-
-		TI_ASSERT(MeshBuffers.size() == Uniforms.size() && 
-			MeshBuffers.size() == Pipelines.size() &&
-			MeshBuffers.size() == TextureTables.size());
+		TI_ASSERT(MeshBuffers.size() == Arguments.size() &&
+			MeshBuffers.size() == Pipelines.size());
 	}
 }

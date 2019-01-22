@@ -16,6 +16,7 @@
 #include "FUniformBufferDx12.h"
 #include "FRenderTargetDx12.h"
 #include "FShaderDx12.h"
+#include "FArgumentBufferDx12.h"
 #include <DirectXColors.h>
 
 // link libraries
@@ -426,6 +427,11 @@ namespace tix
 	FShaderPtr FRHIDx12::CreateShader(const TShaderNames& InNames)
 	{
 		return ti_new FShaderDx12(InNames);
+	}
+
+	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(FShaderPtr InShader)
+	{
+		return ti_new FArgumentBufferDx12(InShader);
 	}
 
 	// Wait for pending GPU work to complete.
@@ -1268,11 +1274,46 @@ namespace tix
 					ShaderDx12->ShaderCodes[s].Reset();
 					ShaderDx12->ShaderCodes[s].Put(File);
 					File.Close();
+
+					//ID3D12RootSignatureDeserializer * RSDeserializer;
+					//SUCCEEDED(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
+					//	ShaderDx12->ShaderCodes[s].GetLength(),
+					//	__uuidof(ID3D12RootSignatureDeserializer),
+					//	reinterpret_cast<void**>(&RSDeserializer)));
+					//if (RSDeserializer != nullptr)
+					//{
+					//	const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
+					//	int32 bk = 0;
+					//}
 				}
 				else
 				{
 					_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
 				}
+			}
+		}
+
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
+	{
+		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
+		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
+		if (ArgumentData != nullptr)
+		{
+			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength());
+			this->UpdateHardwareResource(ArgumentDx12->UniformBuffer, ArgumentData->GetBuffer());
+		}
+
+		if (ArgumentTextures.size() > 0)
+		{
+			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentTextures.size());
+			GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(ArgumentDx12->TextureResourceTable);
+			for (int32 t = 0; t < (int32)ArgumentTextures.size(); ++t)
+			{
+				FTexturePtr Texture = ArgumentTextures[t];
+				ArgumentDx12->TextureResourceTable->PutTextureInTable(Texture, t);
 			}
 		}
 
@@ -1490,6 +1531,23 @@ namespace tix
 		TI_ASSERT(0);
 
 		HoldResourceReference(InTexture);
+	}
+
+	void FRHIDx12::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
+	{
+		int32 Index = InArgumentBuffer->GetArgumentIndex();
+		TI_ASSERT(Index >= 0);
+		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
+		if (ArgDx12->UniformBuffer != nullptr)
+		{
+			SetUniformBuffer(Index, ArgDx12->UniformBuffer);
+			++Index;
+		}
+		if (ArgDx12->TextureResourceTable != nullptr)
+		{
+			SetRenderResourceTable(Index, ArgDx12->TextureResourceTable);
+			++Index;
+		}
 	}
 
 	void FRHIDx12::SetStencilRef(uint32 InRefValue)

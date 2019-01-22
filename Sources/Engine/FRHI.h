@@ -55,6 +55,7 @@ namespace tix
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 		virtual FShaderBindingPtr CreateShaderBinding(uint32 NumBindings) = 0;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
+		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
@@ -64,6 +65,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos) = 0;
 		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) = 0;
+		virtual bool UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
 
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
@@ -75,6 +77,7 @@ namespace tix
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
+		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) = 0;
 		
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(

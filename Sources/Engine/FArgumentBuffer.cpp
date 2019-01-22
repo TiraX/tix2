@@ -8,7 +8,9 @@
 
 namespace tix
 {
-	FArgumentBuffer::FArgumentBuffer()
+	FArgumentBuffer::FArgumentBuffer(FShaderPtr InShader)
+		: Shader(InShader)
+		, Index(-1)
 	{
 	}
 

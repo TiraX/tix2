@@ -14,6 +14,7 @@ namespace tix
 	FShaderDx12::FShaderDx12(const TShaderNames& InNames)
 		: FShader(InNames)
 	{
+		// Use D3D12CreateRootSignatureDeserializer to get reflection info.
 	}
 
 	FShaderDx12::~FShaderDx12()

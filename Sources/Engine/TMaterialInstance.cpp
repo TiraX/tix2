@@ -17,60 +17,37 @@ namespace tix
 
 	void TMaterialInstance::InitRenderThreadResource()
 	{
-		if (ParamValueBuffer != nullptr)
+		if (ParamValueBuffer != nullptr || ParamTextures.size() > 0)
 		{
-			TI_ASSERT(UniformBuffer == nullptr);
-			UniformBuffer = FRHI::Get()->CreateUniformBuffer(ParamValueBuffer->GetLength());
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIUniformBuffer,
-				FUniformBufferPtr, UniformBuffer, UniformBuffer,
-				TStreamPtr, UniformBufferData, ParamValueBuffer,
-				{
-					FRHI::Get()->UpdateHardwareResource(UniformBuffer, UniformBufferData->GetBuffer());
-				});
-		}
-		if (ParamTextures.size() > 0)
-		{
-			TI_ASSERT(TextureResourceTable == nullptr);
-			TextureResourceTable = FRHI::Get()->CreateRenderResourceTable((uint32)ParamTextures.size());
+			TI_ASSERT(ArgumentBuffer == nullptr);
+			TI_ASSERT(LinkedMaterial->GetDesc().Shader != nullptr);
+			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer(LinkedMaterial->GetDesc().Shader->ShaderResource);
 			TVector<FTexturePtr> Textures;
 			for (auto Tex : ParamTextures)
 			{
 				TI_ASSERT(Tex->TextureResource != nullptr);
 				Textures.push_back(Tex->TextureResource);
 			}
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMITextureResourceTable,
-				FRenderResourceTablePtr, MI_TextureResourceTable, TextureResourceTable,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer,
+				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
+				TStreamPtr, UniformBufferData, ParamValueBuffer,
 				TVector<FTexturePtr>, Textures, Textures,
 				{
-					FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(MI_TextureResourceTable);
-					for (int32 t = 0; t < (int32)Textures.size(); ++t)
-					{
-						FTexturePtr Texture = Textures[t];
-						MI_TextureResourceTable->PutTextureInTable(Texture, t);
-					}
+					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, Textures);
 				});
 		}
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()
 	{
-		if (UniformBuffer != nullptr)
+		if (ArgumentBuffer != nullptr)
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyUniformBuffer,
-				FUniformBufferPtr, UniformBuffer, UniformBuffer,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyArgumentBuffer,
+				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
 				{
-					UniformBuffer = nullptr;
+					ArgumentBuffer = nullptr;
 				});
-			UniformBuffer = nullptr;
-		}
-		if (TextureResourceTable != nullptr)
-		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyTextureTable,
-				FRenderResourceTablePtr, TextureResourceTable, TextureResourceTable,
-				{
-					TextureResourceTable = nullptr;
-				});
-			TextureResourceTable = nullptr;
+			ArgumentBuffer = nullptr;
 		}
 	}
 

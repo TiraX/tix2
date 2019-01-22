@@ -229,9 +229,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
 			FPipelinePtr PL = Primitive->Pipelines[m];
-			FUniformBufferPtr UB = Primitive->Uniforms[m];
-			FRenderResourceTablePtr TextureTable = Primitive->TextureTables[m];
-			
+			FArgumentBufferPtr AB = Primitive->Arguments[m];
+
 			{
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
@@ -240,9 +239,9 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 
 				Scene->GetSceneLights()->BindSceneLightsUniformBuffer(RHI, 2);
 
-				if (TextureTable != nullptr)
+				if (AB != nullptr)
 				{
-					RHI->SetRenderResourceTable(3, TextureTable);
+					RHI->SetArgumentBuffer(AB);
 				}
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}

@@ -10,11 +10,17 @@ namespace tix
 	class FArgumentBuffer : public FRenderResource
 	{
 	public:
-		FArgumentBuffer();
+		FArgumentBuffer(FShaderPtr InShader);
 		virtual ~FArgumentBuffer();
 
+		int32 GetArgumentIndex()
+		{
+			return Index;
+		}
 	protected:
 
 	protected:
+		FShaderPtr Shader;
+		int32 Index;
 	};
 }

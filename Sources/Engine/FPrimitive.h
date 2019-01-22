@@ -23,8 +23,7 @@ namespace tix
 
 		TVector<FMeshBufferPtr> MeshBuffers;
 		TVector<FPipelinePtr> Pipelines;
-		TVector<FUniformBufferPtr> Uniforms;
-		TVector<FRenderResourceTablePtr> TextureTables;
+		TVector<FArgumentBufferPtr> Arguments;
 
 		FLightBindingUniformBufferPtr LightBindingUniformBuffer;
 		aabbox3df BBox;
