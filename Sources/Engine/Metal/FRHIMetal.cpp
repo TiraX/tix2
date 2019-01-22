@@ -15,6 +15,7 @@
 #include "FPipelineMetal.h"
 #include "FMeshBufferMetal.h"
 #include "FShaderMetal.h"
+#include "FArgumentBufferMetal.h"
 #include "FRenderTargetMetal.h"
 
 namespace tix
@@ -143,6 +144,11 @@ namespace tix
     FShaderPtr FRHIMetal::CreateShader(const TShaderNames& ShaderNames)
     {
         return ti_new FShaderMetal(ShaderNames);
+    }
+    
+    FArgumentBufferPtr FRHIMetal::CreateArgumentBuffer(FShaderPtr InShader)
+    {
+        return ti_new FArgumentBufferMetal(InShader);
     }
 
 	// Wait for pending GPU work to complete.
@@ -409,6 +415,12 @@ namespace tix
         return true;
     }
     
+    bool FRHIMetal::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
+    
 	void FRHIMetal::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
         TI_ASSERT(0);
@@ -453,6 +465,11 @@ namespace tix
 	{
         TI_ASSERT(0);
 	}
+    
+    void FRHIMetal::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
+    {
+        TI_ASSERT(0);
+    }
 
 	void FRHIMetal::SetStencilRef(uint32 InRefValue)
 	{
