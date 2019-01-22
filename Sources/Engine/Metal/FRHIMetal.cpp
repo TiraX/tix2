@@ -175,17 +175,18 @@ namespace tix
 	bool FRHIMetal::UpdateHardwareResource(FTexturePtr Texture)
 	{
         FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
-        TI_ASSERT(TexMetal->Texture == nil);
-        
-        const TTextureDesc& Desc = Texture->GetDesc();
-        
-        MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
-        // Only support texture 2d for now
-        TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
-        TI_ASSERT(Desc.Mips == 1);
-
-        MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:NO];
-        TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        if (TexMetal->Texture == nil)
+        {
+            const TTextureDesc& Desc = Texture->GetDesc();
+            
+            MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
+            // Only support texture 2d for now
+            TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
+            TI_ASSERT(Desc.Mips == 1);
+            
+            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:NO];
+            TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        }
         
         HoldResourceReference(Texture);
         
@@ -252,32 +253,10 @@ namespace tix
 #endif
         PipelineStateDesc.sampleCount = 1;
         
-        // Load vertex function and pixel function
-        id <MTLFunction> VertexProgram = nil, FragmentProgram = nil;
         FShaderPtr Shader = InPipelineDesc->GetDesc().Shader->ShaderResource;
-        NSString * VertexShader = nil;
-        TI_ASSERT(!Shader->GetShaderName(ESS_VERTEX_SHADER).empty());
-        VertexShader = [NSString stringWithUTF8String:Shader->GetShaderName(ESS_VERTEX_SHADER).c_str()];
-        NSString * FragmentShader = nil;
-        if (!Shader->GetShaderName(ESS_PIXEL_SHADER).empty())
-        {
-            FragmentShader = [NSString stringWithUTF8String:Shader->GetShaderName(ESS_PIXEL_SHADER).c_str()];
-        }
-        
-        VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
-        if(VertexProgram == nil)
-        {
-            _LOG(Fatal, "Can not load vertex function %s.\n", Shader->GetShaderName(ESS_VERTEX_SHADER).c_str());
-            TI_ASSERT(0);
-        }
-        
-        if (FragmentShader != nil)
-        {
-            FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
-        }
-        
-        PipelineStateDesc.vertexFunction = VertexProgram;
-        PipelineStateDesc.fragmentFunction = FragmentProgram;
+        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
+        PipelineStateDesc.vertexFunction = ShaderMetal->VertexProgram;
+        PipelineStateDesc.fragmentFunction = ShaderMetal->FragmentProgram;
         
         // Set vertex layout
         TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
@@ -406,7 +385,27 @@ namespace tix
     
     bool FRHIMetal::UpdateHardwareResource(FShaderPtr ShaderResource)
     {
-        // Metal shader only need names. Do not need hard ware resource.
+        // Load vertex function and pixel function
+        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ShaderResource.get());
+        TI_ASSERT(!ShaderResource->GetShaderName(ESS_VERTEX_SHADER).empty());
+        NSString * VertexShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str()];
+        NSString * FragmentShader = nil;
+        if (!ShaderResource->GetShaderName(ESS_PIXEL_SHADER).empty())
+        {
+            FragmentShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_PIXEL_SHADER).c_str()];
+        }
+        
+        ShaderMetal->VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
+        if(ShaderMetal->VertexProgram == nil)
+        {
+            _LOG(Fatal, "Can not load vertex function %s.\n", ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str());
+            return false;
+        }
+        
+        if (FragmentShader != nil)
+        {
+            ShaderMetal->FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
+        }
         return true;
     }
     

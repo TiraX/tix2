@@ -15,5 +15,6 @@ namespace tix
 
 	FShader::~FShader()
 	{
+        TI_ASSERT(IsRenderThread());
 	}
 }

@@ -14,6 +14,8 @@ namespace tix
 	FShaderMetal::FShaderMetal(const TShaderNames& InNames)
 		: FShader(InNames)
 	{
+        VertexProgram = nil;
+        FragmentProgram = nil;
 	}
 
 	FShaderMetal::~FShaderMetal()
