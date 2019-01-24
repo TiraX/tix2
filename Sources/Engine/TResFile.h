@@ -24,7 +24,6 @@ namespace tix
 		TTexturePtr CreateTexture();
 		TMaterialPtr CreateMaterial();
 		TMaterialInstancePtr CreateMaterialInstance();
-		TShaderBindingPtr CreateShaderlBinding();
 
 		const TString& GetFilename()
 		{

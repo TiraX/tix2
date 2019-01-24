@@ -14,7 +14,6 @@ namespace tix
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
 		TIRES_VERSION_CHUNK_MATERIAL = 1,
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
-		TIRES_VERSION_CHUNK_SBINDING = 1,
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -51,7 +50,6 @@ namespace tix
 		TIRES_ID_CHUNK_TEXTURE		= TI_MAKE_IDENTIFIER('T', 'E', 'X', 'E'),
 		TIRES_ID_CHUNK_MATERIAL		= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'R'),
 		TIRES_ID_CHUNK_MINSTANCE	= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'I'),
-		TIRES_ID_CHUNK_SBINDING		= TI_MAKE_IDENTIFIER('S', 'B', 'I', 'D'),
 		//TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
@@ -74,7 +72,6 @@ namespace tix
 		ECL_TEXTURES,
 		ECL_MATERIAL,
 		ECL_MATERIAL_INSTANCE,
-		ECL_SHADER_BINDING,
 		//ECL_MATERIALS,
 		//ECL_CONTROLLERS,
 		//ECL_SHADERS,
@@ -188,7 +185,6 @@ namespace tix
 
 		uint8 ColorBuffers[ERTC_COUNT];
 		int32 DepthBuffer;
-		int32 ShaderBindingStr;
 	};
 
 	struct THeaderMaterialInstance

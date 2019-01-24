@@ -19,7 +19,6 @@
 		"EPF_RGBA16F"
 	],
 	"rt_depth": "EPF_DEPTH24_STENCIL8",
-	"shader_binding": "SB_SkyDome.tres",
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": true,
 	"depth_test": true,

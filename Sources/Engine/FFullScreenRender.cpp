@@ -17,7 +17,6 @@ namespace tix
 	{
 		FullScreenQuad = nullptr;
 		FullScreenPipeline = nullptr;
-		FullScreenBinding = nullptr;
 	}
 
 	void FFullScreenRender::InitCommonResources(FRHI* RHI)
@@ -46,15 +45,6 @@ namespace tix
 		RHI->UpdateHardwareResource(FullScreenQuad, MBData);
 		MBData = nullptr;
 
-		// Create full screen shader binding
-		FShaderBindingPtr FullScreenBinding = RHI->CreateShaderBinding(1);
-		FullScreenBinding->InitBinding(0, BINDING_TEXTURE_TABLE, 0, 1, ESS_PIXEL_SHADER);
-		FSamplerDesc Desc;
-		Desc.Filter = ETFT_MINMAG_LINEAR_MIP_NEAREST;
-		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
-		FullScreenBinding->InitStaticSampler(0, Desc, ESS_PIXEL_SHADER);
-		FullScreenBinding->Finalize(RHI);
-
 		// Create full screen render pipeline
 		TMaterialPtr FSMaterial = ti_new TMaterial();
 		FSMaterial->SetResourceName("FullScreenMaterial");
@@ -74,7 +64,6 @@ namespace tix
 		FSMaterial->SetRTColor(FRHIConfig::DefaultBackBufferFormat, ERTC_COLOR0);
 
 		FullScreenPipeline = RHI->CreatePipeline();
-		FullScreenPipeline->SetShaderBinding(FullScreenBinding);
 		RHI->UpdateHardwareResource(FullScreenPipeline, FSMaterial);
 		FSMaterial = nullptr;
 

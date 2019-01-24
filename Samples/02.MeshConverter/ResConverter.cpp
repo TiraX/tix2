@@ -122,9 +122,10 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 			}
 			else if (strcmp(type, "shader_binding") == 0)
 			{
+				TI_ASSERT(0);
 				// Material Parameter Binding
-				TStream& MIStream = Resfile.GetChunk(ECL_SHADER_BINDING);
-				TResShaderBindingHelper::LoadShaderBinding(JsonDoc, MIStream, Resfile.Strings);
+				//TStream& MIStream = Resfile.GetChunk(ECL_SHADER_BINDING);
+				//TResShaderBindingHelper::LoadShaderBinding(JsonDoc, MIStream, Resfile.Strings);
 			}
 			ti_delete[] content;
 		}

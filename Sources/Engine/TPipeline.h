@@ -249,6 +249,5 @@ namespace tix
 
 	protected:
 		TPipelineDesc Desc;
-		TShaderBindingPtr ShaderBinding;
 	};
 }

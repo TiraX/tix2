@@ -32,7 +32,6 @@ namespace tix
 			vector2df16 UV;
 		};
 		FMeshBufferPtr FullScreenQuad;
-		FShaderBindingPtr FullScreenBinding;
 		FPipelinePtr FullScreenPipeline;
 	};
 }

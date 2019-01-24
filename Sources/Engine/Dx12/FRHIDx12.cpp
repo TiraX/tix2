@@ -419,11 +419,6 @@ namespace tix
 		return ti_new FRenderTargetDx12(W, H);
 	}
 
-	FShaderBindingPtr FRHIDx12::CreateShaderBinding(uint32 NumBindings)
-	{
-		return ti_new FRootSignatureDx12(NumBindings, FRHIConfig::StaticSamplerNum);
-	}
-
 	FShaderPtr FRHIDx12::CreateShader(const TShaderNames& InNames)
 	{
 		return ti_new FShaderDx12(InNames);
@@ -1080,16 +1075,16 @@ namespace tix
 			InputElement.InstanceDataStepRate = 0;
 		}
 
-		FShaderBindingPtr Binding = Pipeline->GetShaderBinding();
+		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(InPipelineDesc->GetDesc().Shader->ShaderResource.get());
+		FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
 		TI_ASSERT(Binding != nullptr);
+		Pipeline->SetShaderBinding(Binding);
 		FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
 		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
 		state.pRootSignature = PipelineRS->Get();
 		TI_ASSERT(InPipelineDesc->GetDesc().Shader != nullptr);
-
-		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(InPipelineDesc->GetDesc().Shader->ShaderResource.get());
 
 		state.VS = { ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetLength()) };
 		if (ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength() > 0)
@@ -1207,58 +1202,12 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
-	{
-		FRootSignatureDx12 * RootSignatureDx12 = static_cast<FRootSignatureDx12*>(ShaderBindingResource.get());
-		TI_ASSERT(RootSignatureDx12->ParamArray.size() == BindingInfos.size());
-		TI_ASSERT((int32)RootSignatureDx12->SamplerArray.size() == FRHIConfig::StaticSamplerNum);
-
-		const int32 NumBindings = (int32)RootSignatureDx12->ParamArray.size();
-		const int32 NumSamplers = (int32)RootSignatureDx12->SamplerArray.size();
-		// Init static sampler
-		RootSignatureDx12->InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
-
-		// Init shader params
-		for (int32 i = 0; i < NumBindings; ++i)
-		{
-			const TBindingParamInfo& Info = BindingInfos[i];
-			D3D12_SHADER_VISIBILITY ShaderVisibility = GetDxShaderVisibilityFromTiX((E_SHADER_STAGE)Info.BindingStage);
-			switch (Info.BindingType)
-			{
-			case BINDING_LIGHTS:
-				RootSignatureDx12->GetParameter(i).InitAsConstantBuffer(Info.BindingRegister, ShaderVisibility);
-				break;
-			case BINDING_UNIFORMBUFFER:
-				RootSignatureDx12->GetParameter(i).InitAsConstantBuffer(Info.BindingRegister, ShaderVisibility);
-				break;
-			case BINDING_UNIFORMBUFFER_TABLE:
-				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, Info.BindingRegister, Info.BindingSize, ShaderVisibility);
-				break;
-			case BINDING_TEXTURE_TABLE:
-				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, Info.BindingRegister, Info.BindingSize, ShaderVisibility);
-				break;
-			default:
-				TI_ASSERT(0);
-				break;
-			}
-		}
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
-		RootSignatureDx12->Finalize(D3dDevice.Get(), rootSignatureFlags);
-
-		HoldResourceReference(ShaderBindingResource);
-
-		return true;
-	}
-
 	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource)
 	{
 		// Dx12 shader only need load byte code.
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
 
+		ID3D12RootSignatureDeserializer * RSDeserializer = nullptr;
 		for (int32 s = 0; s < ESS_COUNT; ++s)
 		{
 			TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
@@ -1275,16 +1224,13 @@ namespace tix
 					ShaderDx12->ShaderCodes[s].Put(File);
 					File.Close();
 
-					//ID3D12RootSignatureDeserializer * RSDeserializer;
-					//SUCCEEDED(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
-					//	ShaderDx12->ShaderCodes[s].GetLength(),
-					//	__uuidof(ID3D12RootSignatureDeserializer),
-					//	reinterpret_cast<void**>(&RSDeserializer)));
-					//if (RSDeserializer != nullptr)
-					//{
-					//	const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
-					//	int32 bk = 0;
-					//}
+					if (RSDeserializer == nullptr)
+					{
+						SUCCEEDED(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
+							ShaderDx12->ShaderCodes[s].GetLength(),
+							__uuidof(ID3D12RootSignatureDeserializer),
+							reinterpret_cast<void**>(&RSDeserializer)));
+					}
 				}
 				else
 				{
@@ -1292,8 +1238,69 @@ namespace tix
 				}
 			}
 		}
+		TI_ASSERT(RSDeserializer != nullptr);
+		const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
+		TI_ASSERT(ShaderDx12->ShaderBinding == nullptr);
+		ShaderDx12->ShaderBinding = CreateShaderBinding(RSDesc);
 
 		return true;
+	}
+
+	FShaderBindingPtr FRHIDx12::CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC* RSDesc)
+	{
+		TI_TODO("Cache created root signature.");
+		FRootSignatureDx12 * RootSignatureDx12 = ti_new FRootSignatureDx12(RSDesc->NumParameters, RSDesc->NumStaticSamplers);
+		FShaderBindingPtr ShaderBinding = RootSignatureDx12;
+
+		const int32 NumBindings = RSDesc->NumParameters;
+		const int32 NumSamplers = RSDesc->NumStaticSamplers;
+		// Init static sampler
+		TI_TODO("Static sampler here");
+		RootSignatureDx12->InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
+
+		// Init shader params
+		for (int32 i = 0; i < NumBindings; ++i)
+		{
+			const D3D12_ROOT_PARAMETER& Parameter = RSDesc->pParameters[i];
+			switch (Parameter.ParameterType)
+			{
+			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+			{
+				const D3D12_ROOT_DESCRIPTOR_TABLE& Table = Parameter.DescriptorTable;
+				TI_ASSERT(Table.NumDescriptorRanges == 1);
+				const D3D12_DESCRIPTOR_RANGE& Range = Table.pDescriptorRanges[0];
+				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(Range.RangeType, Range.BaseShaderRegister, Range.NumDescriptors, Parameter.ShaderVisibility);
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+			{
+				const D3D12_ROOT_CONSTANTS& Constant = Parameter.Constants;
+				RootSignatureDx12->GetParameter(i).InitAsConstants(Constant.ShaderRegister, Constant.Num32BitValues, Parameter.ShaderVisibility);
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_CBV:
+			case D3D12_ROOT_PARAMETER_TYPE_SRV:
+			case D3D12_ROOT_PARAMETER_TYPE_UAV:
+			{
+				const D3D12_ROOT_DESCRIPTOR& Descriptor = Parameter.Descriptor;
+				RootSignatureDx12->GetParameter(i).InitAsBuffer(Parameter.ParameterType, Descriptor.ShaderRegister, Parameter.ShaderVisibility);
+			}
+				break;
+			default:
+				TI_ASSERT(0);
+				break;
+			}
+		}
+		//D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = 
+			//D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
+			//D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			//D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			//D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+		RootSignatureDx12->Finalize(D3dDevice.Get(), RSDesc->Flags);
+
+		HoldResourceReference(ShaderBinding);
+
+		return ShaderBinding;
 	}
 
 	bool FRHIDx12::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)

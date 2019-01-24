@@ -132,10 +132,6 @@ namespace tix
 			Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFunc = GetComparisonFunc(back_stencil_func.GetString());
 		}
 
-		// shader binding
-		TJSONNode shader_binding = Doc["shader_binding"];
-		Helper.SetShaderBinding(shader_binding.IsNull() ? "" : shader_binding.GetString());
-
 		// rt format
 		TJSONNode RT_Colors = Doc["rt_colors"];
 		TI_ASSERT(RT_Colors.IsArray() && RT_Colors.Size() <= 4);
@@ -217,11 +213,6 @@ namespace tix
 		else
 			PipelineDesc.RasterizerDesc.CullMode = ECM_BACK;
 	}
-
-	void TResMaterialHelper::SetShaderBinding(const TString& SBRes)
-	{
-		ShaderBinding = SBRes;
-	}
 	
 	void TResMaterialHelper::OutputMaterial(TStream& OutStream, TVector<TString>& OutStrings)
 	{
@@ -252,8 +243,6 @@ namespace tix
 				Define.ColorBuffers[cb] = PipelineDesc.RTFormats[cb];
 			}
 			Define.DepthBuffer = PipelineDesc.DepthFormat;
-
-			Define.ShaderBindingStr = AddStringToList(OutStrings, ShaderBinding);
 
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderMaterial));

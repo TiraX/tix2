@@ -48,23 +48,22 @@ namespace tix
 
 		void InitAsConstantBuffer(uint32 Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
 		{
-			RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			RootParam.ShaderVisibility = Visibility;
-			RootParam.Descriptor.ShaderRegister = Register;
-			RootParam.Descriptor.RegisterSpace = 0;
+			InitAsBuffer(D3D12_ROOT_PARAMETER_TYPE_CBV, Register, Visibility);
 		}
 
 		void InitAsBufferSRV(uint32 Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
 		{
-			RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-			RootParam.ShaderVisibility = Visibility;
-			RootParam.Descriptor.ShaderRegister = Register;
-			RootParam.Descriptor.RegisterSpace = 0;
+			InitAsBuffer(D3D12_ROOT_PARAMETER_TYPE_SRV, Register, Visibility);
 		}
 
 		void InitAsBufferUAV(uint32 Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
 		{
-			RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
+			InitAsBuffer(D3D12_ROOT_PARAMETER_TYPE_UAV, Register, Visibility);
+		}
+
+		void InitAsBuffer(D3D12_ROOT_PARAMETER_TYPE ParamType, uint32 Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
+		{
+			RootParam.ParameterType = ParamType;
 			RootParam.ShaderVisibility = Visibility;
 			RootParam.Descriptor.ShaderRegister = Register;
 			RootParam.Descriptor.RegisterSpace = 0;

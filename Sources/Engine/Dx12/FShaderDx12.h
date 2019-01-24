@@ -20,6 +20,7 @@ namespace tix
 
 	protected:
 		TStream ShaderCodes[ESS_COUNT];
+		FShaderBindingPtr ShaderBinding;
 
 		friend class FRHIDx12;
 	};

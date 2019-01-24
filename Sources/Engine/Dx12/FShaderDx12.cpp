@@ -19,6 +19,8 @@ namespace tix
 
 	FShaderDx12::~FShaderDx12()
 	{
+		TI_ASSERT(IsRenderThread());
+		ShaderBinding = nullptr;
 	}
 
 	void FShaderDx12::ReleaseShaderCode()

@@ -21,7 +21,6 @@ namespace tix
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
-		void SetShaderBinding(const TString& SBRes);
 
 		void OutputMaterial(TStream& OutStream, TVector<TString>& OutStrings);
 
@@ -31,7 +30,6 @@ namespace tix
 		//E_BLEND_MODE BlendMode;
 		TString ShaderNames[ESS_COUNT];
 		TStream ShaderCodes[ESS_COUNT];
-		TString ShaderBinding;
 
 		TPipelineDesc PipelineDesc;
 	};

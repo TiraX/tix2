@@ -7,18 +7,18 @@
 
 namespace tix
 {
-	class TResShaderBindingHelper
-	{
-	public:
-		TResShaderBindingHelper();
-		~TResShaderBindingHelper();
+	//class TResShaderBindingHelper
+	//{
+	//public:
+	//	TResShaderBindingHelper();
+	//	~TResShaderBindingHelper();
 
-		static void LoadShaderBinding(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
+	//	static void LoadShaderBinding(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 
-		void OutputShaderBinding(TStream& OutStream, TVector<TString>& OutStrings);
-	private:
+	//	void OutputShaderBinding(TStream& OutStream, TVector<TString>& OutStrings);
+	//private:
 
-	private:
-		TVector<TBindingParamInfo> Bindings;
-	};
+	//private:
+	//	TVector<TBindingParamInfo> Bindings;
+	//};
 }

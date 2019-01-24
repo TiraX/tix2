@@ -16,9 +16,6 @@ namespace tix
 
 	enum E_BINDING_TYPE
 	{
-		// Common Binding
-		BINDING_LIGHTS,
-
 		// Material Binding
 		BINDING_UNIFORMBUFFER,
 

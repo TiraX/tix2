@@ -7,36 +7,36 @@
 
 namespace tix
 {
-	struct TBindingParamInfo
-	{
-		int8 BindingType;
-		int8 BindingStage;
-		uint8 BindingRegister;
-		uint8 BindingSize;
+	//struct TBindingParamInfo
+	//{
+	//	int8 BindingType;
+	//	int8 BindingStage;
+	//	uint8 BindingRegister;
+	//	uint8 BindingSize;
 
-		TBindingParamInfo()
-			: BindingType(0)
-			, BindingStage(0)
-			, BindingRegister(0)
-			, BindingSize(0)
-		{}
-	};
+	//	TBindingParamInfo()
+	//		: BindingType(0)
+	//		, BindingStage(0)
+	//		, BindingRegister(0)
+	//		, BindingSize(0)
+	//	{}
+	//};
 
-	class TShaderBinding : public TResource
-	{
-	public:
-		TShaderBinding();
-		virtual ~TShaderBinding();
+	//class TShaderBinding : public TResource
+	//{
+	//public:
+	//	TShaderBinding();
+	//	virtual ~TShaderBinding();
 
-		virtual void InitRenderThreadResource() override;
-		virtual void DestroyRenderThreadResource() override;
+	//	virtual void InitRenderThreadResource() override;
+	//	virtual void DestroyRenderThreadResource() override;
 
-		FShaderBindingPtr ShaderBindingResource;
-	protected:
+	//	FShaderBindingPtr ShaderBindingResource;
+	//protected:
 
-	protected:
-		TVector<TBindingParamInfo> Bindings;
+	//protected:
+	//	TVector<TBindingParamInfo> Bindings;
 
-		friend class TResFile;
-	};
+	//	friend class TResFile;
+	//};
 }

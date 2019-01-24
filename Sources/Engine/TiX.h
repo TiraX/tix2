@@ -55,7 +55,6 @@ using namespace std;
 #include "TShader.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
-#include "TShaderBinding.h"
 #include "TResfileDef.h"
 #include "TResFile.h"
 #include "TNode.h"

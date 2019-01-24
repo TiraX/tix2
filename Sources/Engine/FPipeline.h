@@ -20,6 +20,7 @@ namespace tix
 
 		FShaderBindingPtr GetShaderBinding()
 		{
+			TI_TODO("ShaderBinding is a dx12 only feature , should do for dx 12 only.");
 			return ShaderBinding;
 		}
 	protected:

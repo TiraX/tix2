@@ -107,7 +107,6 @@ namespace tix
 
 	inline E_BINDING_TYPE GetBindingType(const TString& name)
 	{
-		ReturnEnumValue(name, BINDING_LIGHTS);
 		ReturnEnumValue(name, BINDING_UNIFORMBUFFER);
 		ReturnEnumValue(name, BINDING_UNIFORMBUFFER_TABLE);
 		ReturnEnumValue(name, BINDING_TEXTURE_TABLE);
