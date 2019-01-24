@@ -98,5 +98,20 @@
     <None Include="Shaders\Dx12\S_SSSBlur.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="Shaders\Dx12\S_AddSpecular.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_Bloom.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_Combine.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_GlareDetection.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_SkyDome.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -268,7 +268,12 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Dx12\S_AddSpecular.hlsli" />
+    <None Include="Shaders\Dx12\S_Bloom.hlsli" />
+    <None Include="Shaders\Dx12\S_Combine.hlsli" />
+    <None Include="Shaders\Dx12\S_GlareDetection.hlsli" />
     <None Include="Shaders\Dx12\S_SkinBaseRS.hlsli" />
+    <None Include="Shaders\Dx12\S_SkyDome.hlsli" />
     <None Include="Shaders\Dx12\S_SSSBlur.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

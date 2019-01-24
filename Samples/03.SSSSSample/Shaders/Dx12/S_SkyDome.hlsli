@@ -3,7 +3,7 @@
 	By ZhaoShuai tirax.cn@gmail.com
 */
 
-#define SkinBase_RootSig \
+#define SkyDome_RootSig \
     "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
 	"CBV(b0, visibility=SHADER_VISIBILITY_VERTEX), " \
 	"CBV(b4, visibility=SHADER_VISIBILITY_PIXEL), " \

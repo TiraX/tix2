@@ -1,4 +1,4 @@
-//#include "S_SSSBlur.hlsli"
+#include "S_GlareDetection.hlsli"
 
 // Per-pixel color data passed through the pixel shader.
 struct PixelShaderInput
@@ -17,7 +17,7 @@ Texture2D TexBaseColor : register(t0);
 SamplerState sampler0 : register(s0);
 
 // A pass-through function for the (interpolated) color data.
-//[RootSignature(SSSBlur_RootSig)]
+[RootSignature(GlareDetection_RootSig)]
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	float exposure = GlareDetectionParam.x;

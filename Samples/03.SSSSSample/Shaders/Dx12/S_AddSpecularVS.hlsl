@@ -1,4 +1,4 @@
-//#include "S_SSSBlur.hlsli"
+#include "S_AddSpecular.hlsli"
 
 // Per-vertex data used as input to the vertex shader.
 struct VertexShaderInput
@@ -14,7 +14,7 @@ struct PixelShaderInput
 	float2 uv : TEXCOORD;
 };
 
-//[RootSignature(SSSBlur_RootSig)]
+[RootSignature(AddSpecular_RootSig)]
 PixelShaderInput main(VertexShaderInput vsInput)
 {
 	PixelShaderInput output;

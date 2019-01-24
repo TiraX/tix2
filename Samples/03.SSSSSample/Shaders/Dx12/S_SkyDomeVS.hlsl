@@ -1,3 +1,5 @@
+#include "S_SkyDome.hlsli"
+
 cbuffer ViewBuffer : register(b0)
 {
 	float4x4 ViewProjection;
@@ -17,6 +19,7 @@ struct VSOutput
     float3 normal : Normal;
 };
 
+[RootSignature(SkyDome_RootSig)]
 VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;

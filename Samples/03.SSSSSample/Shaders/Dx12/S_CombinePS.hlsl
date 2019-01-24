@@ -1,4 +1,4 @@
-//#include "S_SSSBlur.hlsli"
+#include "S_Combine.hlsli"
 
 // Per-pixel color data passed through the pixel shader.
 struct PixelShaderInput
@@ -39,7 +39,7 @@ float3 DoToneMap(float3 color)
 }
 
 // A pass-through function for the (interpolated) color data.
-//[RootSignature(SSSBlur_RootSig)]
+[RootSignature(Combine_RootSig)]
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	const float w[] = { 2.0 / 3.0, 1.0 / 3.0 };

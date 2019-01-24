@@ -1,3 +1,5 @@
+#include "S_SkyDome.hlsli"
+
 struct VSOutput
 {
 	float4 position : SV_Position;
@@ -22,6 +24,7 @@ cbuffer LightData : register(b5)
 
 SamplerState sampler0 : register(s0);
 
+[RootSignature(SkyDome_RootSig)]
 float4 main(VSOutput input) : SV_Target0
 {
 	float3 normal = -normalize(input.normal);
