@@ -135,11 +135,6 @@ namespace tix
 	{
 		return ti_new FRenderTargetMetal(W, H);
 	}
-
-	FShaderBindingPtr FRHIMetal::CreateShaderBinding(uint32 NumBindings)
-	{
-        return ti_new FShaderBindingMetal(NumBindings);
-	}
     
     FShaderPtr FRHIMetal::CreateShader(const TShaderNames& ShaderNames)
     {
@@ -382,12 +377,6 @@ namespace tix
         }
         return true;
     }
-
-	bool FRHIMetal::UpdateHardwareResource(FShaderBindingPtr ShaderBindingResource, const TVector<TBindingParamInfo>& BindingInfos)
-	{
-        //TI_ASSERT(0);
-		return true;
-	}
     
     bool FRHIMetal::UpdateHardwareResource(FShaderPtr ShaderResource)
     {
@@ -400,6 +389,9 @@ namespace tix
         {
             FragmentShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_PIXEL_SHADER).c_str()];
         }
+        
+        TI_ASSERT(0);
+        // Get reflection
         
         ShaderMetal->VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
         if(ShaderMetal->VertexProgram == nil)
