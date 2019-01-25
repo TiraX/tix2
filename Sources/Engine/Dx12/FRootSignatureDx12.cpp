@@ -122,6 +122,17 @@ namespace tix
 		}
 	}
 
+	void FRootSignatureDx12::InitStaticSampler(
+		uint32 Register,
+		const D3D12_STATIC_SAMPLER_DESC& InStaticSamplerDesc)
+	{
+		TI_ASSERT(NumInitializedStaticSamplers < SamplerArray.size());
+		D3D12_STATIC_SAMPLER_DESC& StaticSamplerDesc = SamplerArray[NumInitializedStaticSamplers];
+		++NumInitializedStaticSamplers;
+
+		StaticSamplerDesc = InStaticSamplerDesc;
+	}
+
 	void FRootSignatureDx12::Finalize(ID3D12Device* D3dDevice, D3D12_ROOT_SIGNATURE_FLAGS Flags)
 	{
 		if (Finalized)

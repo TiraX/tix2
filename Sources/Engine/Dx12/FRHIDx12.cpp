@@ -308,19 +308,6 @@ namespace tix
 			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorTable->GetStartIndex());
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
-
-		// Init default sampler
-		{
-			DefaultSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			DefaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			DefaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			DefaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			DefaultSampler.MipLODBias = 0;
-			DefaultSampler.MaxAnisotropy = 0;
-			DefaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-			DefaultSampler.MinLOD = 0.0f;
-			DefaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
-		}
 		
 		// Set the 3D rendering viewport to target the entire window.
 		FRHI::SetViewport(FViewport(0, 0, BackBufferWidth, BackBufferHeight));
@@ -1254,9 +1241,13 @@ namespace tix
 
 		const int32 NumBindings = RSDesc->NumParameters;
 		const int32 NumSamplers = RSDesc->NumStaticSamplers;
+
 		// Init static sampler
-		TI_TODO("Static sampler here");
-		RootSignatureDx12->InitStaticSampler(0, DefaultSampler, D3D12_SHADER_VISIBILITY_PIXEL);
+		for (int32 i = 0 ; i < NumSamplers ; ++ i)
+		{
+			const D3D12_STATIC_SAMPLER_DESC& StaticSampler = RSDesc->pStaticSamplers[i];
+			RootSignatureDx12->InitStaticSampler(i, StaticSampler);
+		}
 
 		// Init shader params
 		for (int32 i = 0; i < NumBindings; ++i)

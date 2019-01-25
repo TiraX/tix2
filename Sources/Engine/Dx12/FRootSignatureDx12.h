@@ -138,6 +138,8 @@ namespace tix
 		void InitStaticSampler(uint32 Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc,
 			D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL);
 
+		void InitStaticSampler(uint32 Register, const D3D12_STATIC_SAMPLER_DESC& InStaticSamplerDesc);
+
 		void Finalize(ID3D12Device* D3dDevice, D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		ID3D12RootSignature* Get() const

@@ -149,9 +149,6 @@ namespace tix
 		ComPtr<ID3D12CommandAllocator> CommandAllocators[FRHIConfig::FrameBufferNum];
 		ComPtr<ID3D12GraphicsCommandList> CommandList;
 
-		// RootSignature
-		D3D12_SAMPLER_DESC DefaultSampler;
-
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
