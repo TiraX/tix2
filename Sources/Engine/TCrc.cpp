@@ -161,7 +161,7 @@ uint32 TCrc::MemCrc32( const void* InData, int32 Length, uint32 CRC/*=0 */ )
 
 	CRC = ~CRC;
 
-	TI_ASSERT(((const uint64)InData & (~3)) == 0);
+	TI_ASSERT(((const uint64)InData & (3)) == 0);
 	const uint8* __restrict Data = (uint8*)InData;
 	
 	if (Length > 0)

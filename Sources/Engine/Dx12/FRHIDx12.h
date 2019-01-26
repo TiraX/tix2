@@ -88,7 +88,7 @@ namespace tix
 
 		void SetResourceName(ID3D12Resource* InDxResource, const TString& InName);
 		void SetResourceName(ID3D12PipelineState* InDxResource, const TString& InName);
-		FShaderBindingPtr CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC* RSDesc);
+		FShaderBindingPtr CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC& RSDesc);
 
 		uint64 UpdateSubresources(
 			_In_ ID3D12GraphicsCommandList* pCmdList,
@@ -165,6 +165,9 @@ namespace tix
 
 		// Frame on the fly Resource holders
 		FFrameResourcesDx12 * ResHolders[FRHIConfig::FrameBufferNum];
+
+		// Root Descriptor cache
+		THMap<uint32, FShaderBindingPtr> ShaderBindingCache;
 
 		friend class FRHI;
 		friend class FDescriptorHeapDx12;

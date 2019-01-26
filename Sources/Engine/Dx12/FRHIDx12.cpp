@@ -1228,31 +1228,84 @@ namespace tix
 		TI_ASSERT(RSDeserializer != nullptr);
 		const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
 		TI_ASSERT(ShaderDx12->ShaderBinding == nullptr);
-		ShaderDx12->ShaderBinding = CreateShaderBinding(RSDesc);
+		ShaderDx12->ShaderBinding = CreateShaderBinding(*RSDesc);
 
 		return true;
 	}
 
-	FShaderBindingPtr FRHIDx12::CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC* RSDesc)
+	inline uint32 GetRSDescCrc(const D3D12_ROOT_SIGNATURE_DESC& RSDesc)
 	{
-		TI_TODO("Cache created root signature.");
-		FRootSignatureDx12 * RootSignatureDx12 = ti_new FRootSignatureDx12(RSDesc->NumParameters, RSDesc->NumStaticSamplers);
+		TStream RSData;
+		RSData.Put(&RSDesc.NumParameters, sizeof(uint32));
+		RSData.Put(&RSDesc.NumStaticSamplers, sizeof(uint32));
+		RSData.Put(&RSDesc.Flags, sizeof(uint32));
+		for (uint32 i = 0; i < RSDesc.NumParameters; ++i)
+		{
+			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
+			RSData.Put(&Parameter.ParameterType, sizeof(uint32));
+			switch (Parameter.ParameterType)
+			{
+			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+			{
+				const D3D12_ROOT_DESCRIPTOR_TABLE& Table = Parameter.DescriptorTable;
+				RSData.Put(&Table.NumDescriptorRanges, sizeof(uint32));
+				for (uint32 d = 0; d < Table.NumDescriptorRanges; ++d)
+				{
+					RSData.Put(Table.pDescriptorRanges + d, sizeof(D3D12_DESCRIPTOR_RANGE));
+				}
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+			{
+				const D3D12_ROOT_CONSTANTS& Constants = Parameter.Constants;
+				RSData.Put(&Constants, sizeof(D3D12_ROOT_CONSTANTS));
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_CBV:
+			case D3D12_ROOT_PARAMETER_TYPE_SRV:
+			case D3D12_ROOT_PARAMETER_TYPE_UAV:
+			{
+				const D3D12_ROOT_DESCRIPTOR& Descriptor = Parameter.Descriptor;
+				RSData.Put(&Descriptor, sizeof(D3D12_ROOT_DESCRIPTOR));
+			}
+				break;
+			}
+		}
+		for (uint32 i = 0; i < RSDesc.NumStaticSamplers; ++i)
+		{
+			const D3D12_STATIC_SAMPLER_DESC& SamplerDesc = RSDesc.pStaticSamplers[i];
+			RSData.Put(&SamplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC));
+		}
+		return TCrc::MemCrc32(RSData.GetBuffer(), RSData.GetLength());
+	}
+
+	FShaderBindingPtr FRHIDx12::CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC& RSDesc)
+	{
+		uint32 RSDescKey = GetRSDescCrc(RSDesc);
+		if (ShaderBindingCache.find(RSDescKey) != ShaderBindingCache.end())
+		{
+			// Return created shader binding
+			return ShaderBindingCache[RSDescKey];
+		}
+
+		// Create new shader binding
+		FRootSignatureDx12 * RootSignatureDx12 = ti_new FRootSignatureDx12(RSDesc.NumParameters, RSDesc.NumStaticSamplers);
 		FShaderBindingPtr ShaderBinding = RootSignatureDx12;
 
-		const int32 NumBindings = RSDesc->NumParameters;
-		const int32 NumSamplers = RSDesc->NumStaticSamplers;
+		const int32 NumBindings = RSDesc.NumParameters;
+		const int32 NumSamplers = RSDesc.NumStaticSamplers;
 
 		// Init static sampler
 		for (int32 i = 0 ; i < NumSamplers ; ++ i)
 		{
-			const D3D12_STATIC_SAMPLER_DESC& StaticSampler = RSDesc->pStaticSamplers[i];
+			const D3D12_STATIC_SAMPLER_DESC& StaticSampler = RSDesc.pStaticSamplers[i];
 			RootSignatureDx12->InitStaticSampler(i, StaticSampler);
 		}
 
 		// Init shader params
 		for (int32 i = 0; i < NumBindings; ++i)
 		{
-			const D3D12_ROOT_PARAMETER& Parameter = RSDesc->pParameters[i];
+			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
 			switch (Parameter.ParameterType)
 			{
 			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
@@ -1282,14 +1335,10 @@ namespace tix
 				break;
 			}
 		}
-		//D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = 
-			//D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // Only the input assembler stage needs access to the constant buffer.
-			//D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			//D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			//D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
-		RootSignatureDx12->Finalize(D3dDevice.Get(), RSDesc->Flags);
-
+		RootSignatureDx12->Finalize(D3dDevice.Get(), RSDesc.Flags);
 		HoldResourceReference(ShaderBinding);
+
+		ShaderBindingCache[RSDescKey] = ShaderBinding;
 
 		return ShaderBinding;
 	}
