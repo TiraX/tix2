@@ -24,6 +24,24 @@ namespace tix
 	{
 	}
 
+	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName)
+	{
+		TString::size_type PrefixPos = ArgName.find('_');
+		TI_ASSERT(PrefixPos != TString::npos);
+		TString Prefix = ArgName.substr(0, PrefixPos);
+		if (Prefix == "EB")
+		{
+			TString BufferName = ArgName.substr(PrefixPos + 1);
+			// Engine Buffer
+			if (BufferName == "View")
+				return ARGUMENT_EB_VIEW;
+			if (BufferName == "Primitive")
+				return ARGUMENT_EB_PRIMITIVE;
+		}
+
+		return ARGUMENT_MIB;
+	}
+
 #if DEBUG_SHADER_BINDING_TYPE
 	void FShaderBinding::InitBindingType(uint32 InBindingIndex, E_BINDING_TYPE InBindingType)
 	{
@@ -37,4 +55,26 @@ namespace tix
 		TI_ASSERT(BindingTypes[InBindingIndex] == InBindingType);
 	}
 #endif
+
+	void FShaderBinding::AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument)
+	{
+		if (ShaderStage == ESS_VERTEX_SHADER)
+		{
+			VertexArguments.push_back(InArgument);
+		}
+		else if (ShaderStage == ESS_PIXEL_SHADER)
+		{
+			FragmentArguments.push_back(InArgument);
+		}
+		else
+		{
+			TI_ASSERT(0);
+		}
+	}
+
+	void FShaderBinding::SortArguments()
+	{
+		TSort(VertexArguments.begin(), VertexArguments.end());
+		TSort(FragmentArguments.begin(), FragmentArguments.end());
+	}
 }

@@ -18,11 +18,14 @@
 #include "FShaderDx12.h"
 #include "FArgumentBufferDx12.h"
 #include <DirectXColors.h>
+#include <d3d12shader.h>
+#include <d3dcompiler.h>
 
 // link libraries
 #pragma comment (lib, "d3d12.lib")
 #pragma comment (lib, "dxgi.lib")
 #pragma comment (lib, "dxguid.lib")
+#pragma comment (lib, "d3dcompiler.lib")
 
 namespace tix
 {
@@ -1189,6 +1192,73 @@ namespace tix
 		return true;
 	}
 
+	inline int32 GetBindIndex(const D3D12_SHADER_INPUT_BIND_DESC& BindDesc, const D3D12_ROOT_SIGNATURE_DESC& RSDesc)
+	{
+		if (BindDesc.Type == D3D_SIT_SAMPLER)
+		{
+			return -1;
+		}
+
+		for (uint32 i = 0; i < RSDesc.NumParameters; ++i)
+		{
+			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
+			switch (Parameter.ParameterType)
+			{
+			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+			{
+				const D3D12_ROOT_DESCRIPTOR_TABLE& DescriptorTable = Parameter.DescriptorTable;
+				TI_ASSERT(DescriptorTable.NumDescriptorRanges == 1);
+				const D3D12_DESCRIPTOR_RANGE& DescriptorRange = DescriptorTable.pDescriptorRanges[0];
+				if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
+				{
+					if (BindDesc.Type == D3D_SIT_TEXTURE)
+					{
+						if (BindDesc.BindPoint == DescriptorRange.BaseShaderRegister)
+						{
+							return (int32)i;
+						}
+						else if (BindDesc.BindPoint > DescriptorRange.BaseShaderRegister 
+							&& BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
+						{
+							// Use texture descriptor table, bind the first texture only.
+							return -1;
+						}
+					}
+				}
+				else
+				{
+					// Not support yet.
+					TI_ASSERT(0);
+				}
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+			case D3D12_ROOT_PARAMETER_TYPE_SRV:
+			case D3D12_ROOT_PARAMETER_TYPE_UAV:
+			{
+				// Not support yet.
+				TI_ASSERT(0);
+			}
+				break;
+			case D3D12_ROOT_PARAMETER_TYPE_CBV:
+			{
+				const D3D12_ROOT_DESCRIPTOR& Descriptor = Parameter.Descriptor;
+				if (BindDesc.Type == D3D_SIT_CBUFFER)
+				{
+					if (BindDesc.BindPoint == Descriptor.ShaderRegister)
+					{
+						return (int32)i;
+					}
+				}
+			}
+				break;
+			}
+		}
+
+		TI_ASSERT(0);
+		return -1;
+	}
+
 	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource)
 	{
 		// Dx12 shader only need load byte code.
@@ -1213,7 +1283,7 @@ namespace tix
 
 					if (RSDeserializer == nullptr)
 					{
-						SUCCEEDED(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
+						VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
 							ShaderDx12->ShaderCodes[s].GetLength(),
 							__uuidof(ID3D12RootSignatureDeserializer),
 							reinterpret_cast<void**>(&RSDeserializer)));
@@ -1225,10 +1295,41 @@ namespace tix
 				}
 			}
 		}
+
+		// Create shader binding, also root signature in dx12
 		TI_ASSERT(RSDeserializer != nullptr);
 		const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
 		TI_ASSERT(ShaderDx12->ShaderBinding == nullptr);
 		ShaderDx12->ShaderBinding = CreateShaderBinding(*RSDesc);
+
+		// Analysis binding argument types
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			if (ShaderDx12->ShaderCodes[s].GetLength() > 0)
+			{
+				ID3D12ShaderReflection* ShaderReflection;
+				D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
+
+				VALIDATE_HRESULT(D3DReflect(ShaderDx12->ShaderCodes[s].GetBuffer(), ShaderDx12->ShaderCodes[s].GetLength(), IID_PPV_ARGS(&ShaderReflection)));
+
+				D3D12_SHADER_DESC ShaderDesc;
+				VALIDATE_HRESULT(ShaderReflection->GetDesc(&ShaderDesc));
+				for (uint32 r = 0; r < ShaderDesc.BoundResources; ++r)
+				{
+					VALIDATE_HRESULT(ShaderReflection->GetResourceBindingDesc(r, &BindDescriptor));
+					int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc);
+					if (BindIndex >= 0)
+					{
+						TString BindName = BindDescriptor.Name;
+						E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
+						ShaderDx12->ShaderBinding->AddShaderArgument(
+							(E_SHADER_STAGE)s, 
+							FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+					}
+				}
+			}
+		}
+		ShaderDx12->ShaderBinding->SortArguments();
 
 		return true;
 	}
@@ -1289,8 +1390,8 @@ namespace tix
 		}
 
 		// Create new shader binding
-		FRootSignatureDx12 * RootSignatureDx12 = ti_new FRootSignatureDx12(RSDesc.NumParameters, RSDesc.NumStaticSamplers);
-		FShaderBindingPtr ShaderBinding = RootSignatureDx12;
+		FShaderBindingPtr ShaderBinding = ti_new FRootSignatureDx12(RSDesc.NumParameters, RSDesc.NumStaticSamplers);
+		FRootSignatureDx12 * RootSignatureDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
 
 		const int32 NumBindings = RSDesc.NumParameters;
 		const int32 NumSamplers = RSDesc.NumStaticSamplers;

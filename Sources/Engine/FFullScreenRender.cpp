@@ -17,6 +17,7 @@ namespace tix
 	{
 		FullScreenQuad = nullptr;
 		FullScreenPipeline = nullptr;
+		FullScreenShader = nullptr;
 	}
 
 	void FFullScreenRender::InitCommonResources(FRHI* RHI)
@@ -57,12 +58,14 @@ namespace tix
 		Shader->ShaderResource = RHI->CreateShader(ShaderNames);
 		RHI->UpdateHardwareResource(Shader->ShaderResource);
 		FSMaterial->SetShader(Shader);
+		FullScreenShader = Shader->ShaderResource;
 
 		FSMaterial->EnableDepthWrite(false);
 		FSMaterial->EnableDepthTest(false);
 		FSMaterial->SetShaderVsFormat(FullScreenQuad->GetVSFormat());
 		FSMaterial->SetRTColor(FRHIConfig::DefaultBackBufferFormat, ERTC_COLOR0);
 
+		// Pipeline
 		FullScreenPipeline = RHI->CreatePipeline();
 		RHI->UpdateHardwareResource(FullScreenPipeline, FSMaterial);
 		FSMaterial = nullptr;

@@ -26,6 +26,15 @@ namespace tix
 		BINDING_TYPE_INVALID = BINDING_TYPE_NUM,
 	};
 
+	enum E_ARGUMENT_TYPE
+	{
+		ARGUMENT_EB_VIEW,
+		ARGUMENT_EB_PRIMITIVE,
+		ARGUMENT_MIB,
+
+		ARGUMENT_UNKNOWN,
+	};
+
 	struct FSamplerDesc
 	{
 		E_TEXTURE_FILTER_TYPE Filter;
@@ -39,10 +48,7 @@ namespace tix
 		FShaderBinding(uint32 InNumBindings);
 		virtual ~FShaderBinding();
 
-		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) = 0;
-		virtual void InitStaticSampler(uint32 InBindingIndex, const FSamplerDesc& Desc, uint32 InBindingStage) = 0;
-
-		virtual void Finalize(FRHI * RHI) = 0;
+		static E_ARGUMENT_TYPE GetArgumentTypeByName(const TString& ArgName);
 
 		const int32 GetNumBinding() const
 		{
@@ -52,6 +58,24 @@ namespace tix
 #if DEBUG_SHADER_BINDING_TYPE
 		void ValidateBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType);
 #endif
+		struct FShaderArgument
+		{
+			FShaderArgument(int32 InBindingIndex, E_ARGUMENT_TYPE InArgumentType)
+				: BindingIndex(InBindingIndex)
+				, ArgumentType(InArgumentType)
+			{}
+
+			bool operator < (const FShaderArgument& Other) const
+			{
+				return BindingIndex < Other.BindingIndex;
+			}
+
+			int32 BindingIndex;
+			E_ARGUMENT_TYPE ArgumentType;
+		};
+
+		void AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument);
+		void SortArguments();
 
 	protected:
 #if DEBUG_SHADER_BINDING_TYPE
@@ -60,6 +84,8 @@ namespace tix
 
 	protected:
 		int32 NumBindings;
+		TVector<FShaderArgument> VertexArguments;
+		TVector<FShaderArgument> FragmentArguments;
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif

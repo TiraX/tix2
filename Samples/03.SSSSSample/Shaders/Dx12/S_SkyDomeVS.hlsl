@@ -1,6 +1,6 @@
 #include "S_SkyDome.hlsli"
 
-cbuffer ViewBuffer : register(b0)
+cbuffer EB_View : register(b0)
 {
 	float4x4 ViewProjection;
 	float3 ViewDir;

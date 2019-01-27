@@ -8,8 +8,7 @@ struct PixelShaderInput
 };
 
 Texture2D TexBaseColor : register(t0);
-Texture2D TexDepth : register(t1);	// Unused
-Texture2D TexSpecular: register(t2);
+Texture2D TexSpecular: register(t1);
 
 SamplerState sampler0 : register(s0);
 

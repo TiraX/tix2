@@ -29,6 +29,7 @@ typedef double float64;
 #define TList std::list
 #define TMap std::map
 #define THMap std::unordered_map
+#define TSort std::sort
 
 typedef std::string	TString;
 typedef std::wstring TWString;

@@ -120,10 +120,7 @@ namespace tix
 			Signature = nullptr;
 		}
 
-		virtual void InitBinding(uint32 InBindingIndex, E_BINDING_TYPE InBindingType, uint32 InBindingRegisterIndex, uint32 InBindingSize, uint32 InBindingStage) override;
-		virtual void InitStaticSampler(uint32 InBindingIndex, const FSamplerDesc& Desc, uint32 InBindingStage) override;
-
-		virtual void Finalize(FRHI * RHI) override;
+		void Finalize(FRHI * RHI);
 		
 		FRootParameterDx12& GetParameter(uint32 EntryIndex)
 		{

@@ -16,6 +16,11 @@ namespace tix
 		FFullScreenRender();
 		~FFullScreenRender();
 
+		FShaderPtr GetFullScreenShader()
+		{
+			return FullScreenShader;
+		}
+
 		void InitCommonResources(FRHI* RHI);
 		void DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture);
 		// Blit the full screen texture to screen directly.
@@ -33,5 +38,6 @@ namespace tix
 		};
 		FMeshBufferPtr FullScreenQuad;
 		FPipelinePtr FullScreenPipeline;
+		FShaderPtr FullScreenShader;
 	};
 }

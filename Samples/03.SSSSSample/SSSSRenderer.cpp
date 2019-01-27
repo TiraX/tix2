@@ -36,18 +36,31 @@ FSSSSRenderer::FSSSSRenderer()
 	const TString AddSpecularMaterialName = "M_AddSpecular.tres";
 	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(AddSpecularMaterialName).get());
 	PL_AddSpecular = M_AddSpecular->PipelineResource;
+	AB_AddSpecular = FRHI::Get()->CreateArgumentBuffer(M_AddSpecular->GetDesc().Shader->ShaderResource);
 
 	const TString GlareDetectionMaterialName = "M_GlareDetection.tres";
 	TMaterialPtr M_GlareDetection = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(GlareDetectionMaterialName).get());
 	PL_GlareDetection = M_GlareDetection->PipelineResource;
+	AB_GlareDetection = FRHI::Get()->CreateArgumentBuffer(M_GlareDetection->GetDesc().Shader->ShaderResource);
 
 	const TString BloomMaterialName = "M_Bloom.tres";
 	TMaterialPtr M_Bloom = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(BloomMaterialName).get());
 	PL_Bloom = M_Bloom->PipelineResource;
+	for (int32 p = 0; p < BloomPasses; ++p)
+	{
+		// Pass Horizontal
+		FBloomPass& PassX = BloomPass[p][0];
+		PassX.AB = FRHI::Get()->CreateArgumentBuffer(M_Bloom->GetDesc().Shader->ShaderResource);
+
+		// Pass Vertical
+		FBloomPass& PassY = BloomPass[p][1];
+		PassY.AB = FRHI::Get()->CreateArgumentBuffer(M_Bloom->GetDesc().Shader->ShaderResource);
+	}
 
 	const TString CombineMaterialName = "M_Combine.tres";
 	TMaterialPtr M_Combine = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(CombineMaterialName).get());
 	PL_Combine = M_Combine->PipelineResource;
+	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);
 }
 
 FSSSSRenderer::~FSSSSRenderer()
@@ -142,6 +155,9 @@ void FSSSSRenderer::InitInRenderThread()
 	}
 	UB_Kernel->InitUniformBuffer();
 
+	TStreamPtr ArgumentValues = ti_new TStream;
+	TVector<FTexturePtr> ArgumentTextures;
+
 	const float Exposure = 2.f;
 	const float Threshold = 0.63f;
 	// Bloom Glare Detection
@@ -149,12 +165,17 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_GlareDetection->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
 	RT_GlareDetection->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
 	RT_GlareDetection->Compile();
-	UB_GlareParam = ti_new FSSSBloomUniformBuffer;
-	UB_GlareParam->UniformBufferData.BloomParam.X = Exposure;
-	UB_GlareParam->UniformBufferData.BloomParam.Y = Threshold;
-	UB_GlareParam->InitUniformBuffer();
-	TT_GlareSource = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-	TT_GlareSource->PutTextureInTable(TextureBlurX, 0);
+	{
+		ArgumentValues->Reset();
+		FFloat4 BloomParam;
+		BloomParam.X = Exposure;
+		BloomParam.Y = Threshold;
+		ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
+
+		ArgumentTextures.clear();
+		ArgumentTextures.push_back(TextureBlurX);
+		RHI->UpdateHardwareResource(AB_GlareDetection, ArgumentValues, ArgumentTextures);
+	}
 
 	// Bloom Blur Passes
 	float BloomWidth = 1.f;
@@ -165,17 +186,20 @@ void FSSSSRenderer::InitInRenderThread()
 		vector2df BloomStep = vector2df(1.f / (ViewWidth / SizeBase), 1.f / (ViewHeight / SizeBase));
 		BloomStep *= BloomWidth;
 
+		FFloat4 BloomParam;
 		// Pass Horizontal
 		FBloomPass& PassX = BloomPass[p][0];
 		PassX.RT = FRenderTarget::Create(ViewWidth / SizeBase, ViewHeight / SizeBase);
 		PassX.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
 		PassX.RT->Compile();
 		vector2df BloomStepX = BloomStep * vector2df(1.f, 0.f);
-		PassX.UB = ti_new FSSSBloomUniformBuffer;
-		PassX.UB->UniformBufferData.BloomParam = BloomStepX;
-		PassX.UB->InitUniformBuffer();
-		PassX.TT = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-		PassX.TT->PutTextureInTable(LastResult, 0);
+		BloomParam = BloomStepX;
+		{
+			ArgumentValues->Reset();
+			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
+			ArgumentTextures.clear();
+			ArgumentTextures.push_back(LastResult);
+		}
 		LastResult = PassX.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
 		// Pass Vertical
@@ -184,11 +208,13 @@ void FSSSSRenderer::InitInRenderThread()
 		PassY.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
 		PassY.RT->Compile();
 		vector2df BloomStepY = BloomStep * vector2df(0.f, 1.f);
-		PassY.UB = ti_new FSSSBloomUniformBuffer;
-		PassY.UB->UniformBufferData.BloomParam = BloomStepY;
-		PassY.UB->InitUniformBuffer();
-		PassY.TT = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-		PassY.TT->PutTextureInTable(LastResult, 0);
+		BloomParam = BloomStepY;
+		{
+			ArgumentValues->Reset();
+			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
+			ArgumentTextures.clear();
+			ArgumentTextures.push_back(LastResult);
+		}
 		LastResult = PassY.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
 		SizeBase *= 2;
@@ -199,18 +225,27 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_Combine = FRenderTarget::Create(ViewWidth, ViewHeight);
 	RT_Combine->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
 	RT_Combine->Compile();
-	UB_Combine = ti_new FSSSBloomUniformBuffer;
-	UB_Combine->UniformBufferData.BloomParam.X = Exposure;
-	UB_Combine->UniformBufferData.BloomParam.Y = BloomIntensity;
-	UB_Combine->InitUniformBuffer();
-	TT_Combine = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(3);
-	TT_Combine->PutTextureInTable(TextureBlurX, 0);
-	TT_Combine->PutTextureInTable(BloomPass[0][1].RT->GetColorBuffer(ERTC_COLOR0).Texture, 1);
-	TT_Combine->PutTextureInTable(BloomPass[1][1].RT->GetColorBuffer(ERTC_COLOR0).Texture, 2);
+	{
+		ArgumentValues->Reset();
+		FFloat4 BloomParam;
+		BloomParam.X = Exposure;
+		BloomParam.Y = BloomIntensity;
+		ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
+
+		ArgumentTextures.clear();
+		ArgumentTextures.push_back(TextureBlurX);
+		ArgumentTextures.push_back(BloomPass[0][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
+		ArgumentTextures.push_back(BloomPass[1][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
+		RHI->UpdateHardwareResource(AB_GlareDetection, ArgumentValues, ArgumentTextures);
+	}
 
 	// Output result
-	TT_Result = FRHI::Get()->GetRenderResourceHeap(EHT_TEXTURE).AllocateTable(1);
-	TT_Result->PutTextureInTable(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture, 0);
+	AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
+	{
+		ArgumentTextures.clear();
+		ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
+		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
+	}
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -250,77 +285,78 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 
 	RHI->PopRenderTarget();
 
-	// Go SSS Blur Pass
-	{
-		RHI->PushRenderTarget(RT_SSSBlurX);
-		RHI->SetPipeline(PL_SSSBlur);
-		RHI->SetUniformBuffer(0, UB_SSSBlurX->UniformBuffer);
-		RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
-		RHI->SetRenderResourceTable(2, TT_SSSBlurX);
-		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
-	}
-	{
-		RHI->PushRenderTarget(RT_SSSBlurY);
-		//RHI->SetPipeline(M_SSSBlur->PipelineResource);
-		RHI->SetUniformBuffer(0, UB_SSSBlurY->UniformBuffer);
-		RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
-		RHI->SetRenderResourceTable(2, TT_SSSBlurY);
-		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
-	}
+	TI_ASSERT(0);
+	//// Go SSS Blur Pass
+	//{
+	//	RHI->PushRenderTarget(RT_SSSBlurX);
+	//	RHI->SetPipeline(PL_SSSBlur);
+	//	RHI->SetUniformBuffer(0, UB_SSSBlurX->UniformBuffer);
+	//	RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
+	//	RHI->SetRenderResourceTable(2, TT_SSSBlurX);
+	//	FSRender.DrawFullScreenQuad(RHI);
+	//	RHI->PopRenderTarget();
+	//}
+	//{
+	//	RHI->PushRenderTarget(RT_SSSBlurY);
+	//	//RHI->SetPipeline(M_SSSBlur->PipelineResource);
+	//	RHI->SetUniformBuffer(0, UB_SSSBlurY->UniformBuffer);
+	//	RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
+	//	RHI->SetRenderResourceTable(2, TT_SSSBlurY);
+	//	FSRender.DrawFullScreenQuad(RHI);
+	//	RHI->PopRenderTarget();
+	//}
 
-	// Add Specular
-	{
-		RHI->PushRenderTarget(RT_SSSBlurX);
-		RHI->SetPipeline(PL_AddSpecular);
-		RHI->SetRenderResourceTable(0, TT_SSSBlurX);
-		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
-	}
+	//// Add Specular
+	//{
+	//	RHI->PushRenderTarget(RT_SSSBlurX);
+	//	RHI->SetPipeline(PL_AddSpecular);
+	//	RHI->SetRenderResourceTable(0, TT_SSSBlurX);
+	//	FSRender.DrawFullScreenQuad(RHI);
+	//	RHI->PopRenderTarget();
+	//}
 
-	// Bloom
-	{
-		// Glare detection
-		RHI->PushRenderTarget(RT_GlareDetection);
-		RHI->SetPipeline(PL_GlareDetection);
-		RHI->SetUniformBuffer(0, UB_GlareParam->UniformBuffer);
-		RHI->SetRenderResourceTable(1, TT_GlareSource);
-		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
+	//// Bloom
+	//{
+	//	// Glare detection
+	//	RHI->PushRenderTarget(RT_GlareDetection);
+	//	RHI->SetPipeline(PL_GlareDetection);
+	//	RHI->SetUniformBuffer(0, UB_GlareParam->UniformBuffer);
+	//	RHI->SetRenderResourceTable(1, TT_GlareSource);
+	//	FSRender.DrawFullScreenQuad(RHI);
+	//	RHI->PopRenderTarget();
 
-		// Bloom blur X & Y
-		for (int32 p = 0; p < BloomPasses; ++p)
-		{
-			// Pass Horizontal
-			FBloomPass& PassX = BloomPass[p][0];
-			RHI->PushRenderTarget(PassX.RT);
-			RHI->SetPipeline(PL_Bloom);
-			RHI->SetUniformBuffer(0, PassX.UB->UniformBuffer);
-			RHI->SetRenderResourceTable(1, PassX.TT);
-			FSRender.DrawFullScreenQuad(RHI);
-			RHI->PopRenderTarget();
-			
-			// Pass Vertical
-			FBloomPass& PassY = BloomPass[p][1];
-			RHI->PushRenderTarget(PassY.RT);
-			RHI->SetPipeline(PL_Bloom);
-			RHI->SetUniformBuffer(0, PassY.UB->UniformBuffer);
-			RHI->SetRenderResourceTable(1, PassY.TT);
-			FSRender.DrawFullScreenQuad(RHI);
-			RHI->PopRenderTarget();
-		}
-	}
+	//	// Bloom blur X & Y
+	//	for (int32 p = 0; p < BloomPasses; ++p)
+	//	{
+	//		// Pass Horizontal
+	//		FBloomPass& PassX = BloomPass[p][0];
+	//		RHI->PushRenderTarget(PassX.RT);
+	//		RHI->SetPipeline(PL_Bloom);
+	//		RHI->SetUniformBuffer(0, PassX.UB->UniformBuffer);
+	//		RHI->SetRenderResourceTable(1, PassX.TT);
+	//		FSRender.DrawFullScreenQuad(RHI);
+	//		RHI->PopRenderTarget();
+	//		
+	//		// Pass Vertical
+	//		FBloomPass& PassY = BloomPass[p][1];
+	//		RHI->PushRenderTarget(PassY.RT);
+	//		RHI->SetPipeline(PL_Bloom);
+	//		RHI->SetUniformBuffer(0, PassY.UB->UniformBuffer);
+	//		RHI->SetRenderResourceTable(1, PassY.TT);
+	//		FSRender.DrawFullScreenQuad(RHI);
+	//		RHI->PopRenderTarget();
+	//	}
+	//}
 
-	// Combine
-	{
-		RHI->PushRenderTarget(RT_Combine);
-		RHI->SetPipeline(PL_Combine);
-		RHI->SetUniformBuffer(0, UB_Combine->UniformBuffer);
-		RHI->SetRenderResourceTable(1, TT_Combine);
-		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
-	}
+	//// Combine
+	//{
+	//	RHI->PushRenderTarget(RT_Combine);
+	//	RHI->SetPipeline(PL_Combine);
+	//	RHI->SetUniformBuffer(0, UB_Combine->UniformBuffer);
+	//	RHI->SetRenderResourceTable(1, TT_Combine);
+	//	FSRender.DrawFullScreenQuad(RHI);
+	//	RHI->PopRenderTarget();
+	//}
 
-	FSRender.DrawFullScreenTexture(RHI, TT_Result);
+	//FSRender.DrawFullScreenTexture(RHI, TT_Result);
 }

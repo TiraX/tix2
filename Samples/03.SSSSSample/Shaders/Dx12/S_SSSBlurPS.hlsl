@@ -20,8 +20,7 @@ cbuffer SSSKernel : register(b1)
 };
 
 Texture2D TexColor : register(t0);
-Texture2D TexDepth : register(t1);
-Texture2D TexStrength : register(t2);
+Texture2D TexStrength : register(t1);
 
 SamplerState sampler0 : register(s0);
 

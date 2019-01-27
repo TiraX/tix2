@@ -57,19 +57,18 @@ protected:
 
 	// Combine Specular
 	FPipelinePtr PL_AddSpecular;
+	FArgumentBufferPtr AB_AddSpecular;
 
 	// Bloom
 	FRenderTargetPtr RT_GlareDetection;
 	FPipelinePtr PL_GlareDetection;
-	FSSSBloomUniformBufferPtr UB_GlareParam;
-	FRenderResourceTablePtr TT_GlareSource;
+	FArgumentBufferPtr AB_GlareDetection;
 
 	static const int32 BloomPasses = 2;
 	struct FBloomPass
 	{
 		FRenderTargetPtr RT;
-		FSSSBloomUniformBufferPtr UB;
-		FRenderResourceTablePtr TT;
+		FArgumentBufferPtr AB;
 	};
 	FPipelinePtr PL_Bloom;
 	FBloomPass BloomPass[BloomPasses][2];
@@ -77,9 +76,8 @@ protected:
 	// Combine Bloom and tonemap
 	FPipelinePtr PL_Combine;
 	FRenderTargetPtr RT_Combine;
-	FSSSBloomUniformBufferPtr UB_Combine;
-	FRenderResourceTablePtr TT_Combine;
+	FArgumentBufferPtr AB_Combine;
 
-	FRenderResourceTablePtr TT_Result;
+	FArgumentBufferPtr AB_Result;
 	SeparableSSS* S4Effect;
 };
