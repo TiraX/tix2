@@ -9,11 +9,8 @@
 BEGIN_UNIFORM_BUFFER_STRUCT(FSSSBlurUniformBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, BlurDir)		// xy is blur direction
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, BlurParam)	// x = sssWidth; y = sssFov; z = maxOffsetMm
-END_UNIFORM_BUFFER_STRUCT(FSSSBlurUniformBuffer)
-
-BEGIN_UNIFORM_BUFFER_STRUCT(FSSSBlurKernelUniformBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(FFloat4, Kernel, [SeparableSSS::SampleCount])
-END_UNIFORM_BUFFER_STRUCT(FSSSBlurKernelUniformBuffer)
+END_UNIFORM_BUFFER_STRUCT(FSSSBlurUniformBuffer)
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FSSSBloomUniformBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, BloomParam)
@@ -53,7 +50,6 @@ protected:
 	FRenderResourceTablePtr TT_SSSBlurY;
 	FSSSBlurUniformBufferPtr UB_SSSBlurX;
 	FSSSBlurUniformBufferPtr UB_SSSBlurY;
-	FSSSBlurKernelUniformBufferPtr UB_Kernel;
 
 	// Combine Specular
 	FPipelinePtr PL_AddSpecular;

@@ -7,15 +7,11 @@ struct PixelShaderInput
 	float2 uv : TEXCOORD;
 };
 
+#define SSSS_N_SAMPLES 17
 cbuffer SSSBlurParam : register(b0)
 {
 	float4 BlurDir;
 	float4 BlurParam;	// x = sssWidth; y = sssFov; z = maxOffsetMm
-};
-
-#define SSSS_N_SAMPLES 17
-cbuffer SSSKernel : register(b1)
-{
 	float4 Kernel[SSSS_N_SAMPLES];
 };
 

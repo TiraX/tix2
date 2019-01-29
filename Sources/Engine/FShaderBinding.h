@@ -30,7 +30,8 @@ namespace tix
 	{
 		ARGUMENT_EB_VIEW,
 		ARGUMENT_EB_PRIMITIVE,
-		ARGUMENT_MIB,
+		ARGUMENT_MI_BUFFER,
+		ARGUMENT_MI_TEXTURE,
 
 		ARGUMENT_UNKNOWN,
 	};
@@ -48,7 +49,7 @@ namespace tix
 		FShaderBinding(uint32 InNumBindings);
 		virtual ~FShaderBinding();
 
-		static E_ARGUMENT_TYPE GetArgumentTypeByName(const TString& ArgName);
+		static E_ARGUMENT_TYPE GetArgumentTypeByName(const TString& ArgName, bool bIsTexture = false);
 
 		const int32 GetNumBinding() const
 		{

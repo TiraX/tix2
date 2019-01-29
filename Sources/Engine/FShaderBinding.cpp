@@ -24,22 +24,24 @@ namespace tix
 	{
 	}
 
-	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName)
+	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName, bool bIsTexture)
 	{
 		TString::size_type PrefixPos = ArgName.find('_');
-		TI_ASSERT(PrefixPos != TString::npos);
-		TString Prefix = ArgName.substr(0, PrefixPos);
-		if (Prefix == "EB")
+		if (PrefixPos != TString::npos)
 		{
-			TString BufferName = ArgName.substr(PrefixPos + 1);
-			// Engine Buffer
-			if (BufferName == "View")
-				return ARGUMENT_EB_VIEW;
-			if (BufferName == "Primitive")
-				return ARGUMENT_EB_PRIMITIVE;
+			TString Prefix = ArgName.substr(0, PrefixPos);
+			if (Prefix == "EB")
+			{
+				TString BufferName = ArgName.substr(PrefixPos + 1);
+				// Engine Buffer
+				if (BufferName == "View")
+					return ARGUMENT_EB_VIEW;
+				if (BufferName == "Primitive")
+					return ARGUMENT_EB_PRIMITIVE;
+			}
 		}
 
-		return ARGUMENT_MIB;
+		return bIsTexture ? ARGUMENT_MI_TEXTURE : ARGUMENT_MI_BUFFER;
 	}
 
 #if DEBUG_SHADER_BINDING_TYPE

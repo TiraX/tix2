@@ -74,7 +74,6 @@ FSSSSRenderer::~FSSSSRenderer()
 	TT_SSSBlurY = nullptr;
 	UB_SSSBlurX = nullptr;
 	UB_SSSBlurY = nullptr;
-	UB_Kernel = nullptr;
 	PL_AddSpecular = nullptr;
 }
 
@@ -138,22 +137,21 @@ void FSSSSRenderer::InitInRenderThread()
 	UB_SSSBlurX = ti_new FSSSBlurUniformBuffer;
 	UB_SSSBlurX->UniformBufferData.BlurDir = FFloat4(ar, 0.f, 0.f, 0.f);
 	UB_SSSBlurX->UniformBufferData.BlurParam = FFloat4(S4Effect->getWidth(), S4Effect->getFOV(), S4Effect->getMaxOffset(), 0.f);
-	UB_SSSBlurX->InitUniformBuffer();
 
 	UB_SSSBlurY = ti_new FSSSBlurUniformBuffer;
 	UB_SSSBlurY->UniformBufferData.BlurDir = FFloat4(0.f, 1.f, 0.f, 0.f);
 	UB_SSSBlurY->UniformBufferData.BlurParam = FFloat4(S4Effect->getWidth(), S4Effect->getFOV(), S4Effect->getMaxOffset(), 0.f);
-	UB_SSSBlurY->InitUniformBuffer();
 
 	// Fill kernel uniform buffer
-	UB_Kernel = ti_new FSSSBlurKernelUniformBuffer;
 	const TVector<vector4df>& KernelData = S4Effect->getKernel();
 	TI_ASSERT(KernelData.size() == SeparableSSS::SampleCount);
 	for (int32 i = 0 ; i < SeparableSSS::SampleCount; ++ i)
 	{
-		UB_Kernel->UniformBufferData.Kernel[i] = KernelData[i];
+		UB_SSSBlurX->UniformBufferData.Kernel[i] = KernelData[i];
+		UB_SSSBlurY->UniformBufferData.Kernel[i] = KernelData[i];
 	}
-	UB_Kernel->InitUniformBuffer();
+	UB_SSSBlurX->InitUniformBuffer();
+	UB_SSSBlurY->InitUniformBuffer();
 
 	TStreamPtr ArgumentValues = ti_new TStream;
 	TVector<FTexturePtr> ArgumentTextures;
