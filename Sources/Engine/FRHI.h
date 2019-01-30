@@ -70,6 +70,9 @@ namespace tix
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
 
+		virtual void ApplyShaderParameter(FPrimitivePtr Primitive);
+		virtual void ApplyShaderParameter(FArgumentBufferPtr ArgumentBuffer);
+
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
 		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;

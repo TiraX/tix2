@@ -25,6 +25,8 @@ namespace tix
 		void DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture);
 		// Blit the full screen texture to screen directly.
 		void DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable);
+		// Blit the full screen texture to screen directly.
+		void DrawFullScreenTexture(FRHI* RHI, FArgumentBufferPtr ArgumentBuffer);
 		// Blit a full screen quad. Need to setup pipeline first manually.
 		void DrawFullScreenQuad(FRHI* RHI);
 

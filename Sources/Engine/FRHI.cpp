@@ -90,30 +90,13 @@ namespace tix
 			return RenderTargets.back();
 	}
 
-	//bool FRHI::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
-	//{
-	//	// Create render target render resource tables
-	//	// Color buffers
-	//	int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
-	//	TI_ASSERT(RenderTarget->RTColorTable == nullptr);
-	//	RenderTarget->RTColorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(ColorBufferCount);
-	//	for (int32 i = 0 ; i < ColorBufferCount ; ++ i)
-	//	{
-	//		const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
-	//		RenderTarget->RTColorTable->PutRTColorInTable(ColorBuffer.Texture, i);
-	//	}
+	void FRHI::ApplyShaderParameter(FPrimitivePtr Primitive)
+	{
+		TI_ASSERT(0);
+	}
 
-	//	// Depth stencil buffers
-	//	{
-	//		const FRenderTarget::RTBuffer& DepthStencilBuffer = RenderTarget->GetDepthStencilBuffer();
-	//		FTexturePtr DSBufferTexture = DepthStencilBuffer.Texture;
-	//		if (DSBufferTexture != nullptr)
-	//		{
-	//			TI_ASSERT(RenderTarget->RTDepthTable == nullptr);
-	//			RenderTarget->RTDepthTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
-	//			RenderTarget->RTDepthTable->PutRTDepthInTable(DSBufferTexture, 0);
-	//		}
-	//	}
-	//	return true;
-	//}
+	void FRHI::ApplyShaderParameter(FArgumentBufferPtr ArgumentBuffer)
+	{
+		TI_ASSERT(0);
+	}
 }

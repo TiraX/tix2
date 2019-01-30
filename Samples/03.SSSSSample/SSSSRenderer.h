@@ -46,10 +46,12 @@ protected:
 	FPipelinePtr PL_SSSBlur;
 	FRenderTargetPtr RT_SSSBlurX;
 	FRenderTargetPtr RT_SSSBlurY;
-	FRenderResourceTablePtr TT_SSSBlurX;
-	FRenderResourceTablePtr TT_SSSBlurY;
-	FSSSBlurUniformBufferPtr UB_SSSBlurX;
-	FSSSBlurUniformBufferPtr UB_SSSBlurY;
+	FArgumentBufferPtr AB_SSSBlurX;
+	FArgumentBufferPtr AB_SSSBlurY;
+	//FRenderResourceTablePtr TT_SSSBlurX;
+	//FRenderResourceTablePtr TT_SSSBlurY;
+	//FSSSBlurUniformBufferPtr UB_SSSBlurX;
+	//FSSSBlurUniformBufferPtr UB_SSSBlurY;
 
 	// Combine Specular
 	FPipelinePtr PL_AddSpecular;
