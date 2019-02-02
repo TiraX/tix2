@@ -18,6 +18,7 @@ namespace tix
 			return ShaderNames.ShaderNames[Stage];
 		}
 
+		FShaderBindingPtr ShaderBinding;
 	protected:
 
 	protected:

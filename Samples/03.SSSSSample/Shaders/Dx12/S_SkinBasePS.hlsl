@@ -18,13 +18,13 @@ TextureCube<float4> texIrrMap : register(t4);
 
 #define MAX_LIGHTS 32
 
-cbuffer LightBinding : register(b4)
+cbuffer EB_Primitive : register(b4)
 {
 	int4 LightCount;
 	int4 LightIndex;
 };
 
-cbuffer LightData : register(b5)
+cbuffer EB_Lights : register(b5)
 {
 	float4 LightPosition[MAX_LIGHTS];
 	float4 LightColor[MAX_LIGHTS];

@@ -81,9 +81,4 @@ namespace tix
 			bUniformBufferDirty = false;
 		}
 	}
-
-	void FSceneLights::BindSceneLightsUniformBuffer(FRHI * RHI, int32 BindIndex)
-	{
-		RHI->SetUniformBuffer(BindIndex, LightsUniformBuffer->UniformBuffer);
-	}
 }

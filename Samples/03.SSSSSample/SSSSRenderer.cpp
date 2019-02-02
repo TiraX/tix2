@@ -32,6 +32,8 @@ FSSSSRenderer::FSSSSRenderer()
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
 	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
 	PL_SSSBlur = M_SSSBlur->PipelineResource;
+	AB_SSSBlurX = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
+	AB_SSSBlurY = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 
 	const TString AddSpecularMaterialName = "M_AddSpecular.tres";
 	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(AddSpecularMaterialName).get());
@@ -248,7 +250,7 @@ void FSSSSRenderer::InitInRenderThread()
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	PrepareViewUniforms(Scene);
+	Scene->PrepareViewUniforms();
 
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass);
@@ -262,21 +264,21 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
 			FPipelinePtr PL = Primitive->Pipelines[m];
-			FArgumentBufferPtr AB = Primitive->Arguments[m];
+			//FArgumentBufferPtr AB = Primitive->Arguments[m];
 
 			{
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
-				RHI->ApplyShaderParameter(Primitive);
+				ApplyShaderParameter(RHI, Scene, Primitive, m);
 				//RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
 				//RHI->SetUniformBuffer(1, Primitive->LightBindingUniformBuffer->UniformBuffer);
 
-				Scene->GetSceneLights()->BindSceneLightsUniformBuffer(RHI, 2);
+				//Scene->GetSceneLights()->BindSceneLightsUniformBuffer(RHI, 2);
 
-				if (AB != nullptr)
-				{
-					RHI->SetArgumentBuffer(AB);
-				}
+				//if (AB != nullptr)
+				//{
+				//	RHI->SetArgumentBuffer(AB);
+				//}
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}
@@ -288,7 +290,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		RHI->PushRenderTarget(RT_SSSBlurX);
 		RHI->SetPipeline(PL_SSSBlur);
-		RHI->ApplyShaderParameter(AB_SSSBlurX);
+		ApplyShaderParameter(RHI, PL_SSSBlur->GetShader(), Scene, AB_SSSBlurX);
 		//RHI->SetUniformBuffer(0, UB_SSSBlurX->UniformBuffer);
 		//RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
 		//RHI->SetRenderResourceTable(2, TT_SSSBlurX);
@@ -297,7 +299,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 	{
 		RHI->PushRenderTarget(RT_SSSBlurY);
-		RHI->ApplyShaderParameter(AB_SSSBlurY);
+		ApplyShaderParameter(RHI, PL_SSSBlur->GetShader(), Scene, AB_SSSBlurY);
 		//RHI->SetUniformBuffer(0, UB_SSSBlurY->UniformBuffer);
 		//RHI->SetUniformBuffer(1, UB_Kernel->UniformBuffer);
 		//RHI->SetRenderResourceTable(2, TT_SSSBlurY);
@@ -309,7 +311,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		RHI->PushRenderTarget(RT_SSSBlurX);
 		RHI->SetPipeline(PL_AddSpecular);
-		RHI->ApplyShaderParameter(AB_AddSpecular);
+		ApplyShaderParameter(RHI, PL_AddSpecular->GetShader(), Scene, AB_AddSpecular);
 		//RHI->SetRenderResourceTable(0, TT_SSSBlurX);
 		FSRender.DrawFullScreenQuad(RHI);
 		RHI->PopRenderTarget();
@@ -320,7 +322,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		// Glare detection
 		RHI->PushRenderTarget(RT_GlareDetection);
 		RHI->SetPipeline(PL_GlareDetection);
-		RHI->ApplyShaderParameter(AB_GlareDetection);
+		ApplyShaderParameter(RHI, PL_GlareDetection->GetShader(), Scene, AB_GlareDetection);
 		//RHI->SetUniformBuffer(0, UB_GlareParam->UniformBuffer);
 		//RHI->SetRenderResourceTable(1, TT_GlareSource);
 		FSRender.DrawFullScreenQuad(RHI);
@@ -333,7 +335,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FBloomPass& PassX = BloomPass[p][0];
 			RHI->PushRenderTarget(PassX.RT);
 			RHI->SetPipeline(PL_Bloom);
-			RHI->ApplyShaderParameter(PassX.AB);
+			ApplyShaderParameter(RHI, PL_Bloom->GetShader(), Scene, PassX.AB);
 			//RHI->SetUniformBuffer(0, PassX.UB->UniformBuffer);
 			//RHI->SetRenderResourceTable(1, PassX.TT);
 			FSRender.DrawFullScreenQuad(RHI);
@@ -343,7 +345,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FBloomPass& PassY = BloomPass[p][1];
 			RHI->PushRenderTarget(PassY.RT);
 			RHI->SetPipeline(PL_Bloom);
-			RHI->ApplyShaderParameter(PassY.AB);
+			ApplyShaderParameter(RHI, PL_Bloom->GetShader(), Scene, PassY.AB);
 			//RHI->SetUniformBuffer(0, PassY.UB->UniformBuffer);
 			//RHI->SetRenderResourceTable(1, PassY.TT);
 			FSRender.DrawFullScreenQuad(RHI);
@@ -355,7 +357,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		RHI->PushRenderTarget(RT_Combine);
 		RHI->SetPipeline(PL_Combine);
-		RHI->ApplyShaderParameter(AB_Combine);
+		ApplyShaderParameter(RHI, PL_Combine->GetShader(), Scene, AB_Combine);
 		//RHI->SetUniformBuffer(0, UB_Combine->UniformBuffer);
 		//RHI->SetRenderResourceTable(1, TT_Combine);
 		FSRender.DrawFullScreenQuad(RHI);

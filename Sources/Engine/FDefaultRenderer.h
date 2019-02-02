@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "FUniformBufferView.h"
-
 namespace tix
 {
 	class FRHI;
@@ -22,11 +20,12 @@ namespace tix
 		virtual void InitInRenderThread() override;
 		virtual void Render(FRHI* RHI, FScene* Scene) override;
 
-		virtual void PrepareViewUniforms(FScene* Scene);
+		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive, int32 MeshSection);
+		virtual void ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer);
+	protected:
+		void BindEngineBuffer(FRHI * RHI, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
+		void BindMaterialInstanceArgument(FRHI * RHI, FArgumentBufferPtr ArgumentBuffer);
 
 	protected:
-
-	protected:
-		FViewUniformBufferPtr ViewUniformBuffer;
 	};
 }

@@ -15,9 +15,12 @@ namespace tix
 	public:
 		FArgumentBufferDx12(FShaderPtr InShader);
 		virtual ~FArgumentBufferDx12();
+
 	protected:
 
 	private:
+		int32 UniformBindIndex;
+		int32 TextureBindIndex;
 		FUniformBufferPtr UniformBuffer;
 		FRenderResourceTablePtr TextureResourceTable;
 

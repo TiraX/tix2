@@ -399,9 +399,9 @@ namespace tix
 		return ti_new FMeshBufferDx12();
 	}
 
-	FPipelinePtr FRHIDx12::CreatePipeline()
+	FPipelinePtr FRHIDx12::CreatePipeline(FShaderPtr InShader)
 	{
-		return ti_new FPipelineDx12();
+		return ti_new FPipelineDx12(InShader);
 	}
 
 	FRenderTargetPtr FRHIDx12::CreateRenderTarget(int32 W, int32 H)
@@ -1068,7 +1068,6 @@ namespace tix
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(InPipelineDesc->GetDesc().Shader->ShaderResource.get());
 		FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
 		TI_ASSERT(Binding != nullptr);
-		Pipeline->SetShaderBinding(Binding);
 		FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
@@ -1450,12 +1449,19 @@ namespace tix
 		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
 		if (ArgumentData != nullptr)
 		{
+			// Create uniform buffer
 			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength());
 			this->UpdateHardwareResource(ArgumentDx12->UniformBuffer, ArgumentData->GetBuffer());
+
+			// Get Uniform buffer Bind Index
+			FShaderPtr Shader = ArgumentBuffer->GetShader();
+			FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+			ArgumentDx12->UniformBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_BUFFER);
 		}
 
 		if (ArgumentTextures.size() > 0)
 		{
+			// Create texture resource table
 			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentTextures.size());
 			GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(ArgumentDx12->TextureResourceTable);
 			for (int32 t = 0; t < (int32)ArgumentTextures.size(); ++t)
@@ -1463,6 +1469,11 @@ namespace tix
 				FTexturePtr Texture = ArgumentTextures[t];
 				ArgumentDx12->TextureResourceTable->PutTextureInTable(Texture, t);
 			}
+
+			// Get render resource table bind index
+			FShaderPtr Shader = ArgumentBuffer->GetShader();
+			FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+			ArgumentDx12->TextureBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_TEXTURE);
 		}
 
 		return true;
@@ -1623,7 +1634,7 @@ namespace tix
 		{
 			FPipelineDx12* PipelineDx12 = static_cast<FPipelineDx12*>(InPipeline.get());
 
-			FShaderBindingPtr ShaderBinding = InPipeline->GetShaderBinding();
+			FShaderBindingPtr ShaderBinding = InPipeline->GetShader()->ShaderBinding;
 			TI_ASSERT(ShaderBinding != nullptr);
 			if (CurrentBoundResource.ShaderBinding != ShaderBinding)
 			{
@@ -1683,18 +1694,16 @@ namespace tix
 
 	void FRHIDx12::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
 	{
-		int32 Index = InArgumentBuffer->GetArgumentIndex();
-		TI_ASSERT(Index >= 0);
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		if (ArgDx12->UniformBuffer != nullptr)
+		if (ArgDx12->UniformBindIndex >= 0)
 		{
-			SetUniformBuffer(Index, ArgDx12->UniformBuffer);
-			++Index;
+			TI_ASSERT(ArgDx12->UniformBuffer != nullptr);
+			SetUniformBuffer(ArgDx12->UniformBindIndex, ArgDx12->UniformBuffer);
 		}
-		if (ArgDx12->TextureResourceTable != nullptr)
+		if (ArgDx12->TextureBindIndex >= 0)
 		{
-			SetRenderResourceTable(Index, ArgDx12->TextureResourceTable);
-			++Index;
+			TI_ASSERT(ArgDx12->TextureResourceTable != nullptr);
+			SetRenderResourceTable(ArgDx12->TextureBindIndex, ArgDx12->TextureResourceTable);
 		}
 	}
 

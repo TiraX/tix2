@@ -7,10 +7,10 @@
 
 namespace tix
 {
-	BEGIN_UNIFORM_BUFFER_STRUCT(FLightBindingUniformBuffer)
+	BEGIN_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightsNum)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightIndices)
-	END_UNIFORM_BUFFER_STRUCT(FLightBindingUniformBuffer)
+	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
 	class FPrimitive : public IReferenceCounted
 	{
@@ -25,7 +25,7 @@ namespace tix
 		TVector<FPipelinePtr> Pipelines;
 		TVector<FArgumentBufferPtr> Arguments;
 
-		FLightBindingUniformBufferPtr LightBindingUniformBuffer;
+		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 		aabbox3df BBox;
 	};
 } // end namespace tix

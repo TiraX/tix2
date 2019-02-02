@@ -16,26 +16,6 @@ namespace tix
 	FDefaultRenderer::~FDefaultRenderer()
 	{
 		TI_ASSERT(IsRenderThread());
-		ViewUniformBuffer = nullptr;
-	}
-
-	void FDefaultRenderer::PrepareViewUniforms(FScene* Scene)
-	{
-		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
-		{
-			// Always make a new View uniform buffer for on-the-fly rendering
-			ViewUniformBuffer = ti_new FViewUniformBuffer();
-
-			const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
-			ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
-			ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
-			ViewUniformBuffer->UniformBufferData.ViewPos = VPInfo.CamPos;
-
-			ViewUniformBuffer->InitUniformBuffer();
-
-			// remove vp dirty flag
-			Scene->SetSceneFlag(FScene::ViewProjectionDirty, false);
-		}
 	}
 
 	void FDefaultRenderer::InitInRenderThread()
@@ -44,7 +24,7 @@ namespace tix
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
-		PrepareViewUniforms(Scene);
+		Scene->PrepareViewUniforms();
 
 		const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
 		for (const auto& Primitive : Primitives)
@@ -62,5 +42,78 @@ namespace tix
 				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
 			}
 		}
+	}
+
+	void FDefaultRenderer::BindEngineBuffer(FRHI * RHI, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive)
+	{
+		switch (Argument.ArgumentType)
+		{
+		case ARGUMENT_EB_VIEW:
+			RHI->SetUniformBuffer(Argument.BindingIndex, Scene->GetViewUniformBuffer()->UniformBuffer);
+			break;
+		case ARGUMENT_EB_PRIMITIVE:
+			TI_ASSERT(Primitive != nullptr);
+			RHI->SetUniformBuffer(Argument.BindingIndex, Primitive->PrimitiveUniformBuffer->UniformBuffer);
+			break;
+		case ARGUMENT_EB_LIGHTS:
+			RHI->SetUniformBuffer(Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
+			break;
+		case ARGUMENT_MI_BUFFER:
+		case ARGUMENT_MI_TEXTURE:
+			break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+		TI_TODO("Bind VS with different Argument from PS");
+	}
+
+	void FDefaultRenderer::BindMaterialInstanceArgument(FRHI * RHI, FArgumentBufferPtr ArgumentBuffer)
+	{
+		RHI->SetArgumentBuffer(ArgumentBuffer);
+	}
+
+	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive, int32 MeshSection)
+	{
+		FPipelinePtr PL = Primitive->Pipelines[MeshSection];
+		FShaderBindingPtr ShaderBinding = PL->GetShader()->ShaderBinding;
+
+		// bind vertex arguments
+		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
+		for (const auto& Arg : VSArguments)
+		{
+			BindEngineBuffer(RHI, Arg, Scene, Primitive);
+		}
+
+		// bind pixel arguments
+		const TVector<FShaderBinding::FShaderArgument>& PSArguments = ShaderBinding->GetPixelShaderArguments();
+		for (const auto& Arg : PSArguments)
+		{
+			BindEngineBuffer(RHI, Arg, Scene, Primitive);
+		}
+
+		FArgumentBufferPtr AB = Primitive->Arguments[MeshSection];
+		BindMaterialInstanceArgument(RHI, AB);
+	}
+
+	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer)
+	{
+		FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+
+		// bind vertex arguments
+		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
+		for (const auto& Arg : VSArguments)
+		{
+			BindEngineBuffer(RHI, Arg, Scene, nullptr);
+		}
+
+		// bind pixel arguments
+		const TVector<FShaderBinding::FShaderArgument>& PSArguments = ShaderBinding->GetPixelShaderArguments();
+		for (const auto& Arg : PSArguments)
+		{
+			BindEngineBuffer(RHI, Arg, Scene, nullptr);
+		}
+
+		BindMaterialInstanceArgument(RHI, ArgumentBuffer);
 	}
 }

@@ -11,7 +11,8 @@
 
 namespace tix
 {
-	FPipelineDx12::FPipelineDx12()
+	FPipelineDx12::FPipelineDx12(FShaderPtr InShader)
+		: FPipeline(InShader)
 	{
 	}
 

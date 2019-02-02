@@ -66,7 +66,7 @@ namespace tix
 		FSMaterial->SetRTColor(FRHIConfig::DefaultBackBufferFormat, ERTC_COLOR0);
 
 		// Pipeline
-		FullScreenPipeline = RHI->CreatePipeline();
+		FullScreenPipeline = RHI->CreatePipeline(FullScreenShader);
 		RHI->UpdateHardwareResource(FullScreenPipeline, FSMaterial);
 		FSMaterial = nullptr;
 

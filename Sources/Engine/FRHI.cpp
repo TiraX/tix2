@@ -89,14 +89,4 @@ namespace tix
 		else
 			return RenderTargets.back();
 	}
-
-	void FRHI::ApplyShaderParameter(FPrimitivePtr Primitive)
-	{
-		TI_ASSERT(0);
-	}
-
-	void FRHI::ApplyShaderParameter(FArgumentBufferPtr ArgumentBuffer)
-	{
-		TI_ASSERT(0);
-	}
 }

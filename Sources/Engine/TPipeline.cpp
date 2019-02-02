@@ -25,7 +25,7 @@ namespace tix
 	void TPipeline::InitRenderThreadResource()
 	{
 		TI_ASSERT(PipelineResource == nullptr);
-		PipelineResource = FRHI::Get()->CreatePipeline();
+		PipelineResource = FRHI::Get()->CreatePipeline(Desc.Shader->ShaderResource);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TPipelineUpdateResource,
 			FPipelinePtr, Pipeline_RT, PipelineResource,

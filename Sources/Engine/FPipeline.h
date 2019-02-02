@@ -10,22 +10,16 @@ namespace tix
 	class FPipeline : public FRenderResource
 	{
 	public:
-		FPipeline();
+		FPipeline(FShaderPtr InShader);
 		virtual ~FPipeline();
 
-		void SetShaderBinding(FShaderBindingPtr Binding)
+		FShaderPtr GetShader()
 		{
-			ShaderBinding = Binding;
-		}
-
-		FShaderBindingPtr GetShaderBinding()
-		{
-			TI_TODO("ShaderBinding is a dx12 only feature , should do for dx 12 only.");
-			return ShaderBinding;
+			return Shader;
 		}
 	protected:
 
 	protected:
-		FShaderBindingPtr ShaderBinding;
+		FShaderPtr Shader;
 	};
 }

@@ -8,7 +8,8 @@
 
 namespace tix
 {
-	FPipeline::FPipeline()
+	FPipeline::FPipeline(FShaderPtr InShader)
+		: Shader(InShader)
 	{
 	}
 

@@ -62,7 +62,7 @@ namespace tix
 
 	static void BindLightResource_RenderThread(FPrimitivePtr Primitive, const TVector<FLightPtr>& BindedLightResources)
 	{
-		FLightBindingUniformBufferPtr Binding = ti_new FLightBindingUniformBuffer;
+		FPrimitiveUniformBufferPtr Binding = ti_new FPrimitiveUniformBuffer;
 		Binding->UniformBufferData.LightsNum.X = (int32)BindedLightResources.size();
 
 		TI_ASSERT(BindedLightResources.size() <= 4);
@@ -73,11 +73,12 @@ namespace tix
 		}
 		Binding->InitUniformBuffer();
 
-		Primitive->LightBindingUniformBuffer = Binding;
+		Primitive->PrimitiveUniformBuffer = Binding;
 	}
 
 	void TNodeStaticMesh::BindLights(TVector<TNode *>& Lights, bool ForceRebind)
 	{
+		TI_TODO("Chnage this to primitive buffer");
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED) || ForceRebind)
 		{
 			BindedLights.clear();

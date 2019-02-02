@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "FUniformBufferView.h"
+
 namespace tix
 {
 	class FSceneLights;
@@ -18,6 +20,8 @@ namespace tix
 		{
 			ViewProjectionDirty = 1 << 0,
 		};
+
+		virtual void PrepareViewUniforms();
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
 		void AddPrimitive(FPrimitivePtr Primitive);
@@ -54,6 +58,11 @@ namespace tix
 		{
 			return StaticDrawList;
 		}
+
+		FViewUniformBufferPtr GetViewUniformBuffer()
+		{
+			return ViewUniformBuffer;
+		}
 	protected:
 		FSceneLights * SceneLights;
 
@@ -62,5 +71,7 @@ namespace tix
 		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;
+
+		FViewUniformBufferPtr ViewUniformBuffer;
 	};
 } // end namespace tix

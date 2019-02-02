@@ -13,10 +13,9 @@ namespace tix
 {
 	FArgumentBufferDx12::FArgumentBufferDx12(FShaderPtr InShader)
 		: FArgumentBuffer(InShader)
+		, UniformBindIndex(-1)
+		, TextureBindIndex(-1)
 	{
-		// Set Index directly
-		TI_TODO("Figure out a way to get Argument BindIndex");
-		Index = 3;
 	}
 
 	FArgumentBufferDx12::~FArgumentBufferDx12()

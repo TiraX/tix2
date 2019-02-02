@@ -44,4 +44,23 @@ namespace tix
 			StaticDrawList.erase(it);
 		}
 	}
+
+	void FScene::PrepareViewUniforms()
+	{
+		if (HasSceneFlag(FScene::ViewProjectionDirty))
+		{
+			// Always make a new View uniform buffer for on-the-fly rendering
+			ViewUniformBuffer = ti_new FViewUniformBuffer();
+
+			const FViewProjectionInfo& VPInfo = GetViewProjection();
+			ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
+			ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
+			ViewUniformBuffer->UniformBufferData.ViewPos = VPInfo.CamPos;
+
+			ViewUniformBuffer->InitUniformBuffer();
+
+			// remove vp dirty flag
+			SetSceneFlag(FScene::ViewProjectionDirty, false);
+		}
+	}
 }

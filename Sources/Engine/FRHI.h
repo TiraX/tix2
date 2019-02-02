@@ -50,7 +50,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
-		virtual FPipelinePtr CreatePipeline() = 0;
+		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
@@ -69,9 +69,6 @@ namespace tix
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
-
-		virtual void ApplyShaderParameter(FPrimitivePtr Primitive);
-		virtual void ApplyShaderParameter(FArgumentBufferPtr ArgumentBuffer);
 
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;

@@ -13,14 +13,14 @@ namespace tix
 		FArgumentBuffer(FShaderPtr InShader);
 		virtual ~FArgumentBuffer();
 
-		int32 GetArgumentIndex()
+		FShaderPtr GetShader()
 		{
-			return Index;
+			return Shader;
 		}
+
 	protected:
 
 	protected:
 		FShaderPtr Shader;
-		int32 Index;
 	};
 }

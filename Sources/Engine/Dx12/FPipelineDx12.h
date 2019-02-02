@@ -12,7 +12,7 @@ namespace tix
 	class FPipelineDx12 : public FPipeline
 	{
 	public:
-		FPipelineDx12();
+		FPipelineDx12(FShaderPtr InShader);
 		virtual ~FPipelineDx12();
 	protected:
 

@@ -38,6 +38,8 @@ namespace tix
 					return ARGUMENT_EB_VIEW;
 				if (BufferName == "Primitive")
 					return ARGUMENT_EB_PRIMITIVE;
+				if (BufferName == "Lights")
+					return ARGUMENT_EB_LIGHTS;
 			}
 		}
 
@@ -66,7 +68,7 @@ namespace tix
 		}
 		else if (ShaderStage == ESS_PIXEL_SHADER)
 		{
-			FragmentArguments.push_back(InArgument);
+			PixelArguments.push_back(InArgument);
 		}
 		else
 		{
@@ -77,6 +79,19 @@ namespace tix
 	void FShaderBinding::SortArguments()
 	{
 		TSort(VertexArguments.begin(), VertexArguments.end());
-		TSort(FragmentArguments.begin(), FragmentArguments.end());
+		TSort(PixelArguments.begin(), PixelArguments.end());
+	}
+
+	int32 FShaderBinding::GetFirstPSBindingIndexByType(E_ARGUMENT_TYPE InType) const
+	{
+		for (uint32 i = 0 ; i < PixelArguments.size(); ++ i)
+		{
+			if (PixelArguments[i].ArgumentType == InType)
+			{
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }

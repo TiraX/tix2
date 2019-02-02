@@ -29,8 +29,10 @@ namespace tix
 		// InitSceneLightsUniformBufferRenderResource was send to render thread after TScene::BindLights
 		void InitSceneLightsUniformBufferRenderResource();
 
-		// Bind scene lights uniform buffer to RHI
-		TI_API void BindSceneLightsUniformBuffer(FRHI * RHI, int32 BindIndex);
+		FSceneLightsUniformBufferPtr GetSceneLightsUniform()
+		{
+			return LightsUniformBuffer;
+		}
 
 	protected:
 		void MarkSceneLightsDirty()

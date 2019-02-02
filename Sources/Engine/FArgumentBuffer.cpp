@@ -10,7 +10,6 @@ namespace tix
 {
 	FArgumentBuffer::FArgumentBuffer(FShaderPtr InShader)
 		: Shader(InShader)
-		, Index(-1)
 	{
 	}
 

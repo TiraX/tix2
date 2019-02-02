@@ -30,6 +30,7 @@ namespace tix
 	{
 		ARGUMENT_EB_VIEW,
 		ARGUMENT_EB_PRIMITIVE,
+		ARGUMENT_EB_LIGHTS,
 		ARGUMENT_MI_BUFFER,
 		ARGUMENT_MI_TEXTURE,
 
@@ -78,6 +79,18 @@ namespace tix
 		void AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument);
 		void SortArguments();
 
+		const TVector<FShaderArgument>& GetVertexShaderArguments() const
+		{
+			return VertexArguments;
+		}
+
+		const TVector<FShaderArgument>& GetPixelShaderArguments() const
+		{
+			return PixelArguments;
+		}
+
+		int32 GetFirstPSBindingIndexByType(E_ARGUMENT_TYPE InType) const;
+
 	protected:
 #if DEBUG_SHADER_BINDING_TYPE
 		void InitBindingType(uint32 InBindingIndex, E_BINDING_TYPE InBindingType);
@@ -86,7 +99,7 @@ namespace tix
 	protected:
 		int32 NumBindings;
 		TVector<FShaderArgument> VertexArguments;
-		TVector<FShaderArgument> FragmentArguments;
+		TVector<FShaderArgument> PixelArguments;
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif
