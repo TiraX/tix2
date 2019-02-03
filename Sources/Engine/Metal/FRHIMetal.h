@@ -28,7 +28,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructSize) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
-		virtual FPipelinePtr CreatePipeline() override;
+		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
         virtual FShaderPtr CreateShader(const TShaderNames& ShaderNames) override;
         virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;

@@ -12,7 +12,7 @@ namespace tix
 	class FPipelineMetal : public FPipeline
 	{
 	public:
-		FPipelineMetal();
+		FPipelineMetal(FShaderPtr InShader);
 		virtual ~FPipelineMetal();
 	protected:
 

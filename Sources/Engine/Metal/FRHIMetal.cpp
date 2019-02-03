@@ -126,9 +126,9 @@ namespace tix
         return ti_new FMeshBufferMetal;
 	}
 
-	FPipelinePtr FRHIMetal::CreatePipeline()
+	FPipelinePtr FRHIMetal::CreatePipeline(FShaderPtr InShader)
 	{
-        return ti_new FPipelineMetal;
+        return ti_new FPipelineMetal(InShader);
 	}
 
 	FRenderTargetPtr FRHIMetal::CreateRenderTarget(int32 W, int32 H)

@@ -11,7 +11,8 @@
 
 namespace tix
 {
-	FPipelineMetal::FPipelineMetal()
+	FPipelineMetal::FPipelineMetal(FShaderPtr InShader)
+        : FPipeline(InShader)
 	{
         PipelineState = nil;
         DepthState = nil;
