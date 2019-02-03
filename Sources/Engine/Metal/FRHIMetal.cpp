@@ -304,9 +304,9 @@ namespace tix
         }
         
         NSError* Err  = nil;
-        //MTLRenderPipelineReflection * ReflectionObj = nil;
-        //PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDescriptor options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
-        PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionNone reflection:nil error:&Err];
+        MTLRenderPipelineReflection * ReflectionObj = nil;
+        PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
+        TI_ASSERT(0);
         
         MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
         DepthStateDesc.depthCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
@@ -389,9 +389,6 @@ namespace tix
         {
             FragmentShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_PIXEL_SHADER).c_str()];
         }
-        
-        TI_ASSERT(0);
-        // Get reflection
         
         ShaderMetal->VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
         if(ShaderMetal->VertexProgram == nil)
