@@ -95,9 +95,6 @@ namespace tix
 		RHI->SetMeshBuffer(FullScreenQuad);
 		RHI->SetPipeline(FullScreenPipeline);
 		RHI->SetArgumentBuffer(ArgumentBuffer);
-		//RHI->SetMeshBuffer(FullScreenQuad);
-		//RHI->SetPipeline(FullScreenPipeline);
-		//RHI->SetRenderResourceTable(0, TextureTable);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad->GetIndicesCount(), 1, 0, 0, 0);
 	}
