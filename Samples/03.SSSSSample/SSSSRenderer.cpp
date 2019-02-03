@@ -156,6 +156,14 @@ void FSSSSRenderer::InitInRenderThread()
 		RHI->UpdateHardwareResource(AB_SSSBlurY, ArgumentValues, ArgumentTextures);
 	}
 
+	// AB_AddSpecular
+	{
+		ArgumentTextures.clear();
+		ArgumentTextures.push_back(SceneColor);
+		ArgumentTextures.push_back(SpecularTex);
+		RHI->UpdateHardwareResource(AB_AddSpecular, nullptr, ArgumentTextures);
+	}
+
 	const float Exposure = 2.f;
 	const float Threshold = 0.63f;
 	// Bloom Glare Detection
@@ -270,7 +278,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
 				ApplyShaderParameter(RHI, Scene, Primitive, m);
-				//RHI->SetUniformBuffer(0, ViewUniformBuffer->UniformBuffer);
+				//RHI->SetUniformBuffer(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 				//RHI->SetUniformBuffer(1, Primitive->LightBindingUniformBuffer->UniformBuffer);
 
 				//Scene->GetSceneLights()->BindSceneLightsUniformBuffer(RHI, 2);

@@ -84,14 +84,13 @@ namespace tix
 
 	int32 FShaderBinding::GetFirstPSBindingIndexByType(E_ARGUMENT_TYPE InType) const
 	{
-		for (uint32 i = 0 ; i < PixelArguments.size(); ++ i)
+		for (const auto& Arg : PixelArguments)
 		{
-			if (PixelArguments[i].ArgumentType == InType)
+			if (Arg.ArgumentType == InType)
 			{
-				return i;
+				return Arg.BindingIndex;
 			}
 		}
-
 		return -1;
 	}
 }

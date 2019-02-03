@@ -16,7 +16,6 @@ TSSSSTicker::~TSSSSTicker()
 
 void TSSSSTicker::Tick(float Dt)
 {
-    _LOG(Log, "TSSSSTicker %f.\n", Dt);
 	TScene * Scene = TEngine::Get()->GetScene();
 	Scene->UpdateAllNodesTransforms();
 }

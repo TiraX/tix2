@@ -91,8 +91,10 @@ namespace tix
 
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FArgumentBufferPtr ArgumentBuffer)
 	{
-		TI_ASSERT(0);
 		TI_ASSERT(bInited);
+		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->SetPipeline(FullScreenPipeline);
+		RHI->SetArgumentBuffer(ArgumentBuffer);
 		//RHI->SetMeshBuffer(FullScreenQuad);
 		//RHI->SetPipeline(FullScreenPipeline);
 		//RHI->SetRenderResourceTable(0, TextureTable);
