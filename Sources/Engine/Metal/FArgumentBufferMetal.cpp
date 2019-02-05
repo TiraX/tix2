@@ -14,10 +14,6 @@ namespace tix
 	FArgumentBufferMetal::FArgumentBufferMetal(FShaderPtr InShader)
 		: FArgumentBuffer(InShader)
 	{
-        TI_ASSERT(0);
-        // Argument buffer implementation
-        
-        // Shader reflection to get Bind index
 	}
 
 	FArgumentBufferMetal::~FArgumentBufferMetal()

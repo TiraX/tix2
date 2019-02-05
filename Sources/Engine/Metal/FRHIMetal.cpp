@@ -306,7 +306,20 @@ namespace tix
         NSError* Err  = nil;
         MTLRenderPipelineReflection * ReflectionObj = nil;
         PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
-        TI_ASSERT(0);
+        
+        for (int32 i = 0 ; i < ReflectionObj.vertexArguments.count; ++i)
+        {
+            MTLArgument * Arg = ReflectionObj.vertexArguments[i];
+            Arg.name;
+            Arg.type;
+            int letsbreak = 0;
+        }
+        for (int32 i = 0 ; i < ReflectionObj.fragmentArguments.count; ++ i)
+        {
+            MTLArgument * Arg = ReflectionObj.fragmentArguments[i];
+            int letsbreak = 0;
+        }
+        //TI_ASSERT(0);
         
         MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
         DepthStateDesc.depthCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];

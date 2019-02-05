@@ -13,33 +13,50 @@ using namespace metal;
 typedef struct
 {
     float3 position [[attribute(0)]];
-    float2 texCoord [[attribute(1)]];
-} Vertex;
+    float3 normal [[attribute(1)]];
+} VSInput;
 
 typedef struct
 {
     float4 position [[position]];
-    float2 texCoord;
-} ColorInOut;
+    float3 normal;
+} VSOutput;
 
-vertex ColorInOut S_SkyDomeVS(Vertex in [[stage_in]])
+typedef struct
 {
-    ColorInOut out;
+    float4x4 ViewProjection;
+    float3 ViewDir;
+    float3 ViewPos;
+} EB_View;
+
+vertex VSOutput S_SkyDomeVS(VSInput vsInput [[stage_in]],
+                            constant EB_View & view [[ buffer(0) ]])
+{
+    VSOutput vsOutput;
     
-    out.position = float4(in.position, 1.0);
-    out.texCoord = in.texCoord;
+    vsOutput.position = float4(vsInput.position, 1.0);
+    vsOutput.position = view.ViewProjection * vsOutput.position;
     
-    return out;
+    vsOutput.normal = vsInput.normal * 2.0 - 1.0;
+    
+    return vsOutput;
 }
 
-fragment float4 S_SkyDomePS(ColorInOut in [[stage_in]],
-                             texture2d<half> texture [[ texture(0) ]])
+typedef struct FragmentShaderArguments {
+    texturecube<half> texSkyMap  [[ id(0) ]];
+} FragmentShaderArguments;
+
+constexpr sampler sampler0(mip_filter::linear,
+                           mag_filter::linear,
+                           min_filter::linear);
+
+fragment half4 S_SkyDomePS(VSOutput input [[stage_in]],
+                           device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler colorSampler(mip_filter::linear,
-                                   mag_filter::linear,
-                                   min_filter::linear);
+    float3 normal = -normalize(input.normal);
     
-    half4 colorSample = texture.sample(colorSampler, in.texCoord.xy);
-    
-    return float4(colorSample);
+    half4 Color;
+    Color.xyz = sqrt(fragmentArgs.texSkyMap.sample(sampler0, normal).xyz);
+    Color.a = 1.0;
+    return Color;
 }

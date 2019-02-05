@@ -32,7 +32,7 @@ vertex ColorInOut FullScreenVS(Vertex in [[stage_in]])
     return out;
 }
 
-fragment float4 FullScreenPS(ColorInOut in [[stage_in]],
+fragment half4 FullScreenPS(ColorInOut in [[stage_in]],
                                texture2d<half> texture [[ texture(0) ]])
 {
     constexpr sampler colorSampler(mip_filter::linear,
@@ -41,7 +41,7 @@ fragment float4 FullScreenPS(ColorInOut in [[stage_in]],
     
     half4 colorSample = texture.sample(colorSampler, in.texCoord.xy);
     
-    return float4(colorSample);
+    return colorSample;
 }
 
 

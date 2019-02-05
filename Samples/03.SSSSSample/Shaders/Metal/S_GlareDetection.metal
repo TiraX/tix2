@@ -13,33 +13,43 @@ using namespace metal;
 typedef struct
 {
     float3 position [[attribute(0)]];
-    float2 texCoord [[attribute(1)]];
-} Vertex;
+    float2 uv [[attribute(1)]];
+} VertexShaderInput;
 
 typedef struct
 {
     float4 position [[position]];
-    float2 texCoord;
-} ColorInOut;
+    float2 uv;
+} PixelShaderInput;
 
-vertex ColorInOut S_GlareDetectionVS(Vertex in [[stage_in]])
+vertex PixelShaderInput S_GlareDetectionVS(VertexShaderInput in [[stage_in]])
 {
-    ColorInOut out;
+    PixelShaderInput out;
     
     out.position = float4(in.position, 1.0);
-    out.texCoord = in.texCoord;
+    out.uv = in.uv;
     
     return out;
 }
 
-fragment float4 S_GlareDetectionPS(ColorInOut in [[stage_in]],
-                             texture2d<half> texture [[ texture(0) ]])
+typedef struct FragmentShaderArguments {
+    float4 GlareDetectionParam [[ id(0) ]];    // x=exposure, y=threshold,
+    texture2d<half> TexBaseColor  [[ id(1) ]];
+} FragmentShaderArguments;
+
+constexpr sampler sampler0(mip_filter::linear,
+                           mag_filter::linear,
+                           min_filter::linear);
+
+fragment half4 S_GlareDetectionPS(PixelShaderInput input [[stage_in]],
+                                  device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler colorSampler(mip_filter::linear,
-                                   mag_filter::linear,
-                                   min_filter::linear);
     
-    half4 colorSample = texture.sample(colorSampler, in.texCoord.xy);
+    half exposure = half(fragmentArgs.GlareDetectionParam.x);
+    half bloomThreshold = half(fragmentArgs.GlareDetectionParam.y);
     
-    return float4(colorSample);
+    half4 color = fragmentArgs.TexBaseColor.sample(sampler0, input.uv);
+    color.rgb *= exposure;
+    
+    return half4(max(color.rgb - bloomThreshold / (half(1.0) - bloomThreshold), half(0.0)), color.a);
 }

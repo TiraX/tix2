@@ -13,33 +13,40 @@ using namespace metal;
 typedef struct
 {
     float3 position [[attribute(0)]];
-    float2 texCoord [[attribute(1)]];
-} Vertex;
+    float2 uv [[attribute(1)]];
+} VertexShaderInput;
 
 typedef struct
 {
     float4 position [[position]];
-    float2 texCoord;
-} ColorInOut;
+    float2 uv;
+} PixelShaderInput;
 
-vertex ColorInOut S_AddSpecularVS(Vertex in [[stage_in]])
+vertex PixelShaderInput S_AddSpecularVS(VertexShaderInput in [[stage_in]])
 {
-    ColorInOut out;
+    PixelShaderInput out;
     
     out.position = float4(in.position, 1.0);
-    out.texCoord = in.texCoord;
+    out.uv = in.uv;
     
     return out;
 }
 
-fragment float4 S_AddSpecularPS(ColorInOut in [[stage_in]],
-                             texture2d<half> texture [[ texture(0) ]])
+typedef struct FragmentShaderArguments {
+    texture2d<half> TexBaseColor  [[ id(0) ]];
+    texture2d<half> TexSpecular  [[ id(1) ]];
+} FragmentShaderArguments;
+
+constexpr sampler sampler0(mip_filter::linear,
+                           mag_filter::linear,
+                           min_filter::linear);
+
+fragment half4 S_AddSpecularPS(PixelShaderInput input [[stage_in]],
+                                device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler colorSampler(mip_filter::linear,
-                                   mag_filter::linear,
-                                   min_filter::linear);
+    half4 BaseColor = fragmentArgs.TexBaseColor.sample(sampler0, input.uv);
+    half3 Specular = fragmentArgs.TexSpecular.sample(sampler0, input.uv).xyz;
     
-    half4 colorSample = texture.sample(colorSampler, in.texCoord.xy);
-    
-    return float4(colorSample);
+    BaseColor.xyz += Specular;
+    return BaseColor;
 }
