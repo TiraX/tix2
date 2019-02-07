@@ -17,7 +17,7 @@
 	"rt_colors": [
 		"EPF_RGBA16F"
 	],
-	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"rt_depth": "",
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": false,
 	"depth_test": false,

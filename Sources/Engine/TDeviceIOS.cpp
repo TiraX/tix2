@@ -78,12 +78,13 @@ namespace tix
     
     void TDeviceIOS::Create()
     {
-        FMetalView *_View = nil;
+        FMetalView * _View = nil;
         Window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, Width, Height)];
         // Override point for customization after application launch.
         _View = [FMetalView viewWithFrame: [Window bounds]];
         
         ViewController = [[TViewController alloc] initWithNibName:nil bundle:nil];
+        ViewController.edgesForExtendedLayout = UIRectEdgeNone;
         ViewController.view = _View;
         
         // Set RootViewController to window

@@ -69,10 +69,12 @@ namespace tix
 	void FRHI::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
 		RenderTargets.push_back(RT);
-		RtViewports.push_back(Viewport);
+        
+        const vector2di& d = RT->GetDemension();
+        FViewport RTViewport(0, 0, d.X, d.Y);
+		RtViewports.push_back(RTViewport);
 
-		const vector2di& d = RT->GetDemension();
-		SetViewport(FViewport(0, 0, d.X, d.Y));
+		SetViewport(RTViewport);
 	}
 
 	FRenderTargetPtr FRHI::PopRenderTarget()

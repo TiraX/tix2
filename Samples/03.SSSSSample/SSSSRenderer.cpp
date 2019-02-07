@@ -91,9 +91,9 @@ void FSSSSRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("BasePass");
 #endif
-	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
-	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1);
-	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
+	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->Compile();
 
 	FTexturePtr SceneColor = RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture;
@@ -106,8 +106,8 @@ void FSSSSRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_SSSBlurX->SetResourceName("SSSBlurX");
 #endif
-	RT_SSSBlurX->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
-	RT_SSSBlurX->AddDepthStencilBuffer(SceneDepth);
+	RT_SSSBlurX->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
+	RT_SSSBlurX->AddDepthStencilBuffer(SceneDepth, ERT_LOAD_LOAD, ERT_STORE_DONTCARE);
 	RT_SSSBlurX->Compile();
 
 	// RT BlurY
@@ -115,8 +115,8 @@ void FSSSSRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_SSSBlurY->SetResourceName("SSSBlurY");
 #endif
-	RT_SSSBlurY->AddColorBuffer(SceneColor, ERTC_COLOR0);
-	RT_SSSBlurY->AddDepthStencilBuffer(SceneDepth);
+	RT_SSSBlurY->AddColorBuffer(SceneColor, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
+	RT_SSSBlurY->AddDepthStencilBuffer(SceneDepth, ERT_LOAD_LOAD, ERT_STORE_DONTCARE);
 	RT_SSSBlurY->Compile();
 	{
 		float ar = (float)ViewHeight / (float)ViewWidth;
@@ -166,8 +166,7 @@ void FSSSSRenderer::InitInRenderThread()
 	const float Threshold = 0.63f;
 	// Bloom Glare Detection
 	RT_GlareDetection = FRenderTarget::Create(ViewWidth / 2, ViewHeight / 2);
-	RT_GlareDetection->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
-	RT_GlareDetection->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8);
+	RT_GlareDetection->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_GlareDetection->Compile();
 	{
 		ArgumentValues->Reset();
@@ -195,7 +194,7 @@ void FSSSSRenderer::InitInRenderThread()
 		// Pass Horizontal
 		FBloomPass& PassX = BloomPass[p][0];
 		PassX.RT = FRenderTarget::Create(ViewWidth / SizeBase, ViewHeight / SizeBase);
-		PassX.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+		PassX.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 		PassX.RT->Compile();
 		vector2df BloomStepX = BloomStep * vector2df(1.f, 0.f);
 		BloomParam = BloomStepX;
@@ -211,7 +210,7 @@ void FSSSSRenderer::InitInRenderThread()
 		// Pass Vertical
 		FBloomPass& PassY = BloomPass[p][1];
 		PassY.RT = FRenderTarget::Create(ViewWidth / SizeBase, ViewHeight / SizeBase);
-		PassY.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0);
+		PassY.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 		PassY.RT->Compile();
 		vector2df BloomStepY = BloomStep * vector2df(0.f, 1.f);
 		BloomParam = BloomStepY;
@@ -230,7 +229,7 @@ void FSSSSRenderer::InitInRenderThread()
 	const float BloomIntensity = 1.f;
 	// Combine result
 	RT_Combine = FRenderTarget::Create(ViewWidth, ViewHeight);
-	RT_Combine->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0);
+	RT_Combine->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_Combine->Compile();
 	{
 		ArgumentValues->Reset();
@@ -260,8 +259,8 @@ void FSSSSRenderer::InitInRenderThread()
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
-
-    TI_TODO("Add Load/Store Action");
+    
+    /*
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 
@@ -276,8 +275,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 			FPipelinePtr PL = Primitive->Pipelines[m];
 
 			{
+                RHI->SetPipeline(PL);
 				RHI->SetMeshBuffer(MB);
-				RHI->SetPipeline(PL);
 				ApplyShaderParameter(RHI, Scene, Primitive, m);
 				RHI->DrawPrimitiveIndexedInstanced(MB, 1);
 			}
@@ -285,6 +284,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	RHI->PopRenderTarget();
+    
 
 	// Go SSS Blur Pass
 	{
@@ -350,6 +350,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->PopRenderTarget();
 	}
 
+     //*/
     RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
 }

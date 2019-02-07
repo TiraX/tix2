@@ -10,7 +10,6 @@
 @interface FMetalView : UIView<UIGestureRecognizerDelegate>
 
 @property (strong, nonatomic) CAMetalLayer * MtlLayer;
-@property (strong, nonatomic) id <MTLDevice> MtlDevice;
 
 // create View
 + (id) viewWithFrame:(CGRect)frame;

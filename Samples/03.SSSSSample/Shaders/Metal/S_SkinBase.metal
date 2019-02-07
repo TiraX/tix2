@@ -51,12 +51,12 @@ typedef struct
 
 
 vertex VSOutput S_SkinBaseVS(VSInput vsInput [[stage_in]],
-                             constant EB_View & EB_View [[ buffer(0) ]])
+                             constant EB_View & EB_View [[ buffer(1) ]])
 {
     VSOutput vsOutput;
     
-    vsOutput.position = float4(vsInput.position, 1.0);
-    vsOutput.position = EB_View.ViewProjection * vsOutput.position;
+    float4 InPosition = float4(vsInput.position, 1.0);
+    vsOutput.position = EB_View.ViewProjection * InPosition;
     vsOutput.texCoord = vsInput.texcoord0;
     vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
     

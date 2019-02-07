@@ -30,12 +30,12 @@ typedef struct
 } EB_View;
 
 vertex VSOutput S_SkyDomeVS(VSInput vsInput [[stage_in]],
-                            constant EB_View & EB_View [[ buffer(0) ]])
+                            constant EB_View & EB_View [[ buffer(1) ]])
 {
     VSOutput vsOutput;
     
-    vsOutput.position = float4(vsInput.position, 1.0);
-    vsOutput.position = EB_View.ViewProjection * vsOutput.position;
+    float4 InPosition = float4(vsInput.position, 1.0);
+    vsOutput.position = EB_View.ViewProjection * InPosition;
     
     vsOutput.normal = vsInput.normal * 2.0 - 1.0;
     

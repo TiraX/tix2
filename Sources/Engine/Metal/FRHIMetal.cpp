@@ -60,14 +60,17 @@ namespace tix
         FMetalView * MetalView = [FMetalView sharedMetalView];
         TI_ASSERT(MetalView != nil);
         
-        //int32 w = (int32)(MetalLayer.bounds.size.width);
-        //int32 h = (int32)(MetalLayer.bounds.size.height);
-        
         // Grab a metal layer
         MtlLayer = MetalView.MtlLayer;
+        int32 W = (int32)(MtlLayer.bounds.size.width);
+        int32 H = (int32)(MtlLayer.bounds.size.height);
+        
+        //self.MtlDevice = MTLCreateSystemDefaultDevice();
+        //self.MtlLayer.device = self.MtlDevice;
         
         // Grab a metal device
-        MtlDevice = MetalView.MtlDevice;
+        MtlDevice = MTLCreateSystemDefaultDevice();
+        MtlLayer.device = MtlDevice;
         
         // Create Command Queue
         CommandQueue = [MtlDevice newCommandQueue];
@@ -85,6 +88,8 @@ namespace tix
         
         InflightSemaphore = dispatch_semaphore_create(FRHIConfig::FrameBufferNum);
         
+        Viewport.Width = W;
+        Viewport.Height = H;
 		_LOG(Log, "  RHI Metal inited.\n");
 	}
     
@@ -136,8 +141,8 @@ namespace tix
         ColorAttachment.texture = Texture;
         
         // MTLLoadActionDontCare every frame for best performance
-        ColorAttachment.loadAction  = MTLLoadActionDontCare;
-        ColorAttachment.clearColor  = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);;
+        ColorAttachment.loadAction  = MTLLoadActionClear;//MTLLoadActionDontCare;
+        ColorAttachment.clearColor  = MTLClearColorMake(1.0, 0.0, 0.0, 1.0);;
         
         // store only attachments that will be presented to the screen, as in this case
         ColorAttachment.storeAction = MTLStoreActionStore;
@@ -618,12 +623,12 @@ namespace tix
 	void FRHIMetal::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
     {
         FMeshBufferMetal * MBMetal = static_cast<FMeshBufferMetal*>(MeshBuffer.get());
-        [RenderEncoder drawIndexedPrimitives: k_PRIMITIVE_TYPE_MAP[MeshBuffer->GetPrimitiveType()]
-                                   indexCount: MeshBuffer->GetIndicesCount()
-                                    indexType: k_INDEX_TYPE_MAP[MeshBuffer->GetIndexType()]
-                                  indexBuffer: MBMetal->IndexBuffer
-                            indexBufferOffset: 0
-                                instanceCount: InstanceCount];
+        
+        [RenderEncoder drawIndexedPrimitives:k_PRIMITIVE_TYPE_MAP[MeshBuffer->GetPrimitiveType()]
+                                  indexCount:MeshBuffer->GetIndicesCount()
+                                   indexType:k_INDEX_TYPE_MAP[MeshBuffer->GetIndexType()]
+                                 indexBuffer:MBMetal->IndexBuffer
+                           indexBufferOffset:0];
 	}
 
 	void FRHIMetal::SetViewport(const FViewport& VP)
@@ -652,6 +657,19 @@ namespace tix
 #endif
         
 		FRHI::PushRenderTarget(RT, PassName);
+        
+        // Try scissor rect
+        const FViewport& VP = RtViewports.back();
+        MTLScissorRect Rect;
+        Rect.x = 0;
+        Rect.y = 0;
+        Rect.width = VP.Width;
+        Rect.height = VP.Height;
+        [RenderEncoder setScissorRect:Rect];
+        
+        // Try cull
+        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        [RenderEncoder setCullMode:MTLCullModeBack];
 	}
 
 	FRenderTargetPtr FRHIMetal::PopRenderTarget()

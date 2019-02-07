@@ -38,7 +38,6 @@ static FMetalView * s_view = nil;
     if((self = [super initWithFrame:frame]))
     {
         self.MtlLayer = nil;
-        self.MtlDevice = nil;
         if( ![self setupSurface] )
         {
             return nil;
@@ -60,8 +59,6 @@ static FMetalView * s_view = nil;
     
     // Init metal layer and create default Metal Device
     self.MtlLayer = (CAMetalLayer *)self.layer;
-    self.MtlDevice = MTLCreateSystemDefaultDevice();
-    self.MtlLayer.device = self.MtlDevice;
     self.MtlLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
     self.MtlLayer.framebufferOnly = YES;
     
