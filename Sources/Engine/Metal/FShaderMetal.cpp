@@ -20,6 +20,10 @@ namespace tix
 
 	FShaderMetal::~FShaderMetal()
 	{
+        TI_ASSERT(IsRenderThread());
+        
+        VertexProgram = nil;
+        FragmentProgram = nil;
 	}
 }
 

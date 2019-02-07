@@ -72,21 +72,16 @@ namespace tix
 
 		virtual void SetPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
-		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
+		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) = 0;
 		
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
-		virtual void DrawPrimitiveIndexedInstanced(
-			uint32 IndexCountPerInstance,
-			uint32 InstanceCount,
-			uint32 StartIndexLocation,
-			int32 BaseVertexLocation,
-			uint32 StartInstanceLocation) = 0;
+		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
-		virtual void PushRenderTarget(FRenderTargetPtr RT);
+		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass");
 		virtual FRenderTargetPtr PopRenderTarget();
 
 		E_RHI_TYPE GetRHIType() const

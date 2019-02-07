@@ -52,8 +52,9 @@ namespace tix
 			{
 			case BINDING_UNIFORMBUFFER:
 			{
-				FUniformBufferPtr UniformBuffer = ResourceCast<FUniformBuffer>(Value.RenderResource);
-				RHI->SetUniformBuffer(i, UniformBuffer);
+                TI_ASSERT(0);
+				//FUniformBufferPtr UniformBuffer = ResourceCast<FUniformBuffer>(Value.RenderResource);
+				//RHI->SetUniformBuffer(i, UniformBuffer);
 			}
 			break;
 			case BINDING_UNIFORMBUFFER_TABLE:

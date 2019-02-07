@@ -19,10 +19,13 @@ namespace tix
 	FTextureMetal::FTextureMetal(const TTextureDesc& Desc)
 		: FTexture(Desc)
 	{
+        Texture = nil;
 	}
 
 	FTextureMetal::~FTextureMetal()
 	{
+        TI_ASSERT(IsRenderThread());
+        Texture = nil;
 	}
 }
 

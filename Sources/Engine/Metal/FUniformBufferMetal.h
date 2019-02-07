@@ -5,21 +5,21 @@
 
 #pragma once
 
-#if COMPILE_WITH_RHI_DX12
+#if COMPILE_WITH_RHI_METAL
 
 namespace tix
 {
-	class FUniformBufferDx12 : public FUniformBuffer
+	class FUniformBufferMetal : public FUniformBuffer
 	{
 	public:
-		FUniformBufferDx12(uint32 InStructSize);
-		virtual ~FUniformBufferDx12();
+		FUniformBufferMetal(uint32 InStructSize);
+		virtual ~FUniformBufferMetal();
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> ConstantBuffer;
-		friend class FRHIDx12;
+        id<MTLBuffer> ConstantBuffer;
+		friend class FRHIMetal;
 	};
 }
 
-#endif	// COMPILE_WITH_RHI_DX12
+#endif	// COMPILE_WITH_RHI_METAL

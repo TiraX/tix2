@@ -51,18 +51,18 @@ typedef struct
 
 
 vertex VSOutput S_SkinBaseVS(VSInput vsInput [[stage_in]],
-                             constant EB_View & view [[ buffer(0) ]])
+                             constant EB_View & EB_View [[ buffer(0) ]])
 {
     VSOutput vsOutput;
     
     vsOutput.position = float4(vsInput.position, 1.0);
-    vsOutput.position = view.ViewProjection * vsOutput.position;
+    vsOutput.position = EB_View.ViewProjection * vsOutput.position;
     vsOutput.texCoord = vsInput.texcoord0;
     vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
     
     vsOutput.normal = half3(vsInput.normal * 2.0 - 1.0);
     vsOutput.tangent = half3(vsInput.tangent * 2.0 - 1.0);
-    vsOutput.view = half3(normalize(view.ViewPos - vsInput.position));
+    vsOutput.view = half3(normalize(EB_View.ViewPos - vsInput.position));
     vsOutput.worldPosition.xyz = vsInput.position;
     vsOutput.worldPosition.w = vsOutput.position.z / vsOutput.position.w;
     
@@ -133,8 +133,8 @@ struct SSSSFragmentOutput {
 };
 
 fragment SSSSFragmentOutput S_SkinBasePS(VSOutput input [[stage_in]],
-                             constant EB_Primitive & primitive [[ buffer(0) ]],
-                             constant EB_Lights & lights [[ buffer(1) ]],
+                             constant EB_Primitive & EB_Primitive [[ buffer(0) ]],
+                             constant EB_Lights & EB_Lights [[ buffer(1) ]],
                              device FragmentShaderArguments & fragmentArgs [[ buffer(2) ]])
 {
     half3 objSpaceNormal = normalize(fragmentArgs.texNormal.sample(sampler0, float2(input.texCoord)).xyz * half(2.0) - half(1.0));
@@ -158,11 +158,11 @@ fragment SSSSFragmentOutput S_SkinBasePS(VSOutput input [[stage_in]],
     
     //*
     //[unroll]
-    for (int i = 0; i < primitive.LightCount.x; i++)
+    for (int i = 0; i < EB_Primitive.LightCount.x; i++)
     {
-        int Index = primitive.LightIndex[i];
-        half3 LColor = half3(lights.LightColor[Index].xyz);
-        float3 light = lights.LightPosition[Index].xyz - input.worldPosition.xyz;
+        int Index = EB_Primitive.LightIndex[i];
+        half3 LColor = half3(EB_Lights.LightColor[Index].xyz);
+        float3 light = EB_Lights.LightPosition[Index].xyz - input.worldPosition.xyz;
         half distanceSqr = dot(light, light);
         half3 L = half3(light * rsqrt(distanceSqr));
         

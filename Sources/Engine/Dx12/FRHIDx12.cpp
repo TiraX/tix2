@@ -1713,14 +1713,9 @@ namespace tix
 		CommandList->OMSetStencilRef(InRefValue);
 	}
 
-	void FRHIDx12::DrawPrimitiveIndexedInstanced(
-		uint32 IndexCountPerInstance,
-		uint32 InstanceCount,
-		uint32 StartIndexLocation,
-		int32 BaseVertexLocation,
-		uint32 StartInstanceLocation)
+	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
-		CommandList->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+		CommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
 	}
 
 	void FRHIDx12::SetViewport(const FViewport& VP)

@@ -23,7 +23,7 @@ namespace tix
 		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive, int32 MeshSection);
 		virtual void ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer);
 	protected:
-		void BindEngineBuffer(FRHI * RHI, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
+		void BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
 		void BindMaterialInstanceArgument(FRHI * RHI, FArgumentBufferPtr ArgumentBuffer);
 
 	protected:

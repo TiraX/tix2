@@ -17,6 +17,7 @@
 #include "FShaderMetal.h"
 #include "FArgumentBufferMetal.h"
 #include "FRenderTargetMetal.h"
+#include "FUniformBufferMetal.h"
 
 namespace tix
 {
@@ -117,8 +118,7 @@ namespace tix
 
 	FUniformBufferPtr FRHIMetal::CreateUniformBuffer(uint32 InStructSize)
 	{
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FUniformBufferMetal(InStructSize);
 	}
 
 	FMeshBufferPtr FRHIMetal::CreateMeshBuffer()
@@ -186,6 +186,7 @@ namespace tix
             TI_ASSERT(Desc.Mips == 1);
             
             MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:NO];
+            TextureDesc.usage |= MTLTextureUsageRenderTarget;
             TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
         }
         
@@ -303,10 +304,6 @@ namespace tix
             }
         }
         
-        if (InPipelineDesc->GetResourceName().find("SkinBase") != TString::npos) {
-            NSLog(@"break here.");
-        }
-        
         // Create pso with reflection
         NSError* Err  = nil;
         MTLRenderPipelineReflection * ReflectionObj = nil;
@@ -328,7 +325,7 @@ namespace tix
             {
                 E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
                 Shader->ShaderBinding->AddShaderArgument(ESS_VERTEX_SHADER,
-                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType, (int32)Arg.bufferDataSize));
+                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
             }
         }
         for (int32 i = 0 ; i < ReflectionObj.fragmentArguments.count; ++ i)
@@ -340,7 +337,7 @@ namespace tix
             {
                 E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
                 Shader->ShaderBinding->AddShaderArgument(ESS_PIXEL_SHADER,
-                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType, (int32)Arg.bufferDataSize));
+                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
             }
         }
         Shader->ShaderBinding->SortArguments();
@@ -372,12 +369,17 @@ namespace tix
 		return true;
 	}
 
-	//static const int32 UniformBufferAlignSize = 256;
+	static const int32 UniformBufferAlignSize = 16;
 	bool FRHIMetal::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData)
 	{
-        TI_ASSERT(0);
-
-		return true;
+        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
+        
+        const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
+        TI_ASSERT(UBMetal->ConstantBuffer == nil);
+        UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
+        HoldResourceReference(UniformBuffer);
+        
+        return true;
 	}
     
     bool FRHIMetal::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
@@ -444,9 +446,15 @@ namespace tix
     
     bool FRHIMetal::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
     {
-        FArgumentBufferMetal * ArgMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+        FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+        FShaderPtr Shader = ArgumentBuffer->GetShader();
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
         TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
+        
+        // Get Uniform buffer Bind Index
+        FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+        ArgBufferMetal->ArgumentBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_BUFFER);
+        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex >= 0);
         
         // Create uniform data if exist
         id<MTLBuffer> UniformBuffer = nil;
@@ -456,16 +464,16 @@ namespace tix
         }
         
         // Create argument buffer, fill uniform and textures
-        TI_ASSERT(ArgMetal->ArgumentBuffer == nil);
-        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:0];
+        TI_ASSERT(ArgBufferMetal->ArgumentBuffer == nil);
+        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgBufferMetal->ArgumentBindIndex];
         NSUInteger argumentBufferLength = argumentEncoder.encodedLength;
-        ArgMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
+        ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
 #if defined (TIX_DEBUG)
         const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
         TString ArgName = ShaderName + "_ArgumentBuffer";
-        ArgMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
+        ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
 #endif
-        [argumentEncoder setArgumentBuffer:ArgMetal->ArgumentBuffer offset:0];
+        [argumentEncoder setArgumentBuffer:ArgBufferMetal->ArgumentBuffer offset:0];
         
         int32 ArgumentIndex = 0;
         // Fill uniform
@@ -506,17 +514,32 @@ namespace tix
 
 	void FRHIMetal::SetPipeline(FPipelinePtr InPipeline)
 	{
-        TI_ASSERT(0);
+        FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
+        
+        [RenderEncoder setRenderPipelineState:PLMetal->PipelineState];
+        [RenderEncoder setDepthStencilState:PLMetal->DepthState];
+        TI_TODO("Check other render state, like back face culling things.");
 	}
 
 	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
-	{
-        TI_ASSERT(0);
+    {
+        FMeshBufferMetal* MBMetal = static_cast<FMeshBufferMetal*>(InMeshBuffer.get());
+        TI_ASSERT(RenderEncoder != nil);
+        [RenderEncoder setVertexBuffer:MBMetal->VertexBuffer offset:0 atIndex:0];
 	}
 
-	void FRHIMetal::SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	void FRHIMetal::SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer)
 	{
-        TI_ASSERT(0);
+        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(InUniformBuffer.get());
+        if (ShaderStage == ESS_VERTEX_SHADER) {
+            [RenderEncoder setVertexBuffer:UBMetal->ConstantBuffer offset:0 atIndex:BindIndex];
+        }
+        else if (ShaderStage == ESS_PIXEL_SHADER) {
+            [RenderEncoder setFragmentBuffer:UBMetal->ConstantBuffer offset:0 atIndex:BindIndex];
+        }
+        else {
+            TI_ASSERT(0);
+        }
 	}
 
 	void FRHIMetal::SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
@@ -531,41 +554,82 @@ namespace tix
     
     void FRHIMetal::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
     {
-        TI_ASSERT(0);
+        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
+        [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
+                                  offset:0
+                                 atIndex:ABMetal->ArgumentBindIndex];
     }
 
 	void FRHIMetal::SetStencilRef(uint32 InRefValue)
 	{
-        TI_ASSERT(0);
+        if (RenderEncoder != nil) {
+            [RenderEncoder setStencilReferenceValue:InRefValue];
+        }
 	}
 
-	void FRHIMetal::DrawPrimitiveIndexedInstanced(
-		uint32 IndexCountPerInstance,
-		uint32 InstanceCount,
-		uint32 StartIndexLocation,
-		int32 BaseVertexLocation,
-		uint32 StartInstanceLocation)
-	{
+	void FRHIMetal::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
+    {
+        FMeshBufferMetal * MBMetal = static_cast<FMeshBufferMetal*>(MeshBuffer.get());
+        [RenderEncoder drawIndexedPrimitives: k_PRIMITIVE_TYPE_MAP[MeshBuffer->GetPrimitiveType()]
+                                   indexCount: MeshBuffer->GetIndicesCount()
+                                    indexType: k_INDEX_TYPE_MAP[MeshBuffer->GetIndexType()]
+                                  indexBuffer: MBMetal->IndexBuffer
+                            indexBufferOffset: 0
+                                instanceCount: InstanceCount];
         TI_ASSERT(0);
 	}
 
 	void FRHIMetal::SetViewport(const FViewport& VP)
 	{
-		FRHI::SetViewport(VP);
-        TI_ASSERT(0);
+        FRHI::SetViewport(VP);
+        
+        MTLViewport vp;
+        vp.originX = VP.Left;
+        vp.originY = VP.Top;
+        vp.width = VP.Width;
+        vp.height = VP.Height;
+        vp.znear = 0.0;
+        vp.zfar = 1.0;
+        if (RenderEncoder != nil)
+        {
+            [RenderEncoder setViewport:vp];
+        }
 	}
 
-	void FRHIMetal::PushRenderTarget(FRenderTargetPtr RT)
-	{
-		FRHI::PushRenderTarget(RT);
-
-        TI_ASSERT(0);
+	void FRHIMetal::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+    {
+        FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
+        RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:RTMetal->RenderPassDesc];
+        RenderEncoder.label = [NSString stringWithUTF8String:PassName];
+        
+		FRHI::PushRenderTarget(RT, PassName);
 	}
 
 	FRenderTargetPtr FRHIMetal::PopRenderTarget()
-	{
-        TI_ASSERT(0);
-        return nullptr;
+    {
+        TI_ASSERT(RenderTargets.size() > 0);
+        
+        RenderTargets.pop_back();
+        RtViewports.pop_back();
+        
+        FRenderTargetPtr RT  = nullptr;
+        if (RenderTargets.size() != 0)
+            RT = RenderTargets.back();
+        
+        if (RT != nullptr)
+        {
+            TI_ASSERT(0);
+            [RenderEncoder endEncoding];
+            //FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
+            //SetupPipeline(rtMetal->_colorBuffer, rtMetal->_depthBuffer, MTLClearColorMake(0.f, 0.f, 0.f, 0.f));
+            //RenderEncoder = [_commandBuffer renderCommandEncoderWithDescriptor:_renderPassDescriptor];
+        }
+        else
+        {
+            [RenderEncoder endEncoding];
+        }
+        
+        return RT;
 	}
     
     void FRHIMetal::HoldResourceReference(FRenderResourcePtr InResource)

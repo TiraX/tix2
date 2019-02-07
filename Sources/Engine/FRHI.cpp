@@ -66,7 +66,7 @@ namespace tix
 		return ti_new FRenderResourceTable(InSize);
 	}
 
-	void FRHI::PushRenderTarget(FRenderTargetPtr RT)
+	void FRHI::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
 		RenderTargets.push_back(RT);
 		RtViewports.push_back(Viewport);

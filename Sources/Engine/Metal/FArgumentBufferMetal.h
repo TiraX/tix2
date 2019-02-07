@@ -18,6 +18,7 @@ namespace tix
 	protected:
 
 	private:
+        int32 ArgumentBindIndex;
         id<MTLBuffer> ArgumentBuffer;
 		friend class FRHIMetal;
 	};

@@ -7,20 +7,21 @@
 #include "FRHIMetal.h"
 #include "FUniformBufferMetal.h"
 
-#if COMPILE_WITH_RHI_DX12
+#if COMPILE_WITH_RHI_METAL
 
 namespace tix
 {
-	FUniformBufferDx12::FUniformBufferDx12(uint32 InStructSize)
+	FUniformBufferMetal::FUniformBufferMetal(uint32 InStructSize)
 		: FUniformBuffer(InStructSize)
 	{
+        ConstantBuffer = nil;
 	}
 
-	FUniformBufferDx12::~FUniformBufferDx12()
+	FUniformBufferMetal::~FUniformBufferMetal()
 	{
 		TI_ASSERT(IsRenderThread());
-		ConstantBuffer = nullptr;
+		ConstantBuffer = nil;
 	}
 }
 
-#endif	// COMPILE_WITH_RHI_DX12
+#endif	// COMPILE_WITH_RHI_METAL

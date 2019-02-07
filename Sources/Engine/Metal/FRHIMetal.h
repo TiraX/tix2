@@ -49,21 +49,16 @@ namespace tix
 
 		virtual void SetPipeline(FPipelinePtr InPipeline) override;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
-		virtual void SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
         virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) override;
 
 		virtual void SetStencilRef(uint32 InRefValue) override;
-		virtual void DrawPrimitiveIndexedInstanced(
-			uint32 IndexCountPerInstance,
-			uint32 InstanceCount,
-			uint32 StartIndexLocation,
-			int32 BaseVertexLocation,
-			uint32 StartInstanceLocation) override;
+		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
-		virtual void PushRenderTarget(FRenderTargetPtr RT) override;
+		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
 		virtual FRenderTargetPtr PopRenderTarget() override;
 
 	protected: 

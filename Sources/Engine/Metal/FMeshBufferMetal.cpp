@@ -20,6 +20,8 @@ namespace tix
 	FMeshBufferMetal::~FMeshBufferMetal()
 	{
 		TI_ASSERT(IsRenderThread());
+        VertexBuffer = nil;
+        IndexBuffer = nil;
 	}
 }
 

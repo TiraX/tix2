@@ -21,6 +21,8 @@ namespace tix
 	FPipelineMetal::~FPipelineMetal()
 	{
 		TI_ASSERT(IsRenderThread());
+        PipelineState = nil;
+        DepthState = nil;
 	}
 }
 

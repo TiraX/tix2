@@ -20,6 +20,7 @@ namespace tix
     FRenderTargetMetal::~FRenderTargetMetal()
     {
         TI_ASSERT(IsRenderThread());
+        RenderPassDesc = nil;
     }
 }
 

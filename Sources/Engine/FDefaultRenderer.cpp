@@ -39,24 +39,24 @@ namespace tix
 				RHI->SetPipeline(PL);
 				RHI->SetArgumentBuffer(AB);
 
-				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
+				RHI->DrawPrimitiveIndexedInstanced(MB, 1);
 			}
 		}
 	}
 
-	void FDefaultRenderer::BindEngineBuffer(FRHI * RHI, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive)
+	void FDefaultRenderer::BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive)
 	{
 		switch (Argument.ArgumentType)
 		{
 		case ARGUMENT_EB_VIEW:
-			RHI->SetUniformBuffer(Argument.BindingIndex, Scene->GetViewUniformBuffer()->UniformBuffer);
+			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetViewUniformBuffer()->UniformBuffer);
 			break;
 		case ARGUMENT_EB_PRIMITIVE:
 			TI_ASSERT(Primitive != nullptr);
-			RHI->SetUniformBuffer(Argument.BindingIndex, Primitive->PrimitiveUniformBuffer->UniformBuffer);
+			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->PrimitiveUniformBuffer->UniformBuffer);
 			break;
 		case ARGUMENT_EB_LIGHTS:
-			RHI->SetUniformBuffer(Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
+			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
 			break;
 		case ARGUMENT_MI_BUFFER:
 		case ARGUMENT_MI_TEXTURE:
@@ -82,14 +82,14 @@ namespace tix
 		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
 		for (const auto& Arg : VSArguments)
 		{
-			BindEngineBuffer(RHI, Arg, Scene, Primitive);
+			BindEngineBuffer(RHI, ESS_VERTEX_SHADER, Arg, Scene, Primitive);
 		}
 
 		// bind pixel arguments
 		const TVector<FShaderBinding::FShaderArgument>& PSArguments = ShaderBinding->GetPixelShaderArguments();
 		for (const auto& Arg : PSArguments)
 		{
-			BindEngineBuffer(RHI, Arg, Scene, Primitive);
+			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, Primitive);
 		}
 
 		FArgumentBufferPtr AB = Primitive->Arguments[MeshSection];
@@ -104,14 +104,14 @@ namespace tix
 		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
 		for (const auto& Arg : VSArguments)
 		{
-			BindEngineBuffer(RHI, Arg, Scene, nullptr);
+			BindEngineBuffer(RHI, ESS_VERTEX_SHADER, Arg, Scene, nullptr);
 		}
 
 		// bind pixel arguments
 		const TVector<FShaderBinding::FShaderArgument>& PSArguments = ShaderBinding->GetPixelShaderArguments();
 		for (const auto& Arg : PSArguments)
 		{
-			BindEngineBuffer(RHI, Arg, Scene, nullptr);
+			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, nullptr);
 		}
 
 		BindMaterialInstanceArgument(RHI, ArgumentBuffer);

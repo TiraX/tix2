@@ -13,6 +13,7 @@ namespace tix
 {
 	FArgumentBufferMetal::FArgumentBufferMetal(FShaderPtr InShader)
 		: FArgumentBuffer(InShader)
+        , ArgumentBindIndex(-1)
 	{
         ArgumentBuffer = nil;
 	}
@@ -20,6 +21,7 @@ namespace tix
 	FArgumentBufferMetal::~FArgumentBufferMetal()
 	{
 		TI_ASSERT(IsRenderThread());
+        ArgumentBuffer = nil;
 	}
 }
 

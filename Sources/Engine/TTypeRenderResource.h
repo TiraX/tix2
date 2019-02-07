@@ -18,6 +18,8 @@ namespace tix
 	{
 		EIT_16BIT,
 		EIT_32BIT,
+        
+        EIT_COUNT,
 	};
 
 	enum E_VERTEX_STREAM_SEGMENT
@@ -52,14 +54,9 @@ namespace tix
 	{
 		EPT_POINTLIST,
 		EPT_LINES,
-		EPT_LINE_LOOP,
 		EPT_LINESTRIP,
 		EPT_TRIANGLELIST,
 		EPT_TRIANGLESTRIP,
-		EPT_TRIANGLE_FAN,
-		EPT_QUADS,
-		EPT_QUAD_STRIP,
-		EPT_POLYGON,
 
 		EPT_COUNT
 	};

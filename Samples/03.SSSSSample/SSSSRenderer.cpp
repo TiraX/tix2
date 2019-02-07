@@ -276,7 +276,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetMeshBuffer(MB);
 				RHI->SetPipeline(PL);
 				ApplyShaderParameter(RHI, Scene, Primitive, m);
-				RHI->DrawPrimitiveIndexedInstanced(MB->GetIndicesCount(), 1, 0, 0, 0);
+				RHI->DrawPrimitiveIndexedInstanced(MB, 1);
 			}
 		}
 	}

@@ -62,10 +62,9 @@ namespace tix
 #endif
 		struct FShaderArgument
 		{
-			FShaderArgument(int32 InBindingIndex, E_ARGUMENT_TYPE InArgumentType, int32 InDataSize)
+			FShaderArgument(int32 InBindingIndex, E_ARGUMENT_TYPE InArgumentType)
 				: BindingIndex(InBindingIndex)
 				, ArgumentType(InArgumentType)
-                , DataSize(InDataSize)
 			{}
 
 			bool operator < (const FShaderArgument& Other) const
@@ -75,7 +74,6 @@ namespace tix
 
 			int32 BindingIndex;
 			E_ARGUMENT_TYPE ArgumentType;
-            int32 DataSize;
 		};
 
 		void AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument);

@@ -234,19 +234,21 @@ namespace tix
 //        D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED    //EPT_POLYGON,
 //    };
 //
-//    static const D3D_PRIMITIVE_TOPOLOGY k_PRIMITIVE_TYPE_MAP[EPT_COUNT] =
-//    {
-//        D3D_PRIMITIVE_TOPOLOGY_POINTLIST,    //EPT_POINTLIST,
-//        D3D_PRIMITIVE_TOPOLOGY_LINELIST,    //EPT_LINES,
-//        D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,    //EPT_LINE_LOOP,
-//        D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,    //EPT_LINESTRIP,
-//        D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,    //EPT_TRIANGLELIST,
-//        D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,    //EPT_TRIANGLESTRIP,
-//        D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,    //EPT_TRIANGLE_FAN,
-//        D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,    //EPT_QUADS,
-//        D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,    //EPT_QUAD_STRIP,
-//        D3D_PRIMITIVE_TOPOLOGY_UNDEFINED    //EPT_POLYGON,
-//    };
+    
+    static const MTLPrimitiveType k_PRIMITIVE_TYPE_MAP[EPT_COUNT] =
+    {
+        MTLPrimitiveTypePoint,    //EPT_POINTLIST,
+        MTLPrimitiveTypeLine,    //EPT_LINES,
+        MTLPrimitiveTypeLineStrip,    //EPT_LINESTRIP,
+        MTLPrimitiveTypeTriangle,    //EPT_TRIANGLELIST,
+        MTLPrimitiveTypeTriangleStrip,    //EPT_TRIANGLESTRIP,
+    };
+    
+    static const MTLIndexType k_INDEX_TYPE_MAP[EIT_COUNT] =
+    {
+        MTLIndexTypeUInt16, //EIT_16BIT,
+        MTLIndexTypeUInt32, //EIT_32BIT,
+    };
 //
 //    static const E_RENDER_RESOURCE_HEAP_TYPE Dx2TiXHeapMap[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
 //    {
