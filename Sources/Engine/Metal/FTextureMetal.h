@@ -15,11 +15,6 @@ namespace tix
 		FTextureMetal();
 		FTextureMetal(const TTextureDesc& Desc);
 		virtual ~FTextureMetal();
-
-        id<MTLTexture> GetMetalTexture()
-        {
-            return Texture;
-        }
         
 	protected:
 

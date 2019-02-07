@@ -395,7 +395,7 @@ namespace tix
             MTLRenderPassColorAttachmentDescriptor * ColorAttachment = RTMetal->RenderPassDesc.colorAttachments[i];
             TI_ASSERT(ColorBuffer.Texture != nullptr);
             FTextureMetal * TextureMetal = static_cast<FTextureMetal*>(ColorBuffer.Texture.get());
-            ColorAttachment.texture = TextureMetal->GetMetalTexture();
+            ColorAttachment.texture = TextureMetal->Texture;
             ColorAttachment.loadAction = k_LOAD_ACTION_MAP[ColorBuffer.LoadAction];
             ColorAttachment.storeAction = k_STORE_ACTION_MAP[ColorBuffer.StoreAction];
             ColorAttachment.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
@@ -409,10 +409,18 @@ namespace tix
             {
                 MTLRenderPassDepthAttachmentDescriptor* DepthAttachment = RTMetal->RenderPassDesc.depthAttachment;
                 FTextureMetal * TextureMetal = static_cast<FTextureMetal*>(DSBufferTexture.get());
-                DepthAttachment.texture = TextureMetal->GetMetalTexture();
+                DepthAttachment.texture = TextureMetal->Texture;
                 DepthAttachment.clearDepth = 1.0;
                 DepthAttachment.loadAction = k_LOAD_ACTION_MAP[DepthStencilBuffer.LoadAction];
                 DepthAttachment.storeAction = k_STORE_ACTION_MAP[DepthStencilBuffer.StoreAction];
+                
+                // Only support depth_stencil in one texture for now. Do not support seperate stencil texture.
+                TI_ASSERT(DSBufferTexture->GetDesc().Format == EPF_DEPTH24_STENCIL8);
+                MTLRenderPassStencilAttachmentDescriptor* StencilAttachment = RTMetal->RenderPassDesc.stencilAttachment;
+                StencilAttachment.texture = TextureMetal->Texture;
+                StencilAttachment.clearStencil = 0;
+                StencilAttachment.loadAction = k_LOAD_ACTION_MAP[DepthStencilBuffer.LoadAction];
+                StencilAttachment.storeAction = k_STORE_ACTION_MAP[DepthStencilBuffer.StoreAction];
             }
         }
         return true;
@@ -555,6 +563,7 @@ namespace tix
     void FRHIMetal::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
     {
         FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
+        TI_ASSERT(ABMetal->ArgumentBindIndex >= 0 && ABMetal->ArgumentBindIndex < 31);
         [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
                                   offset:0
                                  atIndex:ABMetal->ArgumentBindIndex];
@@ -576,7 +585,6 @@ namespace tix
                                   indexBuffer: MBMetal->IndexBuffer
                             indexBufferOffset: 0
                                 instanceCount: InstanceCount];
-        TI_ASSERT(0);
 	}
 
 	void FRHIMetal::SetViewport(const FViewport& VP)

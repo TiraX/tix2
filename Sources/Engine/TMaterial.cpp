@@ -107,5 +107,10 @@ namespace tix
 	void TMaterial::SetRTDepth(E_PIXEL_FORMAT Format)
 	{
 		Desc.DepthFormat = Format;
+        if (Format == EPF_DEPTH24_STENCIL8)
+        {
+            // For metal.
+            Desc.StencilFormat = Format;
+        }
 	}
 }

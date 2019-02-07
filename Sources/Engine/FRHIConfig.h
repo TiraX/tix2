@@ -24,8 +24,8 @@ namespace tix
 		static const E_PIXEL_FORMAT DefaultDepthBufferFormat = EPF_DEPTH24_STENCIL8;
 		static const E_PIXEL_FORMAT DefaultStencilBufferFormat = EPF_UNKNOWN;
 #elif COMPILE_WITH_RHI_METAL
-		static const E_PIXEL_FORMAT DefaultDepthBufferFormat = EPF_DEPTH16;
-		static const E_PIXEL_FORMAT DefaultStencilBufferFormat = EPF_STENCIL8;
+		static const E_PIXEL_FORMAT DefaultDepthBufferFormat = EPF_DEPTH24_STENCIL8;
+		static const E_PIXEL_FORMAT DefaultStencilBufferFormat = EPF_UNKNOWN;
 #else
 	#error("unknown platform.")
 #endif

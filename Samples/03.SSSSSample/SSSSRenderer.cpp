@@ -204,6 +204,7 @@ void FSSSSRenderer::InitInRenderThread()
 			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 			ArgumentTextures.clear();
 			ArgumentTextures.push_back(LastResult);
+            RHI->UpdateHardwareResource(PassX.AB, ArgumentValues, ArgumentTextures);
 		}
 		LastResult = PassX.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -219,6 +220,7 @@ void FSSSSRenderer::InitInRenderThread()
 			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 			ArgumentTextures.clear();
 			ArgumentTextures.push_back(LastResult);
+            RHI->UpdateHardwareResource(PassY.AB, ArgumentValues, ArgumentTextures);
 		}
 		LastResult = PassY.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -259,6 +261,8 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
 
+    TI_TODO("Add Pass name");
+    TI_TODO("Add Load/Store Action");
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass);
 
@@ -293,6 +297,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 	{
 		RHI->PushRenderTarget(RT_SSSBlurY);
+        RHI->SetPipeline(PL_SSSBlur);
 		ApplyShaderParameter(RHI, PL_SSSBlur->GetShader(), Scene, AB_SSSBlurY);
 		FSRender.DrawFullScreenQuad(RHI);
 		RHI->PopRenderTarget();

@@ -43,6 +43,8 @@ namespace tix
 			return MTLPixelFormatDepth32Float;
 		case EPF_DEPTH24_STENCIL8:
 			return MTLPixelFormatDepth32Float_Stencil8;
+        case EPF_STENCIL8:
+            return MTLPixelFormatStencil8;
 		case EPF_ASTC4x4:
 			return MTLPixelFormatASTC_4x4_LDR;
         case EPF_ASTC4x4_SRGB:
