@@ -1323,7 +1323,7 @@ namespace tix
 						E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, BindDescriptor.Type == D3D_SIT_TEXTURE);
 						ShaderDx12->ShaderBinding->AddShaderArgument(
 							(E_SHADER_STAGE)s, 
-							FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+							FShaderBinding::FShaderArgument(BindIndex, ArgumentType, -1));
 					}
 				}
 			}
