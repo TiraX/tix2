@@ -1323,7 +1323,7 @@ namespace tix
 						E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, BindDescriptor.Type == D3D_SIT_TEXTURE);
 						ShaderDx12->ShaderBinding->AddShaderArgument(
 							(E_SHADER_STAGE)s, 
-							FShaderBinding::FShaderArgument(BindIndex, ArgumentType, -1));
+							FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
 					}
 				}
 			}
@@ -1663,7 +1663,7 @@ namespace tix
 		HoldResourceReference(InMeshBuffer);
 	}
 
-	void FRHIDx12::SetUniformBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	void FRHIDx12::SetUniformBuffer(E_SHADER_STAGE , int32 BindIndex, FUniformBufferPtr InUniformBuffer)
 	{
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
@@ -1699,7 +1699,8 @@ namespace tix
 		if (ArgDx12->UniformBindIndex >= 0)
 		{
 			TI_ASSERT(ArgDx12->UniformBuffer != nullptr);
-			SetUniformBuffer(ArgDx12->UniformBindIndex, ArgDx12->UniformBuffer);
+			SetUniformBuffer(ESS_PIXEL_SHADER, ArgDx12->UniformBindIndex, ArgDx12->UniformBuffer);
+			TI_TODO("Do argument buffer for vertex shader");
 		}
 		if (ArgDx12->TextureBindIndex >= 0)
 		{
@@ -1790,9 +1791,9 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT)
+	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
-		FRHI::PushRenderTarget(RT);
+		FRHI::PushRenderTarget(RT, PassName);
 
 		SetRenderTarget(RT);
 	}
