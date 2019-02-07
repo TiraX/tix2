@@ -1447,7 +1447,8 @@ namespace tix
 	{
 		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
 		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
-		if (ArgumentData != nullptr)
+		TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
+		if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
 		{
 			// Create uniform buffer
 			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength());
