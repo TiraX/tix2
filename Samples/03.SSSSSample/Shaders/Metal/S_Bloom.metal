@@ -32,8 +32,12 @@ vertex PixelShaderInput S_BloomVS(VertexShaderInput in [[stage_in]])
     return out;
 }
 
+typedef struct {
+    float4 BloomParam;    // xy = bloom step
+} FragmentUniform;
+
 typedef struct FragmentShaderArguments {
-    float4 BloomParam [[ id(0) ]];    // xy = bloom step
+    device FragmentUniform * Uniform [[ id(0) ]];    // xy = bloom step
     texture2d<half> TexSource  [[ id(1) ]];
 } FragmentShaderArguments;
 
@@ -62,7 +66,7 @@ fragment half4 S_BloomPS(PixelShaderInput input [[stage_in]],
     //    const float n = 5.0;
     //#endif
     
-    half2 step = half2(fragmentArgs.BloomParam.xy);
+    half2 step = half2(fragmentArgs.Uniform->BloomParam.xy);
     
     half4 color = half4(0.0, 0.0, 0.0, 0.0);
     //[unroll]

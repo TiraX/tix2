@@ -138,7 +138,6 @@ void FSSSSRenderer::InitInRenderThread()
 
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(SceneColor);
-		ArgumentTextures.push_back(SceneDepth);
 		ArgumentTextures.push_back(SpecularTex);
 		RHI->UpdateHardwareResource(AB_SSSBlurX, ArgumentValues, ArgumentTextures);
 
@@ -151,7 +150,6 @@ void FSSSSRenderer::InitInRenderThread()
 		ArgumentTextures.clear();
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
 		ArgumentTextures.push_back(TextureBlurX);
-		ArgumentTextures.push_back(SceneDepth);
 		ArgumentTextures.push_back(SpecularTex);
 		RHI->UpdateHardwareResource(AB_SSSBlurY, ArgumentValues, ArgumentTextures);
 	}
@@ -250,6 +248,7 @@ void FSSSSRenderer::InitInRenderThread()
 	// Output result
 	AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
 	{
+        ArgumentValues->Reset();
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);

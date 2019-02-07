@@ -303,24 +303,49 @@ namespace tix
             }
         }
         
+        if (InPipelineDesc->GetResourceName().find("SkinBase") != TString::npos) {
+            NSLog(@"break here.");
+        }
+        
+        // Create pso with reflection
         NSError* Err  = nil;
         MTLRenderPipelineReflection * ReflectionObj = nil;
         PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
         
+        // Create shader binding info for shaders
+        TI_ASSERT(Shader->ShaderBinding == nullptr);
+        Shader->ShaderBinding = ti_new FShaderBinding(0);   // Metal do not care NumBindingCount
         for (int32 i = 0 ; i < ReflectionObj.vertexArguments.count; ++i)
         {
             MTLArgument * Arg = ReflectionObj.vertexArguments[i];
-            Arg.name;
-            Arg.type;
-            int letsbreak = 0;
+            TString BindName = [Arg.name UTF8String];
+            int32 BindIndex = (int32)Arg.index;
+            if (BindName.substr(0, 12) == "vertexBuffer")
+            {
+                continue;
+            }
+            if (BindIndex >= 0)
+            {
+                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
+                Shader->ShaderBinding->AddShaderArgument(ESS_VERTEX_SHADER,
+                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType, (int32)Arg.bufferDataSize));
+            }
         }
         for (int32 i = 0 ; i < ReflectionObj.fragmentArguments.count; ++ i)
         {
             MTLArgument * Arg = ReflectionObj.fragmentArguments[i];
-            int letsbreak = 0;
+            TString BindName = [Arg.name UTF8String];
+            int32 BindIndex = (int32)Arg.index;
+            if (BindIndex >= 0)
+            {
+                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
+                Shader->ShaderBinding->AddShaderArgument(ESS_PIXEL_SHADER,
+                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType, (int32)Arg.bufferDataSize));
+            }
         }
-        //TI_ASSERT(0);
+        Shader->ShaderBinding->SortArguments();
         
+        // Create depth stencil state
         MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
         DepthStateDesc.depthCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
         DepthStateDesc.depthWriteEnabled = Desc.IsEnabled(EPSO_DEPTH);
@@ -419,7 +444,43 @@ namespace tix
     
     bool FRHIMetal::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
     {
-        TI_ASSERT(0);
+        FArgumentBufferMetal * ArgMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
+        TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
+        
+        // Create uniform data if exist
+        id<MTLBuffer> UniformBuffer = nil;
+        if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
+        {
+            UniformBuffer = [MtlDevice newBufferWithBytes:ArgumentData->GetBuffer() length:ArgumentData->GetLength() options:MTLResourceStorageModeShared];
+        }
+        
+        // Create argument buffer, fill uniform and textures
+        TI_ASSERT(ArgMetal->ArgumentBuffer == nil);
+        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:0];
+        NSUInteger argumentBufferLength = argumentEncoder.encodedLength;
+        ArgMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
+#if defined (TIX_DEBUG)
+        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
+        TString ArgName = ShaderName + "_ArgumentBuffer";
+        ArgMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
+#endif
+        [argumentEncoder setArgumentBuffer:ArgMetal->ArgumentBuffer offset:0];
+        
+        int32 ArgumentIndex = 0;
+        // Fill uniform
+        if (UniformBuffer != nil) {
+            [argumentEncoder setBuffer:UniformBuffer offset:0 atIndex:ArgumentIndex];
+            ++ ArgumentIndex;
+        }
+        
+        // Fill textures
+        for (const auto& Tex : ArgumentTextures) {
+            FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Tex.get());
+            [argumentEncoder setTexture:TexMetal->Texture atIndex:ArgumentIndex];
+            ++ ArgumentIndex;
+        }
+        
         return true;
     }
     

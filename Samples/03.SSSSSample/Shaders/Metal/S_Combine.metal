@@ -32,8 +32,12 @@ vertex PixelShaderInput S_CombineVS(VertexShaderInput in [[stage_in]])
     return out;
 }
 
+typedef struct {
+    float4 BloomParam;    // x = exposure, y = bloom intensity,
+} FragmentUniform;
+
 typedef struct FragmentShaderArguments {
-    float4 BloomParam [[ id(0) ]];    // x = exposure, y = bloom intensity,
+    device FragmentUniform * Uniform [[ id(0) ]];
     texture2d<half> TexSource  [[ id(1) ]];
     texture2d<half> TexBloom0  [[ id(2) ]];
     texture2d<half> TexBloom1  [[ id(3) ]];
@@ -66,8 +70,8 @@ fragment half4 S_CombinePS(PixelShaderInput input [[stage_in]],
                            device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
     const half w[] = { 2.0 / 3.0, 1.0 / 3.0 };
-    half exposure = half(fragmentArgs.BloomParam.x);
-    half bloomIntensity = half(fragmentArgs.BloomParam.y);
+    half exposure = half(fragmentArgs.Uniform->BloomParam.x);
+    half bloomIntensity = half(fragmentArgs.Uniform->BloomParam.y);
     
     //float4 color = PyramidFilter(finalTex, texcoord, pixelSize * defocus);
     half4 color = fragmentArgs.TexSource.sample(sampler0, input.uv);

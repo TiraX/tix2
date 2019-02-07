@@ -14,6 +14,7 @@ namespace tix
 	FArgumentBufferMetal::FArgumentBufferMetal(FShaderPtr InShader)
 		: FArgumentBuffer(InShader)
 	{
+        ArgumentBuffer = nil;
 	}
 
 	FArgumentBufferMetal::~FArgumentBufferMetal()

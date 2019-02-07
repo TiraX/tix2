@@ -37,12 +37,17 @@ vertex PixelShaderInput S_SSSBlurVS(VertexShaderInput vsInput [[stage_in]])
 
 #define SSSS_N_SAMPLES (17)
 
+typedef struct
+{
+    float4 BlurDir;
+    float4 BlurParam;   // x = sssWidth; y = sssFov; z = maxOffsetMm
+    float4 Kernel[SSSS_N_SAMPLES];
+}FragmentUniform;
+
 typedef struct FragmentShaderArguments {
-    float4 BlurDir [[ id(0) ]];
-    float4 BlurParam [[ id(1) ]];   // x = sssWidth; y = sssFov; z = maxOffsetMm
-    device float4 *Kernel [[ id(2) ]];
-    texture2d<half> TexColor  [[ id(3) ]];
-    texture2d<half> TexStrength  [[ id(4) ]];
+    device FragmentUniform* Uniform [[ id(0) ]];
+    texture2d<half> TexColor  [[ id(1) ]];
+    texture2d<half> TexStrength  [[ id(2) ]];
 } FragmentShaderArguments;
 
 constexpr sampler sampler0(mip_filter::linear,
@@ -58,16 +63,16 @@ fragment half4 S_SSSBlurPS(PixelShaderInput input [[stage_in]],
     // Fetch linear depth of current pixel:
     half depthM = colorM.a;// TexDepth.Sample(sampler0, input.uv).r;
     
-    half sssWidth = half(fragmentArgs.BlurParam.x);
-    half sssFov = half(fragmentArgs.BlurParam.y);
-    half maxOffsetMm = half(fragmentArgs.BlurParam.z);
+    half sssWidth = half(fragmentArgs.Uniform->BlurParam.x);
+    half sssFov = half(fragmentArgs.Uniform->BlurParam.y);
+    half maxOffsetMm = half(fragmentArgs.Uniform->BlurParam.z);
     
     // Calculate the sssWidth scale (1.0 for a unit plane sitting on the
     // projection window):
     half distanceToProjectionWindow = half(1.0) / tan(half(0.5) * sssFov);
     half scale = distanceToProjectionWindow / depthM;
     
-    half2 dir = half2(fragmentArgs.BlurDir.xy);
+    half2 dir = half2(fragmentArgs.Uniform->BlurDir.xy);
     
     // Calculate the final step to fetch the surrounding pixels:
     half2 finalStep = scale * dir;
@@ -76,12 +81,12 @@ fragment half4 S_SSSBlurPS(PixelShaderInput input [[stage_in]],
     
     // Accumulate the center sample:
     half4 colorBlurred = colorM;
-    colorBlurred.rgb *= half3(fragmentArgs.Kernel[0].rgb);
+    colorBlurred.rgb *= half3(fragmentArgs.Uniform->Kernel[0].rgb);
     
     // Accumulate the other samples:
     for (int i = 1; i < SSSS_N_SAMPLES; i++) {
         // Fetch color and depth for current sample:
-        float2 offset = input.uv + fragmentArgs.Kernel[i].a * float2(finalStep);
+        float2 offset = input.uv + fragmentArgs.Uniform->Kernel[i].a * float2(finalStep);
         half4 color = fragmentArgs.TexColor.sample(sampler0, offset);
         
         //#if SSSS_FOLLOW_SURFACE == 1
@@ -95,7 +100,7 @@ fragment half4 S_SSSBlurPS(PixelShaderInput input [[stage_in]],
         //#endif
         
         // Accumulate:
-        colorBlurred.rgb += half3(fragmentArgs.Kernel[i].rgb) * color.rgb;
+        colorBlurred.rgb += half3(fragmentArgs.Uniform->Kernel[i].rgb) * color.rgb;
     }
     
     return colorBlurred;

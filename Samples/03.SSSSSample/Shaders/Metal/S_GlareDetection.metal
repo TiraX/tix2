@@ -32,8 +32,13 @@ vertex PixelShaderInput S_GlareDetectionVS(VertexShaderInput in [[stage_in]])
     return out;
 }
 
+typedef struct
+{
+    float4 GlareDetectionParam;    // x=exposure, y=threshold,
+}FragmentUniform;
+
 typedef struct FragmentShaderArguments {
-    float4 GlareDetectionParam [[ id(0) ]];    // x=exposure, y=threshold,
+    device FragmentUniform * Uniform [[ id(0) ]];
     texture2d<half> TexBaseColor  [[ id(1) ]];
 } FragmentShaderArguments;
 
@@ -45,8 +50,8 @@ fragment half4 S_GlareDetectionPS(PixelShaderInput input [[stage_in]],
                                   device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
     
-    half exposure = half(fragmentArgs.GlareDetectionParam.x);
-    half bloomThreshold = half(fragmentArgs.GlareDetectionParam.y);
+    half exposure = half(fragmentArgs.Uniform->GlareDetectionParam.x);
+    half bloomThreshold = half(fragmentArgs.Uniform->GlareDetectionParam.y);
     
     half4 color = fragmentArgs.TexBaseColor.sample(sampler0, input.uv);
     color.rgb *= exposure;
