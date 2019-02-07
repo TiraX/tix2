@@ -25,6 +25,18 @@ namespace tix
 		: FRHI(ERHI_METAL)
         , CurrentFrame(0)
 	{
+        MtlLayer = nil;
+        MtlDevice = nil;
+        CurrentDrawable = nil;
+        
+        CommandQueue = nil;
+        DefaultLibrary = nil;
+        
+        CommandBuffer = nil;
+        RenderEncoder = nil;
+        
+        FrameBufferPassDesc = nil;
+        
         // Create frame resource holders
         for (int32 i = 0 ; i < FRHIConfig::FrameBufferNum; ++ i)
         {
@@ -51,11 +63,18 @@ namespace tix
         //int32 w = (int32)(MetalLayer.bounds.size.width);
         //int32 h = (int32)(MetalLayer.bounds.size.height);
         
+        // Grab a metal layer
+        MtlLayer = MetalView.MtlLayer;
+        
         // Grab a metal device
         MtlDevice = MetalView.MtlDevice;
         
         // Create Command Queue
         CommandQueue = [MtlDevice newCommandQueue];
+        
+        // Create Frame buffer pass descriptor
+        TI_ASSERT(FrameBufferPassDesc == nil);
+        FrameBufferPassDesc = [MTLRenderPassDescriptor renderPassDescriptor];
         
         // Create Metal Default Library
         NSFileManager* fm = [NSFileManager defaultManager];
@@ -105,6 +124,26 @@ namespace tix
         CommandBuffer = nil;
         CurrentDrawable = nil;
 	}
+    
+    void FRHIMetal::BeginRenderToFrameBuffer()
+    {
+        CurrentDrawable = MtlLayer.nextDrawable;
+        TI_ASSERT(CurrentDrawable != nil);
+        id <MTLTexture> Texture = CurrentDrawable.texture;
+        
+        // create a color attachment every frame since we have to recreate the texture every frame
+        MTLRenderPassColorAttachmentDescriptor * ColorAttachment = FrameBufferPassDesc.colorAttachments[0];
+        ColorAttachment.texture = Texture;
+        
+        // MTLLoadActionDontCare every frame for best performance
+        ColorAttachment.loadAction  = MTLLoadActionDontCare;
+        ColorAttachment.clearColor  = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);;
+        
+        // store only attachments that will be presented to the screen, as in this case
+        ColorAttachment.storeAction = MTLStoreActionStore;
+        
+        RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
+    }
 
 	FTexturePtr FRHIMetal::CreateTexture()
 	{
@@ -344,7 +383,7 @@ namespace tix
         
         // Create depth stencil state
         MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
-        DepthStateDesc.depthCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
+        DepthStateDesc.depthCompareFunction = Desc.IsEnabled(EPSO_DEPTH_TEST) ? k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc] : MTLCompareFunctionAlways;
         DepthStateDesc.depthWriteEnabled = Desc.IsEnabled(EPSO_DEPTH);
         
         if (Desc.IsEnabled(EPSO_STENCIL))
@@ -608,7 +647,9 @@ namespace tix
     {
         FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:RTMetal->RenderPassDesc];
+#if defined (TIX_DEBUG)
         RenderEncoder.label = [NSString stringWithUTF8String:PassName];
+#endif
         
 		FRHI::PushRenderTarget(RT, PassName);
 	}
@@ -636,6 +677,7 @@ namespace tix
         {
             [RenderEncoder endEncoding];
         }
+        RenderEncoder = nil;
         
         return RT;
 	}

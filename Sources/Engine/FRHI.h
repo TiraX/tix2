@@ -43,6 +43,7 @@ namespace tix
 		virtual void InitRHI() = 0;
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
+        virtual void BeginRenderToFrameBuffer() {}; // For metal to require drawable layer
 
 		virtual void WaitingForGpu() = 0;
 

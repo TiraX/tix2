@@ -21,6 +21,7 @@ namespace tix
 		virtual void InitRHI() override;
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
+        virtual void BeginRenderToFrameBuffer() override;
 
 		virtual void WaitingForGpu() override;
 
@@ -67,6 +68,7 @@ namespace tix
         void HoldResourceReference(FRenderResourcePtr InResource);
 
 	private:
+        CAMetalLayer * MtlLayer;
         id <MTLDevice> MtlDevice;
         id <CAMetalDrawable> CurrentDrawable;
         
@@ -75,6 +77,8 @@ namespace tix
         
         id <MTLCommandBuffer> CommandBuffer;
         id <MTLRenderCommandEncoder> RenderEncoder;
+        
+        MTLRenderPassDescriptor* FrameBufferPassDesc;
         
         int32 CurrentFrame;
         dispatch_semaphore_t InflightSemaphore;

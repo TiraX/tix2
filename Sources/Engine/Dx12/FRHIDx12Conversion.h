@@ -167,7 +167,7 @@ namespace tix
 	{
 		DepthStencilState.DepthEnable = Desc.IsEnabled(EPSO_DEPTH) || Desc.IsEnabled(EPSO_DEPTH_TEST);
 		DepthStencilState.DepthWriteMask = Desc.IsEnabled(EPSO_DEPTH) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-		DepthStencilState.DepthFunc = k_COMPARISON_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc];
+		DepthStencilState.DepthFunc = Desc.IsEnabled(EPSO_DEPTH_TEST) ? k_COMPARISON_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc] : D3D12_COMPARISON_FUNC_ALWAYS;
 		DepthStencilState.StencilEnable = Desc.IsEnabled(EPSO_STENCIL);
 		DepthStencilState.StencilReadMask = Desc.DepthStencilDesc.StencilReadMask;
 		DepthStencilState.StencilWriteMask = Desc.DepthStencilDesc.StencilWriteMask;
