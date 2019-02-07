@@ -112,7 +112,7 @@ namespace tix
 	class FRenderThread : public TThread
 	{
 	public:
-		static void CreateRenderThread();
+		static void CreateRenderThread(bool ForceDisableThread = false);
 		static void DestroyRenderThread();
 		static FRenderThread* Get();
 		static bool IsInited();
@@ -169,5 +169,6 @@ namespace tix
 		FScene * RenderScene;
 
 		static bool Inited;
+		static bool ThreadEnabled;
 	};
 }

@@ -12,18 +12,34 @@ namespace tix
 {
 	FRenderThread* FRenderThread::RenderThread = nullptr;
 	bool FRenderThread::Inited = false;
+	bool FRenderThread::ThreadEnabled = true;
 
-	void FRenderThread::CreateRenderThread()
+	void FRenderThread::CreateRenderThread(bool ForceDisableThread)
 	{
+		FRenderThread::ThreadEnabled = !ForceDisableThread;
 		TI_ASSERT(RenderThread == nullptr);
 		RenderThread = ti_new FRenderThread;
-		RenderThread->Start();
+		if (FRenderThread::ThreadEnabled)
+		{
+			RenderThread->Start();
+		}
+		else
+		{
+			RenderThread->OnThreadStart();
+		}
 	}
 
 	void FRenderThread::DestroyRenderThread()
 	{
 		TI_ASSERT(RenderThread != nullptr);
-		RenderThread->Stop();
+		if (FRenderThread::ThreadEnabled)
+		{
+			RenderThread->Stop();
+		}
+		else
+		{
+			RenderThread->OnThreadEnd();
+		}
 		ti_delete RenderThread;
 		RenderThread = nullptr;
 	}
@@ -129,13 +145,16 @@ namespace tix
 
 	void FRenderThread::Stop()
 	{
-		if (Thread != nullptr)
+		if (FRenderThread::ThreadEnabled)
 		{
-			TriggerRenderAndStop();
-			Thread->join();
+			if (Thread != nullptr)
+			{
+				TriggerRenderAndStop();
+				Thread->join();
 
-			ti_delete Thread;
-			Thread = nullptr;
+				ti_delete Thread;
+				Thread = nullptr;
+			}
 		}
 	}
 
@@ -163,30 +182,45 @@ namespace tix
 
 	void FRenderThread::TriggerRender()
 	{
-		unique_lock<TMutex> RenderLock(RenderMutex);
-		// Add Trigger Number
-		++TriggerNum;
-		// Frame index move to next frame. Close current frame data
-		PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
-		RenderCond.notify_one();
+		if (FRenderThread::ThreadEnabled)
+		{
+			// Send a signal to trigger Run() in a single thread
+			unique_lock<TMutex> RenderLock(RenderMutex);
+			// Add Trigger Number
+			++TriggerNum;
+			// Frame index move to next frame. Close current frame data
+			PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
+			RenderCond.notify_one();
+		}
+		else
+		{
+			// Call Run() in this thread
+			Run();
+		}
 	}
 
 	void FRenderThread::TriggerRenderAndStop()
 	{
-		unique_lock<TMutex> RenderLock(RenderMutex);
-		// Add Trigger Number
-		++TriggerNum;
-		// Frame index move to next frame. Close current frame data
-		PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
-		IsRunning = false;
-		RenderCond.notify_one();
+		if (FRenderThread::ThreadEnabled)
+		{
+			unique_lock<TMutex> RenderLock(RenderMutex);
+			// Add Trigger Number
+			++TriggerNum;
+			// Frame index move to next frame. Close current frame data
+			PreFrameIndex = (PreFrameIndex + 1) % FRHIConfig::FrameBufferNum;
+			IsRunning = false;
+			RenderCond.notify_one();
+		}
 	}
 
 	void FRenderThread::WaitForRenderSignal()
 	{
-		unique_lock<TMutex> RenderLock(RenderMutex);
-		--TriggerNum;
-		RenderCond.wait(RenderLock);
+		if (FRenderThread::ThreadEnabled)
+		{
+			unique_lock<TMutex> RenderLock(RenderMutex);
+			--TriggerNum;
+			RenderCond.wait(RenderLock);
+		}
 	}
 
 	void FRenderThread::AddTaskToFrame(TTask* Task)
