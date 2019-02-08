@@ -17,10 +17,25 @@ namespace tix
 		EP_IOS,
 		EP_Android,
 	};
+    
+    struct TAppInfo
+    {
+        int32 Width;
+        int32 Height;
+        float ContentScale;
+        
+        TAppInfo()
+            : Width(0)
+            , Height(0)
+            , ContentScale(1.f)
+        {
+        }
+    };
 
 	class TEngine
 	{
-	public:      
+	public:
+        TI_API static TAppInfo AppInfo;
         
 		TI_API static TEngine* Get();
 		TI_API static void	InitEngine(const TEngineDesc& Config);

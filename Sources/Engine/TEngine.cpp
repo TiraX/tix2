@@ -25,6 +25,7 @@ namespace tix
 {
 	TEngine* TEngine::s_engine = nullptr;
 	E_Platform TEngine::CurrentPlatform = EP_Unknown;
+    TAppInfo TEngine::AppInfo;
 
 	void TEngine::InitEngine(const TEngineDesc& Config)
 	{
@@ -39,6 +40,9 @@ namespace tix
 	void TEngine::Init(const TEngineDesc& Config)
 	{
 		TThread::IndicateGameThread();
+        
+        AppInfo.Width = Config.Width;
+        AppInfo.Height = Config.Height;
 
 #ifdef TI_PLATFORM_WIN32
 		CurrentPlatform = EP_Windows;

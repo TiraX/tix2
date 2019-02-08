@@ -57,14 +57,13 @@ namespace tix
 
 	void FRHIMetal::InitRHI()
 	{
-        TI_TODO("Find retina display.");
         FMetalView * MetalView = [FMetalView sharedMetalView];
         TI_ASSERT(MetalView != nil);
         
         // Grab a metal layer
         MtlLayer = MetalView.MtlLayer;
-        int32 W = (int32)(MtlLayer.bounds.size.width);
-        int32 H = (int32)(MtlLayer.bounds.size.height);
+        TEngine::AppInfo.Width = (int32)(MtlLayer.bounds.size.width * TEngine::AppInfo.ContentScale);
+        TEngine::AppInfo.Height = (int32)(MtlLayer.bounds.size.height * TEngine::AppInfo.ContentScale);
         
         // Grab a metal device
         MtlDevice = MTLCreateSystemDefaultDevice();
@@ -86,8 +85,8 @@ namespace tix
         
         InflightSemaphore = dispatch_semaphore_create(FRHIConfig::FrameBufferNum);
         
-        Viewport.Width = W;
-        Viewport.Height = H;
+        Viewport.Width = TEngine::AppInfo.Width;
+        Viewport.Height = TEngine::AppInfo.Height;
 		_LOG(Log, "  RHI Metal inited.\n");
 	}
     

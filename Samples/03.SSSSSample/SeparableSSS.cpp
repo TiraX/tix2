@@ -39,9 +39,7 @@
 using namespace std;
 
 
-SeparableSSS::SeparableSSS(int32 width,
-                           int32 height,
-                           float fovy,
+SeparableSSS::SeparableSSS(float fovy,
                            float sssWidth,
                            bool stencilInitialized,
                            bool followSurface,

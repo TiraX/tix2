@@ -71,8 +71,7 @@ class SeparableSSS {
          * format: format of the temporal framebuffer. Should be left as is,
          *     unless an HDR format is desired.
          */
-        SeparableSSS(int width, int height,
-                     float fovy,
+        SeparableSSS(float fovy,
                      float sssWidth,
                      bool stencilInitialized=true,
                      bool followShape=true,

@@ -63,6 +63,7 @@ void TSSSSTicker::SetupScene()
 
 	// Setup Camera
 	TNodeCamera* Camera = Scene->GetActiveCamera();
+    Camera->SetAspectRatio((float)TEngine::AppInfo.Width / (float)TEngine::AppInfo.Height);
 	Camera->SetPosition(vector3df(-0.72f, -1.14f, 0.47f) * 2.f);
 	//Camera->SetPosition(vector3df(2.642f, 0.0277f, -1.623f));
 	Camera->SetTarget(vector3df(0.f, 0.f, 0.45f));

@@ -24,11 +24,9 @@ void FS4TempRenderer::Render(FRHI* RHI, FScene* Scene)
     _LOG(Log, "FS4TempRenderer .\n");
 }
 
-TTexturePtr tt;
-
 FSSSSRenderer::FSSSSRenderer()
 {
-	S4Effect = ti_new SeparableSSS(1600, 900, DEG_TO_RAD(40), 250.f);
+	S4Effect = ti_new SeparableSSS(DEG_TO_RAD(40), 250.f);
 
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
 	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
@@ -64,9 +62,6 @@ FSSSSRenderer::FSSSSRenderer()
 	TMaterialPtr M_Combine = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(CombineMaterialName).get());
 	PL_Combine = M_Combine->PipelineResource;
 	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);
-    
-    TResourcePtr res = TResourceLibrary::Get()->LoadResource("T_AlbedoMap.tres");
-    tt = static_cast<TTexture*>(res.get());
 }
 
 FSSSSRenderer::~FSSSSRenderer()
@@ -85,7 +80,7 @@ void FSSSSRenderer::InitInRenderThread()
 	FSRender.InitCommonResources(RHI);
 
 	const int32 ViewWidth = 1600;
-	const int32 ViewHeight = 900;
+    const int32 ViewHeight = TEngine::AppInfo.Height * ViewWidth / TEngine::AppInfo.Width;
 
 	TStreamPtr ArgumentValues = ti_new TStream;
 	TVector<FTexturePtr> ArgumentTextures;
@@ -255,8 +250,7 @@ void FSSSSRenderer::InitInRenderThread()
     {
         ArgumentValues->Reset();
         ArgumentTextures.clear();
-        ArgumentTextures.push_back(tt->TextureResource);
-        //ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
+        ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
         RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
     }
 }
@@ -265,7 +259,6 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
     
-    /*
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 
@@ -354,8 +347,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 		FSRender.DrawFullScreenQuad(RHI);
 		RHI->PopRenderTarget();
 	}
-
-     //*/
+    
     RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
 }

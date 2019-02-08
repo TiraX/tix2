@@ -63,6 +63,7 @@ static FMetalView * s_view = nil;
     self.MtlLayer.framebufferOnly = YES;
     
     self.contentScaleFactor = [[UIScreen mainScreen] scale];
+    TEngine::AppInfo.ContentScale = self.contentScaleFactor;
     
     return YES;
 }
