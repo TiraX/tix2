@@ -262,8 +262,6 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 
-	RHI->SetStencilRef(1);
-
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
 	for (const auto& Primitive : Primitives)
 	{

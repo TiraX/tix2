@@ -20,19 +20,52 @@ void ShowUsage()
 	printf("ResConverter src_filename dst_filename\n");
 }
 
+bool bShowExample = false;
+void ShowExample()
+{
+	printf("{\n");
+	printf("\t\"name\": \"M_AddSpecular\",\n");
+	printf("\t\"type\": \"material\",\n");
+	printf("\t\"version\": 1,\n");
+	printf("\t\"desc\": \"\",\n");
+	printf("\t\"shaders\": [\n");
+	printf("\t\t\"S_AddSpecularVS\",\n");
+	printf("\t\t\"S_AddSpecularPS\",\n");
+	printf("\t\t\"\",\n");
+	printf("\t\t\"\",\n");
+	printf("\t\t\"\"\n");
+	printf("\t],\n");
+	printf("\t\"vs_format\": [\n");
+	printf("\t\t\"EVSSEG_POSITION\",\n");
+	printf("\t\t\"EVSSEG_TEXCOORD0\"\n");
+	printf("\t],\n");
+	printf("\t\"rt_colors\": [\n");
+	printf("\t\t\"EPF_RGBA16F\"\n");
+	printf("\t],\n");
+	printf("\t\"rt_depth\": \"EPF_DEPTH24_STENCIL8\",\n");
+	printf("\t\"blend_mode\": \"BLEND_MODE_OPAQUE\",\n");
+	printf("\t\"depth_write\": false,\n");
+	printf("\t\"depth_test\": false,\n");
+	printf("\t\"two_sides\": false,\n");
+	printf("\t\"stencil_enable\": true,\n");
+	printf("\t\"stencil_read_mask\": 1,\n");
+	printf("\t\"stencil_write_mask\": 1,\n");
+	printf("\t\"front_stencil_fail\": \"ESO_KEEP\",\n");
+	printf("\t\"front_stencil_depth_fail\": \"ESO_KEEP\",\n");
+	printf("\t\"front_stencil_pass\": \"ESO_KEEP\",\n");
+	printf("\t\"front_stencil_func\": \"ECF_EQUAL\",\n");
+	printf("\t\"back_stencil_fail\": \"ESO_KEEP\",\n");
+	printf("\t\"back_stencil_depth_fail\": \"ESO_KEEP\",\n");
+	printf("\t\"back_stencil_pass\": \"ESO_KEEP\",\n");
+	printf("\t\"back_stencil_func\": \"ECF_NEVER\"\n");
+	printf("}\n");
+}
+
 bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 {
 	for (int i = 1; i < argc; ++i)
 	{
-		if (FilenameSrc == (""))
-		{
-			FilenameSrc = argv[i];
-		}
-		else if (FilenameDst == (""))
-		{
-			FilenameDst = argv[i];
-		}
-		else if (argv[i][0] == '-')
+		if (argv[i][0] == '-')
 		{
 			// optional parameters
 			TString param = argv[i] + 1;
@@ -49,10 +82,23 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 				key = param;
 			}
 
+			if (key == "example")
+			{
+				bShowExample = true;
+			}
+
 			//if (key == "texture_path")
 			//{
 			//	_config.TexturePath = value;
 			//}
+		}
+		else if (FilenameSrc == (""))
+		{
+			FilenameSrc = argv[i];
+		}
+		else if (FilenameDst == (""))
+		{
+			FilenameDst = argv[i];
 		}
 	}
 
@@ -77,6 +123,12 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 	if (argc < 2 || !ParseParams(argc, argv))
 	{
 		ShowUsage();
+		return 0;
+	}
+
+	if (bShowExample)
+	{
+		ShowExample();
 		return 0;
 	}
 

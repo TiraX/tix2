@@ -24,16 +24,5 @@
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": true,
 	"depth_test": true,
-	"two_sides": false,
-	"stencil_enable": true,
-	"stencil_read_mask": 1,
-	"stencil_write_mask": 1,
-	"front_stencil_fail": "ESO_KEEP",
-	"front_stencil_depth_fail": "ESO_KEEP",
-	"front_stencil_pass": "ESO_REPLACE",
-	"front_stencil_func": "ECF_ALWAYS",
-	"back_stencil_fail": "ESO_KEEP",
-	"back_stencil_depth_fail": "ESO_KEEP",
-	"back_stencil_pass": "ESO_KEEP",
-	"back_stencil_func": "ECF_ALWAYS"
+	"two_sides": false
 }
