@@ -251,14 +251,14 @@ void FSSSSRenderer::InitInRenderThread()
 	}
 
 	// Output result
-	AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
-	{
-        ArgumentValues->Reset();
-		ArgumentTextures.clear();
-        ArgumentTextures.push_back(tt->TextureResource);
-		//ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
-	}
+//    AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
+//    {
+//        ArgumentValues->Reset();
+//        ArgumentTextures.clear();
+//        ArgumentTextures.push_back(tt->TextureResource);
+//        //ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
+//        RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
+//    }
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -357,5 +357,6 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 
      //*/
     RHI->BeginRenderToFrameBuffer();
-	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+	//FSRender.DrawFullScreenTexture(RHI, AB_Result);
+    FSRender.DrawFullScreenTexture(RHI, tt->TextureResource);
 }

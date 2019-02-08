@@ -37,15 +37,17 @@ typedef struct FragmentShaderArguments {
 } FragmentShaderArguments;
 
 fragment half4 FullScreenPS(ColorInOut in [[stage_in]],
-                            device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
+                            texture2d<half> colorMap     [[ texture(0) ]])
+                            //device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
     constexpr sampler colorSampler(mip_filter::linear,
                                    mag_filter::linear,
                                    min_filter::linear);
     
-    half4 colorSample = fragmentArgs.TexSource.sample(colorSampler, in.texCoord.xy);
+    //half4 colorSample = fragmentArgs.TexSource.sample(colorSampler, in.texCoord.xy);
+    half4 colorSample = colorMap.sample(colorSampler, in.texCoord.xy);
     
-    return half4(0,1,0,1);//colorSample;
+    return colorSample;
 }
 
 

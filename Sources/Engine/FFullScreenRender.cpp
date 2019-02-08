@@ -77,7 +77,11 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture)
 	{
 		TI_ASSERT(bInited);
-		TI_ASSERT(0);
+        RHI->SetPipeline(FullScreenPipeline);
+        RHI->SetMeshBuffer(FullScreenQuad);
+        RHI->SetShaderTexture(0, Texture);
+        
+        RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
 	}
 
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable)

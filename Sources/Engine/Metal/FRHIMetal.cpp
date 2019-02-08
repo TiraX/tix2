@@ -604,7 +604,8 @@ namespace tix
 
 	void FRHIMetal::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)
 	{
-        TI_ASSERT(0);
+        FTextureMetal * TexMetal = static_cast<FTextureMetal*>(InTexture.get());
+        [RenderEncoder setFragmentTexture:TexMetal->Texture atIndex:BindIndex];
 	}
     
     void FRHIMetal::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
