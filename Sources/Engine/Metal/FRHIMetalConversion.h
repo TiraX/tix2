@@ -199,12 +199,12 @@ namespace tix
 //        D3D12_FILL_MODE_SOLID,    //EFM_SOLID,
 //    };
 //
-//    static const D3D12_CULL_MODE k_CULL_MODE_MAP[ECM_COUNT] =
-//    {
-//        D3D12_CULL_MODE_NONE,    //ECM_NONE,
-//        D3D12_CULL_MODE_FRONT,    //ECM_FRONT,
-//        D3D12_CULL_MODE_BACK,    //ECM_BACK
-//    };
+    static const MTLCullMode k_CULL_MODE_MAP[ECM_COUNT] =
+    {
+        MTLCullModeNone,    //ECM_NONE,
+        MTLCullModeFront,    //ECM_FRONT,
+        MTLCullModeBack,    //ECM_BACK
+    };
 //     */
 //
 //    inline void MakeMetalRasterizerDesc(const TPipelineDesc& Desc, MTLRenderPipelineDescriptor* PipelineDescriptor)

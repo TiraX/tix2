@@ -57,6 +57,7 @@ namespace tix
 
 	void FRHIMetal::InitRHI()
 	{
+        TI_TODO("Find retina display.");
         FMetalView * MetalView = [FMetalView sharedMetalView];
         TI_ASSERT(MetalView != nil);
         
@@ -64,9 +65,6 @@ namespace tix
         MtlLayer = MetalView.MtlLayer;
         int32 W = (int32)(MtlLayer.bounds.size.width);
         int32 H = (int32)(MtlLayer.bounds.size.height);
-        
-        //self.MtlDevice = MTLCreateSystemDefaultDevice();
-        //self.MtlLayer.device = self.MtlDevice;
         
         // Grab a metal device
         MtlDevice = MTLCreateSystemDefaultDevice();
@@ -148,6 +146,10 @@ namespace tix
         ColorAttachment.storeAction = MTLStoreActionStore;
         
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
+  
+        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        [RenderEncoder setCullMode:MTLCullModeBack];
+        //[RenderEncoder setCullMode:MTLCullModeNone];
     }
 
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -566,11 +568,16 @@ namespace tix
 
 	void FRHIMetal::SetPipeline(FPipelinePtr InPipeline)
 	{
+        TI_TODO("Don't set pipeline duplicated.");
         FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
         
         [RenderEncoder setRenderPipelineState:PLMetal->PipelineState];
         [RenderEncoder setDepthStencilState:PLMetal->DepthState];
-        TI_TODO("Check other render state, like back face culling things.");
+        
+        E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
+        //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        //[RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
+        //[RenderEncoder setCullMode:MTLCullModeNone];
 	}
 
 	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
@@ -658,18 +665,18 @@ namespace tix
         
 		FRHI::PushRenderTarget(RT, PassName);
         
-        // Try scissor rect
-        const FViewport& VP = RtViewports.back();
-        MTLScissorRect Rect;
-        Rect.x = 0;
-        Rect.y = 0;
-        Rect.width = VP.Width;
-        Rect.height = VP.Height;
-        [RenderEncoder setScissorRect:Rect];
+        // Set scissor rect
+        //const FViewport& VP = RtViewports.back();
+        //MTLScissorRect Rect;
+        //Rect.x = 0;
+        //Rect.y = 0;
+        //Rect.width = VP.Width;
+        //Rect.height = VP.Height;
+        //[RenderEncoder setScissorRect:Rect];
         
         // Try cull
-        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-        [RenderEncoder setCullMode:MTLCullModeBack];
+        //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        //[RenderEncoder setCullMode:MTLCullModeBack];
 	}
 
 	FRenderTargetPtr FRHIMetal::PopRenderTarget()
