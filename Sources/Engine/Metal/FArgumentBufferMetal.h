@@ -20,6 +20,8 @@ namespace tix
 	private:
         int32 ArgumentBindIndex;
         id<MTLBuffer> ArgumentBuffer;
+        TVector<id<MTLBuffer>> Buffers;
+        TVector<id<MTLTexture>> Textures;
 		friend class FRHIMetal;
 	};
 }

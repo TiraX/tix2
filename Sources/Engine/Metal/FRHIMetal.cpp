@@ -498,6 +498,7 @@ namespace tix
     bool FRHIMetal::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
     {
         FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex < 0 && ArgBufferMetal->Buffers.size() == 0 && ArgBufferMetal->Textures.size() == 0);
         FShaderPtr Shader = ArgumentBuffer->GetShader();
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
         TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
@@ -531,6 +532,7 @@ namespace tix
         if (UniformBuffer != nil) {
             [argumentEncoder setBuffer:UniformBuffer offset:0 atIndex:ArgumentIndex];
             ++ ArgumentIndex;
+            ArgBufferMetal->Buffers.push_back(UniformBuffer);
         }
         
         // Fill textures
@@ -538,6 +540,7 @@ namespace tix
             FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Tex.get());
             [argumentEncoder setTexture:TexMetal->Texture atIndex:ArgumentIndex];
             ++ ArgumentIndex;
+            ArgBufferMetal->Textures.push_back(TexMetal->Texture);
         }
         
         return true;
@@ -612,6 +615,16 @@ namespace tix
     {
         FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
         TI_ASSERT(ABMetal->ArgumentBindIndex >= 0 && ABMetal->ArgumentBindIndex < 31);
+        
+        // Indicate buffers and textures usage
+        for (int32 i = 0; i < (int32)ABMetal->Buffers.size(); ++ i) {
+            [RenderEncoder useResource:ABMetal->Buffers[i] usage:MTLResourceUsageRead];
+        }
+        for (int32 i = 0; i < (int32)ABMetal->Textures.size(); ++ i) {
+            [RenderEncoder useResource:ABMetal->Textures[i] usage:MTLResourceUsageSample];
+        }
+        
+        // Set argument buffer
         [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
                                   offset:0
                                  atIndex:ABMetal->ArgumentBindIndex];

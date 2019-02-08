@@ -22,6 +22,16 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
         ArgumentBuffer = nil;
+        for (auto& Buffer : Buffers)
+        {
+            Buffer = nil;
+        }
+        Buffers.clear();
+        for (auto& Texture : Textures)
+        {
+            Texture = nil;
+        }
+        Textures.clear();
 	}
 }
 
