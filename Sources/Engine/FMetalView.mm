@@ -65,6 +65,7 @@ static FMetalView * s_view = nil;
     self.contentScaleFactor = [[UIScreen mainScreen] scale];
     TEngine::AppInfo.ContentScale = self.contentScaleFactor;
     
+    self.userInteractionEnabled = YES;
     return YES;
 }
 
@@ -182,10 +183,7 @@ int32 GetTouchesActive()
         {
             continue;
         }
-        float force = 0.f;//[touch force];
-        
-        if ([[UIDevice currentDevice]systemVersion].floatValue >= 9.0)
-            force = [touch force];
+        float force = touch.force;
 
         CGPoint tpt = [touch locationInView:[touch view]];
         
@@ -214,10 +212,7 @@ int32 GetTouchesActive()
         }
         
         CGPoint tpt = [touch locationInView:[touch view]];
-        float force = 0.f;//[touch force];
-        
-        if ([[UIDevice currentDevice]systemVersion].floatValue >= 9.0)
-            force = [touch force];
+        float force = touch.force;
 
         input->PutEvent(EET_LEFT_UP, fingerID,time_stamp, force , 0, tpt.x * self.contentScaleFactor, tpt.y * self.contentScaleFactor );
     }
@@ -243,10 +238,7 @@ int32 GetTouchesActive()
             continue;
         }
         CGPoint tpt = [touch locationInView:[touch view]];
-        float force = 0.f;//[touch force];
-        
-        if ([[UIDevice currentDevice]systemVersion].floatValue >= 9.0)
-            force = [touch force];
+        float force = touch.force;
 
         input->PutEvent(EET_LEFT_UP, 0, time_stamp, force, 0, tpt.x * self.contentScaleFactor, tpt.y * self.contentScaleFactor);
     }

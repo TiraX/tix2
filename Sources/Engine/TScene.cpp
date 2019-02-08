@@ -24,11 +24,7 @@ namespace tix
 		NodeRoot = TNodeFactory::CreateNode<TNodeSceneRoot>(nullptr);
 
 		// Create default camera, this camera can only deleted by render stage.
-#ifdef TI_PLATFORM_WIN32
 		DefaultCamera = TNodeFactory::CreateNode<TNodeCameraNav>(NodeRoot);
-#else
-		DefaultCamera = TNodeFactory::CreateNode<TNodeCamera>(NodeRoot);
-#endif
 		SetActiveCamera(DefaultCamera);
 	}
 
