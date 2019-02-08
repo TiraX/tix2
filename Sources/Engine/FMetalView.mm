@@ -62,6 +62,8 @@ static FMetalView * s_view = nil;
     self.MtlLayer.pixelFormat = GetMetalPixelFormat(FRHIConfig::DefaultBackBufferFormat);
     self.MtlLayer.framebufferOnly = YES;
     
+    self.contentScaleFactor = [[UIScreen mainScreen] scale];
+    
     return YES;
 }
 
