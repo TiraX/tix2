@@ -24,6 +24,7 @@ void FS4TempRenderer::Render(FRHI* RHI, FScene* Scene)
     _LOG(Log, "FS4TempRenderer .\n");
 }
 
+TTexturePtr tt;
 
 FSSSSRenderer::FSSSSRenderer()
 {
@@ -63,6 +64,9 @@ FSSSSRenderer::FSSSSRenderer()
 	TMaterialPtr M_Combine = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(CombineMaterialName).get());
 	PL_Combine = M_Combine->PipelineResource;
 	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);
+    
+    TResourcePtr res = TResourceLibrary::Get()->LoadResource("T_AlbedoMap.tres");
+    tt = static_cast<TTexture*>(res.get());
 }
 
 FSSSSRenderer::~FSSSSRenderer()
@@ -251,7 +255,8 @@ void FSSSSRenderer::InitInRenderThread()
 	{
         ArgumentValues->Reset();
 		ArgumentTextures.clear();
-		ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
+        ArgumentTextures.push_back(tt->TextureResource);
+		//ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
 	}
 }

@@ -301,8 +301,6 @@
 		2775A2E021CAA28100E0AD35 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				2713374521CCB398001BAE3A /* FMetalView.h */,
-				2713374721CCB398001BAE3A /* FMetalView.mm */,
 				2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */,
 				2775A2F221CAA32E00E0AD35 /* IReferenceCounted.h */,
 				2775A2EE21CAA32E00E0AD35 /* TConsoleVariable.cpp */,
@@ -454,6 +452,8 @@
 				278FB9BE21F772F70031A5E3 /* FArgumentBufferMetal.h */,
 				27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */,
 				27F2B59821E395E10026C0A2 /* FMeshBufferMetal.h */,
+				2713374521CCB398001BAE3A /* FMetalView.h */,
+				2713374721CCB398001BAE3A /* FMetalView.mm */,
 				27F2B59621E394F20026C0A2 /* FPipelineMetal.cpp */,
 				27F2B59521E394F20026C0A2 /* FPipelineMetal.h */,
 				27F2B59B21E4F2480026C0A2 /* FRenderTargetMetal.cpp */,

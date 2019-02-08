@@ -288,6 +288,7 @@ namespace tix
     {
         FPipelineMetal * PipelineMetal = static_cast<FPipelineMetal*>(Pipeline.get());
         const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
+        Pipeline->SetDesc(Desc);
         
         MTLRenderPipelineDescriptor * PipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
 #if defined (TIX_DEBUG)
@@ -571,7 +572,7 @@ namespace tix
         [RenderEncoder setDepthStencilState:PLMetal->DepthState];
         
         E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
-        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        [RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
         [RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
 	}
 
@@ -661,13 +662,13 @@ namespace tix
 		FRHI::PushRenderTarget(RT, PassName);
         
         // Set scissor rect
-        //const FViewport& VP = RtViewports.back();
-        //MTLScissorRect Rect;
-        //Rect.x = 0;
-        //Rect.y = 0;
-        //Rect.width = VP.Width;
-        //Rect.height = VP.Height;
-        //[RenderEncoder setScissorRect:Rect];
+        const FViewport& VP = RtViewports.back();
+        MTLScissorRect Rect;
+        Rect.x = 0;
+        Rect.y = 0;
+        Rect.width = VP.Width;
+        Rect.height = VP.Height;
+        [RenderEncoder setScissorRect:Rect];
         
         // Try cull
         //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];

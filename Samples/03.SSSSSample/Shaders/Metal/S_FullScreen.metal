@@ -45,7 +45,7 @@ fragment half4 FullScreenPS(ColorInOut in [[stage_in]],
     
     half4 colorSample = fragmentArgs.TexSource.sample(colorSampler, in.texCoord.xy);
     
-    return colorSample;
+    return half4(0,1,0,1);//colorSample;
 }
 
 
