@@ -140,16 +140,12 @@ namespace tix
         
         // MTLLoadActionDontCare every frame for best performance
         ColorAttachment.loadAction  = MTLLoadActionClear;//MTLLoadActionDontCare;
-        ColorAttachment.clearColor  = MTLClearColorMake(1.0, 0.0, 0.0, 1.0);;
+        ColorAttachment.clearColor  = MTLClearColorMake(1.0, 0.0, 1.0, 1.0);;
         
         // store only attachments that will be presented to the screen, as in this case
         ColorAttachment.storeAction = MTLStoreActionStore;
         
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
-  
-        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-        [RenderEncoder setCullMode:MTLCullModeBack];
-        //[RenderEncoder setCullMode:MTLCullModeNone];
     }
 
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -575,9 +571,8 @@ namespace tix
         [RenderEncoder setDepthStencilState:PLMetal->DepthState];
         
         E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
-        //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-        //[RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
-        //[RenderEncoder setCullMode:MTLCullModeNone];
+        [RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+        [RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
 	}
 
 	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
