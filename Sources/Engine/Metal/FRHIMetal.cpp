@@ -244,6 +244,10 @@ namespace tix
         const TTextureDesc& Desc = InTexData->GetDesc();
         
         MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
+        if (Desc.SRGB)
+        {
+            MtlFormat = GetSRGBFormat(MtlFormat);
+        }
         const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
         MTLTextureDescriptor * TextureDesc;
         if (IsCubeMap)

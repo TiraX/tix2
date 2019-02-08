@@ -58,7 +58,7 @@ vertex VSOutput S_SkinBaseVS(VSInput vsInput [[stage_in]],
     float4 InPosition = float4(vsInput.position, 1.0);
     vsOutput.position = EB_View.ViewProjection * InPosition;
     vsOutput.texCoord = vsInput.texcoord0;
-    vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
+    //vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
     
     vsOutput.normal = half3(vsInput.normal * 2.0 - 1.0);
     vsOutput.tangent = half3(vsInput.tangent * 2.0 - 1.0);
