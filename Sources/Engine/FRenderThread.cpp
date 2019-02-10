@@ -10,6 +10,13 @@
 
 namespace tix
 {
+#if COMPILE_WITH_RHI_METAL
+#   define AUTORELEASE_POOL_START @autoreleasepool {
+#   define AUTORELEASE_POOL_END }
+#else
+#   define AUTORELEASE_POOL_START
+#   define AUTORELEASE_POOL_END
+#endif
 	FRenderThread* FRenderThread::RenderThread = nullptr;
 	bool FRenderThread::Inited = false;
 	bool FRenderThread::ThreadEnabled = true;
@@ -113,7 +120,9 @@ namespace tix
 	{
 		// Waiting for Game thread tick
 		WaitForRenderSignal();
-		
+        
+		AUTORELEASE_POOL_START
+        
 		RHI->BeginFrame();
 		// Do render thread tasks
 		DoRenderTasks();
@@ -124,6 +133,8 @@ namespace tix
 			Renderer->Render(RHI, RenderScene);
 		}
 		RHI->EndFrame();
+        
+        AUTORELEASE_POOL_END
 	}
 
 	void FRenderThread::OnThreadStart()
