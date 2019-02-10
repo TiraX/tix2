@@ -23,6 +23,7 @@ namespace tix
 {
 	FRHIMetal::FRHIMetal()
 		: FRHI(ERHI_METAL)
+        , LastFrameMark(0)
         , CurrentFrame(0)
 	{
         MtlLayer = nil;
@@ -96,6 +97,7 @@ namespace tix
         TI_ASSERT(RenderEncoder == nil);
         
         dispatch_semaphore_wait(InflightSemaphore, DISPATCH_TIME_FOREVER);
+        FrameResources[LastFrameMark]->RemoveAllReferences();
         
         CommandBuffer = [CommandQueue commandBuffer];
 	}
@@ -115,7 +117,7 @@ namespace tix
             // GPU has completed rendering the frame and is done using the contents of any buffers previously encoded on the CPU for that frame.
             // Signal the semaphore and allow the CPU to proceed and construct the next frame.
             dispatch_semaphore_signal(block_sema);
-            FrameResources[CurrentFrame]->RemoveAllReferences();
+            LastFrameMark = CurrentFrame;
             CurrentFrame = (CurrentFrame + 1) % FRHIConfig::FrameBufferNum;
         }];
         

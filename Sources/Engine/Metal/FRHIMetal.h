@@ -80,6 +80,7 @@ namespace tix
         
         MTLRenderPassDescriptor* FrameBufferPassDesc;
         
+        int32 LastFrameMark;
         int32 CurrentFrame;
         dispatch_semaphore_t InflightSemaphore;
         
