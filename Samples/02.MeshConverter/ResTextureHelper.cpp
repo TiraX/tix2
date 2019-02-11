@@ -38,6 +38,7 @@ namespace tix
 		int32 SRgb = Doc["srgb"].GetInt();
 		TString AddressModeStr = Doc["address_mode"].GetString();
 		E_TEXTURE_ADDRESS_MODE AddressMode = GetAddressMode(AddressModeStr);
+		E_PIXEL_FORMAT TargetFormat = GetPixelFormat(Doc["target_format"].GetString());
 
 		uint32 LodBias = Doc["lod_bias"].GetInt();
 

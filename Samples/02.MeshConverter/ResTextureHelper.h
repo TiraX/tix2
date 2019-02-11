@@ -32,7 +32,7 @@ namespace tix
 
 		static bool LoadTextureFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static TResTextureDefine* LoadDdsFile(const TString& Filename, int32 LodBias);
-        static TResTextureDefine* LoadAstcFile(const TString& Filename, int32 LodBias);
+        static TResTextureDefine* LoadAstcFile(const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat);
 
 		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);

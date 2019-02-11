@@ -199,7 +199,7 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename, int32 LodBias)
+	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat)
 	{
 		TVector<TImage*> Images;
 
@@ -215,6 +215,16 @@ namespace tix
 		{
 			printf("Error: unknown texture format. [%s]\n", Filename.c_str());
 			return nullptr;
+		}
+
+		if (TargetFormat != EPF_UNKNOWN)
+		{
+			if (TargetFormat == DDSTexture->Desc.Format)
+			{
+				return DDSTexture;
+			}
+			printf("Do not support convert to Target format yet.\n");
+			TI_ASSERT(0);
 		}
 
 		if (DDSTexture->Desc.Format >= EPF_R16F && DDSTexture->Desc.Format <= EPF_RGBA32F)

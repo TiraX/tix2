@@ -3,6 +3,7 @@
 	"type": "texture",
 	"version": 1,
 	"desc": "",
+	"target_format": "EPF_A8",
 	"source": "T_BeckmannMap.dds",
 	"texture_type": "ETT_TEXTURE_2D",
 	"srgb": 0,
