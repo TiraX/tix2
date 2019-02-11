@@ -56,7 +56,7 @@ fragment half4 S_SkyDomePS(VSOutput input [[stage_in]],
     float3 normal = -normalize(input.normal);
     
     half4 Color;
-    Color.xyz = sqrt(fragmentArgs.texSkyMap.sample(sampler0, normal).xyz);
+    Color.xyz = sqrt(fragmentArgs.texSkyMap.sample(sampler0, normal).xyz) * 0.5;
     Color.a = 1.0;
     return Color;
 }
