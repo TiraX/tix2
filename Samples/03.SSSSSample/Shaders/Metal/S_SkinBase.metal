@@ -148,8 +148,8 @@ fragment SSSSFragmentOutput S_SkinBasePS(VSOutput input [[stage_in]],
     half4 albedo = fragmentArgs.texDiffuse.sample(sampler0, input.texCoord);
     half3 specularAO = fragmentArgs.texSpecular.sample(sampler0, input.texCoord).rgb;
     
-    half occlusion = specularAO.r;
-    half intensity = specularAO.b * specularIntensity;
+    half occlusion = specularAO.b;
+    half intensity = specularAO.r * specularIntensity;
     half roughness = specularAO.g;//(specularAO.g / 0.3) * 0.3;// specularRoughness;
     
     // Initialize the output:
