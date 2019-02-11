@@ -47,7 +47,7 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		TResTextureDefine* Texture = TResTextureHelper::LoadDdsFile(TextureSource, LodBias);
 #elif defined (TI_PLATFORM_IOS)
-        TResTextureDefine* Texture = TResTextureHelper::LoadAstcFile(TextureSource, LodBias);
+        TResTextureDefine* Texture = TResTextureHelper::LoadAstcFile(TextureSource, LodBias, TargetFormat);
 #endif
 		if (Texture != nullptr)
 		{
