@@ -105,32 +105,6 @@ namespace tix
 		MTLBlendOperationMax,	//EBE_MAX
 	};
 
-    inline MTLPixelFormat GetSRGBFormat(MTLPixelFormat InFormat)
-    {
-        switch (InFormat)
-        {
-        // Keep input format
-        //case MTLPixelFormatRGBA8Unorm:
-        //    break;
-
-        // Convert to SRGB format
-        case MTLPixelFormatRGBA8Unorm:
-            return MTLPixelFormatRGBA8Unorm_sRGB;
-        case MTLPixelFormatBGRA8Unorm:
-            return MTLPixelFormatBGRA8Unorm_sRGB;
-        case MTLPixelFormatASTC_4x4_LDR:
-            return MTLPixelFormatASTC_4x4_sRGB;
-        case MTLPixelFormatASTC_6x6_LDR:
-            return MTLPixelFormatASTC_6x6_sRGB;
-        case MTLPixelFormatASTC_8x8_LDR:
-            return MTLPixelFormatASTC_8x8_sRGB;
-        default:
-            TI_ASSERT(0);
-            break;
-        }
-        return InFormat;
-    };
-
 //    inline void MakeDx12BlendState(const TPipelineDesc& Desc, D3D12_BLEND_DESC& BlendState)
 //    {
 //        BlendState.AlphaToCoverageEnable = FALSE;
