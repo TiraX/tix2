@@ -99,7 +99,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)*.cso $(ProjectDir)\Content\Cooked\Windows\</Command>
+      <Command>copy $(TargetDir)*.cso $(ProjectDir)\Content\Cooked\Windows\
+copy $(ProjectDir)\..\..\Projects\Windows\x64\Debug\*.cso $(ProjectDir)\Content\Cooked\Windows\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -154,7 +155,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)*.cso $(ProjectDir)\Content\Cooked\Windows\</Command>
+      <Command>copy $(TargetDir)*.cso $(ProjectDir)\Content\Cooked\Windows\
+copy $(ProjectDir)\..\..\Projects\Windows\x64\Release\*.cso $(ProjectDir)\Content\Cooked\Windows\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
