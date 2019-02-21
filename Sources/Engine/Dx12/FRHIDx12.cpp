@@ -930,10 +930,6 @@ namespace tix
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
-		if (Desc.SRGB)
-		{
-			DxgiFormat = GetSRGBFormat(DxgiFormat);
-		}
 		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 
 		// Create texture resource and fill with texture data.
@@ -1574,11 +1570,6 @@ namespace tix
 		}
 		else
 		{
-			TI_TODO("Refactor SRGB to Engine Level.");
-			if (Desc.SRGB)
-			{
-				DxgiFormat = GetSRGBFormat(DxgiFormat);
-			}
 			// This is not a depth related buffer, treat as a normal texture.
 			SRVDesc.Format = DxgiFormat;
 		}

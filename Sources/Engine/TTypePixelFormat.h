@@ -35,8 +35,11 @@ namespace tix
 		// Compressed formats
 		// DXT formats
 		EPF_DDS_DXT1,
+		EPF_DDS_DXT1_SRGB,
 		EPF_DDS_DXT3,
+		EPF_DDS_DXT3_SRGB,
 		EPF_DDS_DXT5,
+		EPF_DDS_DXT5_SRGB,
 		EPF_DDS_BC5,
 
 		// ASTC formats 
@@ -60,4 +63,31 @@ namespace tix
 
 		EPC_COUNT
 	};
+
+	inline E_PIXEL_FORMAT GetSRGBFormat(E_PIXEL_FORMAT SrcFormat)
+	{
+		switch (SrcFormat)
+		{
+		case EPF_RGBA8:
+		case EPF_BGRA8:
+		case EPF_ASTC4x4:
+		case EPF_ASTC6x6:
+		case EPF_ASTC8x8:
+		case EPF_DDS_DXT1:
+		case EPF_DDS_DXT3:
+		case EPF_DDS_DXT5:
+			return (E_PIXEL_FORMAT)(SrcFormat + 1);
+		case EPF_RGBA8_SRGB:
+		case EPF_BGRA8_SRGB:
+		case EPF_ASTC4x4_SRGB:
+		case EPF_ASTC6x6_SRGB:
+		case EPF_ASTC8x8_SRGB:
+		case EPF_DDS_DXT1_SRGB:
+		case EPF_DDS_DXT3_SRGB:
+		case EPF_DDS_DXT5_SRGB:
+			return SrcFormat;
+		}
+		TI_ASSERT(0);
+		return EPF_UNKNOWN;
+	}
 }

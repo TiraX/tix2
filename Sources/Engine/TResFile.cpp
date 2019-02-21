@@ -227,6 +227,11 @@ namespace tix
 			Desc.SRGB = Header->SRGB;
 			Desc.Mips = Header->Mips;
 
+			if (Desc.SRGB != 0)
+			{
+				Desc.Format = GetSRGBFormat(Desc.Format);
+			}
+
 			TTexturePtr Texture = ti_new TTexture(Desc);
 
 			int32 ArraySize = 1;

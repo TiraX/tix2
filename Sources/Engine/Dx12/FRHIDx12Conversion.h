@@ -45,10 +45,16 @@ namespace tix
 			return DXGI_FORMAT_D24_UNORM_S8_UINT;
 		case EPF_DDS_DXT1:
 			return DXGI_FORMAT_BC1_UNORM;
+		case EPF_DDS_DXT1_SRGB:
+			return DXGI_FORMAT_BC1_UNORM_SRGB;
 		case EPF_DDS_DXT3:
 			return DXGI_FORMAT_BC2_UNORM;
+		case EPF_DDS_DXT3_SRGB:
+			return DXGI_FORMAT_BC2_UNORM_SRGB;
 		case EPF_DDS_DXT5:
 			return DXGI_FORMAT_BC3_UNORM;
+		case EPF_DDS_DXT5_SRGB:
+			return DXGI_FORMAT_BC3_UNORM_SRGB;
 		case EPF_DDS_BC5:
 			return DXGI_FORMAT_BC5_UNORM;
 		}
@@ -94,30 +100,6 @@ namespace tix
 		D3D12_BLEND_OP_REV_SUBTRACT,	//EBE_FUNC_REVERSE_SUBTRACT,
 		D3D12_BLEND_OP_MIN,	//EBE_MIN,
 		D3D12_BLEND_OP_MAX,	//EBE_MAX
-	};
-
-	inline DXGI_FORMAT GetSRGBFormat(DXGI_FORMAT InFormat)
-	{
-		switch (InFormat)
-		{
-		// Keep input format
-		case DXGI_FORMAT_R8_UNORM:
-			break;
-
-		// Convert to SRGB format
-		case DXGI_FORMAT_BC1_UNORM:
-			return DXGI_FORMAT_BC1_UNORM_SRGB;
-		case DXGI_FORMAT_BC2_UNORM:
-			return DXGI_FORMAT_BC2_UNORM_SRGB;
-		case DXGI_FORMAT_BC3_UNORM:
-			return DXGI_FORMAT_BC3_UNORM_SRGB;
-		case DXGI_FORMAT_R8G8B8A8_UNORM:
-			return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		default:
-			TI_ASSERT(0);
-			break;
-		}
-		return InFormat;
 	};
 
 	inline void MakeDx12BlendState(const TPipelineDesc& Desc, D3D12_BLEND_DESC& BlendState)
