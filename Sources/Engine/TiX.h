@@ -76,6 +76,7 @@ using namespace std;
 #include "FUniformBuffer.h"
 #include "FArgumentBuffer.h"
 #include "FRenderTarget.h"
+#include "FComputeTask.h"
 #include "FFrameResources.h"
 #include "FRHI.h"
 

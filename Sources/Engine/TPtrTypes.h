@@ -33,6 +33,7 @@ namespace tix
 	DECLARE_INSTRUSIVE_PTR(FShaderBinding);
 	DECLARE_INSTRUSIVE_PTR(FShaderParamValue);
 	DECLARE_INSTRUSIVE_PTR(FShader);
+	DECLARE_INSTRUSIVE_PTR(FComputeTask);
 
 #undef DECLARE_INSTRUSIVE_PTR
 } // end namespace tix
