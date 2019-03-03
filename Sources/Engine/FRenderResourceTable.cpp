@@ -42,6 +42,11 @@ namespace tix
 		FRHI::Get()->PutTextureInHeap(InTexture, HeapType, Start + Index);
 	}
 
+	void FRenderResourceTable::PutBufferInTable(FUniformBufferPtr InBuffer, uint32 Index)
+	{
+		TI_ASSERT(0);
+	}
+
 	void FRenderResourceTable::PutRTColorInTable(FTexturePtr InTexture, uint32 Index)
 	{
 		TI_ASSERT(HeapType == EHT_RENDERTARGET);

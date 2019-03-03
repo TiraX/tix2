@@ -15,7 +15,7 @@ namespace tix
 		virtual ~FMeshBuffer();
 
 	public:
-		void SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer);
+		void TI_API SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer);
 
 		int32 GetVerticesCount() const
 		{

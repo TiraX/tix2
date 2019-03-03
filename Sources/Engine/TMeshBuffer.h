@@ -8,14 +8,14 @@
 namespace tix
 {
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
-	class TMeshBuffer : public TResource
+	class TI_API TMeshBuffer : public TResource
 	{
 	public:
 		TMeshBuffer();
 		~TMeshBuffer();
 
-		static const TI_API int32 SemanticSize[ESSI_TOTAL];
-		static const TI_API int8* SemanticName[ESSI_TOTAL];
+		static const int32 SemanticSize[ESSI_TOTAL];
+		static const int8* SemanticName[ESSI_TOTAL];
 
 	public:
 		FMeshBufferPtr MeshBufferResource;

@@ -13,9 +13,17 @@ namespace tix
 		FComputeTask(const TString& ComputeShaderName);
 		virtual ~FComputeTask();
 
+		virtual void Finalize();
+
+		virtual void SetParameter(int32 Index, FUniformBufferPtr Uniform);
+		virtual void SetParameter(int32 Index, FRenderResourceTablePtr ResourceTable);
 	protected:
+		virtual void FinalizeInRenderThread();
 
 	protected:
 		TString ShaderName;
+		FShaderPtr ComputeShader;
+		FPipelinePtr ComputePipeline;
+		TVector<FRenderResourcePtr> Resources;
 	};
 }

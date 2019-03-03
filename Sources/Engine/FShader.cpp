@@ -8,8 +8,15 @@
 
 namespace tix
 {
-	FShader::FShader(const TShaderNames& InNames)
-		: ShaderNames(InNames)
+	FShader::FShader(const TString& ComputeShaderName)
+		: Type(EST_COMPUTE)
+	{
+		ShaderNames.ShaderNames[0] = ComputeShaderName;
+	}
+
+	FShader::FShader(const TShaderNames& RenderShaderNames)
+		: ShaderNames(RenderShaderNames)
+		, Type(EST_RENDER)
 	{
 	}
 

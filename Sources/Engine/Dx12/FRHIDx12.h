@@ -37,6 +37,7 @@ namespace tix
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
+		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;
 		virtual FComputeTaskPtr CreateComputeTask(const TString& InName) override;
 
@@ -141,15 +142,20 @@ namespace tix
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
 
 		// Commands
-		ComPtr<ID3D12CommandQueue> CommandQueue;
-		ComPtr<ID3D12CommandAllocator> CommandAllocators[FRHIConfig::FrameBufferNum];
-		ComPtr<ID3D12GraphicsCommandList> CommandList;
+		ComPtr<ID3D12CommandQueue> RenderCommandQueue;
+		ComPtr<ID3D12CommandAllocator> RenderCommandAllocators[FRHIConfig::FrameBufferNum];
+		ComPtr<ID3D12GraphicsCommandList> RenderCommandList;
+		// Compute Commands
+		ComPtr<ID3D12CommandQueue> ComputeCommandQueue;
+		ComPtr<ID3D12CommandAllocator> ComputeCommandAllocators[FRHIConfig::FrameBufferNum];
+		ComPtr<ID3D12GraphicsCommandList> ComputeCommandList;
 
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 		// CPU/GPU Synchronization.
-		ComPtr<ID3D12Fence> Fence;
+		ComPtr<ID3D12Fence> RenderFence;
+		ComPtr<ID3D12Fence> ComputeFence;
 		uint64 FenceValues[FRHIConfig::FrameBufferNum];
 		HANDLE FenceEvent;
 		uint32 CurrentFrame;

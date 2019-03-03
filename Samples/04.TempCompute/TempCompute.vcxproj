@@ -181,6 +181,12 @@ copy $(ProjectDir)\..\..\Projects\Windows\x64\Release\*.cso $(ProjectDir)\Conten
       <Project>{35bbc1c9-b035-492d-bed1-e952a99069bc}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

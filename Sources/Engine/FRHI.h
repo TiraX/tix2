@@ -55,6 +55,7 @@ namespace tix
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize);
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
+		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) = 0;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
 		virtual FComputeTaskPtr CreateComputeTask(const TString& InName) = 0;
 

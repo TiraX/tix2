@@ -19,7 +19,7 @@ namespace tix
 
 		ERES_COUNT,
 	};
-	class TResource : public IReferenceCounted
+	class TI_API TResource : public IReferenceCounted
 	{
 	public:
 		TResource(E_RESOURCE_TYPE Type)

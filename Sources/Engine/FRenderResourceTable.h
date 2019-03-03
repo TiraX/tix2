@@ -17,6 +17,7 @@ namespace tix
 
 		TI_API void PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index);
 		TI_API void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
+		TI_API void PutBufferInTable(FUniformBufferPtr InBuffer, uint32 Index);
 		TI_API void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
 		TI_API void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
 

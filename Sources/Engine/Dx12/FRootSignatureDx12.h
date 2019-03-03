@@ -76,16 +76,17 @@ namespace tix
 			InitAsDescriptorTable(Ranges, 1, Visibility);
 		}
 
-		const D3D12_ROOT_PARAMETER& operator() (void) const { return RootParam; }
-
-	protected:
-		void InitAsDescriptorTable(D3D12_DESCRIPTOR_RANGE* Ranges, uint32 RangeCount, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
+		void InitAsDescriptorTable(const D3D12_DESCRIPTOR_RANGE* Ranges, uint32 RangeCount, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL)
 		{
 			RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			RootParam.ShaderVisibility = Visibility;
 			RootParam.DescriptorTable.NumDescriptorRanges = RangeCount;
 			RootParam.DescriptorTable.pDescriptorRanges = Ranges;
 		}
+
+		const D3D12_ROOT_PARAMETER& operator() (void) const { return RootParam; }
+
+	protected:
 
 		void SetTableRange(D3D12_DESCRIPTOR_RANGE* Ranges, D3D12_DESCRIPTOR_RANGE_TYPE Type, uint32 Register, uint32 Count, uint32 Space = 0)
 		{

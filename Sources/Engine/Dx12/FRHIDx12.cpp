@@ -105,13 +105,20 @@ namespace tix
 		//if (DeveloperModeEnabled)
 		//	D3dDevice->SetStablePowerState(TRUE);
 
-		// Create the command queue.
-		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+		// Create the command queue. Graphics and Compute
+		D3D12_COMMAND_QUEUE_DESC QueueDesc = {};
+		QueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		QueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&CommandQueue)));
-		CommandQueue->SetName(L"CommandQueue");
+		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&RenderCommandQueue)));
+		RenderCommandQueue->SetName(L"CommandQueue");
+
+		D3D12_COMMAND_QUEUE_DESC ComputeQueueDesc = {};
+		ComputeQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		ComputeQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&ComputeQueueDesc, IID_PPV_ARGS(&ComputeCommandQueue)));
+		ComputeCommandQueue->SetName(L"ComputeCommandQueue");
 
 		// Create descriptor heaps for render target views and depth stencil views.
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -120,12 +127,13 @@ namespace tix
 		// Create command allocator and command list.
 		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
-			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocators[n])));
+			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&RenderCommandAllocators[n])));
+			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&ComputeCommandAllocators[n])));
 		}
 
 		// Create synchronization objects.
-		hr = D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
-		VALIDATE_HRESULT(hr);
+		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&RenderFence)));
+		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&ComputeFence)));
 		FenceValues[CurrentFrame]++;
 
 		FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -141,8 +149,12 @@ namespace tix
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		// Create Default Command list
-		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&CommandList)));
-		VALIDATE_HRESULT(CommandList->Close());
+		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, RenderCommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&RenderCommandList)));
+		RenderCommandList->SetName(L"RenderCommandList");
+		VALIDATE_HRESULT(RenderCommandList->Close());
+		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COMPUTE, ComputeCommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&ComputeCommandList)));
+		ComputeCommandList->SetName(L"ComputeCommandList");
+		VALIDATE_HRESULT(ComputeCommandList->Close());
 
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
@@ -247,7 +259,7 @@ namespace tix
 			HWND HWnd = DeviceWin32->GetWnd();
 
 			hr = DxgiFactory->CreateSwapChainForHwnd(
-				CommandQueue.Get(),								// Swap chains need a reference to the command queue in DirectX 12.
+				RenderCommandQueue.Get(),								// Swap chains need a reference to the command queue in DirectX 12.
 				HWnd,
 				&swapChainDesc,
 				nullptr,
@@ -320,44 +332,50 @@ namespace tix
 	void FRHIDx12::BeginFrame()
 	{
 		// Reset command allocator
-		VALIDATE_HRESULT(CommandAllocators[CurrentFrame]->Reset());
+		VALIDATE_HRESULT(ComputeCommandAllocators[CurrentFrame]->Reset());
+		VALIDATE_HRESULT(RenderCommandAllocators[CurrentFrame]->Reset());
 		TI_ASSERT(NumBarriersToFlush == 0);
 
 		// Reset command list
-		VALIDATE_HRESULT(CommandList->Reset(CommandAllocators[CurrentFrame].Get(), nullptr));
+		VALIDATE_HRESULT(ComputeCommandList->Reset(ComputeCommandAllocators[CurrentFrame].Get(), nullptr));
+		VALIDATE_HRESULT(RenderCommandList->Reset(RenderCommandAllocators[CurrentFrame].Get(), nullptr));
 
 		// Set the graphics root signature and descriptor heaps to be used by this frame.
 		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
-		CommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		RenderCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		// Indicate this resource will be in use as a render target.
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
 		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-		CommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
-		CommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		RenderCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
+		RenderCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-		CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+		RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 
 		// Set the viewport and scissor rectangle.
 		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-		CommandList->RSSetViewports(1, &ViewportDx);
+		RenderCommandList->RSSetViewports(1, &ViewportDx);
 		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-		CommandList->RSSetScissorRects(1, &ScissorRect);
+		RenderCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
 	void FRHIDx12::EndFrame()
 	{
 		// Indicate that the render target will now be used to present when the command list is done executing.
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 
 		// Execute the command list.
-		VALIDATE_HRESULT(CommandList->Close());
-		ID3D12CommandList* ppCommandLists[] = { CommandList.Get() };
-		CommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		VALIDATE_HRESULT(ComputeCommandList->Close());
+		ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
+		ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
+
+		VALIDATE_HRESULT(RenderCommandList->Close());
+		ID3D12CommandList* ppCommandLists[] = { RenderCommandList.Get() };
+		RenderCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 		// The first argument instructs DXGI to block until VSync, putting the application
 		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
@@ -415,6 +433,11 @@ namespace tix
 		return ti_new FShaderDx12(InNames);
 	}
 
+	FShaderPtr FRHIDx12::CreateComputeShader(const TString& ComputeShaderName)
+	{
+		return ti_new FShaderDx12(ComputeShaderName);
+	}
+
 	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(FShaderPtr InShader)
 	{
 		return ti_new FArgumentBufferDx12(InShader);
@@ -429,10 +452,10 @@ namespace tix
 	void FRHIDx12::WaitingForGpu()
 	{
 		// Schedule a Signal command in the queue.
-		VALIDATE_HRESULT(CommandQueue->Signal(Fence.Get(), FenceValues[CurrentFrame]));
+		VALIDATE_HRESULT(RenderCommandQueue->Signal(RenderFence.Get(), FenceValues[CurrentFrame]));
 
 		// Wait until the fence has been crossed.
-		VALIDATE_HRESULT(Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+		VALIDATE_HRESULT(RenderFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 		WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
 
 		// Increment the fence value for the current frame.
@@ -447,15 +470,15 @@ namespace tix
 
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
-		VALIDATE_HRESULT(CommandQueue->Signal(Fence.Get(), currentFenceValue));
+		VALIDATE_HRESULT(RenderCommandQueue->Signal(RenderFence.Get(), currentFenceValue));
 
 		// Advance the frame index.
 		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 
 		// Check to see if the next frame is ready to start.
-		if (Fence->GetCompletedValue() < FenceValues[CurrentFrame])
+		if (RenderFence->GetCompletedValue() < FenceValues[CurrentFrame])
 		{
-			VALIDATE_HRESULT(Fence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+			VALIDATE_HRESULT(RenderFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
 		}
 
@@ -664,7 +687,7 @@ namespace tix
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
-			UpdateSubresources(CommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+			UpdateSubresources(RenderCommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
 			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
@@ -701,12 +724,12 @@ namespace tix
 			IndexData.RowPitch = IndexBufferSize;
 			IndexData.SlicePitch = IndexData.RowPitch;
 
-			UpdateSubresources(CommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
+			UpdateSubresources(RenderCommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
 			Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		}
 
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 
 		// Create vertex/index buffer views.
 		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer->GetGPUVirtualAddress();
@@ -999,7 +1022,7 @@ namespace tix
 			texData.SlicePitch = Surface->DataSize;
 		}
 
-		UpdateSubresources(CommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
+		UpdateSubresources(RenderCommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
 		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
 
@@ -1021,7 +1044,7 @@ namespace tix
 		//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(Texture);
 		//D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
 
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 		// Hold resources used here
 		HoldResourceReference(Texture);
 		HoldResourceReference(TextureUploadHeap);
@@ -1041,88 +1064,111 @@ namespace tix
 
 	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
-#if defined (TIX_DEBUG)
-		Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
-#endif
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
-		const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
+		FShaderPtr Shader = Pipeline->GetShader();
 
-		TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
-		TVector<D3D12_INPUT_ELEMENT_DESC> InputLayout;
-		InputLayout.resize(Streams.size());
+		if (Shader->GetShaderType() == EST_RENDER)
+		{
+#if defined (TIX_DEBUG)
+			Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
+#endif
+			TI_ASSERT(InPipelineDesc != nullptr);
+			const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
+			TI_ASSERT(Shader == Desc.Shader->ShaderResource);
 
-		// Fill layout desc
-		uint32 VertexDataOffset = 0;
-		for (uint32 i = 0; i < InputLayout.size(); ++i)
-		{
-			E_MESH_STREAM_INDEX Stream = Streams[i];
-			D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
-			InputElement.SemanticName = TMeshBuffer::SemanticName[Stream];
-			InputElement.SemanticIndex = 0;
-			InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
-			InputElement.InputSlot = 0;
-			InputElement.AlignedByteOffset = VertexDataOffset;
-			VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
-			InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-			InputElement.InstanceDataStepRate = 0;
-		}
+			TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+			TVector<D3D12_INPUT_ELEMENT_DESC> InputLayout;
+			InputLayout.resize(Streams.size());
 
-		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(InPipelineDesc->GetDesc().Shader->ShaderResource.get());
-		FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
-		TI_ASSERT(Binding != nullptr);
-		FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
+			// Fill layout desc
+			uint32 VertexDataOffset = 0;
+			for (uint32 i = 0; i < InputLayout.size(); ++i)
+			{
+				E_MESH_STREAM_INDEX Stream = Streams[i];
+				D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
+				InputElement.SemanticName = TMeshBuffer::SemanticName[Stream];
+				InputElement.SemanticIndex = 0;
+				InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
+				InputElement.InputSlot = 0;
+				InputElement.AlignedByteOffset = VertexDataOffset;
+				VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
+				InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+				InputElement.InstanceDataStepRate = 0;
+			}
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
-		state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
-		state.pRootSignature = PipelineRS->Get();
-		TI_ASSERT(InPipelineDesc->GetDesc().Shader != nullptr);
+			FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
+			FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
+			TI_ASSERT(Binding != nullptr);
+			FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
 
-		state.VS = { ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetLength()) };
-		if (ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength() > 0)
-		{
-			state.PS = { ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength()) };
-		}
-		if (ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength() > 0)
-		{
-			state.PS = { ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength()) };
-		}
-		if (ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength() > 0)
-		{
-			state.PS = { ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength()) };
-		}
-		if (ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength() > 0)
-		{
-			state.PS = { ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength()) };
-		}
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC state = {};
+			state.InputLayout = { &(InputLayout[0]), uint32(InputLayout.size()) };
+			state.pRootSignature = PipelineRS->Get();
 
-		MakeDx12RasterizerDesc(Desc, state.RasterizerState);
-		MakeDx12BlendState(Desc, state.BlendState);
-		MakeDx12DepthStencilState(Desc, state.DepthStencilState);
-		state.SampleMask = UINT_MAX;
-		state.PrimitiveTopologyType = k_PRIMITIVE_D3D12_TYPE_MAP[Desc.PrimitiveType];
-		TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
-		state.NumRenderTargets = Desc.RTCount;
-		TI_ASSERT(Desc.RTCount > 0);
-		for (int32 r = 0 ; r < Desc.RTCount; ++r)
-		{
-			state.RTVFormats[r] = GetDxPixelFormat(Desc.RTFormats[r]);
-		}
-		if (Desc.DepthFormat != EPF_UNKNOWN)
-		{
-			state.DSVFormat = GetDxPixelFormat(Desc.DepthFormat);
+			state.VS = { ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_VERTEX_SHADER].GetLength()) };
+			if (ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength() > 0)
+			{
+				state.PS = { ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_PIXEL_SHADER].GetLength()) };
+			}
+			if (ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength() > 0)
+			{
+				state.PS = { ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_DOMAIN_SHADER].GetLength()) };
+			}
+			if (ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength() > 0)
+			{
+				state.PS = { ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_HULL_SHADER].GetLength()) };
+			}
+			if (ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength() > 0)
+			{
+				state.PS = { ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetBuffer(), uint32(ShaderDx12->ShaderCodes[ESS_GEOMETRY_SHADER].GetLength()) };
+			}
+
+			MakeDx12RasterizerDesc(Desc, state.RasterizerState);
+			MakeDx12BlendState(Desc, state.BlendState);
+			MakeDx12DepthStencilState(Desc, state.DepthStencilState);
+			state.SampleMask = UINT_MAX;
+			state.PrimitiveTopologyType = k_PRIMITIVE_D3D12_TYPE_MAP[Desc.PrimitiveType];
+			TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
+			state.NumRenderTargets = Desc.RTCount;
+			TI_ASSERT(Desc.RTCount > 0);
+			for (int32 r = 0; r < Desc.RTCount; ++r)
+			{
+				state.RTVFormats[r] = GetDxPixelFormat(Desc.RTFormats[r]);
+			}
+			if (Desc.DepthFormat != EPF_UNKNOWN)
+			{
+				state.DSVFormat = GetDxPixelFormat(Desc.DepthFormat);
+			}
+			else
+			{
+				state.DSVFormat = DXGI_FORMAT_UNKNOWN;
+			}
+			TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] || DXGI_FORMAT_UNKNOWN != state.DSVFormat);
+			state.SampleDesc.Count = 1;
+
+			VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
+			DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
+
+			// Shader data can be deleted once the pipeline state is created.
+			ShaderDx12->ReleaseShaderCode();
 		}
 		else
 		{
-			state.DSVFormat = DXGI_FORMAT_UNKNOWN;
+			// Compute pipeline 
+			FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
+			FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
+			TI_ASSERT(Binding != nullptr);
+			FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
+
+			D3D12_COMPUTE_PIPELINE_STATE_DESC state = {};
+			state.pRootSignature = PipelineRS->Get();
+			state.CS = { ShaderDx12->ShaderCodes[0].GetBuffer(), uint32(ShaderDx12->ShaderCodes[0].GetLength()) };
+
+			VALIDATE_HRESULT(D3dDevice->CreateComputePipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
+
+			// Shader data can be deleted once the pipeline state is created.
+			ShaderDx12->ReleaseShaderCode();
 		}
-		TI_ASSERT(DXGI_FORMAT_UNKNOWN != state.RTVFormats[0] || DXGI_FORMAT_UNKNOWN != state.DSVFormat);
-		state.SampleDesc.Count = 1;
-
-		VALIDATE_HRESULT(D3dDevice->CreateGraphicsPipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
-		DX_SETNAME(PipelineDx12->PipelineState.Get(), Pipeline->GetResourceName());
-
-		// Shader data can be deleted once the pipeline state is created.
-		ShaderDx12->ReleaseShaderCode();
 		HoldResourceReference(Pipeline);
 
 		return true;
@@ -1208,28 +1254,35 @@ namespace tix
 			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
 			{
 				const D3D12_ROOT_DESCRIPTOR_TABLE& DescriptorTable = Parameter.DescriptorTable;
-				TI_ASSERT(DescriptorTable.NumDescriptorRanges == 1);
-				const D3D12_DESCRIPTOR_RANGE& DescriptorRange = DescriptorTable.pDescriptorRanges[0];
-				if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
+				for (uint32 range = 0; range < DescriptorTable.NumDescriptorRanges; ++range)
 				{
-					if (BindDesc.Type == D3D_SIT_TEXTURE)
+					const D3D12_DESCRIPTOR_RANGE& DescriptorRange = DescriptorTable.pDescriptorRanges[range];
+					if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
 					{
-						if (BindDesc.BindPoint == DescriptorRange.BaseShaderRegister)
+						if (BindDesc.Type == D3D_SIT_TEXTURE)
 						{
-							return (int32)i;
+							if (BindDesc.BindPoint == DescriptorRange.BaseShaderRegister)
+							{
+								return (int32)i;
+							}
+							else if (BindDesc.BindPoint > DescriptorRange.BaseShaderRegister
+								&& BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
+							{
+								// Use texture descriptor table, bind the first texture only.
+								return -1;
+							}
 						}
-						else if (BindDesc.BindPoint > DescriptorRange.BaseShaderRegister 
-							&& BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
+						else
 						{
-							// Use texture descriptor table, bind the first texture only.
-							return -1;
+							// Not support yet.
+							TI_ASSERT(0);
 						}
 					}
-				}
-				else
-				{
-					// Not support yet.
-					TI_ASSERT(0);
+					else
+					{
+						// Not support yet.
+						TI_ASSERT(0);
+					}
 				}
 			}
 				break;
@@ -1266,9 +1319,10 @@ namespace tix
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
 
 		ID3D12RootSignatureDeserializer * RSDeserializer = nullptr;
-		for (int32 s = 0; s < ESS_COUNT; ++s)
+
+		if (ShaderResource->GetShaderType() == EST_COMPUTE)
 		{
-			TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
+			TString ShaderName = ShaderDx12->GetComputeShaderName();
 			if (!ShaderName.empty())
 			{
 				if (ShaderName.rfind(".cso") == TString::npos)
@@ -1278,14 +1332,14 @@ namespace tix
 				TFile File;
 				if (File.Open(ShaderName, EFA_READ))
 				{
-					ShaderDx12->ShaderCodes[s].Reset();
-					ShaderDx12->ShaderCodes[s].Put(File);
+					ShaderDx12->ShaderCodes[0].Reset();
+					ShaderDx12->ShaderCodes[0].Put(File);
 					File.Close();
 
 					if (RSDeserializer == nullptr)
 					{
-						VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
-							ShaderDx12->ShaderCodes[s].GetLength(),
+						VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[0].GetBuffer(),
+							ShaderDx12->ShaderCodes[0].GetLength(),
 							__uuidof(ID3D12RootSignatureDeserializer),
 							reinterpret_cast<void**>(&RSDeserializer)));
 					}
@@ -1296,6 +1350,39 @@ namespace tix
 				}
 			}
 		}
+		else
+		{
+			for (int32 s = 0; s < ESS_COUNT; ++s)
+			{
+				TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
+				if (!ShaderName.empty())
+				{
+					if (ShaderName.rfind(".cso") == TString::npos)
+						ShaderName += ".cso";
+
+					// Load shader code
+					TFile File;
+					if (File.Open(ShaderName, EFA_READ))
+					{
+						ShaderDx12->ShaderCodes[s].Reset();
+						ShaderDx12->ShaderCodes[s].Put(File);
+						File.Close();
+
+						if (RSDeserializer == nullptr)
+						{
+							VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
+								ShaderDx12->ShaderCodes[s].GetLength(),
+								__uuidof(ID3D12RootSignatureDeserializer),
+								reinterpret_cast<void**>(&RSDeserializer)));
+						}
+					}
+					else
+					{
+						_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+					}
+				}
+			}
+		}
 
 		// Create shader binding, also root signature in dx12
 		TI_ASSERT(RSDeserializer != nullptr);
@@ -1303,34 +1390,37 @@ namespace tix
 		TI_ASSERT(ShaderDx12->ShaderBinding == nullptr);
 		ShaderDx12->ShaderBinding = CreateShaderBinding(*RSDesc);
 
-		// Analysis binding argument types
-		for (int32 s = 0; s < ESS_COUNT; ++s)
+		if (ShaderResource->GetShaderType() != EST_COMPUTE)
 		{
-			if (ShaderDx12->ShaderCodes[s].GetLength() > 0)
+			// Analysis binding argument types
+			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
-				ID3D12ShaderReflection* ShaderReflection;
-				D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
-
-				VALIDATE_HRESULT(D3DReflect(ShaderDx12->ShaderCodes[s].GetBuffer(), ShaderDx12->ShaderCodes[s].GetLength(), IID_PPV_ARGS(&ShaderReflection)));
-
-				D3D12_SHADER_DESC ShaderDesc;
-				VALIDATE_HRESULT(ShaderReflection->GetDesc(&ShaderDesc));
-				for (uint32 r = 0; r < ShaderDesc.BoundResources; ++r)
+				if (ShaderDx12->ShaderCodes[s].GetLength() > 0)
 				{
-					VALIDATE_HRESULT(ShaderReflection->GetResourceBindingDesc(r, &BindDescriptor));
-					int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc);
-					if (BindIndex >= 0)
+					ID3D12ShaderReflection* ShaderReflection;
+					D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
+
+					VALIDATE_HRESULT(D3DReflect(ShaderDx12->ShaderCodes[s].GetBuffer(), ShaderDx12->ShaderCodes[s].GetLength(), IID_PPV_ARGS(&ShaderReflection)));
+
+					D3D12_SHADER_DESC ShaderDesc;
+					VALIDATE_HRESULT(ShaderReflection->GetDesc(&ShaderDesc));
+					for (uint32 r = 0; r < ShaderDesc.BoundResources; ++r)
 					{
-						TString BindName = BindDescriptor.Name;
-						E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, BindDescriptor.Type == D3D_SIT_TEXTURE);
-						ShaderDx12->ShaderBinding->AddShaderArgument(
-							(E_SHADER_STAGE)s, 
-							FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+						VALIDATE_HRESULT(ShaderReflection->GetResourceBindingDesc(r, &BindDescriptor));
+						int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc);
+						if (BindIndex >= 0)
+						{
+							TString BindName = BindDescriptor.Name;
+							E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, BindDescriptor.Type == D3D_SIT_TEXTURE);
+							ShaderDx12->ShaderBinding->AddShaderArgument(
+								(E_SHADER_STAGE)s,
+								FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+						}
 					}
 				}
 			}
+			ShaderDx12->ShaderBinding->SortArguments();
 		}
-		ShaderDx12->ShaderBinding->SortArguments();
 
 		return true;
 	}
@@ -1413,9 +1503,13 @@ namespace tix
 			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
 			{
 				const D3D12_ROOT_DESCRIPTOR_TABLE& Table = Parameter.DescriptorTable;
-				TI_ASSERT(Table.NumDescriptorRanges == 1);
-				const D3D12_DESCRIPTOR_RANGE& Range = Table.pDescriptorRanges[0];
-				RootSignatureDx12->GetParameter(i).InitAsDescriptorRange(Range.RangeType, Range.BaseShaderRegister, Range.NumDescriptors, Parameter.ShaderVisibility);
+				// Make a copy of Ranges
+				D3D12_DESCRIPTOR_RANGE* Ranges = ti_new D3D12_DESCRIPTOR_RANGE[Table.NumDescriptorRanges];
+				for (uint32 range = 0; range < Table.NumDescriptorRanges; ++range)
+				{
+					Ranges[range] = Table.pDescriptorRanges[range];
+				}
+				RootSignatureDx12->GetParameter(i).InitAsDescriptorTable(Ranges, Table.NumDescriptorRanges, Parameter.ShaderVisibility);
 			}
 				break;
 			case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
@@ -1637,11 +1731,11 @@ namespace tix
 			if (CurrentBoundResource.ShaderBinding != ShaderBinding)
 			{
 				FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
-				CommandList->SetGraphicsRootSignature(RSDx12->Get());
+				RenderCommandList->SetGraphicsRootSignature(RSDx12->Get());
 				CurrentBoundResource.ShaderBinding = ShaderBinding;
 			}
 
-			CommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+			RenderCommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 
 			HoldResourceReference(InPipeline);
 
@@ -1653,9 +1747,9 @@ namespace tix
 	{
 		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
 
-		CommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
-		CommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
-		CommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+		RenderCommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
+		RenderCommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+		RenderCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
 
 		HoldResourceReference(InMeshBuffer);
 	}
@@ -1665,7 +1759,7 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		CommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->ConstantBuffer->GetGPUVirtualAddress());
+		RenderCommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->ConstantBuffer->GetGPUVirtualAddress());
 
 		HoldResourceReference(InUniformBuffer);
 	}
@@ -1674,7 +1768,7 @@ namespace tix
 	{
 		// Bind the current frame's constant buffer to the pipeline.
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
-		CommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
+		RenderCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
 		HoldResourceReference(RenderResourceTable);
 	}
@@ -1708,12 +1802,12 @@ namespace tix
 
 	void FRHIDx12::SetStencilRef(uint32 InRefValue)
 	{
-		CommandList->OMSetStencilRef(InRefValue);
+		RenderCommandList->OMSetStencilRef(InRefValue);
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
-		CommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
+		RenderCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
 	}
 
 	void FRHIDx12::SetViewport(const FViewport& VP)
@@ -1721,7 +1815,7 @@ namespace tix
 		FRHI::SetViewport(VP);
 
 		D3D12_VIEWPORT ViewportDx = { float(VP.Left), float(VP.Top), float(VP.Width), float(VP.Height), 0.f, 1.f };
-		CommandList->RSSetViewports(1, &ViewportDx);
+		RenderCommandList->RSSetViewports(1, &ViewportDx);
 	}
 
 	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
@@ -1746,7 +1840,7 @@ namespace tix
 				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 			}
 		}
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 
 		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> RTVDescriptors;
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
@@ -1772,19 +1866,19 @@ namespace tix
 		}
 
 		// Set render target
-		CommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
+		RenderCommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
 
 		// Clear render target
 		if (CBCount > 0)
 		{
 			for (int32 cb = 0; cb < CBCount; ++cb)
 			{
-				CommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
+				RenderCommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
 			}
 		}
 		if (Dsv != nullptr)
 		{
-			CommandList->ClearDepthStencilView(*Dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+			RenderCommandList->ClearDepthStencilView(*Dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		}
 	}
 
@@ -1818,7 +1912,7 @@ namespace tix
 				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 			}
 		}
-		FlushResourceBarriers(CommandList.Get());
+		FlushResourceBarriers(RenderCommandList.Get());
 
 		// Pop rt
 		FRenderTargetPtr RT = FRHI::PopRenderTarget();
@@ -1828,7 +1922,7 @@ namespace tix
 			// Set back to frame buffer
 			D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
 			D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-			CommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+			RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 		}
 		else
 		{

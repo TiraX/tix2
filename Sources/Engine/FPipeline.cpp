@@ -16,4 +16,26 @@ namespace tix
 	FPipeline::~FPipeline()
 	{
 	}
+
+	///////////////////////////////////////////////////////////////////////////
+
+	//FRenderPipeline::FRenderPipeline(FShaderPtr InShader)
+	//	: FPipeline(InShader)
+	//{
+	//}
+
+	//FRenderPipeline::~FRenderPipeline()
+	//{
+	//}
+
+	///////////////////////////////////////////////////////////////////////////
+
+	//FComputePipeline::FComputePipeline(FShaderPtr InShader)
+	//	: FPipeline(InShader)
+	//{
+	//}
+
+	//FComputePipeline::~FComputePipeline()
+	//{
+	//}
 }

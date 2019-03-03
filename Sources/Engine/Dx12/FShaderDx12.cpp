@@ -11,10 +11,14 @@
 
 namespace tix
 {
-	FShaderDx12::FShaderDx12(const TShaderNames& InNames)
-		: FShader(InNames)
+	FShaderDx12::FShaderDx12(const TString& ComputeShaderName)
+		: FShader(ComputeShaderName)
 	{
-		// Use D3D12CreateRootSignatureDeserializer to get reflection info.
+	}
+
+	FShaderDx12::FShaderDx12(const TShaderNames& RenderShaderNames)
+		: FShader(RenderShaderNames)
+	{
 	}
 
 	FShaderDx12::~FShaderDx12()
