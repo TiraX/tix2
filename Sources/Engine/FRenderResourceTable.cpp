@@ -28,16 +28,16 @@ namespace tix
 		FRHI::Get()->GetRenderResourceHeap(HeapType).RecallTable(*this);
 	}
 
-	void FRenderResourceTable::PutUniformBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index)
+	void FRenderResourceTable::PutConstantBufferInTable(FUniformBufferPtr InUniformBuffer, uint32 Index)
 	{
-		TI_ASSERT(HeapType == EHT_UNIFORMBUFFER);
+		TI_ASSERT(HeapType == EHT_SHADER_RESOURCE);
 		TI_ASSERT(Index < Size);
 		FRHI::Get()->PutUniformBufferInHeap(InUniformBuffer, HeapType, Start + Index);
 	}
 
 	void FRenderResourceTable::PutTextureInTable(FTexturePtr InTexture, uint32 Index)
 	{
-		TI_ASSERT(HeapType == EHT_TEXTURE);
+		TI_ASSERT(HeapType == EHT_SHADER_RESOURCE);
 		TI_ASSERT(Index < Size);
 		FRHI::Get()->PutTextureInHeap(InTexture, HeapType, Start + Index);
 	}

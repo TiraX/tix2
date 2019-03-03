@@ -67,8 +67,7 @@ namespace tix
 		EHT_RENDERTARGET = 0,
 		EHT_DEPTHSTENCIL,
 		EHT_SAMPLER,
-		EHT_UNIFORMBUFFER,
-		EHT_TEXTURE,
+		EHT_SHADER_RESOURCE,	// Constants, Buffers, Textures and UAV
 
 		EHT_COUNT,
 	};

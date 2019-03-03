@@ -61,15 +61,7 @@ namespace tix
 
 		DescriptorIncSize = RHIDx12->D3dDevice->GetDescriptorHandleIncrementSize(InHeapType);
 
-		if (InHeapType == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-		{
-			RHIDx12->InitRHIRenderResourceHeap(EHT_UNIFORMBUFFER, MAX_HEAP_UNIFORMBUFFERS, 0);
-			RHIDx12->InitRHIRenderResourceHeap(EHT_TEXTURE, MAX_HEAP_TEXTURES, MAX_HEAP_UNIFORMBUFFERS);
-		}
-		else
-		{
-			RHIDx12->InitRHIRenderResourceHeap(GetTiXHeapTypeFromDxHeap(InHeapType), MaxDescriptorCount[InHeapType], 0);
-		}
+		RHIDx12->InitRHIRenderResourceHeap(GetTiXHeapTypeFromDxHeap(InHeapType), MaxDescriptorCount[InHeapType], 0);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE FDescriptorHeapDx12::GetCpuDescriptorHandle(uint32 Index)

@@ -33,13 +33,14 @@ namespace tix
 
 	void FShaderParamValue::SetParamValue(uint32 InBindingIndex, FRenderResourceTablePtr RenderResourceTable)
 	{
-		E_BINDING_TYPE BindingType = BINDING_TYPE_INVALID;
-		E_RENDER_RESOURCE_HEAP_TYPE HeapType = RenderResourceTable->GetHeapType();
-		BindingType = (HeapType == EHT_UNIFORMBUFFER) ? BINDING_UNIFORMBUFFER_TABLE : BINDING_TEXTURE_TABLE;
-#if DEBUG_SHADER_BINDING_TYPE
-		ShaderBinding->ValidateBinding(InBindingIndex, BindingType);
-#endif
-		ShaderValues[InBindingIndex] = FShaderValue(RenderResourceTable, BindingType);
+		TI_ASSERT(0);
+//		E_BINDING_TYPE BindingType = BINDING_TYPE_INVALID;
+//		E_RENDER_RESOURCE_HEAP_TYPE HeapType = RenderResourceTable->GetHeapType();
+//		BindingType = (HeapType == EHT_UNIFORMBUFFER) ? BINDING_UNIFORMBUFFER_TABLE : BINDING_TEXTURE_TABLE;
+//#if DEBUG_SHADER_BINDING_TYPE
+//		ShaderBinding->ValidateBinding(InBindingIndex, BindingType);
+//#endif
+//		ShaderValues[InBindingIndex] = FShaderValue(RenderResourceTable, BindingType);
 	}
 
 	void FShaderParamValue::ApplyParamValues(FRHI * RHI)

@@ -1560,7 +1560,7 @@ namespace tix
 		{
 			// Create texture resource table
 			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentTextures.size());
-			GetRenderResourceHeap(EHT_TEXTURE).InitResourceTable(ArgumentDx12->TextureResourceTable);
+			GetRenderResourceHeap(EHT_SHADER_RESOURCE).InitResourceTable(ArgumentDx12->TextureResourceTable);
 			for (int32 t = 0; t < (int32)ArgumentTextures.size(); ++t)
 			{
 				FTexturePtr Texture = ArgumentTextures[t];
