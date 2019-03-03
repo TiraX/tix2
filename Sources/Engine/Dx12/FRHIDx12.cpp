@@ -279,7 +279,7 @@ namespace tix
 		{
 			CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 
-			BackBufferDescriptorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(FRHIConfig::FrameBufferNum);
+			BackBufferDescriptorTable = CreateRenderResourceTable(FRHIConfig::FrameBufferNum, EHT_RENDERTARGET);
 			for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 			{
 				BackBufferDescriptors[n] = GetCpuDescriptorHandle(EHT_RENDERTARGET, BackBufferDescriptorTable->GetIndexAt(n));
@@ -320,7 +320,7 @@ namespace tix
 			dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-			DepthStencilDescriptorTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
+			DepthStencilDescriptorTable = CreateRenderResourceTable(1, EHT_DEPTHSTENCIL);
 			DepthStencilDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthStencilDescriptorTable->GetStartIndex());
 			D3dDevice->CreateDepthStencilView(DepthStencil.Get(), &dsvDesc, DepthStencilDescriptor);
 		}
@@ -408,9 +408,9 @@ namespace tix
 		return ti_new FTextureDx12(Desc);
 	}
 
-	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructSize)
+	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements)
 	{
-		return ti_new FUniformBufferDx12(InStructSize);
+		return ti_new FUniformBufferDx12(InStructureSizeInBytes, Elements);
 	}
 
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
@@ -1179,7 +1179,7 @@ namespace tix
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
 
-		const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
+		const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
 		CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
 
 		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
@@ -1201,10 +1201,10 @@ namespace tix
 		uint8 * MappedConstantBuffer = nullptr;
 		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
 		VALIDATE_HRESULT(UniformBufferDx12->ConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
-		memcpy(MappedConstantBuffer, InData, UniformBuffer->GetStructSize());
-		if (AlignedDataSize - UniformBuffer->GetStructSize() > 0)
+		memcpy(MappedConstantBuffer, InData, UniformBuffer->GetTotalBufferSize());
+		if (AlignedDataSize - UniformBuffer->GetTotalBufferSize() > 0)
 		{
-			memset(MappedConstantBuffer + UniformBuffer->GetStructSize(), 0, AlignedDataSize - UniformBuffer->GetStructSize());
+			memset(MappedConstantBuffer + UniformBuffer->GetTotalBufferSize(), 0, AlignedDataSize - UniformBuffer->GetTotalBufferSize());
 		}
 		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
 		HoldResourceReference(UniformBuffer);
@@ -1218,7 +1218,7 @@ namespace tix
 		// Create render target render resource tables
 		int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
 		TI_ASSERT(RTDx12->RTColorTable == nullptr);
-		RTDx12->RTColorTable = RenderResourceHeap[EHT_RENDERTARGET].AllocateTable(ColorBufferCount);
+		RTDx12->RTColorTable = CreateRenderResourceTable(ColorBufferCount, EHT_RENDERTARGET);
 		for (int32 i = 0; i < ColorBufferCount; ++i)
 		{
 			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
@@ -1232,7 +1232,7 @@ namespace tix
 			if (DSBufferTexture != nullptr)
 			{
 				TI_ASSERT(RTDx12->RTDepthTable == nullptr);
-				RTDx12->RTDepthTable = RenderResourceHeap[EHT_DEPTHSTENCIL].AllocateTable(1);
+				RTDx12->RTDepthTable = CreateRenderResourceTable(1, EHT_DEPTHSTENCIL);
 				RTDx12->RTDepthTable->PutRTDepthInTable(DSBufferTexture, 0);
 			}
 		}
@@ -1547,7 +1547,7 @@ namespace tix
 		if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
 		{
 			// Create uniform buffer
-			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength());
+			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength(), 1);
 			this->UpdateHardwareResource(ArgumentDx12->UniformBuffer, ArgumentData->GetBuffer());
 
 			// Get Uniform buffer Bind Index
@@ -1559,8 +1559,7 @@ namespace tix
 		if (ArgumentTextures.size() > 0)
 		{
 			// Create texture resource table
-			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentTextures.size());
-			GetRenderResourceHeap(EHT_SHADER_RESOURCE).InitResourceTable(ArgumentDx12->TextureResourceTable);
+			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentTextures.size(), EHT_SHADER_RESOURCE);
 			for (int32 t = 0; t < (int32)ArgumentTextures.size(); ++t)
 			{
 				FTexturePtr Texture = ArgumentTextures[t];
@@ -1639,11 +1638,11 @@ namespace tix
 	//	return true;
 	//}
 
-	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	void FRHIDx12::PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
-		const int32 AlignedDataSize = ti_align(InUniformBuffer->GetStructSize(), UniformBufferAlignSize);
+		const int32 AlignedDataSize = ti_align(InUniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = AlignedDataSize;
@@ -1684,6 +1683,22 @@ namespace tix
 		}
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		FUniformBufferDx12 * UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
+		
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		SRVDesc.Buffer.NumElements = InBuffer->GetElements();
+		SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateShaderResourceView(UBDx12->ConstantBuffer.Get(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)

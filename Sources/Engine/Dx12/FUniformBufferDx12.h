@@ -12,8 +12,14 @@ namespace tix
 	class FUniformBufferDx12 : public FUniformBuffer
 	{
 	public:
-		FUniformBufferDx12(uint32 InStructSize);
+		FUniformBufferDx12(uint32 InStructureSizeInBytes, uint32 Elements);
 		virtual ~FUniformBufferDx12();
+
+		//Temp
+		ComPtr<ID3D12Resource> GetConstantBuffer()
+		{
+			return ConstantBuffer;
+		}
 	protected:
 
 	private:

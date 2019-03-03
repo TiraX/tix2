@@ -61,9 +61,11 @@ namespace tix
 	//	return ti_new FRenderTarget(W, H);
 	//}
 
-	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize)
+	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap)
 	{
-		return ti_new FRenderResourceTable(InSize);
+		FRenderResourceTablePtr Table = ti_new FRenderResourceTable(InSize);
+		GetRenderResourceHeap(InHeap).InitResourceTable(Table);
+		return Table;
 	}
 
 	void FRHI::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)

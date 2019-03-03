@@ -49,8 +49,8 @@ namespace tix
 		{
 			TI_ASSERT(DynamicLights[LightIndex] == InLight);
 		}
-		LightsUniformBuffer->UniformBufferData.LightPosition[LightIndex] = InLight->GetLightPosition();
-		LightsUniformBuffer->UniformBufferData.LightColor[LightIndex] = InLight->GetLightColor();
+		LightsUniformBuffer->UniformBufferData[0].LightPosition[LightIndex] = InLight->GetLightPosition();
+		LightsUniformBuffer->UniformBufferData[0].LightColor[LightIndex] = InLight->GetLightColor();
 		MarkSceneLightsDirty();
 	}
 
@@ -68,8 +68,8 @@ namespace tix
 		TI_ASSERT(LightIndex != uint32(-1));
 		TI_ASSERT(DynamicLights[LightIndex] == InLight);
 
-		LightsUniformBuffer->UniformBufferData.LightPosition[LightIndex] = InLight->GetLightPosition();
-		LightsUniformBuffer->UniformBufferData.LightColor[LightIndex] = InLight->GetLightColor();
+		LightsUniformBuffer->UniformBufferData[0].LightPosition[LightIndex] = InLight->GetLightPosition();
+		LightsUniformBuffer->UniformBufferData[0].LightColor[LightIndex] = InLight->GetLightColor();
 		MarkSceneLightsDirty();
 	}
 

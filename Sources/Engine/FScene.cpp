@@ -53,9 +53,9 @@ namespace tix
 			ViewUniformBuffer = ti_new FViewUniformBuffer();
 
 			const FViewProjectionInfo& VPInfo = GetViewProjection();
-			ViewUniformBuffer->UniformBufferData.ViewProjection = VPInfo.MatProj * VPInfo.MatView;
-			ViewUniformBuffer->UniformBufferData.ViewDir = VPInfo.CamDir;
-			ViewUniformBuffer->UniformBufferData.ViewPos = VPInfo.CamPos;
+			ViewUniformBuffer->UniformBufferData[0].ViewProjection = VPInfo.MatProj * VPInfo.MatView;
+			ViewUniformBuffer->UniformBufferData[0].ViewDir = VPInfo.CamDir;
+			ViewUniformBuffer->UniformBufferData[0].ViewPos = VPInfo.CamPos;
 
 			ViewUniformBuffer->InitUniformBuffer();
 

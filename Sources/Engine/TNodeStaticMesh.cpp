@@ -63,13 +63,13 @@ namespace tix
 	static void BindLightResource_RenderThread(FPrimitivePtr Primitive, const TVector<FLightPtr>& BindedLightResources)
 	{
 		FPrimitiveUniformBufferPtr Binding = ti_new FPrimitiveUniformBuffer;
-		Binding->UniformBufferData.LightsNum.X = (int32)BindedLightResources.size();
+		Binding->UniformBufferData[0].LightsNum.X = (int32)BindedLightResources.size();
 
 		TI_ASSERT(BindedLightResources.size() <= 4);
 		for (int32 l = 0; l < (int32)BindedLightResources.size(); ++l)
 		{
 			FLightPtr LightResource = BindedLightResources[l];
-			Binding->UniformBufferData.LightIndices[l] = LightResource->GetLightIndex();
+			Binding->UniformBufferData[0].LightIndices[l] = LightResource->GetLightIndex();
 		}
 		Binding->InitUniformBuffer();
 

@@ -8,41 +8,41 @@
 
 namespace tix
 {
-	struct FShaderValue
-	{
-		FRenderResourcePtr RenderResource;
-		int32 BindingType;
+	//struct FShaderValue
+	//{
+	//	FRenderResourcePtr RenderResource;
+	//	int32 BindingType;
 
-		FShaderValue()
-			: BindingType(BINDING_TYPE_INVALID)
-		{}
+	//	FShaderValue()
+	//		: BindingType(BINDING_TYPE_INVALID)
+	//	{}
 
-		FShaderValue(FRenderResourcePtr InResource, int32 InType)
-			: RenderResource(InResource)
-			, BindingType(InType)
-		{}
+	//	FShaderValue(FRenderResourcePtr InResource, int32 InType)
+	//		: RenderResource(InResource)
+	//		, BindingType(InType)
+	//	{}
 
-		~FShaderValue()
-		{
-			RenderResource = nullptr;
-		}
-	};
+	//	~FShaderValue()
+	//	{
+	//		RenderResource = nullptr;
+	//	}
+	//};
 
-	class FRHI;
-	class FShaderParamValue : public IReferenceCounted
-	{
-	public:
-		FShaderParamValue(FShaderBindingPtr InBinding);
-		~FShaderParamValue();
+	//class FRHI;
+	//class FShaderParamValue : public IReferenceCounted
+	//{
+	//public:
+	//	FShaderParamValue(FShaderBindingPtr InBinding);
+	//	~FShaderParamValue();
 
-		void SetParamValue(uint32 InBindingIndex, FUniformBufferPtr UniformBuffer);
-		void SetParamValue(uint32 InBindingIndex, FTexturePtr Texture);
-		void SetParamValue(uint32 InBindingIndex, FRenderResourceTablePtr RenderResourceTable);
+	//	void SetParamValue(uint32 InBindingIndex, FUniformBufferPtr UniformBuffer);
+	//	void SetParamValue(uint32 InBindingIndex, FTexturePtr Texture);
+	//	void SetParamValue(uint32 InBindingIndex, FRenderResourceTablePtr RenderResourceTable);
 
-		void ApplyParamValues(FRHI * RHI);
+	//	void ApplyParamValues(FRHI * RHI);
 
-	private:
-		FShaderBindingPtr ShaderBinding;
-		TVector<FShaderValue> ShaderValues;
-	};
+	//private:
+	//	FShaderBindingPtr ShaderBinding;
+	//	TVector<FShaderValue> ShaderValues;
+	//};
 }

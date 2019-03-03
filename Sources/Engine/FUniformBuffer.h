@@ -30,44 +30,64 @@ namespace tix
 #define DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY_EX(MemberType,MemberName,ArrayDecl,Precision) DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_EXPLICIT(MemberType,MemberName,ArrayDecl,Precision)
 
 	/** Begins a uniform buffer struct declaration. */
-#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix) \
+#define BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,ConstructorSuffix,ArrayElements) \
 	class StructTypeName : public IReferenceCounted \
 	{ \
 	public: \
+		static const uint32 Elements = ArrayElements; \
 		StructTypeName () ConstructorSuffix \
 		struct FUniformBufferStruct \
 		{ \
 
 #define END_UNIFORM_BUFFER_STRUCT(StructTypeName) \
 		}; \
-		FUniformBufferStruct UniformBufferData; \
+		uint32 GetElementsSize() const \
+		{ \
+			return StructTypeName::Elements; \
+		} \
+		uint32 GetStructureStrideInBytes() const \
+		{ \
+			return sizeof(StructTypeName::FUniformBufferStruct); \
+		} \
+		FUniformBufferStruct UniformBufferData[StructTypeName::Elements]; \
 		FUniformBufferPtr UniformBuffer; \
 		FUniformBufferPtr InitUniformBuffer() \
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct)); \
-			RHI->UpdateHardwareResource(UniformBuffer, &UniformBufferData); \
+			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::Elements); \
+			RHI->UpdateHardwareResource(UniformBuffer, UniformBufferData); \
 			return UniformBuffer; \
 		} \
 	}; \
 	typedef TI_INTRUSIVE_PTR(StructTypeName) StructTypeName##Ptr;
 
-#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{})
+#define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{}, 1)
+#define BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(StructTypeName, ArrayElements) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{}, ArrayElements)
 
 	class FUniformBuffer : public FRenderResource
 	{
 	public:
-		FUniformBuffer(uint32 InStructSize);
+		FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements);
 		virtual ~FUniformBuffer();
 
-		uint32 GetStructSize() const
+		uint32 GetTotalBufferSize() const
 		{
-			return StructSize;
+			return StructureSizeInBytes * Elements;
+		}
+
+		uint32 GetStructureSizeInBytes() const
+		{
+			return StructureSizeInBytes;
+		}
+		uint32 GetElements() const
+		{
+			return Elements;
 		}
 	protected:
 
 	protected:
-		uint32 StructSize;
+		uint32 StructureSizeInBytes;
+		uint32 Elements;
 	};
 }

@@ -5,23 +5,21 @@
 
 #pragma once
 
-
-struct SceneConstantBuffer
-{
-	FFloat4 velocity;
-	FFloat4 offset;
-	FFloat4 color;
-	FMatrix projection;
-
-	// Constant buffers are 256-byte aligned. Add padding in the struct to allow multiple buffers
-	// to be array-indexed.
-	float padding[36];
-};
-
 static const int32 TriCount = 1024;
-BEGIN_UNIFORM_BUFFER_STRUCT(FTriangleInstanceBuffer)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(SceneConstantBuffer, Buffer, [TriCount])
+BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FTriangleInstanceBuffer, TriCount)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Velocity)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Offset)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Color)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, Projection)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(FFloat4, Padding, [9])
 END_UNIFORM_BUFFER_STRUCT(FTriangleInstanceBuffer)
+
+// Data structure to match the command signature used for ExecuteIndirect.
+// Temp
+BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FIndirectCommandsList, TriCount)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(uint64, CBV)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, DrawArguments)
+END_UNIFORM_BUFFER_STRUCT(FIndirectCommandsList)
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FComputeBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)
@@ -41,6 +39,9 @@ protected:
 	FComputeTaskPtr ComputeTask;
 	FMeshBufferPtr TriangleMesh;
 
+	FTriangleInstanceBufferPtr InstanceParamBuffer;
 	FComputeBufferPtr ComputeBuffer;
-	FTriangleInstanceBufferPtr ConstantBuffer;
+	FIndirectCommandsListPtr IndirectCommandsBuffer;
+
+	FRenderResourceTablePtr ResourceTable;
 };

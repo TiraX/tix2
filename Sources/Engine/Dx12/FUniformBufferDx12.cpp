@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FUniformBufferDx12::FUniformBufferDx12(uint32 InStructSize)
-		: FUniformBuffer(InStructSize)
+	FUniformBufferDx12::FUniformBufferDx12(uint32 InStructureSizeInBytes, uint32 Elements)
+		: FUniformBuffer(InStructureSizeInBytes, Elements)
 	{
 	}
 

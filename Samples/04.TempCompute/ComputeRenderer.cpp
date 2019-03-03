@@ -5,6 +5,10 @@
 
 #include "stdafx.h"
 #include "ComputeRenderer.h"
+//Temp
+#include "Dx12/d3dx12.h"
+using namespace Microsoft::WRL;
+#include "Dx12/FUniformBufferDx12.h"
 
 // Get a random float value between min and max.
 inline float GetRandomFloat(float min, float max)
@@ -51,20 +55,44 @@ void FComputeRenderer::InitInRenderThread()
 
 	// Init Constant Buffer
 	ComputeBuffer = ti_new FComputeBuffer;
-	ComputeBuffer->UniformBufferData.Info.X = 0.05f;	//TriangleHalfWidth
-	ComputeBuffer->UniformBufferData.Info.Y = 1.f;		//TriangleDepth
-	ComputeBuffer->UniformBufferData.Info.Z = 0.5f;		//CullingCutoff
-	ComputeBuffer->UniformBufferData.Info.W = TriCount;	//TriangleCount;
+	ComputeBuffer->UniformBufferData[0].Info.X = 0.05f;	//TriangleHalfWidth
+	ComputeBuffer->UniformBufferData[0].Info.Y = 1.f;		//TriangleDepth
+	ComputeBuffer->UniformBufferData[0].Info.Z = 0.5f;		//CullingCutoff
+	ComputeBuffer->UniformBufferData[0].Info.W = TriCount;	//TriangleCount;
 	ComputeBuffer->InitUniformBuffer();
 
-	ConstantBuffer = ti_new FTriangleInstanceBuffer;
+	// Draw instance parameters
+	InstanceParamBuffer = ti_new FTriangleInstanceBuffer;
 	for (int32 i = 0; i < TriCount; ++i)
 	{
-		ConstantBuffer->UniformBufferData.Buffer[i].velocity = FFloat4(GetRandomFloat(0.01f, 0.02f), 0.0f, 0.0f, 0.0f);
-		ConstantBuffer->UniformBufferData.Buffer[i].offset = FFloat4(GetRandomFloat(-5.0f, -1.5f), GetRandomFloat(-1.0f, 1.0f), GetRandomFloat(0.0f, 2.0f), 0.0f);
-		ConstantBuffer->UniformBufferData.Buffer[i].color = FFloat4(GetRandomFloat(0.5f, 1.0f), GetRandomFloat(0.5f, 1.0f), GetRandomFloat(0.5f, 1.0f), 1.0f);
+		InstanceParamBuffer->UniformBufferData[i].Velocity = FFloat4(GetRandomFloat(0.01f, 0.02f), 0.0f, 0.0f, 0.0f);
+		InstanceParamBuffer->UniformBufferData[i].Offset = FFloat4(GetRandomFloat(-5.0f, -1.5f), GetRandomFloat(-1.0f, 1.0f), GetRandomFloat(0.0f, 2.0f), 0.0f);
+		InstanceParamBuffer->UniformBufferData[i].Color = FFloat4(GetRandomFloat(0.5f, 1.0f), GetRandomFloat(0.5f, 1.0f), GetRandomFloat(0.5f, 1.0f), 1.0f);
 	}
-	ConstantBuffer->InitUniformBuffer();
+	InstanceParamBuffer->InitUniformBuffer();
+
+	// Indirect commands buffer
+	IndirectCommandsBuffer = ti_new FIndirectCommandsList;
+	FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InstanceParamBuffer->UniformBuffer.get());
+	D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = UBDx12->GetConstantBuffer()->GetGPUVirtualAddress();
+	for (int32 i = 0; i < TriCount; ++i)
+	{
+		IndirectCommandsBuffer->UniformBufferData[i].CBV = gpuAddress;
+		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.X = 3;	//VertexCountPerInstance
+		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.Y = 1;	//InstanceCount
+		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.Z = 0;	//StartVertexLocation
+		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.X = 0;	//StartInstanceLocation
+		gpuAddress += InstanceParamBuffer->GetStructureStrideInBytes();
+	}
+	IndirectCommandsBuffer->InitUniformBuffer();
+
+	// Create writable buffer for compute shader
+	TI_ASSERT(0);
+
+	// Create Render Resource Table
+	ResourceTable = FRHI::Get()->CreateRenderResourceTable(3, EHT_SHADER_RESOURCE);
+	ResourceTable->PutBufferInTable(InstanceParamBuffer->UniformBuffer, 0);
+	ResourceTable->PutBufferInTable(IndirectCommandsBuffer->UniformBuffer, 1);
 
 	ComputeTask->Finalize();
 }

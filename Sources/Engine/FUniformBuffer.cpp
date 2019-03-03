@@ -8,8 +8,9 @@
 
 namespace tix
 {
-	FUniformBuffer::FUniformBuffer(uint32 InStructSize)
-		: StructSize(InStructSize)
+	FUniformBuffer::FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements)
+		: StructureSizeInBytes(InStructureSizeInBytes)
+		, Elements(InElements)
 	{
 	}
 

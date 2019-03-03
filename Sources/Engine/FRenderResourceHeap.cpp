@@ -27,12 +27,12 @@ namespace tix
 		Offset = HeapOffset;
 	}
 
-	FRenderResourceTablePtr FRenderResourceHeap::AllocateTable(uint32 TableSize)
-	{
-		FRenderResourceTablePtr ResourceTable = FRHI::Get()->CreateRenderResourceTable(TableSize);
-		InitResourceTable(ResourceTable);
-		return ResourceTable;
-	}
+	//FRenderResourceTablePtr FRenderResourceHeap::AllocateTable(uint32 TableSize)
+	//{
+	//	FRenderResourceTablePtr ResourceTable = FRHI::Get()->CreateRenderResourceTable(TableSize);
+	//	InitResourceTable(ResourceTable);
+	//	return ResourceTable;
+	//}
 
 	void FRenderResourceHeap::InitResourceTable(FRenderResourceTablePtr OutTable)
 	{
