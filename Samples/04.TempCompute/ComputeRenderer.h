@@ -25,6 +25,10 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FComputeBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)
 END_UNIFORM_BUFFER_STRUCT(FComputeBuffer)
 
+BEGIN_UNIFORM_BUFFER_STRUCT(FResetBuffer)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(FInt4, ResetData, [16])
+END_UNIFORM_BUFFER_STRUCT(FResetBuffer)
+
 class FComputeRenderer : public FDefaultRenderer
 {
 public:
@@ -42,6 +46,10 @@ protected:
 	FTriangleInstanceBufferPtr InstanceParamBuffer;
 	FComputeBufferPtr ComputeBuffer;
 	FIndirectCommandsListPtr IndirectCommandsBuffer;
+
+	FUniformBufferPtr ProcessedCommandsBuffer;
+
+	FResetBufferPtr ResetBuffer;
 
 	FRenderResourceTablePtr ResourceTable;
 };

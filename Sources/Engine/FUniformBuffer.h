@@ -64,11 +64,15 @@ namespace tix
 
 #define BEGIN_UNIFORM_BUFFER_STRUCT(StructTypeName) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{}, 1)
 #define BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(StructTypeName, ArrayElements) BEGIN_UNIFORM_BUFFER_STRUCT_EX(StructTypeName,{}, ArrayElements)
-
+	
+	enum E_UNIFORMBUFFER_FLAG
+	{
+		UB_FLAG_COMPUTE_WRITABLE = 1,
+	};
 	class FUniformBuffer : public FRenderResource
 	{
 	public:
-		FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements);
+		FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements, uint32 InUBFlag);
 		virtual ~FUniformBuffer();
 
 		uint32 GetTotalBufferSize() const
@@ -84,10 +88,15 @@ namespace tix
 		{
 			return Elements;
 		}
+		uint32 GetFlag() const
+		{
+			return Flag;
+		}
 	protected:
 
 	protected:
 		uint32 StructureSizeInBytes;
 		uint32 Elements;
+		uint32 Flag;
 	};
 }

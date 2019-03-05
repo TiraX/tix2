@@ -15,8 +15,10 @@ namespace tix
 
 		virtual void Finalize();
 
-		virtual void SetParameter(int32 Index, FUniformBufferPtr Uniform);
+		virtual void SetConstantBuffer(int32 Index, FUniformBufferPtr Uniform);
 		virtual void SetParameter(int32 Index, FRenderResourceTablePtr ResourceTable);
+
+		virtual void Run(FRHI * RHI);
 	protected:
 		virtual void FinalizeInRenderThread();
 

@@ -32,7 +32,7 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
-		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements) override;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
@@ -62,6 +62,9 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) override;
+
+		virtual void SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 
 		virtual void SetStencilRef(uint32 InRefValue) override;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;

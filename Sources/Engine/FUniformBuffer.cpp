@@ -8,9 +8,10 @@
 
 namespace tix
 {
-	FUniformBuffer::FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements)
+	FUniformBuffer::FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements, uint32 InUBFlag)
 		: StructureSizeInBytes(InStructureSizeInBytes)
 		, Elements(InElements)
+		, Flag(InUBFlag)
 	{
 	}
 

@@ -49,7 +49,7 @@ namespace tix
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
-		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements) = 0;
+		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
@@ -80,6 +80,9 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) = 0;
+
+		virtual void SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
+		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) = 0;

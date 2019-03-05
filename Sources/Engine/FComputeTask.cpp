@@ -48,7 +48,7 @@ namespace tix
 		Resources.resize(NumBindings);
 	}
 
-	void FComputeTask::SetParameter(int32 Index, FUniformBufferPtr Uniform)
+	void FComputeTask::SetConstantBuffer(int32 Index, FUniformBufferPtr Uniform)
 	{
 		Resources[Index] = Uniform;
 	}
@@ -56,5 +56,13 @@ namespace tix
 	void FComputeTask::SetParameter(int32 Index, FRenderResourceTablePtr ResourceTable)
 	{
 		Resources[Index] = ResourceTable;
+	}
+
+	void FComputeTask::Run(FRHI * RHI)
+	{
+		TI_TODO("Correct this test logic. ");
+		RHI->SetPipeline(ComputePipeline);
+		RHI->SetComputeConstantBuffer(0, ResourceCast<FUniformBuffer>(Resources[0]));
+		RHI->SetComputeResourceTable(1, ResourceCast<FRenderResourceTable>(Resources[1]));
 	}
 }

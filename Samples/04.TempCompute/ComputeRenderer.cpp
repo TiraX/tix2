@@ -87,12 +87,24 @@ void FComputeRenderer::InitInRenderThread()
 	IndirectCommandsBuffer->InitUniformBuffer();
 
 	// Create writable buffer for compute shader
-	TI_ASSERT(0);
+	ProcessedCommandsBuffer = FRHI::Get()->CreateUniformBuffer(IndirectCommandsBuffer->GetStructureStrideInBytes(), IndirectCommandsBuffer->GetElementsSize(), UB_FLAG_COMPUTE_WRITABLE);
+
+	// Reset Buffer
+	ResetBuffer = ti_new FResetBuffer;
+	for (int32 i = 0; i < 16; ++i)
+	{
+		ResetBuffer->UniformBufferData[0].ResetData[i] = FInt4();
+	}
+	ResetBuffer->InitUniformBuffer();
 
 	// Create Render Resource Table
 	ResourceTable = FRHI::Get()->CreateRenderResourceTable(3, EHT_SHADER_RESOURCE);
 	ResourceTable->PutBufferInTable(InstanceParamBuffer->UniformBuffer, 0);
 	ResourceTable->PutBufferInTable(IndirectCommandsBuffer->UniformBuffer, 1);
+	ResourceTable->PutBufferInTable(ProcessedCommandsBuffer, 2);
+
+	ComputeTask->SetConstantBuffer(0, InstanceParamBuffer->UniformBuffer);
+	ComputeTask->SetParameter(1, ResourceTable);
 
 	ComputeTask->Finalize();
 }
@@ -101,7 +113,8 @@ void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
 	// Do compute cull first
-	// 1, set parameter
+	ComputeTask->Run(RHI);
+
 
     RHI->BeginRenderToFrameBuffer();
 	// Render triangles to screen

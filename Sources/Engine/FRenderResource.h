@@ -7,6 +7,14 @@
 
 namespace tix
 {
+	enum E_RENDER_RESOURCE_TYPE
+	{
+		RRT_BUFFER,
+		RRT_TEXTURE,
+		RRT_RESOURCE_TALBE,
+		RRT_ARGUMENT_BUFFER,
+	};
+
 	template<typename T>
 	inline IInstrusivePtr<T> ResourceCast(FRenderResourcePtr Resource)
 	{

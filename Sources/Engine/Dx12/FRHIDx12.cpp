@@ -331,6 +331,7 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
+		TI_TODO("Deal with Empty compute allocator");
 		// Reset command allocator
 		VALIDATE_HRESULT(ComputeCommandAllocators[CurrentFrame]->Reset());
 		VALIDATE_HRESULT(RenderCommandAllocators[CurrentFrame]->Reset());
@@ -408,9 +409,9 @@ namespace tix
 		return ti_new FTextureDx12(Desc);
 	}
 
-	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements)
+	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag)
 	{
-		return ti_new FUniformBufferDx12(InStructureSizeInBytes, Elements);
+		return ti_new FUniformBufferDx12(InStructureSizeInBytes, Elements, Flag);
 	}
 
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
@@ -1178,34 +1179,52 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
-
-		const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-		CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
-
-		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-		UniformBufferDx12->BufferResource.CreateResource(
-			D3dDevice.Get(),
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ConstantBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-		//cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
-		//cbvDesc.SizeInBytes = AlignedDataSize;
-		//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBuffer);
-		//D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
-
-		// Map the constant buffers.
-		uint8 * MappedConstantBuffer = nullptr;
-		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
-		VALIDATE_HRESULT(UniformBufferDx12->BufferResource.GetResource()->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
-		memcpy(MappedConstantBuffer, InData, UniformBuffer->GetTotalBufferSize());
-		if (AlignedDataSize - UniformBuffer->GetTotalBufferSize() > 0)
+		
+		if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
 		{
-			memset(MappedConstantBuffer + UniformBuffer->GetTotalBufferSize(), 0, AlignedDataSize - UniformBuffer->GetTotalBufferSize());
+			// Add a counter for UAV
+			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(UniformBuffer->GetTotalBufferSize() + sizeof(uint32), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+			CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			UniformBufferDx12->BufferResource.CreateResource(
+				D3dDevice.Get(),
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&BufferDesc,
+				D3D12_RESOURCE_STATE_COPY_DEST);
 		}
-		UniformBufferDx12->BufferResource.GetResource()->Unmap(0, nullptr);
+		else
+		{
+			TI_ASSERT(InData != nullptr);
+			const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+			CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
+
+			CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			UniformBufferDx12->BufferResource.CreateResource(
+				D3dDevice.Get(),
+				&UploadHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&ConstantBufferDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ);
+
+			//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+			//cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
+			//cbvDesc.SizeInBytes = AlignedDataSize;
+			//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(UniformBuffer);
+			//D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
+
+			// Map the constant buffers.
+			uint8 * MappedConstantBuffer = nullptr;
+			CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+			VALIDATE_HRESULT(UniformBufferDx12->BufferResource.GetResource()->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
+			memcpy(MappedConstantBuffer, InData, UniformBuffer->GetTotalBufferSize());
+			if (AlignedDataSize - UniformBuffer->GetTotalBufferSize() > 0)
+			{
+				memset(MappedConstantBuffer + UniformBuffer->GetTotalBufferSize(), 0, AlignedDataSize - UniformBuffer->GetTotalBufferSize());
+			}
+			UniformBufferDx12->BufferResource.GetResource()->Unmap(0, nullptr);
+		}
+
 		HoldResourceReference(UniformBuffer);
 
 		return true;
@@ -1688,16 +1707,40 @@ namespace tix
 	{
 		FUniformBufferDx12 * UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
 		
-		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
-		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-		SRVDesc.Buffer.NumElements = InBuffer->GetElements();
-		SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		if ((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
+		{
+			// Create unordered access view
+			D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+			UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+			UAVDesc.Buffer.FirstElement = 0;
+			UAVDesc.Buffer.NumElements = InBuffer->GetElements();
+			UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+			UAVDesc.Buffer.CounterOffsetInBytes = InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes();
+			UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-		D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+
+			D3dDevice->CreateUnorderedAccessView(
+				UBDx12->BufferResource.GetResource().Get(),
+				UBDx12->BufferResource.GetResource().Get(),
+				&UAVDesc,
+				Descriptor);
+		}
+		else
+		{
+			// Create shader resource view
+			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+			SRVDesc.Buffer.NumElements = InBuffer->GetElements();
+			SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+			SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+			D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+		}
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
@@ -1778,11 +1821,28 @@ namespace tix
 		HoldResourceReference(InUniformBuffer);
 	}
 
+	void FRHIDx12::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	{
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
+
+		// Bind the current frame's constant buffer to the pipeline.
+		RenderCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
+
+		HoldResourceReference(InUniformBuffer);
+	}
+
 	void FRHIDx12::SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
 	{
-		// Bind the current frame's constant buffer to the pipeline.
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
 		RenderCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
+
+		HoldResourceReference(RenderResourceTable);
+	}
+
+	void FRHIDx12::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
+	{
+		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
+		RenderCommandList->SetComputeRootDescriptorTable(BindIndex, Descriptor);
 
 		HoldResourceReference(RenderResourceTable);
 	}
