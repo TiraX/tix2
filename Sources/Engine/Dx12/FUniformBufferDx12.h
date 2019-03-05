@@ -6,6 +6,7 @@
 #pragma once
 
 #if COMPILE_WITH_RHI_DX12
+#include "FGPUResourceDx12.h"
 
 namespace tix
 {
@@ -18,12 +19,13 @@ namespace tix
 		//Temp
 		ComPtr<ID3D12Resource> GetConstantBuffer()
 		{
-			return ConstantBuffer;
+			TI_TODO("Remove this temp.");
+			return BufferResource.GetResource();
 		}
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> ConstantBuffer;
+		FGPUResourceDx12 BufferResource;
 		friend class FRHIDx12;
 	};
 }

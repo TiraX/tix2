@@ -19,7 +19,6 @@ namespace tix
 	FUniformBufferDx12::~FUniformBufferDx12()
 	{
 		TI_ASSERT(IsRenderThread());
-		ConstantBuffer = nullptr;
 	}
 }
 

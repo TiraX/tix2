@@ -615,7 +615,7 @@ namespace tix
 	{
 		if (GPUResource->GetCurrentState() != stateAfter)
 		{
-			Transition(GPUResource->GetResource(), GPUResource->UsageState, stateAfter, subresource, flags);
+			Transition(GPUResource->GetResource().Get(), GPUResource->UsageState, stateAfter, subresource, flags);
 			GPUResource->UsageState = stateAfter;
 		}
 	}
@@ -930,7 +930,7 @@ namespace tix
 			D3D12_RESOURCE_STATE_COMMON,
 			&ClearValue
 		);
-		DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
+		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 
 		// Describe and create a SRV for the texture.
 		//D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
@@ -996,7 +996,7 @@ namespace tix
 			D3D12_RESOURCE_STATE_COPY_DEST);
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource(), 0, SubResourceNum);
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
 
 		// Create the GPU upload buffer.
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -1022,9 +1022,9 @@ namespace tix
 			texData.SlicePitch = Surface->DataSize;
 		}
 
-		UpdateSubresources(RenderCommandList.Get(), TexDx12->TextureResource.GetResource(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
+		UpdateSubresources(RenderCommandList.Get(), TexDx12->TextureResource.GetResource().Get(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
 		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		DX_SETNAME(TexDx12->TextureResource.GetResource(), Texture->GetResourceName());
+		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 
 		ti_delete[] TextureDatas;
 
@@ -1180,16 +1180,15 @@ namespace tix
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
 
 		const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-		CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
+		CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
 
-		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&uploadHeapProperties,
+		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		UniformBufferDx12->BufferResource.CreateResource(
+			D3dDevice.Get(),
+			&UploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
-			&constantBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&UniformBufferDx12->ConstantBuffer)));
+			&ConstantBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		//cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
@@ -1200,13 +1199,13 @@ namespace tix
 		// Map the constant buffers.
 		uint8 * MappedConstantBuffer = nullptr;
 		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
-		VALIDATE_HRESULT(UniformBufferDx12->ConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
+		VALIDATE_HRESULT(UniformBufferDx12->BufferResource.GetResource()->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
 		memcpy(MappedConstantBuffer, InData, UniformBuffer->GetTotalBufferSize());
 		if (AlignedDataSize - UniformBuffer->GetTotalBufferSize() > 0)
 		{
 			memset(MappedConstantBuffer + UniformBuffer->GetTotalBufferSize(), 0, AlignedDataSize - UniformBuffer->GetTotalBufferSize());
 		}
-		UniformBufferDx12->ConstantBuffer->Unmap(0, nullptr);
+		UniformBufferDx12->BufferResource.GetResource()->Unmap(0, nullptr);
 		HoldResourceReference(UniformBuffer);
 
 		return true;
@@ -1390,7 +1389,7 @@ namespace tix
 		TI_ASSERT(ShaderDx12->ShaderBinding == nullptr);
 		ShaderDx12->ShaderBinding = CreateShaderBinding(*RSDesc);
 
-		if (ShaderResource->GetShaderType() != EST_COMPUTE)
+		if (ShaderResource->GetShaderType() == EST_RENDER)
 		{
 			// Analysis binding argument types
 			for (int32 s = 0; s < ESS_COUNT; ++s)
@@ -1644,7 +1643,7 @@ namespace tix
 
 		const int32 AlignedDataSize = ti_align(InUniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-		cbvDesc.BufferLocation = UniformBufferDx12->ConstantBuffer->GetGPUVirtualAddress();
+		cbvDesc.BufferLocation = UniformBufferDx12->BufferResource.GetResource()->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = AlignedDataSize;
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateConstantBufferView(&cbvDesc, Descriptor);
@@ -1682,7 +1681,7 @@ namespace tix
 			SRVDesc.Texture2D.MipLevels = Desc.Mips;
 		}
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
+		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource().Get(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
@@ -1698,7 +1697,7 @@ namespace tix
 		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-		D3dDevice->CreateShaderResourceView(UBDx12->ConstantBuffer.Get(), &SRVDesc, Descriptor);
+		D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
@@ -1714,7 +1713,7 @@ namespace tix
 		RTVDesc.Texture2D.PlaneSlice = 0;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, InHeapSlot);
-		D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource(), &RTVDesc, Descriptor);
+		D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource().Get(), &RTVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
@@ -1732,7 +1731,7 @@ namespace tix
 		DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, InHeapSlot);
-		D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource(), &DsvDesc, Descriptor);
+		D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource().Get(), &DsvDesc, Descriptor);
 	}
 
 	void FRHIDx12::SetPipeline(FPipelinePtr InPipeline)
@@ -1774,7 +1773,7 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		RenderCommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->ConstantBuffer->GetGPUVirtualAddress());
+		RenderCommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
 
 		HoldResourceReference(InUniformBuffer);
 	}

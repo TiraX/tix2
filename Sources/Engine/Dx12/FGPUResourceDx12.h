@@ -27,9 +27,9 @@ namespace tix
 			return Resource != nullptr;
 		}
 
-		ID3D12Resource* GetResource()
+		ComPtr<ID3D12Resource> GetResource()
 		{
-			return Resource.Get();
+			return Resource;
 		}
 
 		D3D12_RESOURCE_STATES GetCurrentState()
