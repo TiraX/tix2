@@ -77,7 +77,7 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FTexturePtr Texture)
 	{
 		TI_ASSERT(bInited);
-        RHI->SetPipeline(FullScreenPipeline);
+        RHI->SetGraphicsPipeline(FullScreenPipeline);
         RHI->SetMeshBuffer(FullScreenQuad);
         RHI->SetShaderTexture(0, Texture);
         
@@ -88,7 +88,7 @@ namespace tix
 	{
 		TI_ASSERT(bInited);
 		RHI->SetMeshBuffer(FullScreenQuad);
-		RHI->SetPipeline(FullScreenPipeline);
+		RHI->SetGraphicsPipeline(FullScreenPipeline);
 		RHI->SetRenderResourceTable(0, TextureTable);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
@@ -97,7 +97,7 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FArgumentBufferPtr ArgumentBuffer)
 	{
 		TI_ASSERT(bInited);
-        RHI->SetPipeline(FullScreenPipeline);
+        RHI->SetGraphicsPipeline(FullScreenPipeline);
 		RHI->SetMeshBuffer(FullScreenQuad);
 		RHI->SetArgumentBuffer(ArgumentBuffer);
 

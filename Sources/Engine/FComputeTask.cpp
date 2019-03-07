@@ -50,6 +50,7 @@ namespace tix
 
 	void FComputeTask::SetConstantBuffer(int32 Index, FUniformBufferPtr Uniform)
 	{
+		// Resources.size() > 0, or else Call Finalize() first
 		Resources[Index] = Uniform;
 	}
 
@@ -58,11 +59,13 @@ namespace tix
 		Resources[Index] = ResourceTable;
 	}
 
-	void FComputeTask::Run(FRHI * RHI)
+	void FComputeTask::Run(FRHI * RHI, uint32 X, uint32 Y, uint32 Z)
 	{
 		TI_TODO("Correct this test logic. ");
-		RHI->SetPipeline(ComputePipeline);
+		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeConstantBuffer(0, ResourceCast<FUniformBuffer>(Resources[0]));
 		RHI->SetComputeResourceTable(1, ResourceCast<FRenderResourceTable>(Resources[1]));
+
+		RHI->DispatchCompute(X, Y, Z);
 	}
 }

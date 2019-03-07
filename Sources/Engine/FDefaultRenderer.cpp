@@ -36,7 +36,7 @@ namespace tix
 				FArgumentBufferPtr AB = Primitive->Arguments[m];
 
 				RHI->SetMeshBuffer(MB);
-				RHI->SetPipeline(PL);
+				RHI->SetGraphicsPipeline(PL);
 				RHI->SetArgumentBuffer(AB);
 
 				RHI->DrawPrimitiveIndexedInstanced(MB, 1);

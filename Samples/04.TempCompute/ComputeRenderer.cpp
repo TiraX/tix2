@@ -88,6 +88,7 @@ void FComputeRenderer::InitInRenderThread()
 
 	// Create writable buffer for compute shader
 	ProcessedCommandsBuffer = FRHI::Get()->CreateUniformBuffer(IndirectCommandsBuffer->GetStructureStrideInBytes(), IndirectCommandsBuffer->GetElementsSize(), UB_FLAG_COMPUTE_WRITABLE);
+	RHI->UpdateHardwareResource(ProcessedCommandsBuffer, nullptr);
 
 	// Reset Buffer
 	ResetBuffer = ti_new FResetBuffer;
@@ -103,19 +104,21 @@ void FComputeRenderer::InitInRenderThread()
 	ResourceTable->PutBufferInTable(IndirectCommandsBuffer->UniformBuffer, 1);
 	ResourceTable->PutBufferInTable(ProcessedCommandsBuffer, 2);
 
+	ComputeTask->Finalize();
+
 	ComputeTask->SetConstantBuffer(0, InstanceParamBuffer->UniformBuffer);
 	ComputeTask->SetParameter(1, ResourceTable);
-
-	ComputeTask->Finalize();
 }
 
 void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
 	// Do compute cull first
-	ComputeTask->Run(RHI);
+	const int32 ThreadBlockSize = 128;	// Should match the value in S_TriangleCullCS
+	ComputeTask->Run(RHI, uint32(TriCount / float(ThreadBlockSize)), 1, 1);
 
 
     RHI->BeginRenderToFrameBuffer();
 	// Render triangles to screen
+	TI_ASSERT(0);	// next start from here. draw processed commands
 }

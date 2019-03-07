@@ -56,18 +56,23 @@ namespace tix
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 
-		virtual void SetPipeline(FPipelinePtr InPipeline) override;
+		// Graphics
+		virtual void SetGraphicsPipeline(FPipelinePtr InPipeline) override;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) override;
 
+		virtual void SetStencilRef(uint32 InRefValue) override;
+		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;
+
+		// Compute
+		virtual void SetComputePipeline(FPipelinePtr InPipeline) override;
 		virtual void SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 
-		virtual void SetStencilRef(uint32 InRefValue) override;
-		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;
+		virtual void DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
 		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
@@ -124,7 +129,7 @@ namespace tix
 			uint32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
 			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
-		void FlushResourceBarriers(
+		void FlushGraphicsBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
 
 		void SetRenderTarget(FRenderTargetPtr RT);
@@ -166,8 +171,10 @@ namespace tix
 
 		// Barriers
 		static const uint32 MaxResourceBarrierBuffers = 16;
-		D3D12_RESOURCE_BARRIER ResourceBarrierBuffers[MaxResourceBarrierBuffers];
-		uint32 NumBarriersToFlush;
+		D3D12_RESOURCE_BARRIER GraphicsBarrierBuffers[MaxResourceBarrierBuffers];
+		uint32 GraphicsNumBarriersToFlush;
+		D3D12_RESOURCE_BARRIER ComputeBarrierBuffers[MaxResourceBarrierBuffers];
+		uint32 ComputeNumBarriersToFlush;
 
 		// Frame on the fly Resource holders
 		FFrameResourcesDx12 * ResHolders[FRHIConfig::FrameBufferNum];
