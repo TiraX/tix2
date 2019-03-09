@@ -125,11 +125,17 @@ namespace tix
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
+		wchar_t AllocatorName[128];
 		// Create command allocator and command list.
 		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
 		{
+			swprintf_s(AllocatorName, 128, L"RenderCommandAllocator%d", n);
 			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&RenderCommandAllocators[n])));
+			RenderCommandAllocators[n]->SetName(AllocatorName);
+
+			swprintf_s(AllocatorName, 128, L"ComputeCommandAllocator%d", n);
 			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&ComputeCommandAllocators[n])));
+			ComputeCommandAllocators[n]->SetName(AllocatorName);
 		}
 
 		// Create synchronization objects.
@@ -349,6 +355,7 @@ namespace tix
 
 		ComputeCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
+		TI_TODO("Move frame buffer clear & Setup to BeginRenderToFrameBuffer()");
 		// Indicate this resource will be in use as a render target.
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		FlushGraphicsBarriers(RenderCommandList.Get());
@@ -377,6 +384,11 @@ namespace tix
 		VALIDATE_HRESULT(ComputeCommandList->Close());
 		ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
 		ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
+
+		ComputeCommandQueue->Signal(ComputeFence.Get(), FenceValues[CurrentFrame]);
+
+		// Execute the rendering work only when the compute work is complete.
+		RenderCommandQueue->Wait(ComputeFence.Get(), FenceValues[CurrentFrame]);
 
 		VALIDATE_HRESULT(RenderCommandList->Close());
 		ID3D12CommandList* ppCommandLists[] = { RenderCommandList.Get() };

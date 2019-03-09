@@ -82,6 +82,20 @@ namespace tix
 		{
 			return D3dDevice;
 		}
+
+		// For test only 
+		TI_API ComPtr<ID3D12Device> GetD3DDevice()
+		{
+			return D3dDevice;
+		}
+		TI_API ComPtr<ID3D12GraphicsCommandList> GetRenderCommandList()
+		{
+			return RenderCommandList;
+		}
+		TI_API ComPtr<ID3D12GraphicsCommandList> GetComputeCommandList()
+		{
+			return ComputeCommandList;
+		}
 	protected: 
 		FRHIDx12();
 

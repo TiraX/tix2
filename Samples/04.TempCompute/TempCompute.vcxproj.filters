@@ -45,5 +45,16 @@
     <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TrianglePS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TriangleVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Dx12\S_TriangleRS.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -51,5 +51,8 @@ protected:
 
 	FResetBufferPtr ResetBuffer;
 
+
+	FPipelinePtr PL_Triangle;
+
 	FRenderResourceTablePtr ResourceTable;
 };
