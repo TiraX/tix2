@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\Dx12\FComputeTaskDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.cpp" />
@@ -93,7 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h" />
-    <ClInclude Include="..\..\Sources\Engine\Dx12\FComputeTaskDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.h" />

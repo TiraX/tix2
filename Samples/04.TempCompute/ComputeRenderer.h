@@ -29,6 +29,28 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FResetBuffer)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(FInt4, ResetData, [16])
 END_UNIFORM_BUFFER_STRUCT(FResetBuffer)
 
+class FComputeTriangleCull : public FComputeTask
+{
+public:
+	FComputeTriangleCull();
+	virtual ~FComputeTriangleCull();
+
+	virtual void Run(FRHI * RHI) override;
+
+protected:
+	virtual void FinalizeInRenderThread() override;
+
+public:
+	FResetBufferPtr ResetBuffer;
+	FComputeBufferPtr ComputeBuffer;
+	
+	FUniformBufferPtr ProcessedCommandsBuffer;
+	FRenderResourceTablePtr ResourceTable;
+};
+typedef TI_INTRUSIVE_PTR(FComputeTriangleCull) FComputeTriangleCullPtr;
+
+///////////////////////////////////////////////////////////////
+
 class FComputeRenderer : public FDefaultRenderer
 {
 public:
@@ -40,19 +62,13 @@ public:
 
 private:
 protected:
-	FComputeTaskPtr ComputeTask;
+	FComputeTriangleCullPtr ComputeTriangleCull;
 	FMeshBufferPtr TriangleMesh;
 
 	FTriangleInstanceBufferPtr InstanceParamBuffer;
-	FComputeBufferPtr ComputeBuffer;
 	FIndirectCommandsListPtr IndirectCommandsBuffer;
 
 	FUniformBufferPtr ProcessedCommandsBuffer;
-
-	FResetBufferPtr ResetBuffer;
-
-
+	
 	FPipelinePtr PL_Triangle;
-
-	FRenderResourceTablePtr ResourceTable;
 };

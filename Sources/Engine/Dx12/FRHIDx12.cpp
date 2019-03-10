@@ -17,7 +17,6 @@
 #include "FRenderTargetDx12.h"
 #include "FShaderDx12.h"
 #include "FArgumentBufferDx12.h"
-#include "FComputeTaskDx12.h"
 #include <DirectXColors.h>
 #include <d3d12shader.h>
 #include <d3dcompiler.h>
@@ -458,11 +457,6 @@ namespace tix
 	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(FShaderPtr InShader)
 	{
 		return ti_new FArgumentBufferDx12(InShader);
-	}
-
-	FComputeTaskPtr FRHIDx12::CreateComputeTask(const TString& ComputeShaderName)
-	{
-		return ti_new FComputeTaskDx12(ComputeShaderName);
 	}
 
 	// Wait for pending GPU work to complete.

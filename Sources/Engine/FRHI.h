@@ -57,7 +57,6 @@ namespace tix
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) = 0;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
-		virtual FComputeTaskPtr CreateComputeTask(const TString& InName) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;

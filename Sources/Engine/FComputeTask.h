@@ -7,18 +7,15 @@ By ZhaoShuai tirax.cn@gmail.com
 
 namespace tix
 {
-	class FComputeTask : public IReferenceCounted
+	class TI_API FComputeTask : public IReferenceCounted
 	{
 	public:
 		FComputeTask(const TString& ComputeShaderName);
 		virtual ~FComputeTask();
 
-		virtual void Finalize();
+		void Finalize();
+		virtual void Run(FRHI * RHI) = 0;
 
-		virtual void SetConstantBuffer(int32 Index, FUniformBufferPtr Uniform);
-		virtual void SetParameter(int32 Index, FRenderResourceTablePtr ResourceTable);
-
-		virtual void Run(FRHI * RHI, uint32 X, uint32 Y, uint32 Z);
 	protected:
 		virtual void FinalizeInRenderThread();
 
@@ -26,6 +23,5 @@ namespace tix
 		TString ShaderName;
 		FShaderPtr ComputeShader;
 		FPipelinePtr ComputePipeline;
-		TVector<FRenderResourcePtr> Resources;
 	};
 }

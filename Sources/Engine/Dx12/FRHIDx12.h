@@ -39,7 +39,6 @@ namespace tix
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;
-		virtual FComputeTaskPtr CreateComputeTask(const TString& InName) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;

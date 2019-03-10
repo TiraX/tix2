@@ -226,9 +226,6 @@
     <ClCompile Include="..\..\Sources\Engine\FComputeTask.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\Dx12\FComputeTaskDx12.cpp">
-      <Filter>Sources\Render\dx12</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -557,9 +554,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FComputeTask.h">
       <Filter>Sources\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\Dx12\FComputeTaskDx12.h">
-      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

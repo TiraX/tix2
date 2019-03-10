@@ -24,12 +24,58 @@ inline float GetRandomFloat(float min, float max)
 	return scale * range + min;
 }
 
+///////////////////////////////////////////////////////////////
+FComputeTriangleCull::FComputeTriangleCull()
+	: FComputeTask("S_TriangleCullCS")
+{
+}
+
+FComputeTriangleCull::~FComputeTriangleCull()
+{}
+
+void FComputeTriangleCull::FinalizeInRenderThread()
+{
+	FComputeTask::FinalizeInRenderThread();
+
+	// Init Constant Buffer
+	ComputeBuffer = ti_new FComputeBuffer;
+	ComputeBuffer->UniformBufferData[0].Info.X = 0.05f;	//TriangleHalfWidth
+	ComputeBuffer->UniformBufferData[0].Info.Y = 1.f;		//TriangleDepth
+	ComputeBuffer->UniformBufferData[0].Info.Z = 0.6f;		//CullingCutoff
+	ComputeBuffer->UniformBufferData[0].Info.W = TriCount;	//TriangleCount;
+	ComputeBuffer->InitUniformBuffer();
+
+	// Reset Buffer
+	ResetBuffer = ti_new FResetBuffer;
+	for (int32 i = 0; i < 16; ++i)
+	{
+		ResetBuffer->UniformBufferData[0].ResetData[i] = FInt4();
+	}
+	ResetBuffer->InitUniformBuffer();
+}
+
+void FComputeTriangleCull::Run(FRHI * RHI)
+{
+	const int32 ThreadBlockSize = 128;	// Should match the value in S_TriangleCullCS
+
+	uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
+	RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
+
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeConstantBuffer(0, ComputeBuffer->UniformBuffer);
+	RHI->SetComputeResourceTable(1, ResourceTable);
+
+	RHI->DispatchCompute(uint32(TriCount / float(ThreadBlockSize)), 1, 1);
+}
+
+///////////////////////////////////////////////////////////////
+
 // Test things
 ComPtr<ID3D12CommandSignature> CommandSignature;
 
 FComputeRenderer::FComputeRenderer()
 {
-	ComputeTask = FRHI::Get()->CreateComputeTask("S_TriangleCullCS");
+	ComputeTriangleCull = ti_new FComputeTriangleCull;
 
 
 	const TString TriangleMaterialName = "M_Triangle.tres";
@@ -39,7 +85,7 @@ FComputeRenderer::FComputeRenderer()
 
 FComputeRenderer::~FComputeRenderer()
 {
-	ComputeTask = nullptr;
+	ComputeTriangleCull = nullptr;
 
 	CommandSignature = nullptr;
 }
@@ -67,14 +113,6 @@ void FComputeRenderer::InitInRenderThread()
 	TriangleMesh->SetFromTMeshBuffer(MBData);
 	RHI->UpdateHardwareResource(TriangleMesh, MBData);
 	MBData = nullptr;
-
-	// Init Constant Buffer
-	ComputeBuffer = ti_new FComputeBuffer;
-	ComputeBuffer->UniformBufferData[0].Info.X = 0.05f;	//TriangleHalfWidth
-	ComputeBuffer->UniformBufferData[0].Info.Y = 1.f;		//TriangleDepth
-	ComputeBuffer->UniformBufferData[0].Info.Z = 0.6f;		//CullingCutoff
-	ComputeBuffer->UniformBufferData[0].Info.W = TriCount;	//TriangleCount;
-	ComputeBuffer->InitUniformBuffer();
 
 	// Draw instance parameters
 	InstanceParamBuffer = ti_new FTriangleInstanceBuffer;
@@ -105,26 +143,16 @@ void FComputeRenderer::InitInRenderThread()
 	ProcessedCommandsBuffer = FRHI::Get()->CreateUniformBuffer(IndirectCommandsBuffer->GetStructureStrideInBytes(), IndirectCommandsBuffer->GetElementsSize(), UB_FLAG_COMPUTE_WRITABLE);
 	RHI->UpdateHardwareResource(ProcessedCommandsBuffer, nullptr);
 
-	// Reset Buffer
-	ResetBuffer = ti_new FResetBuffer;
-	for (int32 i = 0; i < 16; ++i)
-	{
-		ResetBuffer->UniformBufferData[0].ResetData[i] = FInt4();
-	}
-	ResetBuffer->InitUniformBuffer();
+	ComputeTriangleCull->ProcessedCommandsBuffer = ProcessedCommandsBuffer;
 
 	// Create Render Resource Table
-	ResourceTable = FRHI::Get()->CreateRenderResourceTable(3, EHT_SHADER_RESOURCE);
-	ResourceTable->PutBufferInTable(InstanceParamBuffer->UniformBuffer, 0);
-	ResourceTable->PutBufferInTable(IndirectCommandsBuffer->UniformBuffer, 1);
-	ResourceTable->PutBufferInTable(ProcessedCommandsBuffer, 2);
+	ComputeTriangleCull->ResourceTable = FRHI::Get()->CreateRenderResourceTable(3, EHT_SHADER_RESOURCE);
+	ComputeTriangleCull->ResourceTable->PutBufferInTable(InstanceParamBuffer->UniformBuffer, 0);
+	ComputeTriangleCull->ResourceTable->PutBufferInTable(IndirectCommandsBuffer->UniformBuffer, 1);
+	ComputeTriangleCull->ResourceTable->PutBufferInTable(ProcessedCommandsBuffer, 2);
 
-	ComputeTask->Finalize();
-
-	ComputeTask->SetConstantBuffer(0, ComputeBuffer->UniformBuffer);
-	ComputeTask->SetParameter(1, ResourceTable);
-
-
+	ComputeTriangleCull->Finalize();
+	
 	FRHIDx12 * RHIDx12 = static_cast<FRHIDx12*>(RHI);
 
 	// Each command consists of a CBV update and a DrawInstanced call.
@@ -151,11 +179,7 @@ void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	Scene->PrepareViewUniforms();
 	// Do compute cull first
-	const int32 ThreadBlockSize = 128;	// Should match the value in S_TriangleCullCS
-	TI_TODO("Reset command count");
-	uint32 CounterOffset = IndirectCommandsBuffer->GetStructureStrideInBytes() * IndirectCommandsBuffer->GetElementsSize();
-	RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
-	ComputeTask->Run(RHI, uint32(TriCount / float(ThreadBlockSize)), 1, 1);
+	ComputeTriangleCull->Run(RHI);
 
     RHI->BeginRenderToFrameBuffer();
 	// Render triangles to screen
@@ -174,7 +198,7 @@ void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 			CmdBuffer->GetConstantBuffer().Get(),
 			0,
 			CmdBuffer->GetConstantBuffer().Get(),
-			CounterOffset
+			ProcessedCommandsBuffer->GetTotalBufferSize()
 		);
 	}
 	else
