@@ -1209,8 +1209,8 @@ namespace tix
 				&BufferDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			FlushGraphicsBarriers(ComputeCommandList.Get());
+			//Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			//FlushGraphicsBarriers(ComputeCommandList.Get());
 		}
 		else
 		{
@@ -1889,6 +1889,17 @@ namespace tix
 		ComputeCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
 	}
 
+	void FRHIDx12::ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
+	{
+		FUniformBufferDx12 * DestDx12 = static_cast<FUniformBufferDx12*>(Dest.get());
+		FUniformBufferDx12 * SrcDx12 = static_cast<FUniformBufferDx12*>(Src.get());
+
+		ComputeCommandList->CopyBufferRegion(
+			DestDx12->BufferResource.GetResource().Get(), DestOffset,
+			SrcDx12->BufferResource.GetResource().Get(), SrcOffset,
+			CopySize);
+	}
+
 	void FRHIDx12::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)
 	{
 		FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
@@ -1924,6 +1935,11 @@ namespace tix
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
 		RenderCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
+	}
+
+	void FRHIDx12::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
+	{
+		TI_ASSERT(0);
 	}
 
 	void FRHIDx12::SetViewport(const FViewport& VP)

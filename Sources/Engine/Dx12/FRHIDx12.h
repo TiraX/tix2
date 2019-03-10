@@ -66,6 +66,7 @@ namespace tix
 
 		virtual void SetStencilRef(uint32 InRefValue) override;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;
+		virtual void GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
 
 		// Compute
 		virtual void SetComputePipeline(FPipelinePtr InPipeline) override;
@@ -73,6 +74,7 @@ namespace tix
 		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 
 		virtual void DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ) override;
+		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
 		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;

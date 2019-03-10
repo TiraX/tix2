@@ -24,7 +24,7 @@ struct PixelShaderInput
 PixelShaderInput main(VertexShaderInput vsInput)
 {
 	PixelShaderInput output;
-	float4 pos = float4(vsInput.pos, 1.0f);
+	float4 pos = float4(vsInput.pos + offset.xyz, 1.0f);
 
 	// vertex input position already in projected space.
 	output.pos = pos;

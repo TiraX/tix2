@@ -49,7 +49,7 @@ void FComputeRenderer::InitInRenderThread()
 	FRHI * RHI = FRHI::Get();
 
 	// Init resources
-	static const float TriangleScale = 0.1f;
+	static const float TriangleScale = 0.05f;
 	static const vector3df TriangleVertices[3] = 
 	{
 		vector3df(-1.f * TriangleScale, -1.f * TriangleScale, 0.f),
@@ -72,7 +72,7 @@ void FComputeRenderer::InitInRenderThread()
 	ComputeBuffer = ti_new FComputeBuffer;
 	ComputeBuffer->UniformBufferData[0].Info.X = 0.05f;	//TriangleHalfWidth
 	ComputeBuffer->UniformBufferData[0].Info.Y = 1.f;		//TriangleDepth
-	ComputeBuffer->UniformBufferData[0].Info.Z = 0.5f;		//CullingCutoff
+	ComputeBuffer->UniformBufferData[0].Info.Z = 0.6f;		//CullingCutoff
 	ComputeBuffer->UniformBufferData[0].Info.W = TriCount;	//TriangleCount;
 	ComputeBuffer->InitUniformBuffer();
 
@@ -96,7 +96,7 @@ void FComputeRenderer::InitInRenderThread()
 		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.X = 3;	//VertexCountPerInstance
 		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.Y = 1;	//InstanceCount
 		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.Z = 0;	//StartVertexLocation
-		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.X = 0;	//StartInstanceLocation
+		IndirectCommandsBuffer->UniformBufferData[i].DrawArguments.W = 0;	//StartInstanceLocation
 		gpuAddress += InstanceParamBuffer->GetStructureStrideInBytes();
 	}
 	IndirectCommandsBuffer->InitUniformBuffer();
@@ -153,6 +153,8 @@ void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Do compute cull first
 	const int32 ThreadBlockSize = 128;	// Should match the value in S_TriangleCullCS
 	TI_TODO("Reset command count");
+	uint32 CounterOffset = IndirectCommandsBuffer->GetStructureStrideInBytes() * IndirectCommandsBuffer->GetElementsSize();
+	RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
 	ComputeTask->Run(RHI, uint32(TriCount / float(ThreadBlockSize)), 1, 1);
 
     RHI->BeginRenderToFrameBuffer();
@@ -172,7 +174,7 @@ void FComputeRenderer::Render(FRHI* RHI, FScene* Scene)
 			CmdBuffer->GetConstantBuffer().Get(),
 			0,
 			CmdBuffer->GetConstantBuffer().Get(),
-			IndirectCommandsBuffer->GetStructureStrideInBytes() * IndirectCommandsBuffer->GetElementsSize()
+			CounterOffset
 		);
 	}
 	else
