@@ -5,11 +5,11 @@
 
 #pragma once
 
-class TComputeTicker : public TTicker
+class TVirtualTextureTicker : public TTicker
 {
 public:
-	TComputeTicker();
-	virtual ~TComputeTicker();
+	TVirtualTextureTicker();
+	virtual ~TVirtualTextureTicker();
 
 	virtual void Tick(float Dt) override;
 

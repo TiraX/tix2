@@ -2,8 +2,8 @@
 //
 
 #include "stdafx.h"
-#include "ComputeTicker.h"
-#include "ComputeRenderer.h"
+#include "VirtualTextureTicker.h"
+#include "VirtualTextureRenderer.h"
 
 int main()
 {
@@ -11,18 +11,18 @@ int main()
 	//_CrtSetBreakAlloc(-1);
 	{
 		TEngineDesc Desc;
-		Desc.Name = "Temp Compute App";
+		Desc.Name = "Virtual Texture App";
 		Desc.Width = 1600;
 		Desc.Height = 900;
 
 		TEngine::InitEngine(Desc);
 
 		// before tick and render
-		TEngine::Get()->AddTicker(ti_new TComputeTicker());
-		TEngine::Get()->AddRenderer(ti_new FComputeRenderer());
+		TEngine::Get()->AddTicker(ti_new TVirtualTextureTicker());
+		TEngine::Get()->AddRenderer(ti_new FVirtualTextureRenderer());
 
 		// Setup scenes
-		TComputeTicker::SetupScene();
+		TVirtualTextureTicker::SetupScene();
 
 		// start tick and render
 

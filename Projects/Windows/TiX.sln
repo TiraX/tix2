@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02.ResConverter", "..\..\Sa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03.SSSSSample", "..\..\Samples\03.SSSSSample\SSSSSample.vcxproj", "{25248071-612B-4150-A467-322A25FCE4AB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04.TempCompute", "..\..\Samples\04.TempCompute\TempCompute.vcxproj", "{F49F0C36-CC2F-4892-BC94-831936233F97}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04.VirtualTexture", "..\..\Samples\04.VirtualTexture\VirtualTexture.vcxproj", "{F49F0C36-CC2F-4892-BC94-831936233F97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

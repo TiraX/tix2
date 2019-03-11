@@ -20,10 +20,10 @@
     <ClInclude Include="targetver.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ComputeRenderer.h">
+    <ClInclude Include="VirtualTextureRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ComputeTicker.h">
+    <ClInclude Include="VirtualTextureTicker.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -31,30 +31,14 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ComputeRenderer.cpp">
+    <ClCompile Include="VirtualTextureRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ComputeSample.cpp">
+    <ClCompile Include="VirtualTextureSample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ComputeTicker.cpp">
+    <ClCompile Include="VirtualTextureTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TrianglePS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TriangleVS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\Dx12\S_TriangleRS.hlsli">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>

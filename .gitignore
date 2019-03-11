@@ -15,3 +15,5 @@ Binary/Windows/TiX.dll
 Samples/03.SSSSSample/Content/Cooked/
 Samples/04.TempCompute/x64/
 Samples/04.TempCompute/Content/Cooked/
+Samples/04.VirtualTexture/Content/Cooked/
+Samples/04.VirtualTexture/x64/
