@@ -354,7 +354,16 @@ namespace tix
 
 		ComputeCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-		TI_TODO("Move frame buffer clear & Setup to BeginRenderToFrameBuffer()");
+		// Set the viewport and scissor rectangle.
+		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+		RenderCommandList->RSSetViewports(1, &ViewportDx);
+		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+		RenderCommandList->RSSetScissorRects(1, &ScissorRect);
+	}
+
+	void FRHIDx12::BeginRenderToFrameBuffer()
+	{
+		// Start render to frame buffer.
 		// Indicate this resource will be in use as a render target.
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		FlushGraphicsBarriers(RenderCommandList.Get());
@@ -365,12 +374,6 @@ namespace tix
 		RenderCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 		RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
-
-		// Set the viewport and scissor rectangle.
-		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-		RenderCommandList->RSSetViewports(1, &ViewportDx);
-		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-		RenderCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
 	void FRHIDx12::EndFrame()

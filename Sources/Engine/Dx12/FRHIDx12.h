@@ -27,6 +27,7 @@ namespace tix
 		virtual void InitRHI() override;
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
+		virtual void BeginRenderToFrameBuffer() override;
 
 		virtual void WaitingForGpu() override;
 
