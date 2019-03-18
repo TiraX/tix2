@@ -117,6 +117,10 @@ namespace tix
 				ChunkHeader[ECL_MATERIAL_INSTANCE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_MINSTANCE);
 				break;
+			case TIRES_ID_CHUNK_SCENE:
+				ChunkHeader[ECL_SCENE] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SCENE);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -431,5 +435,60 @@ namespace tix
 			Result = MInstance;
 		}
 		return Result;
+	}
+
+	void TResFile::LoadScene()
+	{
+		if (ChunkHeader[ECL_SCENE] == nullptr)
+		{
+			_LOG(Error, "Can not find scene chunk when loading scene %s.", Filename.c_str());
+			return;
+		}
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_SCENE];
+		TI_ASSERT(ChunkHeader[ECL_SCENE]->ElementCount == 1);
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* SceneDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderScene)) * 1;
+
+		TMaterialInstancePtr Result;
+		// each ResFile should have only 1 resource
+		for (int32 i = 0; i < 1; ++i)
+		{
+			const THeaderScene* Header = (const THeaderScene*)(HeaderStart);
+
+			// Setup Env Node
+			TNodeEnvironment* Env = TEngine::Get()->GetScene()->GetEnvironment();
+			Env->SetMainLightDirection(Header->MainLightDirection);
+			Env->SetMainLightColor(Header->MainLightColor);
+			Env->SetMainLightIntensity(Header->MainLightIntensity);
+
+			// Load meshes
+			const THeaderSceneMesh* HeaderMeshes = (const THeaderSceneMesh*)(SceneDataStart);
+			for (int32 m = 0 ; m < Header->Meshes ; ++ m)
+			{
+				const THeaderSceneMesh& MeshInfo = HeaderMeshes[m];
+				TString MeshName = GetString(MeshInfo.MeshNameIndex);
+				// Send to load thread
+				_LOG(Log, "Loading mesh : %s.\n", MeshName.c_str());
+			}
+
+			// Create instance nodes
+			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(SceneDataStart + sizeof(THeaderSceneMesh) * Header->Meshes);
+			int32 TotalInstances = 0;
+			for (int32 m = 0; m < Header->Meshes; ++m)
+			{
+				const THeaderSceneMesh& MeshInfo = HeaderMeshes[m];
+
+				for (int32 ins = 0 ; ins < MeshInfo.MeshInstances; ++ ins)
+				{
+					const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
+					//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);
+				}
+
+				TotalInstances += MeshInfo.MeshInstances;
+				TI_ASSERT(TotalInstances <= Header->Instances);
+			}
+		}
 	}
 }

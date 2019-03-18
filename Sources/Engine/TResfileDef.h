@@ -212,9 +212,9 @@ namespace tix
 		int32 NameIndex;
 
 		// Environment
-		vector3df SunLightDirection;
-		SColorf SunLightColor;
-		float SunLightIntensity;
+		vector3df MainLightDirection;
+		SColorf MainLightColor;
+		float MainLightIntensity;
 		
 		// Scene Meshes and Instances
 		int32 Meshes;

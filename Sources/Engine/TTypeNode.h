@@ -15,6 +15,7 @@ namespace tix
 		ENT_Camera = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'A'),
 		ENT_CameraNav = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'N'),
 		ENT_Light = TI_MAKE_IDENTIFIER('L', 'I', 'T', 'P'),
+		ENT_Environment = TI_MAKE_IDENTIFIER('E', 'N', 'V', 'I'),
 		//ENT_GEOMETRY		= TI_MAKE_IDENTIFIER('G', 'E', 'O', 'M'),
 		//ENT_MESHGROUP		= TI_MAKE_IDENTIFIER('M', 'G', 'R', 'P'),
 		//ENT_SKINMESH		= TI_MAKE_IDENTIFIER('S', 'K', 'M', 'S'),

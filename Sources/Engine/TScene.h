@@ -63,6 +63,8 @@ namespace tix
 		TI_API void SetActiveCamera(TNodeCamera* camera);
 		TI_API TNodeCamera* GetActiveCamera();
 
+		TI_API TNodeEnvironment* GetEnvironment();
+
 		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
 		TI_API TNodeLight* AddLight(const vector3df& Position, float Intensity, const SColor& Color);
 
@@ -77,6 +79,8 @@ namespace tix
 
 		TNodeCamera* DefaultCamera;
 		TNodeCamera* ActiveCamera;
+
+		TNodeEnvironment* DefaultEnvironment;
 
 		TVector<TNode*> ActiveNodeList[ESLT_COUNT];
 	};

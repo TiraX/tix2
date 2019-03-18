@@ -26,12 +26,18 @@ namespace tix
 		// Create default camera, this camera can only deleted by render stage.
 		DefaultCamera = TNodeFactory::CreateNode<TNodeCameraNav>(NodeRoot);
 		SetActiveCamera(DefaultCamera);
+
+		// Create default environment
+		DefaultEnvironment = TNodeFactory::CreateNode<TNodeEnvironment>(NodeRoot);
 	}
 
 	TScene::~TScene()
 	{
 		DefaultCamera->Remove();
-		ti_delete	DefaultCamera;
+		ti_delete DefaultCamera;
+
+		DefaultEnvironment->Remove();
+		ti_delete DefaultEnvironment;
 
 		// remove root last
 		ti_delete	NodeRoot;
@@ -67,6 +73,11 @@ namespace tix
 	TNodeCamera* TScene::GetActiveCamera()
 	{
 		return ActiveCamera;
+	}
+
+	TNodeEnvironment* TScene::GetEnvironment()
+	{
+		return DefaultEnvironment;
 	}
 
 	TNodeStaticMesh* TScene::AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)

@@ -71,6 +71,16 @@ namespace tix
 		}
 	}
 
+	void TResourceLibrary::LoadScene(const TString& ResFilename)
+	{
+		// Load resource to library
+		TResFilePtr ResFile = ti_new TResFile;
+		if (ResFile->Load(ResFilename))
+		{
+			ResFile->LoadScene();
+		}
+	}
+
 	void TResourceLibrary::RemoveUnusedResources()
 	{
 		MapResources::iterator it = Resources.begin();

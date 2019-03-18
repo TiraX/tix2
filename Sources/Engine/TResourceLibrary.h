@@ -15,6 +15,8 @@ namespace tix
 		TI_API TResourcePtr LoadResource(const TString& ResFilename);
 		TI_API TResourcePtr CreateShaderResource(const TShaderNames& ShaderNames);
 
+		TI_API void LoadScene(const TString& ResFilename);
+
 		TI_API void RemoveUnusedResources();
 
 	private:

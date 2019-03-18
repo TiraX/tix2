@@ -20,6 +20,7 @@ namespace tix
 
 		TResourcePtr CreateResource();
 
+		void LoadScene();
 		TMeshBufferPtr CreateMeshBuffer();
 		TTexturePtr CreateTexture();
 		TMaterialPtr CreateMaterial();

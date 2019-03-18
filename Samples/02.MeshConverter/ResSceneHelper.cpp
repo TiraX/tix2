@@ -79,9 +79,9 @@ namespace tix
 			Define.NameIndex = AddStringToList(OutStrings, MapName);
 
 			// Environment Info
-			Define.SunLightDirection = Environment.SunLight.Direction;
-			Define.SunLightColor = Environment.SunLight.Color;
-			Define.SunLightIntensity = Environment.SunLight.Intensity;
+			Define.MainLightDirection = Environment.SunLight.Direction;
+			Define.MainLightColor = Environment.SunLight.Color;
+			Define.MainLightIntensity = Environment.SunLight.Intensity;
 
 			// Meshes and Instances Info
 			Define.Meshes = (int32)Meshes.size();

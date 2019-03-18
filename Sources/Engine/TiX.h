@@ -60,6 +60,7 @@ using namespace std;
 #include "TNode.h"
 #include "TNodeCamera.h"
 #include "TNodeCameraNav.h"
+#include "TNodeEnvironment.h"
 #include "TNodeStaticMesh.h"
 #include "TNodeLight.h"
 #include "TScene.h"
