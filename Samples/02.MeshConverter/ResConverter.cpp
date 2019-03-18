@@ -10,7 +10,7 @@
 #include "ResPipelineHelper.h"
 #include "ResMaterialHelper.h"
 #include "ResMaterialInstanceHelper.h"
-#include "ResShaderBindingHelper.h"
+#include "ResSceneHelper.h"
 
 TString FilenameSrc;
 TString FilenameDst;
@@ -172,12 +172,11 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 				TStream& MIStream = Resfile.GetChunk(ECL_MATERIAL_INSTANCE);
 				TResMaterialInstanceHelper::LoadMaterialInstance(JsonDoc, MIStream, Resfile.Strings);
 			}
-			else if (strcmp(type, "shader_binding") == 0)
+			else if (strcmp(type, "scene") == 0)
 			{
-				TI_ASSERT(0);
-				// Material Parameter Binding
-				//TStream& MIStream = Resfile.GetChunk(ECL_SHADER_BINDING);
-				//TResShaderBindingHelper::LoadShaderBinding(JsonDoc, MIStream, Resfile.Strings);
+				// Scene
+				TStream& MIStream = Resfile.GetChunk(ECL_SCENE);
+				TResSceneHelper::LoadScene(JsonDoc, MIStream, Resfile.Strings);
 			}
 			ti_delete[] content;
 		}

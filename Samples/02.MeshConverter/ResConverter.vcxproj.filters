@@ -52,6 +52,9 @@
     <ClInclude Include="..\..\Sources\Engine\TJSON.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
+    <ClInclude Include="ResSceneHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -103,6 +106,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TImageLoaderTGA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResSceneHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

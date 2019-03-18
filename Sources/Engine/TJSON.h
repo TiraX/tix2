@@ -178,4 +178,42 @@ namespace tix
 	protected:
 		Document JsonDoc;
 	};
+
+	class TJSONUtil
+	{
+	public:
+		static vector3df JsonArrayToVector3df(TJSONNode ArrayNode)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 3);
+			vector3df Result;
+			Result.X = ArrayNode[0].GetFloat();
+			Result.Y = ArrayNode[1].GetFloat();
+			Result.Z = ArrayNode[2].GetFloat();
+
+			return Result;
+		}
+		static quaternion JsonArrayToQuaternion(TJSONNode ArrayNode)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 4);
+			quaternion Result;
+			Result.X = ArrayNode[0].GetFloat();
+			Result.Y = ArrayNode[1].GetFloat();
+			Result.Z = ArrayNode[2].GetFloat();
+			Result.W = ArrayNode[3].GetFloat();
+
+			return Result;
+		}
+		static SColorf JsonArrayToSColorf(TJSONNode ArrayNode)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 4);
+			SColorf Result;
+			Result.R = ArrayNode[0].GetFloat();
+			Result.G = ArrayNode[1].GetFloat();
+			Result.B = ArrayNode[2].GetFloat();
+			Result.A = ArrayNode[3].GetFloat();
+
+			return Result;
+		}
+
+	};
 }
