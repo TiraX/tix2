@@ -89,6 +89,8 @@
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TThreadIO.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TThreadLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +192,8 @@
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
     <ClInclude Include="..\..\Sources\Engine\TInput.h" />
     <ClInclude Include="..\..\Sources\Engine\TInputEventType.h" />
+    <ClInclude Include="..\..\Sources\Engine\TThreadIO.h" />
+    <ClInclude Include="..\..\Sources\Engine\TThreadLoading.h" />
     <ClInclude Include="..\..\Sources\Engine\TTicker.h" />
     <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
     <ClInclude Include="..\..\Sources\Engine\TMath.h" />

@@ -62,6 +62,9 @@ namespace tix
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
 		
+		// Create Loading Thread
+		TThreadLoading::CreateLoadingThread();
+
 		// Create Render Thread
 		FRenderThread::CreateRenderThread();
 
@@ -108,6 +111,9 @@ namespace tix
 		// delete components
 		SAFE_DELETE(Scene);
 		SAFE_DELETE(ResourceLibrary);
+
+		// Shut down loading thread
+		TThreadLoading::DestroyLoadingThread();
 
 		// Shut down render thread
 		FRenderThread::DestroyRenderThread();

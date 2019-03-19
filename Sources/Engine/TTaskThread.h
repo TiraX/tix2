@@ -49,10 +49,10 @@ namespace tix
 
 	protected:
 		typedef TThreadSafeQueue<TTask*> TTaskQueue;
-		TTaskQueue		Tasks;
-		TTaskQueue		TaskFinished;
+		TTaskQueue Tasks;
+		TTaskQueue TaskFinished;
 
-		TMutex			TaskMutex;
-		TCond			TaskCond;
+		TMutex TaskMutex;
+		TCond TaskCond;
 	};
 }
