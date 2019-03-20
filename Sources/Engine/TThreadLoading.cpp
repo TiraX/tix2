@@ -30,18 +30,21 @@ namespace tix
 			TI_ASSERT(ResourceObject->SourceFile->Filebuffer != nullptr);
 			ResourceObject->SourceFile->ParseFile();
 			ResourceObject->Resource = ResourceObject->SourceFile->CreateResource();
-			LoadingStep = STEP_FINISHED;
+			LoadingStep = STEP_BACK_TO_MAINTHREAD;
 			TI_ASSERT(ResourceObject->SourceFile->referenceCount() == 1);
 			ResourceObject->SourceFile = nullptr;
 			// Return to main thread
 			TEngine::Get()->AddTask(this);
 		}
-		else
+		else if (LoadingStep == STEP_BACK_TO_MAINTHREAD)
 		{
-			TI_ASSERT(LoadingStep == STEP_FINISHED);
 			TI_ASSERT(IsGameThread());
 			// Init render thread resource
 			ResourceObject->Resource->InitRenderThreadResource();
+
+			LoadingStep = STEP_FINISHED;
+			// Change 03.SSSSSample to asyn loading.
+			TI_ASSERT(0);
 		}
 	}
 

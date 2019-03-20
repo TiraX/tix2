@@ -14,6 +14,7 @@ namespace tix
 		{
 			STEP_IO,
 			STEP_PARSE,
+			STEP_BACK_TO_MAINTHREAD,
 			STEP_FINISHED,
 		};
 		TResourceLoadingTask(const TString& InResFilename, TResourceObjectPtr InResourceObject)
@@ -26,7 +27,7 @@ namespace tix
 		virtual void Execute() override;
 		virtual bool HasNextTask() override
 		{
-			return true;
+			return LoadingStep != STEP_FINISHED;
 		}
 
 		int32 GetLoadingStep() const

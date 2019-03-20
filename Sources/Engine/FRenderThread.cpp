@@ -183,8 +183,11 @@ namespace tix
 #endif
 
 			// release task memory
-			ti_delete Task;
-			Task = nullptr;
+			if (!Task->HasNextTask())
+			{
+				ti_delete Task;
+				Task = nullptr;
+			}
 		}
 
 		// Move to next
