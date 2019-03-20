@@ -171,6 +171,7 @@ namespace tix
 
 	void TEngine::BeginFrame()
 	{
+		DoTasks();
 		Scene->ResetActiveLists();
 	}
 
@@ -229,5 +230,27 @@ namespace tix
 		}
 
 		RT->TriggerRender();
+	}
+
+	void TEngine::AddTask(TTask * Task)
+	{
+		MainThreadTasks.PushBack(Task);
+	}
+
+	void TEngine::DoTasks()
+	{
+		TTask* Task;
+		while (MainThreadTasks.GetSize() > 0)
+		{
+			MainThreadTasks.PopFront(Task);
+			Task->Execute();
+
+			// release task memory
+			if (!Task->HasNextTask())
+			{
+				ti_delete Task;
+				Task = nullptr;
+			}
+		}
 	}
 }

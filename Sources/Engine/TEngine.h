@@ -63,6 +63,8 @@ namespace tix
 #if defined (TI_PLATFORM_IOS)
         void TickIOS();
 #endif
+		// Tasks
+		TI_API void AddTask(TTask * Task);
 
 	private:
 		TEngine();
@@ -78,6 +80,8 @@ namespace tix
 		void BeginFrame();
 		void EndFrame();
 
+		void DoTasks();
+
 	private:
 		static E_Platform CurrentPlatform;
 
@@ -88,5 +92,8 @@ namespace tix
 
 		uint64 LastFrameTime;
 		TVector<TTicker*> Tickers;
+
+		typedef TThreadSafeQueue<TTask*> TTaskQueue;
+		TTaskQueue MainThreadTasks;
 	};
 }

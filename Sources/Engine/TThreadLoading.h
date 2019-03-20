@@ -26,7 +26,7 @@ namespace tix
 		virtual void Execute() override;
 		virtual bool HasNextTask() override
 		{
-			return LoadingStep != STEP_FINISHED;
+			return true;
 		}
 
 		int32 GetLoadingStep() const
