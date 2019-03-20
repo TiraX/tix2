@@ -26,8 +26,8 @@ void TSSSSTicker::SetupScene()
 	// Head
 	{
 		const TString TargetMeshRes = "SM_Head.tres";
-		TResourcePtr MeshRes = TResourceLibrary::Get()->LoadResource(TargetMeshRes);
-		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes.get());
+		TResourceObjectPtr MeshRes = TResourceLibrary::Get()->LoadResource(TargetMeshRes);
+		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes->Resource.get());
 
 		Scene->AddStaticMesh(MeshBuffer, MeshBuffer->GetDefaultMaterial(), false, false);
 	}
@@ -35,8 +35,8 @@ void TSSSSTicker::SetupScene()
 	// Sky Dome
 	{
 		const TString TargetMeshRes = "SM_SkyDome.tres";
-		TResourcePtr MeshRes = TResourceLibrary::Get()->LoadResource(TargetMeshRes);
-		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes.get());
+		TResourceObjectPtr MeshRes = TResourceLibrary::Get()->LoadResource(TargetMeshRes);
+		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes->Resource.get());
 
 		Scene->AddStaticMesh(MeshBuffer, MeshBuffer->GetDefaultMaterial(), false, false);
 	}

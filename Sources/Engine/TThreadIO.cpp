@@ -8,6 +8,8 @@
 
 namespace tix
 {
+	TThreadId TThreadIO::IOThreadId;
+
 	TThreadIO::TThreadIO()
 		: TTaskThread("IOThread")
 	{
@@ -15,5 +17,12 @@ namespace tix
 
 	TThreadIO::~TThreadIO()
 	{
+	}
+
+	void TThreadIO::OnThreadStart()
+	{
+		TTaskThread::OnThreadStart();
+
+		IOThreadId = ThreadId;
 	}
 }

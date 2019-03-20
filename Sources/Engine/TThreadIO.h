@@ -13,8 +13,21 @@ namespace tix
 		TThreadIO();
 		virtual ~TThreadIO();
 
+		virtual void OnThreadStart() override;
+
+		inline static bool IsIOThread()
+		{
+			return TThread::GetThreadId() == IOThreadId;
+		}
+
 	protected:
 
 	protected:
+		static TThreadId IOThreadId;
 	};
+
+	inline bool IsIOThread()
+	{
+		return TThreadIO::IsIOThread();
+	}
 }

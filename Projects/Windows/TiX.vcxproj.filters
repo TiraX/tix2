@@ -97,9 +97,6 @@
     <ClCompile Include="..\..\Sources\Engine\TResourceLibrary.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TResFile.cpp">
-      <Filter>Sources\Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
@@ -233,6 +230,9 @@
       <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TThreadLoading.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TResourceFile.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -408,12 +408,6 @@
     <ClInclude Include="..\..\Sources\Engine\TTexture.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TResFile.h">
-      <Filter>Sources\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TResfileDef.h">
-      <Filter>Sources\Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\math\half.hpp">
       <Filter>Sources\Math</Filter>
     </ClInclude>
@@ -571,6 +565,12 @@
       <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TThreadLoading.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TResourceFile.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TResourceFileDef.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>

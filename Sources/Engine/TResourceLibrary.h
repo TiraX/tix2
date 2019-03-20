@@ -12,9 +12,9 @@ namespace tix
 	public:
 		TI_API static TResourceLibrary* Get();
 
-		TI_API TResourcePtr LoadResource(const TString& ResFilename);
-		TI_API TResourcePtr CreateShaderResource(const TShaderNames& ShaderNames);
-
+		TI_API TResourceObjectPtr LoadResource(const TString& ResFilename);
+		TI_API TResourceObjectPtr LoadResourceAysc(const TString& ResFilename);
+		TI_API TResourceObjectPtr CreateShaderResource(const TShaderNames& ShaderNames);
 		TI_API void LoadScene(const TString& ResFilename);
 
 		TI_API void RemoveUnusedResources();
@@ -27,8 +27,8 @@ namespace tix
 		void RemoveAllResources();
 
 	private:
-		typedef TMap< TString, TResourcePtr >	MapResources;
-		MapResources Resources;
+		typedef TMap< TString, TResourceObjectPtr >	MapResourceObjects;
+		MapResourceObjects ResourceObjects;
 
 		friend class TEngine;
 	};

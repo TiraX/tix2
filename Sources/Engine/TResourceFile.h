@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include "TResfileDef.h"
+#include "TResourceFileDef.h"
 
 namespace tix
 {
-	class TResFile : public IReferenceCounted
+	class TResourceFile : public IReferenceCounted
 	{
 	private:
-		TResFile();
-		virtual ~TResFile();
+		TResourceFile();
+		virtual ~TResourceFile();
 
 		bool Load(const TString& InFilename);
 

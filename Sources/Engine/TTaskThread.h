@@ -14,6 +14,10 @@ namespace tix
 		virtual ~TTask();
 
 		virtual void Execute() = 0;
+		virtual bool HasNextTask()
+		{
+			return false;
+		}
 
 #if TIX_DEBUG_RENDER_TASK_NAME
 		void SetTaskName(const TString& Name)
@@ -42,7 +46,7 @@ namespace tix
 		virtual void Run() override;
 		virtual void Stop() override;
 
-		void AddTask(TTask* Task);
+		virtual void AddTask(TTask* Task);
 		
 	protected:
 		virtual void DoTasks();

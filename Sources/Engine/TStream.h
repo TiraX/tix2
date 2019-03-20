@@ -121,7 +121,7 @@ namespace tix
 		}
 
 	protected:
-		char* Buffer;
+		int8* Buffer;
 		int32 Pos;
 		int32 BufferSize;
 	};

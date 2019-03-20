@@ -4,11 +4,11 @@
 */
 
 #include "stdafx.h"
-#include "TResFile.h"
+#include "TResourceFile.h"
 
 namespace tix
 {
-	TResFile::TResFile()
+	TResourceFile::TResourceFile()
 		: Filebuffer(nullptr)
 		, Header(nullptr)
 		, StringOffsets(nullptr)
@@ -16,18 +16,18 @@ namespace tix
 		memset(ChunkHeader, 0, sizeof(ChunkHeader));
 	}
 
-	TResFile::~TResFile()
+	TResourceFile::~TResourceFile()
 	{
 		Destroy();
 	}
 
-	void TResFile::Destroy()
+	void TResourceFile::Destroy()
 	{
 		Filename = "";
 		SAFE_DELETE_ARRAY(Filebuffer);
 	}
 
-	TFile* TResFile::OpenResFile(const TString& Filename)
+	TFile* TResourceFile::OpenResFile(const TString& Filename)
 	{
 		TFile* file = ti_new TFile;
 		if (!file->Open(Filename, EFA_READ))
@@ -38,7 +38,7 @@ namespace tix
 		return file;
 	}
 
-	bool TResFile::Load(const TString& InFilename)
+	bool TResourceFile::Load(const TString& InFilename)
 	{
 		if (!ReadFile(InFilename))
 		{
@@ -47,7 +47,7 @@ namespace tix
 		return ParseFile();
 	}
 
-	bool TResFile::ReadFile(const TString& InFilename)
+	bool TResourceFile::ReadFile(const TString& InFilename)
 	{
 		TFile* File = OpenResFile(InFilename);
 		if (File == nullptr)
@@ -68,7 +68,7 @@ namespace tix
 		return true;
 	}
 
-	bool TResFile::ParseFile()
+	bool TResourceFile::ParseFile()
 	{
 		int32 pos = 0;
 		Header = (TResfileHeader*)(Filebuffer + pos);
@@ -88,19 +88,19 @@ namespace tix
 		return result;
 	}
 
-	bool TResFile::LoadStringList()
+	bool TResourceFile::LoadStringList()
 	{
 		StringOffsets = (int32*)(Filebuffer + Header->StringOffset);
 		return true;
 	}
 
-	const int8* TResFile::GetString(int32 str_index)
+	const int8* TResourceFile::GetString(int32 str_index)
 	{
 		TI_ASSERT(str_index >= 0 && str_index < Header->StringCount);
 		return (char*)(StringOffsets + Header->StringCount) + (str_index > 0 ? StringOffsets[str_index - 1] : 0);
 	}
 
-	bool TResFile::LoadChunks(const char* chunk_start)
+	bool TResourceFile::LoadChunks(const char* chunk_start)
 	{
 		const TResfileChunkHeader* chunkHeader;
 		for (int32 c = 0 ; c < Header->ChunkCount ; ++ c)
@@ -138,7 +138,7 @@ namespace tix
 		return true;
 	}
 
-	TResourcePtr TResFile::CreateResource()
+	TResourcePtr TResourceFile::CreateResource()
 	{
 		TResourcePtr Resource;
 		if (ChunkHeader[ECL_MESHES] != nullptr)
@@ -158,7 +158,7 @@ namespace tix
 		return Resource;
 	}
 
-	TMeshBufferPtr TResFile::CreateMeshBuffer()
+	TMeshBufferPtr TResourceFile::CreateMeshBuffer()
 	{
 		if (ChunkHeader[ECL_MESHES] == nullptr)
 			return nullptr;
@@ -196,12 +196,12 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourcePtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TResourceObjectPtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (MIRes == nullptr)
 			{
 				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
-			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes.get());
+			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes->Resource.get());
 			Mesh->SetDefaultMaterial(MaterialInstance);
 
 			Result = Mesh;
@@ -209,7 +209,7 @@ namespace tix
 		return Result;
 	}
 
-	TTexturePtr TResFile::CreateTexture()
+	TTexturePtr TResourceFile::CreateTexture()
 	{
 		if (ChunkHeader[ECL_TEXTURES] == nullptr)
 			return nullptr;
@@ -274,7 +274,7 @@ namespace tix
 		return Result;
 	}
 
-	TMaterialPtr TResFile::CreateMaterial()
+	TMaterialPtr TResourceFile::CreateMaterial()
 	{
 		if (ChunkHeader[ECL_MATERIAL] == nullptr)
 			return nullptr;
@@ -344,7 +344,7 @@ namespace tix
 				else
 				{
 					// Load from single file
-					TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames).get());
+					TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames)->Resource.get());
 					Material->SetShader(Shader);
 				}
 			}
@@ -354,7 +354,7 @@ namespace tix
 		return Result;
 	}
 
-	TMaterialInstancePtr TResFile::CreateMaterialInstance()
+	TMaterialInstancePtr TResourceFile::CreateMaterialInstance()
 	{
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] == nullptr)
 			return nullptr;
@@ -411,12 +411,12 @@ namespace tix
 					// texture params
 					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
 					TString TextureName = GetString(TextureNameIndex);
-					TResourcePtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
+					TResourceObjectPtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
 					if (TextureRes == nullptr)
 					{
 						_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
 					}
-					TTexturePtr Texture = static_cast<TTexture*>(TextureRes.get());
+					TTexturePtr Texture = static_cast<TTexture*>(TextureRes->Resource.get());
 					MInstance->ParamTextures.push_back(Texture);
 				}
 				else
@@ -433,19 +433,19 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourcePtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TResourceObjectPtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{
 				_LOG(Error, "Failed to load material [%s] for Material Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
-			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material.get());
+			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material->Resource.get());
 
 			Result = MInstance;
 		}
 		return Result;
 	}
 
-	void TResFile::LoadScene()
+	void TResourceFile::LoadScene()
 	{
 		if (ChunkHeader[ECL_SCENE] == nullptr)
 		{

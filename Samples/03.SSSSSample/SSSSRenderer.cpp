@@ -29,23 +29,23 @@ FSSSSRenderer::FSSSSRenderer()
 	S4Effect = ti_new SeparableSSS(DEG_TO_RAD(40), 250.f);
 
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
-	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName).get());
+	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(SSSBlurMaterialName)->Resource.get());
 	PL_SSSBlur = M_SSSBlur->PipelineResource;
 	AB_SSSBlurX = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 	AB_SSSBlurY = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 
 	const TString AddSpecularMaterialName = "M_AddSpecular.tres";
-	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(AddSpecularMaterialName).get());
+	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(AddSpecularMaterialName)->Resource.get());
 	PL_AddSpecular = M_AddSpecular->PipelineResource;
 	AB_AddSpecular = FRHI::Get()->CreateArgumentBuffer(M_AddSpecular->GetDesc().Shader->ShaderResource);
 
 	const TString GlareDetectionMaterialName = "M_GlareDetection.tres";
-	TMaterialPtr M_GlareDetection = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(GlareDetectionMaterialName).get());
+	TMaterialPtr M_GlareDetection = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(GlareDetectionMaterialName)->Resource.get());
 	PL_GlareDetection = M_GlareDetection->PipelineResource;
 	AB_GlareDetection = FRHI::Get()->CreateArgumentBuffer(M_GlareDetection->GetDesc().Shader->ShaderResource);
 
 	const TString BloomMaterialName = "M_Bloom.tres";
-	TMaterialPtr M_Bloom = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(BloomMaterialName).get());
+	TMaterialPtr M_Bloom = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(BloomMaterialName)->Resource.get());
 	PL_Bloom = M_Bloom->PipelineResource;
 	for (int32 p = 0; p < BloomPasses; ++p)
 	{
@@ -59,7 +59,7 @@ FSSSSRenderer::FSSSSRenderer()
 	}
 
 	const TString CombineMaterialName = "M_Combine.tres";
-	TMaterialPtr M_Combine = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(CombineMaterialName).get());
+	TMaterialPtr M_Combine = static_cast<TMaterial*>(TResourceLibrary::Get()->LoadResource(CombineMaterialName)->Resource.get());
 	PL_Combine = M_Combine->PipelineResource;
 	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);
 }

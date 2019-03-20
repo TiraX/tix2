@@ -60,15 +60,16 @@ namespace tix
 			Task->Execute();
 
 			// release task memory
-			ti_delete Task;
-			Task = nullptr;
+			if (!Task->HasNextTask())
+			{
+				ti_delete Task;
+				Task = nullptr;
+			}
 		}
 	}
 
 	void TTaskThread::AddTask(TTask* Task)
 	{
-		TI_ASSERT(IsGameThread());
-
 		unique_lock<TMutex> CLock(TaskMutex);
 		Tasks.PushBack(Task);
 		TaskCond.notify_one();

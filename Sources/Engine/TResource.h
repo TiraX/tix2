@@ -54,7 +54,24 @@ namespace tix
 #ifdef TIX_DEBUG
 		TString ResourceName;
 #endif
-		friend class TResFile;
+		friend class TResourceFile;
 	};
 
+	class TResourceObject : public IReferenceCounted
+	{
+	public:
+		TResourceObject()
+		{}
+
+		~TResourceObject()
+		{
+			SourceFile = nullptr;
+			Resource = nullptr;
+		}
+
+		// Hold an source file for asynchronous loading
+		TResourceFilePtr SourceFile;
+		// Resource loaded
+		TResourcePtr Resource;
+	};
 }

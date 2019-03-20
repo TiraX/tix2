@@ -55,8 +55,8 @@ using namespace std;
 #include "TShader.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
-#include "TResfileDef.h"
-#include "TResFile.h"
+#include "TResourceFileDef.h"
+#include "TResourceFile.h"
 #include "TNode.h"
 #include "TNodeCamera.h"
 #include "TNodeCameraNav.h"
@@ -64,6 +64,8 @@ using namespace std;
 #include "TNodeStaticMesh.h"
 #include "TNodeLight.h"
 #include "TScene.h"
+#include "TThreadIO.h"
+#include "TThreadLoading.h"
 
 // RHI things
 #include "FRenderResource.h"

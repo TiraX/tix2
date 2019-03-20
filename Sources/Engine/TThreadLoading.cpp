@@ -9,7 +9,39 @@
 
 namespace tix
 {
+	void TResourceLoadingTask::Execute()
+	{
+		if (LoadingStep == STEP_IO)
+		{
+			_LOG(Log, "Doing IO.\n");
+			// Read file content to FileBuffer
+			TI_ASSERT(IsIOThread());
+			ResourceObject->SourceFile->ReadFile(ResFilename);
+			LoadingStep = STEP_PARSE;
+			// Forward to loading thread
+			TThreadLoading::Get()->AddTask(this);
+		}
+		else if (LoadingStep == STEP_PARSE)
+		{
+			_LOG(Log, "Doing Parse.\n");
+			// Parse the buffer
+			TI_ASSERT(IsLoadingThread());
+			TI_ASSERT(ResourceObject->SourceFile->Filebuffer != nullptr);
+			ResourceObject->SourceFile->ParseFile();
+			ResourceObject->Resource = ResourceObject->SourceFile->CreateResource();
+			LoadingStep = STEP_FINISHED;
+			ResourceObject->SourceFile = nullptr;
+			// Return to main thread
+		}
+		else
+		{
+			TI_ASSERT(0);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	TThreadLoading* TThreadLoading::LoadingThread = nullptr;
+	TThreadId TThreadLoading::LoadingThreadId;
 
 	void TThreadLoading::CreateLoadingThread()
 	{
@@ -24,6 +56,11 @@ namespace tix
 		LoadingThread->Stop();
 		ti_delete LoadingThread;
 		LoadingThread = nullptr;
+	}
+
+	TThreadLoading * TThreadLoading::Get()
+	{
+		return LoadingThread;
 	}
 
 	TThreadLoading::TThreadLoading()
@@ -56,5 +93,31 @@ namespace tix
 
 		// Stop loading thread self
 		TTaskThread::Stop();
+	}
+
+	void TThreadLoading::AddTask(TTask* Task)
+	{
+		TResourceLoadingTask* LoadingTask = static_cast<TResourceLoadingTask*>(Task);
+		if (LoadingTask->GetLoadingStep() == TResourceLoadingTask::STEP_IO)
+		{
+			// Send Task to IO Thread first
+			IOThread->AddTask(Task);
+		}
+		else if (LoadingTask->GetLoadingStep() == TResourceLoadingTask::STEP_PARSE)
+		{
+			TTaskThread::AddTask(Task);
+		}
+		else
+		{
+			// Should not have other state
+			TI_ASSERT(0);
+		}
+	}
+
+	void TThreadLoading::OnThreadStart()
+	{
+		TTaskThread::OnThreadStart();
+
+		LoadingThreadId = ThreadId;
 	}
 }
