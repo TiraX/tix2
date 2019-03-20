@@ -38,30 +38,38 @@ namespace tix
 		return file;
 	}
 
-	bool TResFile::Load(const TString& Filename)
+	bool TResFile::Load(const TString& InFilename)
 	{
-		TFile* file = OpenResFile(Filename);
-		if (file == nullptr)
+		if (!ReadFile(InFilename))
 		{
-			TString Path = TPath::GetAbsolutePath(Filename);
-			file = OpenResFile(Path);
-		}
-		if (file == nullptr)
 			return false;
-
-		bool result = Load(*file);
-		ti_delete file;
-		return result;
+		}
+		return ParseFile();
 	}
 
-	bool TResFile::Load(TFile& res_file)
+	bool TResFile::ReadFile(const TString& InFilename)
 	{
-		Filename = res_file.GetFileName();
+		TFile* File = OpenResFile(InFilename);
+		if (File == nullptr)
+		{
+			TString Path = TPath::GetAbsolutePath(InFilename);
+			File = OpenResFile(Path);
+		}
+		if (File == nullptr)
+		{
+			return false;
+		}
+		Filename = File->GetFileName();
 		TI_ASSERT(Filebuffer == nullptr);
-		Filebuffer = ti_new int8[res_file.GetSize()];
-		res_file.Read(Filebuffer, res_file.GetSize(), res_file.GetSize());
-		res_file.Close();
+		Filebuffer = ti_new int8[File->GetSize()];
+		File->Read(Filebuffer, File->GetSize(), File->GetSize());
+		File->Close();
+		ti_delete File;
+		return true;
+	}
 
+	bool TResFile::ParseFile()
+	{
 		int32 pos = 0;
 		Header = (TResfileHeader*)(Filebuffer + pos);
 		if (Header->Version != TIRES_VERSION_MAINFILE)

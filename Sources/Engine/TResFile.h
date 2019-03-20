@@ -16,7 +16,6 @@ namespace tix
 		virtual ~TResFile();
 
 		bool Load(const TString& InFilename);
-		bool Load(TFile& res_file);
 
 		TResourcePtr CreateResource();
 
@@ -38,6 +37,8 @@ namespace tix
 		TFile * OpenResFile(const TString& file_name);
 		bool LoadChunks(const char* chunk_start);
 		bool LoadStringList();
+		bool ReadFile(const TString& InFilename);
+		bool ParseFile();
 
 	protected:
 		TString Filename;
@@ -48,5 +49,6 @@ namespace tix
 		int32* StringOffsets;
 
 		friend class TResourceLibrary;
+		friend class TResourceLoadingTask;
 	};
 }
