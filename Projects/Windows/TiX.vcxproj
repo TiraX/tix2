@@ -39,6 +39,7 @@
     <ClCompile Include="..\..\Sources\Engine\FLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FPostProcess.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderResource.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
+    <ClInclude Include="..\..\Sources\Engine\FPostProcess.h" />
     <ClInclude Include="..\..\Sources\Engine\FPrimitive.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderResource.h" />

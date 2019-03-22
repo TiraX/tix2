@@ -6,6 +6,8 @@
 #include "stdafx.h"
 #include "SSSSTicker.h"
 
+#define ASYC_LOADING 1
+
 TSSSSTicker::TSSSSTicker()
 {
 }

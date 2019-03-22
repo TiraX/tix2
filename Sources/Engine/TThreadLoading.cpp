@@ -43,8 +43,6 @@ namespace tix
 			ResourceObject->Resource->InitRenderThreadResource();
 
 			LoadingStep = STEP_FINISHED;
-			// Change 03.SSSSSample to asyn loading.
-			TI_ASSERT(0);
 		}
 	}
 

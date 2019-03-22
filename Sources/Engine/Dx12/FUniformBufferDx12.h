@@ -16,12 +16,6 @@ namespace tix
 		FUniformBufferDx12(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag);
 		virtual ~FUniformBufferDx12();
 
-		//Temp
-		ComPtr<ID3D12Resource> GetConstantBuffer()
-		{
-			TI_TODO("Remove this temp.");
-			return BufferResource.GetResource();
-		}
 	protected:
 
 	private:

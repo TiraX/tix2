@@ -90,6 +90,7 @@ using namespace std;
 #include "FRenderer.h"
 #include "FDefaultRenderer.h"
 #include "FFullScreenRender.h"
+#include "FPostProcess.h"
 #include "FRenderThread.h"
 
 #include "TResourceLibrary.h"

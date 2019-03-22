@@ -8,6 +8,11 @@
 
 namespace tix
 {
+	// These lines are coded in Stanford~
+	// Refactor all loading processes, pre-create all game thread resources with empty ones.
+	// Analysis the dependences with different resources and loading them by order.
+	TI_TODO("Refactor resource loadings.");
+
 	TResourceFile::TResourceFile()
 		: Filebuffer(nullptr)
 		, Header(nullptr)

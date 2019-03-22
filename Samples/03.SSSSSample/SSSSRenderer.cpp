@@ -26,6 +26,8 @@ void FS4TempRenderer::Render(FRHI* RHI, FScene* Scene)
 
 FSSSSRenderer::FSSSSRenderer()
 {
+	// Need high level encapsule for this pipeline creation
+	TI_TODO("High level ");
 	S4Effect = ti_new SeparableSSS(DEG_TO_RAD(40), 250.f);
 
 	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
