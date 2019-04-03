@@ -1,4 +1,4 @@
-@echo off
+@echo off & setlocal enabledelayedexpansion
 
 rem Cook to Cooked/Windows directory
 
@@ -17,9 +17,12 @@ if not exist "Cooked" (
 )
 
 echo Converting tjs files.
-for %%i in (*.tjs) do (
-echo converting - %%~i
-%Converter% %%i Cooked\Windows\%%~ni.tres
+for /r . %%i in (*.tjs) do (
+  rem echo converting - %%~i
+  set B=%%i
+  set C=!B:%CD%\=!
+  echo AAA !C!
+  rem %Converter% %%i Cooked\Windows\%%~ni.tres
 )
 
 echo copy Config
