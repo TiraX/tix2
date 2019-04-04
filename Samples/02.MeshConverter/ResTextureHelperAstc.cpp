@@ -8,62 +8,10 @@
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "TImage.h"
-#if defined (TI_PLATFORM_IOS)
-#include <mach-o/dyld.h>
-#include <unistd.h>
-#endif
+#include "PlatformUtils.h"
 
 namespace tix
 {
-	TString GetExecutablePath()
-	{
-		TString Ret;
-		int8 Path[512];
-#if defined (TI_PLATFORM_WIN32)
-		::GetModuleFileName(NULL, Path, 512);
-        Ret = Path;
-        TStringReplace(Ret, "\\", "/");
-#elif defined (TI_PLATFORM_IOS)
-		uint32 BufferSize = 512;
-		_NSGetExecutablePath(Path, &BufferSize);
-		TI_ASSERT(BufferSize <= 512);
-        Ret = Path;
-        if (Ret.find("/Binary") == TString::npos && Ret.find("tix2/") == TString::npos)
-        {
-            Ret = getcwd(NULL, 0);
-        }
-#endif
-
-		Ret = Ret.substr(0, Ret.rfind('/'));
-
-		// if dir is not in Binary/ then find from root "tix2"
-		if (Ret.find("/Binary") == TString::npos)
-		{
-			TString::size_type root_pos = Ret.find("tix2/");
-			TI_ASSERT(root_pos != TString::npos);
-			Ret = Ret.substr(0, root_pos + 5) + "Binary/";
-#if defined (TI_PLATFORM_WIN32)
-			Ret += "Windows";
-#elif defined (TI_PLATFORM_IOS)
-			Ret += "Mac";
-#endif
-		}
-
-		return Ret;
-	}
-
-	void DeleteTempFile(const TString& FileName)
-	{
-		TString CommandLine;
-#if defined (TI_PLATFORM_WIN32)
-		CommandLine = "del ";
-#elif defined (TI_PLATFORM_IOS)
-		CommandLine = "rm ";
-#endif
-		CommandLine += FileName;
-		system(CommandLine.c_str());
-	}
-
 	// byte-align structures
 #if defined(_MSC_VER) 
 #	pragma pack( push, packing )

@@ -476,31 +476,35 @@ namespace tix
 			Env->SetMainLightColor(Header->MainLightColor);
 			Env->SetMainLightIntensity(Header->MainLightIntensity);
 
-			// Load meshes
-			const THeaderSceneMesh* HeaderMeshes = (const THeaderSceneMesh*)(SceneDataStart);
-			for (int32 m = 0 ; m < Header->Meshes ; ++ m)
+			// Load assets names
+			const int32* AssetsTextures = (const int32*)(SceneDataStart);
+			const int32* AssetsMaterialInstances = AssetsTextures + Header->NumTextures;
+			const int32* AssetsMaterials = AssetsMaterialInstances + Header->NumMaterialInstances;
+			const int32* AssetsMeshes = AssetsMaterials + Header->NumMaterials;
+			const int32* InstancesCountList = AssetsMeshes + Header->NumMeshes;
+
+			// Do Test
+			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				const THeaderSceneMesh& MeshInfo = HeaderMeshes[m];
-				TString MeshName = GetString(MeshInfo.MeshNameIndex);
-				// Send to load thread
-				_LOG(Log, "Loading mesh : %s.\n", MeshName.c_str());
+				_LOG(Log, "mesh : %s\n", GetString(AssetsMeshes[m]));
 			}
 
-			// Create instance nodes
-			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(SceneDataStart + sizeof(THeaderSceneMesh) * Header->Meshes);
-			int32 TotalInstances = 0;
-			for (int32 m = 0; m < Header->Meshes; ++m)
-			{
-				const THeaderSceneMesh& MeshInfo = HeaderMeshes[m];
+			// Send Assets to loading thread
 
-				for (int32 ins = 0 ; ins < MeshInfo.MeshInstances; ++ ins)
+			// Create instance nodes
+			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(InstancesCountList + Header->NumMeshes);
+			int32 TotalInstances = 0;
+			for (int32 m = 0; m < Header->NumMeshes; ++m)
+			{
+				int32 NumInstances = InstancesCountList[m];
+				for (int32 ins = 0 ; ins < NumInstances; ++ ins)
 				{
 					const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
 					//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);
 				}
 
-				TotalInstances += MeshInfo.MeshInstances;
-				TI_ASSERT(TotalInstances <= Header->Instances);
+				TotalInstances += NumInstances;
+				TI_ASSERT(TotalInstances <= Header->NumInstances);
 			}
 		}
 	}

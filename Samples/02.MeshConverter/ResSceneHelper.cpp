@@ -39,6 +39,40 @@ namespace tix
 			Helper.Environment.SunLight.Intensity = JSunLight["intensity"].GetFloat();
 		}
 
+		// Load asset list
+		{
+			TJSONNode JAssetList = Doc["dependency"];
+			TJSONNode JAssetTextures = JAssetList["textures"];
+			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
+			TJSONNode JAssetMaterials = JAssetList["materials"];
+			TJSONNode JAssetMeshes = JAssetList["meshes"];
+
+			Helper.AssetTextures.reserve(JAssetTextures.Size());
+			for (int32 i = 0; i < JAssetTextures.Size(); ++i)
+			{
+				TJSONNode JTexture = JAssetTextures[i];
+				Helper.AssetTextures.push_back(JTexture.GetString());
+			}
+			Helper.AssetMaterialInstances.reserve(JAssetMaterialInstances.Size());
+			for (int32 i = 0; i < JAssetMaterialInstances.Size(); ++i)
+			{
+				TJSONNode JMI = JAssetMaterialInstances[i];
+				Helper.AssetMaterialInstances.push_back(JMI.GetString());
+			}
+			Helper.AssetMaterials.reserve(JAssetMaterials.Size());
+			for (int32 i = 0; i < JAssetMaterials.Size(); ++i)
+			{
+				TJSONNode JMaterial = JAssetMaterials[i];
+				Helper.AssetMaterials.push_back(JMaterial.GetString());
+			}
+			Helper.AssetMeshes.reserve(JAssetMeshes.Size());
+			for (int32 i = 0; i < JAssetMeshes.Size(); ++i)
+			{
+				TJSONNode JMesh = JAssetMeshes[i];
+				Helper.AssetMeshes.push_back(JMesh.GetString());
+			}
+		}
+
 		// Load scene meshes and instances
 		{
 			TJSONNode JSceneMeshes = Doc["scene"];
@@ -48,6 +82,7 @@ namespace tix
 			{
 				TJSONNode JMesh = JSceneMeshes[m];
 				Helper.Meshes[m].MeshName = JMesh["name"].GetString();
+				TI_ASSERT(Helper.Meshes[m].MeshName == Helper.AssetMeshes[m]);
 
 				TJSONNode JInstances = JMesh["instances"];
 				Helper.Meshes[m].Instances.resize(JInstances.Size());
@@ -60,6 +95,7 @@ namespace tix
 					Instances[ins].Scale = TJSONUtil::JsonArrayToVector3df(JInstance["scale"]);
 				}
 			}
+			TI_ASSERT(Helper.Meshes.size() == Helper.AssetMeshes.size());
 		}
 
 		Helper.OutputScene(OutStream, OutStrings);
@@ -83,23 +119,48 @@ namespace tix
 			Define.MainLightColor = Environment.SunLight.Color;
 			Define.MainLightIntensity = Environment.SunLight.Intensity;
 
-			// Meshes and Instances Info
-			Define.Meshes = (int32)Meshes.size();
+			// Assets Info
+			Define.NumTextures = (int32)AssetTextures.size();
+			Define.NumMaterialInstances = (int32)AssetMaterialInstances.size();
+			Define.NumMaterials = (int32)AssetMaterials.size();
+			Define.NumMeshes = (int32)AssetMeshes.size();
+
+			// Mesh instances Info
 			// Calc total instances
 			int32 TotalInstances = 0;
 			for (uint32 m = 0 ; m < Meshes.size(); ++ m)
 			{
 				TotalInstances += (int32)Meshes[m].Instances.size();
 			}
-			Define.Instances = TotalInstances;
+			Define.NumInstances = TotalInstances;
 
-			// Fill Meshes Data
+			// Fill Assets Names
+			for (const auto& A : AssetTextures)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : AssetMaterialInstances)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : AssetMaterials)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : AssetMeshes)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+
+			// Fill Meshes Instances Count
 			for (uint32 m = 0 ; m < Meshes.size(); ++ m)
 			{
-				THeaderSceneMesh SceneMeshDefine;
-				SceneMeshDefine.MeshNameIndex = AddStringToList(OutStrings, Meshes[m].MeshName);
-				SceneMeshDefine.MeshInstances = (int32)Meshes[m].Instances.size();
-				DataStream.Put(&SceneMeshDefine, sizeof(THeaderSceneMesh));
+				int32 MeshInstanceCount = (int32)Meshes[m].Instances.size();
+				DataStream.Put(&MeshInstanceCount, sizeof(int32));
 			}
 			// Fill Mesh Instances Data
 			for (uint32 m = 0; m < Meshes.size(); ++m)

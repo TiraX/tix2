@@ -160,6 +160,7 @@
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TJSON.h" />
     <ClInclude Include="dds.h" />
+    <ClInclude Include="PlatformUtils.h" />
     <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="MainWin32.cpp" />
+    <ClCompile Include="PlatformUtils.cpp" />
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />

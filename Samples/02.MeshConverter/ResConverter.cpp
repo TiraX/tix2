@@ -11,6 +11,7 @@
 #include "ResMaterialHelper.h"
 #include "ResMaterialInstanceHelper.h"
 #include "ResSceneHelper.h"
+#include "PlatformUtils.h"
 
 TString FilenameSrc;
 TString FilenameDst;
@@ -186,7 +187,20 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 		}
 	}
 
-	Resfile.SaveFile(FilenameDst);
+	// Find path
+	TStringReplace(FilenameDst, "\\", "/");
+	TString DstPath;
+	TString::size_type SlashPos = FilenameDst.rfind('/');
+	if (SlashPos != TString::npos)
+	{
+		DstPath = FilenameDst.substr(0, SlashPos);
+		CreateDirectoryIfNotExist(DstPath);
+	}
+
+	if (!Resfile.SaveFile(FilenameDst))
+	{
+		printf("Failed to save resfile : %s\n", FilenameDst.c_str());
+	}
 
     return 0;
 }

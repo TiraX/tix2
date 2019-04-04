@@ -55,6 +55,9 @@
     <ClInclude Include="ResSceneHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="PlatformUtils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -109,6 +112,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResSceneHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlatformUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

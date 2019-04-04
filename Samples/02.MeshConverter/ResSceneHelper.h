@@ -17,7 +17,7 @@ namespace tix
 			: Scale(1.f, 1.f, 1.f)
 		{}
 	};
-	struct TSceneMesh
+	struct TSceneMeshInstances
 	{
 		TString MeshName;
 		TVector<TSceneMeshInstance> Instances;
@@ -54,7 +54,12 @@ namespace tix
 
 	private:
 		TString MapName;
-		TVector<TSceneMesh> Meshes;
+		TVector<TSceneMeshInstances> Meshes;
 		TSceneEnvironment Environment;
+
+		TVector<TString> AssetTextures;
+		TVector<TString> AssetMaterialInstances;
+		TVector<TString> AssetMaterials;
+		TVector<TString> AssetMeshes;
 	};
 }

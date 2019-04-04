@@ -25,7 +25,4 @@ void TVirtualTextureTicker::SetupScene()
 	// Load scene
 	const TString TargetSceneRes = "showcase_01.tres";
 	TResourceLibrary::Get()->LoadScene(TargetSceneRes);
-
-	const TString TargetAyscRes = "T_NormalMap.tres";
-	TResourceLibrary::Get()->LoadResourceAysc(TargetAyscRes);
 }

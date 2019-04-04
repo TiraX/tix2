@@ -18,11 +18,11 @@ if not exist "Cooked" (
 
 echo Converting tjs files.
 for /r . %%i in (*.tjs) do (
-  rem echo converting - %%~i
   set B=%%i
-  set C=!B:%CD%\=!
-  echo AAA !C!
-  rem %Converter% %%i Cooked\Windows\%%~ni.tres
+  set Source=!B:%CD%\=!
+  set Target=!Source:~0,-4!
+  echo converting - !Source!
+  %Converter% !Source! Cooked\Windows\!Target!.tres
 )
 
 echo copy Config

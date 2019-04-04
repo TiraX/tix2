@@ -217,14 +217,11 @@ namespace tix
 		float MainLightIntensity;
 		
 		// Scene Meshes and Instances
-		int32 Meshes;
-		int32 Instances;
-	};
-
-	struct THeaderSceneMesh
-	{
-		int32 MeshNameIndex;
-		int32 MeshInstances;
+		int32 NumTextures;
+		int32 NumMaterialInstances;
+		int32 NumMaterials;
+		int32 NumMeshes;
+		int32 NumInstances;
 	};
 
 	struct THeaderSceneMeshInstance
