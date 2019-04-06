@@ -21,16 +21,31 @@ namespace tix
 	{
 	}
 
+	void TShader::SetShaderCode(E_SHADER_STAGE InStage, TFile& InputFile)
+	{
+		ShaderCodes[InStage].Put(InputFile);
+	}
+
 	void TShader::InitRenderThreadResource()
 	{
 		TI_ASSERT(ShaderResource == nullptr);
 		ShaderResource = FRHI::Get()->CreateShader(Names);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TShaderUpdateResource,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TShaderUpdateResource,
 			FShaderPtr, Shader_RT, ShaderResource,
+			TShaderPtr, ShaderSource, this,
 			{
-				FRHI::Get()->UpdateHardwareResource(Shader_RT);
+				// Add TShader -> Shader Codes herer.
+				FRHI::Get()->UpdateHardwareResource(Shader_RT, ShaderSource);
 			});
+	}
+
+	void TShader::ReleaseShaderCode()
+	{
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			ShaderCodes[s].Destroy();
+		}
 	}
 
 	void TShader::DestroyRenderThreadResource()

@@ -10,7 +10,7 @@ namespace tix
 	class TStream : public IReferenceCounted
 	{
 	public:
-		TStream(int32 buf_size = 1024)
+		TStream(int32 buf_size = 0)
 			: BufferSize(buf_size)
 			, Pos(0)
 		{
@@ -37,6 +37,21 @@ namespace tix
 		virtual ~TStream()
 		{
 			Destroy();
+		}
+
+		TStream& operator = (const TStream& Other)
+		{
+			if (Buffer != nullptr)
+			{
+				ti_delete[] Buffer;
+				Buffer = nullptr;
+			}
+			Pos = Other.Pos;
+			BufferSize = Other.BufferSize;
+			Buffer = ti_new char[BufferSize];
+			memcpy(Buffer, Other.Buffer, Pos);
+
+			return *this;
 		}
 
 		void Put(const void* buf, int32 size)

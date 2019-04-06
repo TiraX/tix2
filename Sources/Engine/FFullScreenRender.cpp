@@ -54,9 +54,11 @@ namespace tix
 		ShaderNames.ShaderNames[ESS_VERTEX_SHADER] = "FullScreenVS";
 		ShaderNames.ShaderNames[ESS_PIXEL_SHADER] = "FullScreenPS";
 
+		// Move this TShader load to Game Thread. Or Make a gloal shader system.
+		TI_ASSERT(0);
 		TShaderPtr Shader = ti_new TShader(ShaderNames);
 		Shader->ShaderResource = RHI->CreateShader(ShaderNames);
-		RHI->UpdateHardwareResource(Shader->ShaderResource);
+		RHI->UpdateHardwareResource(Shader->ShaderResource, Shader);
 		FSMaterial->SetShader(Shader);
 		FullScreenShader = Shader->ShaderResource;
 

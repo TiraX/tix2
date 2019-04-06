@@ -39,7 +39,8 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 
-		FRHI::Get()->UpdateHardwareResource(ComputeShader);
+		TI_ASSERT(0);
+		//FRHI::Get()->UpdateHardwareResource(ComputeShader);
 
 		TPipelinePtr PipelineDesc = nullptr;
 		FRHI::Get()->UpdateHardwareResource(ComputePipeline, PipelineDesc);

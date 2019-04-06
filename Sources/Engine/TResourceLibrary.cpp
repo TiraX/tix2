@@ -30,23 +30,26 @@ namespace tix
 		s_instance = nullptr;
 	}
 
-	TResourceObjectPtr TResourceLibrary::LoadResource(const TString& ResFilename)
+	TResourceTaskPtr TResourceLibrary::LoadResource(const TString& ResFilename)
 	{
-		if (ResourceObjects.find(ResFilename) == ResourceObjects.end())
+		if (ResourceTasks.find(ResFilename) == ResourceTasks.end())
 		{
 			// Load resource to library
-			TResourceObjectPtr ResourceObject = ti_new TResourceObject;
+			TResourceTaskPtr ResourceObject = ti_new TResourceTask;
 			ResourceObject-> SourceFile = ti_new TResourceFile;
 			if (ResourceObject->SourceFile->Load(ResFilename))
 			{
-				ResourceObject->Resource = ResourceObject->SourceFile->CreateResource();
-				if (ResourceObject->Resource != nullptr)
+				 ResourceObject->SourceFile->CreateResource(ResourceObject->Resources);
+				if (ResourceObject->Resources.size() > 0)
 				{
 					// Release source file
 					ResourceObject->SourceFile = nullptr;
 					// Init render thread resources
-					ResourceObject->Resource->InitRenderThreadResource();
-					ResourceObjects[ResFilename] = ResourceObject;
+					for (auto& Res : ResourceObject->Resources)
+					{
+						Res->InitRenderThreadResource();
+					}
+					ResourceTasks[ResFilename] = ResourceObject;
 					return ResourceObject;
 				}
 			}
@@ -57,43 +60,24 @@ namespace tix
 		}
 		else
 		{
-			return ResourceObjects[ResFilename];
+			return ResourceTasks[ResFilename];
 		}
 	}
 
-	TResourceObjectPtr TResourceLibrary::LoadResourceAysc(const TString& ResFilename)
+	TResourceTaskPtr TResourceLibrary::LoadResourceAysc(const TString& ResFilename)
 	{
-		if (ResourceObjects.find(ResFilename) == ResourceObjects.end())
+		if (ResourceTasks.find(ResFilename) == ResourceTasks.end())
 		{
 			// Load resource to library
-			TResourceObjectPtr ResourceObject = ti_new TResourceObject;
-			TResourceLoadingTask * LoadingTask = ti_new TResourceLoadingTask(ResFilename, ResourceObject);
-			ResourceObjects[ResFilename] = ResourceObject;
+			TResourceTaskPtr ResourceTask = ti_new TResourceTask;
+			TResourceLoadingTask * LoadingTask = ti_new TResourceLoadingTask(ResFilename, ResourceTask);
+			ResourceTasks[ResFilename] = ResourceTask;
 			TThreadLoading::Get()->AddTask(LoadingTask);
-			return ResourceObject;
+			return ResourceTask;
 		}
 		else
 		{
-			return ResourceObjects[ResFilename];
-		}
-	}
-
-	TResourceObjectPtr TResourceLibrary::CreateShaderResource(const TShaderNames& ShaderNames)
-	{
-		TString ShaderKey = ShaderNames.GetSearchKey();
-		if (ResourceObjects.find(ShaderKey) == ResourceObjects.end())
-		{
-			TI_TODO("Remove this CreateShaderResource() function, merge it into LoadResource");
-			// Create a shader resource
-			TResourceObjectPtr ResourceObject = ti_new TResourceObject;
-			ResourceObject->Resource = ti_new TShader(ShaderNames);
-			ResourceObject->Resource->InitRenderThreadResource();
-			ResourceObjects[ShaderKey] = ResourceObject;
-			return ResourceObject;
-		}
-		else
-		{
-			return ResourceObjects[ShaderKey];
+			return ResourceTasks[ResFilename];
 		}
 	}
 
@@ -109,16 +93,16 @@ namespace tix
 
 	void TResourceLibrary::RemoveUnusedResources()
 	{
-		MapResourceObjects::iterator it = ResourceObjects.begin();
-		for (; it != ResourceObjects.end(); )
+		MapResourceTasks::iterator it = ResourceTasks.begin();
+		for (; it != ResourceTasks.end(); )
 		{
-			if (it->second->Resource->referenceCount() == 1)
+			if (!it->second->HasReference())
 			{
 				_LOG(Log, "unused resource : [%s], removed\n", it->first.c_str());
-				it->second->Resource->DestroyRenderThreadResource();
-				it->second->Resource = nullptr;
+				it->second->DestroyRenderThreadResource();
+				it->second->ClearResources();
 				it->second = nullptr;
-				ResourceObjects.erase(it++);
+				ResourceTasks.erase(it++);
 			}
 			else
 			{
@@ -129,13 +113,13 @@ namespace tix
 
 	void TResourceLibrary::RemoveAllResources()
 	{
-		MapResourceObjects::iterator it = ResourceObjects.begin();
-		for (; it != ResourceObjects.end(); ++ it)
+		MapResourceTasks::iterator it = ResourceTasks.begin();
+		for (; it != ResourceTasks.end(); ++ it)
 		{
-			it->second->Resource->DestroyRenderThreadResource();
-			it->second->Resource = nullptr;
+			it->second->DestroyRenderThreadResource();
+			it->second->ClearResources();
 			it->second = nullptr;
 		}
-		ResourceObjects.clear();
+		ResourceTasks.clear();
 	}
 }

@@ -64,7 +64,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
-		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) = 0;
+		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
 		virtual bool UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;

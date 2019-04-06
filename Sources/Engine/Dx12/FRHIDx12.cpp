@@ -1347,7 +1347,7 @@ namespace tix
 		return -1;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource)
+	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource)
 	{
 		// Dx12 shader only need load byte code.
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
@@ -1356,63 +1356,52 @@ namespace tix
 
 		if (ShaderResource->GetShaderType() == EST_COMPUTE)
 		{
-			TString ShaderName = ShaderDx12->GetComputeShaderName();
-			if (!ShaderName.empty())
-			{
-				if (ShaderName.rfind(".cso") == TString::npos)
-					ShaderName += ".cso";
+			const TStream& ShaderCode = InShaderSource->GetComputeShaderCode();
+			TI_ASSERT(0);
+			//TString ShaderName = ShaderDx12->GetComputeShaderName();
+			//if (!ShaderName.empty())
+			//{
+			//	if (ShaderName.rfind(".cso") == TString::npos)
+			//		ShaderName += ".cso";
 
-				// Load shader code
-				TFile File;
-				if (File.Open(ShaderName, EFA_READ))
-				{
-					ShaderDx12->ShaderCodes[0].Reset();
-					ShaderDx12->ShaderCodes[0].Put(File);
-					File.Close();
+			//	// Load shader code
+			//	TFile File;
+			//	if (File.Open(ShaderName, EFA_READ))
+			//	{
+			//		ShaderDx12->ShaderCodes[0].Reset();
+			//		ShaderDx12->ShaderCodes[0].Put(File);
+			//		File.Close();
 
-					if (RSDeserializer == nullptr)
-					{
-						VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[0].GetBuffer(),
-							ShaderDx12->ShaderCodes[0].GetLength(),
-							__uuidof(ID3D12RootSignatureDeserializer),
-							reinterpret_cast<void**>(&RSDeserializer)));
-					}
-				}
-				else
-				{
-					_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
-				}
-			}
+			//		if (RSDeserializer == nullptr)
+			//		{
+			//			VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[0].GetBuffer(),
+			//				ShaderDx12->ShaderCodes[0].GetLength(),
+			//				__uuidof(ID3D12RootSignatureDeserializer),
+			//				reinterpret_cast<void**>(&RSDeserializer)));
+			//		}
+			//	}
+			//	else
+			//	{
+			//		_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+			//	}
+			//}
 		}
 		else
 		{
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
-				TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
-				if (!ShaderName.empty())
+				const TStream& ShaderCode = InShaderSource->GetShaderCode((E_SHADER_STAGE)s);
+				//TString ShaderName = ShaderDx12->GetShaderName((E_SHADER_STAGE)s);
+				if (ShaderCode.GetLength() > 0)
 				{
-					if (ShaderName.rfind(".cso") == TString::npos)
-						ShaderName += ".cso";
+					ShaderDx12->ShaderCodes[s] = ShaderCode;
 
-					// Load shader code
-					TFile File;
-					if (File.Open(ShaderName, EFA_READ))
+					if (RSDeserializer == nullptr)
 					{
-						ShaderDx12->ShaderCodes[s].Reset();
-						ShaderDx12->ShaderCodes[s].Put(File);
-						File.Close();
-
-						if (RSDeserializer == nullptr)
-						{
-							VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
-								ShaderDx12->ShaderCodes[s].GetLength(),
-								__uuidof(ID3D12RootSignatureDeserializer),
-								reinterpret_cast<void**>(&RSDeserializer)));
-						}
-					}
-					else
-					{
-						_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+						VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[s].GetBuffer(),
+							ShaderDx12->ShaderCodes[s].GetLength(),
+							__uuidof(ID3D12RootSignatureDeserializer),
+							reinterpret_cast<void**>(&RSDeserializer)));
 					}
 				}
 			}

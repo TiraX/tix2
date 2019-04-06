@@ -26,6 +26,18 @@ namespace tix
 	public:
 		TShader(const TShaderNames& InNames);
 		virtual ~TShader();
+		
+		void SetShaderCode(E_SHADER_STAGE InStage, TFile& InputFile);
+		const TStream& GetShaderCode(E_SHADER_STAGE InStage)
+		{
+			return ShaderCodes[InStage];
+		}
+		const TStream& GetComputeShaderCode()
+		{
+			return ShaderCodes[0];
+		}
+
+		void ReleaseShaderCode();
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
@@ -34,5 +46,6 @@ namespace tix
 
 	protected:
 		TShaderNames Names;
+		TStream ShaderCodes[ESS_COUNT];
 	};
 }

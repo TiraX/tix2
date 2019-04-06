@@ -143,43 +143,39 @@ namespace tix
 		return true;
 	}
 
-	TResourcePtr TResourceFile::CreateResource()
+	void TResourceFile::CreateResource(TVector<TResourcePtr>& OutResources)
 	{
-		TResourcePtr Resource;
 		if (ChunkHeader[ECL_MESHES] != nullptr)
-			Resource = CreateMeshBuffer();
+			CreateMeshBuffer(OutResources);
 
 		if (ChunkHeader[ECL_TEXTURES] != nullptr)
-			Resource = CreateTexture();
+			CreateTexture(OutResources);
 
 		if (ChunkHeader[ECL_MATERIAL] != nullptr)
-			Resource = CreateMaterial();
+			CreateMaterial(OutResources);
 
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] != nullptr)
-			Resource = CreateMaterialInstance();
+			CreateMaterialInstance(OutResources);
 
-		Resource->SetResourceName(Filename);
-
-		return Resource;
+		for (auto& Res : OutResources)
+		{
+			Res->SetResourceName(Filename);
+		}
 	}
 
-	TMeshBufferPtr TResourceFile::CreateMeshBuffer()
+	void TResourceFile::CreateMeshBuffer(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MESHES] == nullptr)
-			return nullptr;
+			return;
 
 		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_MESHES];
 		const int32 MeshCount = ChunkHeader[ECL_MESHES]->ElementCount;
 		if (MeshCount == 0)
 		{
-			return nullptr;
+			return;
 		}
-
-		TVector<TNodeStaticMesh*> MeshList;
-		MeshList.reserve(MeshCount);
-
-		TMeshBufferPtr Result;
-
+		
+		OutResources.reserve(MeshCount);
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
 		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount;
 		int32 MeshDataOffset = 0;
@@ -201,36 +197,35 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourceObjectPtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TResourceTaskPtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (MIRes == nullptr)
 			{
 				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
-			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes->Resource.get());
+			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes->GetResourcePtr());
 			Mesh->SetDefaultMaterial(MaterialInstance);
 
-			Result = Mesh;
+			OutResources.push_back(Mesh);
 		}
-		return Result;
 	}
 
-	TTexturePtr TResourceFile::CreateTexture()
+	void TResourceFile::CreateTexture(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_TEXTURES] == nullptr)
-			return nullptr;
+			return;
 
 		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_TEXTURES];
 		const int32 TextureCount = ChunkHeader[ECL_TEXTURES]->ElementCount;
 		if (TextureCount == 0)
 		{
-			return nullptr;
+			return;
 		}
 
 		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
 		const uint8* TextureDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * TextureCount;
 
-		TTexturePtr Result;
 		// each ResFile should have only 1 resource
+		OutResources.reserve(TextureCount);
 		for (int32 i = 0; i < TextureCount; ++i)
 		{
 			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * i);
@@ -274,27 +269,26 @@ namespace tix
 				}
 			}
 
-			Result = Texture;
+			OutResources.push_back(Texture);
 		}
-		return Result;
 	}
 
-	TMaterialPtr TResourceFile::CreateMaterial()
+	void TResourceFile::CreateMaterial(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MATERIAL] == nullptr)
-			return nullptr;
+			return;
 
 		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_MATERIAL];
 		const int32 MaterialCount = ChunkHeader[ECL_MATERIAL]->ElementCount;
 		if (MaterialCount == 0)
 		{
-			return nullptr;
+			return;
 		}
 
 		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
 		//const uint8* CodeDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
 		
-		TMaterialPtr Result;
+		OutResources.reserve(MaterialCount);
 		for (int32 i = 0; i < MaterialCount; ++i)
 		{
 			const THeaderMaterial* Header = (const THeaderMaterial*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * i);
@@ -337,6 +331,7 @@ namespace tix
 
 			// Load Shader code
 			int32 CodeOffset = 0;
+			TShaderPtr Shader = ti_new TShader(ShaderNames);
 			for (int32 s = 0; s < ESS_COUNT; ++s)
 			{
 				if (Header->ShaderCodeLength[s] > 0)
@@ -349,32 +344,52 @@ namespace tix
 				else
 				{
 					// Load from single file
-					TShaderPtr Shader = static_cast<TShader*>(TResourceLibrary::Get()->CreateShaderResource(ShaderNames)->Resource.get());
-					Material->SetShader(Shader);
+					TString ShaderName = ShaderNames.ShaderNames[s];
+					if (!ShaderName.empty())
+					{
+#if defined (COMPILE_WITH_RHI_DX12)
+						if (ShaderName.rfind(".cso") == TString::npos)
+							ShaderName += ".cso";
+#else
+						TI_ASSERT(0);
+#endif
+
+						// Load shader code
+						TFile File;
+						if (File.Open(ShaderName, EFA_READ))
+						{
+							Shader->SetShaderCode((E_SHADER_STAGE)s, File);
+							File.Close();
+						}
+						else
+						{
+							_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+						}
+					}
 				}
 			}
+			Material->SetShader(Shader);
 
-			Result = Material;
+			OutResources.push_back(Material);
 		}
-		return Result;
 	}
 
-	TMaterialInstancePtr TResourceFile::CreateMaterialInstance()
+	void TResourceFile::CreateMaterialInstance(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] == nullptr)
-			return nullptr;
+			return;
 
 		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_MATERIAL_INSTANCE];
 		const int32 MICount = ChunkHeader[ECL_MATERIAL_INSTANCE]->ElementCount;
 		if (MICount == 0)
 		{
-			return nullptr;
+			return;
 		}
 
 		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
 		const uint8* MIDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * MICount;
 
-		TMaterialInstancePtr Result;
+		OutResources.reserve(MICount);
 		// each ResFile should have only 1 resource
 		for (int32 i = 0; i < MICount; ++i)
 		{
@@ -416,12 +431,12 @@ namespace tix
 					// texture params
 					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
 					TString TextureName = GetString(TextureNameIndex);
-					TResourceObjectPtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
+					TResourceTaskPtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
 					if (TextureRes == nullptr)
 					{
 						_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
 					}
-					TTexturePtr Texture = static_cast<TTexture*>(TextureRes->Resource.get());
+					TTexturePtr Texture = static_cast<TTexture*>(TextureRes->GetResourcePtr());
 					MInstance->ParamTextures.push_back(Texture);
 				}
 				else
@@ -438,16 +453,15 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourceObjectPtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TResourceTaskPtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
 			if (Material == nullptr)
 			{
 				_LOG(Error, "Failed to load material [%s] for Material Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
-			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material->Resource.get());
+			MInstance->LinkedMaterial = static_cast<TMaterial*>(Material->GetResourcePtr());
 
-			Result = MInstance;
+			OutResources.push_back(MInstance);
 		}
-		return Result;
 	}
 
 	void TResourceFile::LoadScene()

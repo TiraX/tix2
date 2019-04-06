@@ -17,10 +17,10 @@ namespace tix
 			STEP_BACK_TO_MAINTHREAD,
 			STEP_FINISHED,
 		};
-		TResourceLoadingTask(const TString& InResFilename, TResourceObjectPtr InResourceObject)
+		TResourceLoadingTask(const TString& InResFilename, TResourceTaskPtr InResourceTask)
 			: ResFilename(InResFilename)
 			, LoadingStep(STEP_IO)
-			, ResourceObject(InResourceObject)
+			, ResourceTask(InResourceTask)
 		{}
 		virtual ~TResourceLoadingTask() {}
 
@@ -38,7 +38,7 @@ namespace tix
 	private:
 		TString ResFilename;
 		int32 LoadingStep;
-		TResourceObjectPtr ResourceObject;
+		TResourceTaskPtr ResourceTask;
 	};
 
 	class TThreadIO;

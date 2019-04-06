@@ -16,8 +16,8 @@ namespace tix
 			_LOG(Log, "Doing IO.\n");
 			// Read file content to FileBuffer
 			TI_ASSERT(IsIOThread());
-			ResourceObject->SourceFile = ti_new TResourceFile;
-			ResourceObject->SourceFile->ReadFile(ResFilename);
+			ResourceTask->SourceFile = ti_new TResourceFile;
+			ResourceTask->SourceFile->ReadFile(ResFilename);
 			LoadingStep = STEP_PARSE;
 			// Forward to loading thread
 			TThreadLoading::Get()->AddTask(this);
@@ -27,12 +27,12 @@ namespace tix
 			_LOG(Log, "Doing Parse.\n");
 			// Parse the buffer
 			TI_ASSERT(IsLoadingThread());
-			TI_ASSERT(ResourceObject->SourceFile->Filebuffer != nullptr);
-			ResourceObject->SourceFile->ParseFile();
-			ResourceObject->Resource = ResourceObject->SourceFile->CreateResource();
+			TI_ASSERT(ResourceTask->SourceFile->Filebuffer != nullptr);
+			ResourceTask->SourceFile->ParseFile();
+			ResourceTask->SourceFile->CreateResource(ResourceTask->Resources);
 			LoadingStep = STEP_BACK_TO_MAINTHREAD;
-			TI_ASSERT(ResourceObject->SourceFile->referenceCount() == 1);
-			ResourceObject->SourceFile = nullptr;
+			TI_ASSERT(ResourceTask->SourceFile->referenceCount() == 1);
+			ResourceTask->SourceFile = nullptr;
 			// Return to main thread
 			TEngine::Get()->AddTask(this);
 		}
@@ -40,7 +40,10 @@ namespace tix
 		{
 			TI_ASSERT(IsGameThread());
 			// Init render thread resource
-			ResourceObject->Resource->InitRenderThreadResource();
+			for (auto& Res : ResourceTask->Resources)
+			{
+				Res->InitRenderThreadResource();
+			}
 
 			LoadingStep = STEP_FINISHED;
 		}

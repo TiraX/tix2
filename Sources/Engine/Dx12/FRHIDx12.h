@@ -47,7 +47,7 @@ namespace tix
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
 		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
-		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource) override;
+		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
 		virtual bool UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) override;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;

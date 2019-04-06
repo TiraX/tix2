@@ -57,21 +57,66 @@ namespace tix
 		friend class TResourceFile;
 	};
 
-	class TResourceObject : public IReferenceCounted
+	class TResourceTask : public IReferenceCounted
 	{
 	public:
-		TResourceObject()
+		TResourceTask()
 		{}
 
-		~TResourceObject()
+		~TResourceTask()
 		{
 			SourceFile = nullptr;
-			Resource = nullptr;
+			for (auto& Res : Resources)
+			{
+				Res = nullptr;
+			}
 		}
 
+		TResource* GetResourcePtr(int32 Index = 0)
+		{
+			return Resources[Index].get();
+		}
+
+		void InitRenderThreadResource()
+		{
+			for (auto& Res : Resources)
+			{
+				Res->InitRenderThreadResource();
+			}
+		}
+
+		void DestroyRenderThreadResource()
+		{
+			for (auto& Res : Resources)
+			{
+				Res->DestroyRenderThreadResource();
+			}
+		}
+
+		void ClearResources()
+		{
+			for (auto& Res : Resources)
+			{
+				Res = nullptr;
+			}
+			Resources.clear();
+		}
+
+		bool HasReference() const
+		{
+			for (auto& Res : Resources)
+			{
+				if (Res->referenceCount() > 1)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
 		// Hold an source file for asynchronous loading
 		TResourceFilePtr SourceFile;
 		// Resource loaded
-		TResourcePtr Resource;
+		TVector<TResourcePtr> Resources;
 	};
 }

@@ -17,13 +17,13 @@ namespace tix
 
 		bool Load(const TString& InFilename);
 
-		TResourcePtr CreateResource();
+		void CreateResource(TVector<TResourcePtr>& OutResources);
 
 		void LoadScene();
-		TMeshBufferPtr CreateMeshBuffer();
-		TTexturePtr CreateTexture();
-		TMaterialPtr CreateMaterial();
-		TMaterialInstancePtr CreateMaterialInstance();
+		void CreateMeshBuffer(TVector<TResourcePtr>& OutResources);
+		void CreateTexture(TVector<TResourcePtr>& OutResources);
+		void CreateMaterial(TVector<TResourcePtr>& OutResources);
+		void CreateMaterialInstance(TVector<TResourcePtr>& OutResources);
 
 		const TString& GetFilename()
 		{
