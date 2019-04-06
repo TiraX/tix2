@@ -332,44 +332,17 @@ namespace tix
 			// Load Shader code
 			int32 CodeOffset = 0;
 			TShaderPtr Shader = ti_new TShader(ShaderNames);
-			for (int32 s = 0; s < ESS_COUNT; ++s)
+			if (Header->ShaderCodeLength[0] > 0)
 			{
-				if (Header->ShaderCodeLength[s] > 0)
-				{
-					// Load from res file
-					//Material->SetShaderCode((E_SHADER_STAGE)s, CodeDataStart + CodeOffset, Header->ShaderCodeLength[s]);
-					TI_ASSERT(0);
-					CodeOffset += ti_align4(Header->ShaderCodeLength[s]);
-				}
-				else
-				{
-					// Load from single file
-					TString ShaderName = ShaderNames.ShaderNames[s];
-					if (!ShaderName.empty())
-					{
-#if defined (COMPILE_WITH_RHI_DX12)
-						if (ShaderName.rfind(".cso") == TString::npos)
-							ShaderName += ".cso";
-#else
-						TI_ASSERT(0);
-#endif
-
-						// Load shader code
-						TFile File;
-						if (File.Open(ShaderName, EFA_READ))
-						{
-							Shader->SetShaderCode((E_SHADER_STAGE)s, File);
-							File.Close();
-						}
-						else
-						{
-							_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
-						}
-					}
-				}
+				// Load from res file
+				//Material->SetShaderCode((E_SHADER_STAGE)s, CodeDataStart + CodeOffset, Header->ShaderCodeLength[s]);
+				TI_ASSERT(0);
+			}
+			else
+			{
+				Shader->LoadShaderCode();
 			}
 			Material->SetShader(Shader);
-
 			OutResources.push_back(Material);
 		}
 	}

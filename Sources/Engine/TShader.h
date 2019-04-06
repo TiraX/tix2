@@ -27,7 +27,7 @@ namespace tix
 		TShader(const TShaderNames& InNames);
 		virtual ~TShader();
 		
-		void SetShaderCode(E_SHADER_STAGE InStage, TFile& InputFile);
+		void LoadShaderCode();
 		const TStream& GetShaderCode(E_SHADER_STAGE InStage)
 		{
 			return ShaderCodes[InStage];

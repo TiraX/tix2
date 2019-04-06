@@ -21,9 +21,33 @@ namespace tix
 	{
 	}
 
-	void TShader::SetShaderCode(E_SHADER_STAGE InStage, TFile& InputFile)
+	void TShader::LoadShaderCode()
 	{
-		ShaderCodes[InStage].Put(InputFile);
+		for (int32 s = 0; s < ESS_COUNT; ++s)
+		{
+			TString ShaderName = Names.ShaderNames[s];
+			if (!ShaderName.empty())
+			{
+#if defined (COMPILE_WITH_RHI_DX12)
+				if (ShaderName.rfind(".cso") == TString::npos)
+					ShaderName += ".cso";
+#else
+				TI_ASSERT(0);
+#endif
+
+				// Load shader code
+				TFile File;
+				if (File.Open(ShaderName, EFA_READ))
+				{
+					ShaderCodes[s].Put(File);
+					File.Close();
+				}
+				else
+				{
+					_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
+				}
+			}
+		}
 	}
 
 	void TShader::InitRenderThreadResource()
