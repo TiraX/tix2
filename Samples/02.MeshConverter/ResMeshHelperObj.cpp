@@ -97,6 +97,7 @@ namespace tix
 			TMap<vector3di, int32> IndexMap;
 			TVector<int32> Indices;
 			TResMeshHelper ResMesh;
+			ResMesh.AllocateMeshes((int32)Groups.size());
 			for (int32 g = 0 ; g < (int32)Groups.size() ; ++ g)
 			{
 				const TVector<vector3di>& group = Groups[g];
@@ -123,7 +124,10 @@ namespace tix
 				TI_ASSERT(PosArrayNew.size() == IndexMap.size());
 
 				// assign segment
-				TResMeshDefine& Mesh = ResMesh.AddMesh(GroupNames[g], (int32)PosArrayNew.size(), (int32)Indices.size() / 3);
+				TResMeshDefine& Mesh = ResMesh.GetMesh(g);
+				Mesh.Name = GroupNames[g];
+				Mesh.NumVertices = (int32)PosArrayNew.size();
+				Mesh.NumTriangles = (int32)Indices.size() / 3;
 				Mesh.AddSegment(ESSI_POSITION, (float*)&PosArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_NORMAL, (float*)&NormalArrayNew[0], sizeof(vector3df));
 				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&UVArrayNew[0], sizeof(vector3df));

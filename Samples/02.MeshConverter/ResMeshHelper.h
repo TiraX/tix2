@@ -11,41 +11,70 @@ namespace tix
 	{
 		float* Data;
 		int32 StrideInFloat;
+		TResMeshSegment()
+			: Data(nullptr)
+			, StrideInFloat(0)
+		{}
 	};
 
 	struct TResMeshFaces
 	{
 		int32* Data;
 		int32 Count;
+		TResMeshFaces()
+			: Data(nullptr)
+			, Count(0)
+		{}
 	};
 
 	struct TResMeshDefine
 	{
-		TResMeshDefine(const TString& InName, int32 InNumVertices, int32 InNumTriangles)
-			: Name(InName)
-			, NumVertices(InNumVertices)
-			, NumTriangles(InNumTriangles)
+		TResMeshDefine()
+			: NumVertices(0)
+			, NumTriangles(0)
 			, LinkedMaterialInstance("MI_Unknown")
 		{
-			memset(Segments, 0, sizeof(TResMeshSegment*) * ESSI_TOTAL);
-
-			Faces.Data = nullptr;
-			Faces.Count = 0;
+		}
+		TResMeshDefine(const TString& InName, int32 InVertices, int32 InTriangles)
+			: Name(InName)
+			, NumVertices(InVertices)
+			, NumTriangles(InTriangles)
+			, LinkedMaterialInstance("MI_Unknown")
+		{
 		}
 		~TResMeshDefine()
 		{
+		}
+
+		TResMeshDefine(const TResMeshDefine& Other)
+		{
+			*this = Other;
+		}
+		TResMeshDefine& operator = (const TResMeshDefine& Other)
+		{
+			Name = Other.Name;
+			NumVertices = Other.NumVertices;
+			NumTriangles = Other.NumTriangles;
+			LinkedMaterialInstance = Other.LinkedMaterialInstance;
+
 			for (int32 i = 0; i < ESSI_TOTAL; ++i)
 			{
-				SAFE_DELETE(Segments[i]);
+				Segments[i] = Other.Segments[i];
 			}
+			Faces = Other.Faces;
+			return *this;
 		}
 
 		TString Name;
 		int32 NumVertices;
 		int32 NumTriangles;
-		TResMeshSegment* Segments[ESSI_TOTAL];
+		TResMeshSegment Segments[ESSI_TOTAL];
 		TResMeshFaces Faces;
 		TString LinkedMaterialInstance;
+
+		// Data
+		TVector<float> Vertices;
+		TVector<int32> Indices;
 
 		void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
 		void SetFaces(int32* Indices, int32 Count);
@@ -61,7 +90,14 @@ namespace tix
 		static bool LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static bool LoadObjFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
 
-		TResMeshDefine& AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles);
+		void AllocateMeshes(int32 Size)
+		{
+			Meshes.resize(Size);
+		}
+		TResMeshDefine& GetMesh(int32 Index)
+		{
+			return Meshes[Index];
+		}
 		void OutputMesh(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:

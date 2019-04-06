@@ -61,9 +61,8 @@ namespace tix
 	void TResMeshDefine::AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte)
 	{
 		TI_ASSERT(InStrideInByte % sizeof(float) == 0);
-		Segments[InStreamType] = ti_new TResMeshSegment;
-		Segments[InStreamType]->Data = InData;
-		Segments[InStreamType]->StrideInFloat = InStrideInByte / sizeof(float);
+		Segments[InStreamType].Data = InData;
+		Segments[InStreamType].StrideInFloat = InStrideInByte / sizeof(float);
 	}
 
 	void TResMeshDefine::SetFaces(int32* Indices, int32 Count)
@@ -87,12 +86,6 @@ namespace tix
 	{
 	}
 
-	TResMeshDefine& TResMeshHelper::AddMesh(const TString& Name, int32 NumVertices, int32 NumTriangles)
-	{
-		Meshes.push_back(TResMeshDefine(Name, NumVertices, NumTriangles));
-		return Meshes.back();
-	}
-
 	void TResMeshHelper::OutputMesh(TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResfileChunkHeader ChunkHeader;
@@ -104,7 +97,7 @@ namespace tix
 		for (int32 m = 0; m < ChunkHeader.ElementCount; ++m)
 		{
 			const TResMeshDefine& Mesh = Meshes[m];
-			TI_ASSERT(Mesh.Segments[ESSI_POSITION] != nullptr);
+			TI_ASSERT(Mesh.Segments[ESSI_POSITION].Data != nullptr);
 
 			// init header
 			THeaderMesh MeshHeader;
@@ -112,7 +105,7 @@ namespace tix
 			MeshHeader.VertexFormat = 0;
 			for (int32 s = 0; s < ESSI_TOTAL; ++s)
 			{
-				if (Mesh.Segments[s] != nullptr)
+				if (Mesh.Segments[s].Data != nullptr)
 				{
 					MeshHeader.VertexFormat |= (1 << s);
 				}
@@ -122,19 +115,19 @@ namespace tix
 			MeshHeader.IndexType = Mesh.NumVertices > 65535 ? EIT_32BIT : EIT_16BIT;
 			MeshHeader.Flag = 0;
 			MeshHeader.StrMaterialInstance = AddStringToList(OutStrings, Mesh.LinkedMaterialInstance);
-			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION]->Data[0], Mesh.Segments[ESSI_POSITION]->Data[1], Mesh.Segments[ESSI_POSITION]->Data[2]);
+			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
 
 			// fill data
 			// - vertices
-			float* DataPos = Mesh.Segments[ESSI_POSITION] ? Mesh.Segments[ESSI_POSITION]->Data : nullptr;
-			float* DataNormal = Mesh.Segments[ESSI_NORMAL] ? Mesh.Segments[ESSI_NORMAL]->Data : nullptr;
-			float* DataColor = Mesh.Segments[ESSI_COLOR] ? Mesh.Segments[ESSI_COLOR]->Data : nullptr;
-			float* DataUv0 = Mesh.Segments[ESSI_TEXCOORD0] ? Mesh.Segments[ESSI_TEXCOORD0]->Data : nullptr;
-			float* DataUv1 = Mesh.Segments[ESSI_TEXCOORD1] ? Mesh.Segments[ESSI_TEXCOORD1]->Data : nullptr;
-			float* DataTangent = Mesh.Segments[ESSI_TANGENT] ? Mesh.Segments[ESSI_TANGENT]->Data : nullptr;
-			float* DataBI = Mesh.Segments[ESSI_BLENDINDEX] ? Mesh.Segments[ESSI_BLENDINDEX]->Data : nullptr;
-			float* DataBW = Mesh.Segments[ESSI_BLENDWEIGHT] ? Mesh.Segments[ESSI_BLENDWEIGHT]->Data : nullptr;
+			float* DataPos = Mesh.Segments[ESSI_POSITION].Data != nullptr ? Mesh.Segments[ESSI_POSITION].Data : nullptr;
+			float* DataNormal = Mesh.Segments[ESSI_NORMAL].Data != nullptr ? Mesh.Segments[ESSI_NORMAL].Data : nullptr;
+			float* DataColor = Mesh.Segments[ESSI_COLOR].Data != nullptr ? Mesh.Segments[ESSI_COLOR].Data : nullptr;
+			float* DataUv0 = Mesh.Segments[ESSI_TEXCOORD0].Data != nullptr ? Mesh.Segments[ESSI_TEXCOORD0].Data : nullptr;
+			float* DataUv1 = Mesh.Segments[ESSI_TEXCOORD1].Data != nullptr ? Mesh.Segments[ESSI_TEXCOORD1].Data : nullptr;
+			float* DataTangent = Mesh.Segments[ESSI_TANGENT].Data != nullptr ? Mesh.Segments[ESSI_TANGENT].Data : nullptr;
+			float* DataBI = Mesh.Segments[ESSI_BLENDINDEX].Data != nullptr ? Mesh.Segments[ESSI_BLENDINDEX].Data : nullptr;
+			float* DataBW = Mesh.Segments[ESSI_BLENDWEIGHT].Data != nullptr ? Mesh.Segments[ESSI_BLENDWEIGHT].Data : nullptr;
 
 			TI_ASSERT(DataPos != nullptr);
 			const int32 VertexStart = DataStream.GetLength();
@@ -147,7 +140,7 @@ namespace tix
 
 					TI_ASSERT(sizeof(vector3df) == TMeshBuffer::SemanticSize[ESSI_POSITION]);
 					DataStream.Put(DataPos, sizeof(vector3df));
-					DataPos += Mesh.Segments[ESSI_POSITION]->StrideInFloat;
+					DataPos += Mesh.Segments[ESSI_POSITION].StrideInFloat;
 				}
 				if (DataNormal != nullptr)
 				{
@@ -159,7 +152,7 @@ namespace tix
 
 					TI_ASSERT(sizeof(NData) == TMeshBuffer::SemanticSize[ESSI_NORMAL]);
 					DataStream.Put(NData, sizeof(NData));
-					DataNormal += Mesh.Segments[ESSI_NORMAL]->StrideInFloat;
+					DataNormal += Mesh.Segments[ESSI_NORMAL].StrideInFloat;
 				}
 				if (DataColor != nullptr)
 				{
@@ -171,7 +164,7 @@ namespace tix
 
 					TI_ASSERT(sizeof(CData) == TMeshBuffer::SemanticSize[ESSI_COLOR]);
 					DataStream.Put(CData, sizeof(CData));
-					DataColor += Mesh.Segments[ESSI_COLOR]->StrideInFloat;
+					DataColor += Mesh.Segments[ESSI_COLOR].StrideInFloat;
 				}
 				if (DataUv0 != nullptr)
 				{
@@ -180,7 +173,7 @@ namespace tix
 					UvHalf[0] = DataUv0[0];
 					UvHalf[1] = DataUv0[1];
 					DataStream.Put(UvHalf, sizeof(float16) * 2);
-					DataUv0 += Mesh.Segments[ESSI_TEXCOORD0]->StrideInFloat;
+					DataUv0 += Mesh.Segments[ESSI_TEXCOORD0].StrideInFloat;
 				}
 				if (DataUv1 != nullptr)
 				{
@@ -189,7 +182,7 @@ namespace tix
 					UvHalf[0] = DataUv1[0];
 					UvHalf[1] = DataUv1[1];
 					DataStream.Put(UvHalf, sizeof(float16) * 2);
-					DataUv1 += Mesh.Segments[ESSI_TEXCOORD1]->StrideInFloat;
+					DataUv1 += Mesh.Segments[ESSI_TEXCOORD1].StrideInFloat;
 				}
 				if (DataTangent != nullptr)
 				{
@@ -201,7 +194,7 @@ namespace tix
 
 					TI_ASSERT(sizeof(TData) == TMeshBuffer::SemanticSize[ESSI_TANGENT]);
 					DataStream.Put(TData, sizeof(TData));
-					DataTangent += Mesh.Segments[ESSI_TANGENT]->StrideInFloat;
+					DataTangent += Mesh.Segments[ESSI_TANGENT].StrideInFloat;
 				}
 				if (DataBI != nullptr)
 				{
@@ -212,7 +205,7 @@ namespace tix
 					BIData[2] = (uint8)DataBI[2];
 					BIData[3] = (uint8)DataBI[3];
 					DataStream.Put(BIData, sizeof(uint8) * 4);
-					DataBI += Mesh.Segments[ESSI_BLENDINDEX]->StrideInFloat;
+					DataBI += Mesh.Segments[ESSI_BLENDINDEX].StrideInFloat;
 				}
 				if (DataBW != nullptr)
 				{
@@ -224,7 +217,7 @@ namespace tix
 
 					TI_ASSERT((int32)sizeof(BWData) == TMeshBuffer::SemanticSize[ESSI_BLENDWEIGHT]);
 					DataStream.Put(BWData, sizeof(BWData));
-					DataBW += Mesh.Segments[ESSI_BLENDWEIGHT]->StrideInFloat;
+					DataBW += Mesh.Segments[ESSI_BLENDWEIGHT].StrideInFloat;
 				}
 			}
 			const int32 VertexEnd = DataStream.GetLength();
@@ -282,27 +275,23 @@ namespace tix
 
 		TJSONNode Sections = Doc["sections"];
 
-		TVector<float> Vertices;
-		TVector<int32> Indices;
 		TVector<TString> SFormat;
 
-		// Only support 1 section for now.
-		TI_ASSERT(Sections.Size() == 1);
+		ResMesh.AllocateMeshes(Sections.Size());
 		for (int32 i = 0; i < Sections.Size(); ++i)
 		{
-			TJSONNode Section = Sections[i];
-			int32 VertexCount = Section["vertex_count"].GetInt();
-			TJSONNode JVertices = Section["vertices"];
-			TJSONNode JIndices = Section["indices"];
-			TJSONNode JVsFormat = Section["vs_format"];
+			TJSONNode JSection = Sections[i];
+			TJSONNode JSectionName = JSection["name"];
+			int32 VertexCount = JSection["vertex_count"].GetInt();
+			TJSONNode JVertices = JSection["vertices"];
+			TJSONNode JIndices = JSection["indices"];
+			TJSONNode JVsFormat = JSection["vs_format"];
 
-			Vertices.clear();
-			Indices.clear();
 			SFormat.clear();
 
-			ConvertJArrayToArray(JVertices, Vertices);
-			ConvertJArrayToArray(JIndices, Indices);
 			ConvertJArrayToArray(JVsFormat, SFormat);
+
+			TString SectionName = JSectionName.GetString();
 
 			int32 VsFormat = 0;
 			int32 ElementsStride = 0;
@@ -312,54 +301,60 @@ namespace tix
 				VsFormat |= Segment;
 				ElementsStride += GetSegmentElements(Segment);
 			}
-			TI_ASSERT(VertexCount * ElementsStride == Vertices.size());
+			TI_ASSERT(VertexCount * ElementsStride == JVertices.Size());
 
 			const int32 BytesStride = ElementsStride * sizeof(float);
-			TResMeshDefine& Mesh = ResMesh.AddMesh("DefaultMesh", (int32)VertexCount, (int32)Indices.size() / 3);
+			TResMeshDefine& Mesh = ResMesh.GetMesh(i);
+			Mesh.Name = SectionName;
+			Mesh.NumVertices = VertexCount;
+			Mesh.NumTriangles = (int32)JIndices.Size() / 3;
+			ConvertJArrayToArray(JVertices, Mesh.Vertices);
+			ConvertJArrayToArray(JIndices, Mesh.Indices);
+
 			int32 ElementOffset = 0;
 			{
 				TI_ASSERT((VsFormat & EVSSEG_POSITION) != 0);
-				Mesh.AddSegment(ESSI_POSITION, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_POSITION, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_NORMAL) != 0)
 			{
-				Mesh.AddSegment(ESSI_NORMAL, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_NORMAL, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_COLOR) != 0)
 			{
-				Mesh.AddSegment(ESSI_COLOR, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_COLOR, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
 			if ((VsFormat & EVSSEG_TEXCOORD0) != 0)
 			{
-				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 2;
 			}
 			if ((VsFormat & EVSSEG_TEXCOORD1) != 0)
 			{
-				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 2;
 			}
 			if ((VsFormat & EVSSEG_TANGENT) != 0)
 			{
-				Mesh.AddSegment(ESSI_TANGENT, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_TANGENT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 3;
 			}
 			if ((VsFormat & EVSSEG_BLENDINDEX) != 0)
 			{
-				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
 			if ((VsFormat & EVSSEG_BLENDWEIGHT) != 0)
 			{
-				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Vertices[ElementOffset], BytesStride);
+				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
 				ElementOffset += 4;
 			}
-			Mesh.SetFaces(&Indices[0], (int32)Indices.size());
+			Mesh.SetFaces(&Mesh.Indices[0], (int32)Mesh.Indices.size());
 
-			TJSONNode JMaterial = Section["material"];
+			TJSONNode JMaterial = JSection["material"];
 			if (!JMaterial.IsNull())
 			{
 				TString MaterialName = JMaterial.GetString();
