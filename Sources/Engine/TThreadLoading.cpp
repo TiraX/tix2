@@ -9,47 +9,34 @@
 
 namespace tix
 {
-	void TResourceLoadingTask::Execute()
+	void TLoadingTask::Execute()
 	{
 		if (LoadingStep == STEP_IO)
 		{
-			_LOG(Log, "Doing IO.\n");
-			// Read file content to FileBuffer
 			TI_ASSERT(IsIOThread());
-			ResourceTask->SourceFile = ti_new TResourceFile;
-			ResourceTask->SourceFile->ReadFile(ResFilename);
-			LoadingStep = STEP_PARSE;
+			ExecuteInIOThread();
+			LoadingStep = STEP_LOADING;
 			// Forward to loading thread
 			TThreadLoading::Get()->AddTask(this);
 		}
-		else if (LoadingStep == STEP_PARSE)
+		else if (LoadingStep == STEP_LOADING)
 		{
-			_LOG(Log, "Doing Parse.\n");
-			// Parse the buffer
 			TI_ASSERT(IsLoadingThread());
-			TI_ASSERT(ResourceTask->SourceFile->Filebuffer != nullptr);
-			ResourceTask->SourceFile->ParseFile();
-			ResourceTask->SourceFile->CreateResource(ResourceTask->Resources);
+			ExecuteInLoadingThread();
 			LoadingStep = STEP_BACK_TO_MAINTHREAD;
-			TI_ASSERT(ResourceTask->SourceFile->referenceCount() == 1);
-			ResourceTask->SourceFile = nullptr;
 			// Return to main thread
 			TEngine::Get()->AddTask(this);
 		}
 		else if (LoadingStep == STEP_BACK_TO_MAINTHREAD)
 		{
 			TI_ASSERT(IsGameThread());
-			// Init render thread resource
-			for (auto& Res : ResourceTask->Resources)
-			{
-				Res->InitRenderThreadResource();
-			}
-
+			ExecuteInMainThread();
 			LoadingStep = STEP_FINISHED;
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////
+
 	TThreadLoading* TThreadLoading::LoadingThread = nullptr;
 	TThreadId TThreadLoading::LoadingThreadId;
 
@@ -107,13 +94,13 @@ namespace tix
 
 	void TThreadLoading::AddTask(TTask* Task)
 	{
-		TResourceLoadingTask* LoadingTask = static_cast<TResourceLoadingTask*>(Task);
-		if (LoadingTask->GetLoadingStep() == TResourceLoadingTask::STEP_IO)
+		TLoadingTask* LoadingTask = static_cast<TLoadingTask*>(Task);
+		if (LoadingTask->GetLoadingStep() == TLoadingTask::STEP_IO)
 		{
 			// Send Task to IO Thread first
 			IOThread->AddTask(Task);
 		}
-		else if (LoadingTask->GetLoadingStep() == TResourceLoadingTask::STEP_PARSE)
+		else if (LoadingTask->GetLoadingStep() == TLoadingTask::STEP_LOADING)
 		{
 			TTaskThread::AddTask(Task);
 		}

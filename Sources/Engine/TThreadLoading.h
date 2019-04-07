@@ -7,24 +7,27 @@
 
 namespace tix
 {
-	class TResourceLoadingTask : public TTask
+	class TLoadingTask : public TTask
 	{
 	public:
 		enum 
 		{
 			STEP_IO,
-			STEP_PARSE,
+			STEP_LOADING,
 			STEP_BACK_TO_MAINTHREAD,
 			STEP_FINISHED,
 		};
-		TResourceLoadingTask(const TString& InResFilename, TResourceTaskPtr InResourceTask)
-			: ResFilename(InResFilename)
-			, LoadingStep(STEP_IO)
-			, ResourceTask(InResourceTask)
+		TLoadingTask()
+			: LoadingStep(STEP_IO)
 		{}
-		virtual ~TResourceLoadingTask() {}
+		virtual ~TLoadingTask() {}
+
+		virtual void ExecuteInIOThread() = 0;
+		virtual void ExecuteInLoadingThread() = 0;
+		virtual void ExecuteInMainThread() = 0;
 
 		virtual void Execute() override;
+
 		virtual bool HasNextTask() override
 		{
 			return LoadingStep != STEP_FINISHED;
@@ -36,9 +39,7 @@ namespace tix
 		}
 
 	private:
-		TString ResFilename;
 		int32 LoadingStep;
-		TResourceTaskPtr ResourceTask;
 	};
 
 	class TThreadIO;

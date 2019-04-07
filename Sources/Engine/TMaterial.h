@@ -58,6 +58,6 @@ namespace tix
 
 	private:
 		friend class TPipeline;
-		friend class TResourceFile;
+		friend class TAssetFile;
 	};
 }

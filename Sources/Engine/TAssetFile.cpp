@@ -4,7 +4,7 @@
 */
 
 #include "stdafx.h"
-#include "TResourceFile.h"
+#include "TAssetFile.h"
 
 namespace tix
 {
@@ -13,7 +13,7 @@ namespace tix
 	// Analysis the dependences with different resources and loading them by order.
 	TI_TODO("Refactor resource loadings.");
 
-	TResourceFile::TResourceFile()
+	TAssetFile::TAssetFile()
 		: Filebuffer(nullptr)
 		, Header(nullptr)
 		, StringOffsets(nullptr)
@@ -21,18 +21,18 @@ namespace tix
 		memset(ChunkHeader, 0, sizeof(ChunkHeader));
 	}
 
-	TResourceFile::~TResourceFile()
+	TAssetFile::~TAssetFile()
 	{
 		Destroy();
 	}
 
-	void TResourceFile::Destroy()
+	void TAssetFile::Destroy()
 	{
 		Filename = "";
 		SAFE_DELETE_ARRAY(Filebuffer);
 	}
 
-	TFile* TResourceFile::OpenResFile(const TString& Filename)
+	TFile* TAssetFile::OpenResFile(const TString& Filename)
 	{
 		TFile* file = ti_new TFile;
 		if (!file->Open(Filename, EFA_READ))
@@ -43,7 +43,7 @@ namespace tix
 		return file;
 	}
 
-	bool TResourceFile::Load(const TString& InFilename)
+	bool TAssetFile::Load(const TString& InFilename)
 	{
 		if (!ReadFile(InFilename))
 		{
@@ -52,7 +52,7 @@ namespace tix
 		return ParseFile();
 	}
 
-	bool TResourceFile::ReadFile(const TString& InFilename)
+	bool TAssetFile::ReadFile(const TString& InFilename)
 	{
 		TFile* File = OpenResFile(InFilename);
 		if (File == nullptr)
@@ -73,7 +73,7 @@ namespace tix
 		return true;
 	}
 
-	bool TResourceFile::ParseFile()
+	bool TAssetFile::ParseFile()
 	{
 		int32 pos = 0;
 		Header = (TResfileHeader*)(Filebuffer + pos);
@@ -93,19 +93,19 @@ namespace tix
 		return result;
 	}
 
-	bool TResourceFile::LoadStringList()
+	bool TAssetFile::LoadStringList()
 	{
 		StringOffsets = (int32*)(Filebuffer + Header->StringOffset);
 		return true;
 	}
 
-	const int8* TResourceFile::GetString(int32 str_index)
+	const int8* TAssetFile::GetString(int32 str_index)
 	{
 		TI_ASSERT(str_index >= 0 && str_index < Header->StringCount);
 		return (char*)(StringOffsets + Header->StringCount) + (str_index > 0 ? StringOffsets[str_index - 1] : 0);
 	}
 
-	bool TResourceFile::LoadChunks(const char* chunk_start)
+	bool TAssetFile::LoadChunks(const char* chunk_start)
 	{
 		const TResfileChunkHeader* chunkHeader;
 		for (int32 c = 0 ; c < Header->ChunkCount ; ++ c)
@@ -143,7 +143,7 @@ namespace tix
 		return true;
 	}
 
-	void TResourceFile::CreateResource(TVector<TResourcePtr>& OutResources)
+	void TAssetFile::CreateResource(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MESHES] != nullptr)
 			CreateMeshBuffer(OutResources);
@@ -163,7 +163,7 @@ namespace tix
 		}
 	}
 
-	void TResourceFile::CreateMeshBuffer(TVector<TResourcePtr>& OutResources)
+	void TAssetFile::CreateMeshBuffer(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MESHES] == nullptr)
 			return;
@@ -197,7 +197,7 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourceTaskPtr MIRes = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TAssetPtr MIRes = TAssetLibrary::Get()->LoadAsset(MaterialResName);
 			if (MIRes == nullptr)
 			{
 				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
@@ -209,7 +209,7 @@ namespace tix
 		}
 	}
 
-	void TResourceFile::CreateTexture(TVector<TResourcePtr>& OutResources)
+	void TAssetFile::CreateTexture(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_TEXTURES] == nullptr)
 			return;
@@ -273,7 +273,7 @@ namespace tix
 		}
 	}
 
-	void TResourceFile::CreateMaterial(TVector<TResourcePtr>& OutResources)
+	void TAssetFile::CreateMaterial(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MATERIAL] == nullptr)
 			return;
@@ -347,7 +347,7 @@ namespace tix
 		}
 	}
 
-	void TResourceFile::CreateMaterialInstance(TVector<TResourcePtr>& OutResources)
+	void TAssetFile::CreateMaterialInstance(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] == nullptr)
 			return;
@@ -404,7 +404,7 @@ namespace tix
 					// texture params
 					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
 					TString TextureName = GetString(TextureNameIndex);
-					TResourceTaskPtr TextureRes = TResourceLibrary::Get()->LoadResource(TextureName);
+					TAssetPtr TextureRes = TAssetLibrary::Get()->LoadAsset(TextureName);
 					if (TextureRes == nullptr)
 					{
 						_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
@@ -426,7 +426,7 @@ namespace tix
 			{
 				MaterialResName += ".tres";
 			}
-			TResourceTaskPtr Material = TResourceLibrary::Get()->LoadResource(MaterialResName);
+			TAssetPtr Material = TAssetLibrary::Get()->LoadAsset(MaterialResName);
 			if (Material == nullptr)
 			{
 				_LOG(Error, "Failed to load material [%s] for Material Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
@@ -437,7 +437,7 @@ namespace tix
 		}
 	}
 
-	void TResourceFile::LoadScene()
+	void TAssetFile::LoadScene()
 	{
 		if (ChunkHeader[ECL_SCENE] == nullptr)
 		{

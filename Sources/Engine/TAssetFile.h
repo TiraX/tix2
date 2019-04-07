@@ -5,40 +5,41 @@
 
 #pragma once
 
-#include "TResourceFileDef.h"
+#include "TAssetFileDef.h"
 
 namespace tix
 {
-	class TResourceFile : public IReferenceCounted
+	class TAssetFile : public IReferenceCounted
 	{
-	private:
-		TResourceFile();
-		virtual ~TResourceFile();
-
-		bool Load(const TString& InFilename);
-
-		void CreateResource(TVector<TResourcePtr>& OutResources);
-
-		void LoadScene();
-		void CreateMeshBuffer(TVector<TResourcePtr>& OutResources);
-		void CreateTexture(TVector<TResourcePtr>& OutResources);
-		void CreateMaterial(TVector<TResourcePtr>& OutResources);
-		void CreateMaterialInstance(TVector<TResourcePtr>& OutResources);
+	public:
+		TAssetFile();
+		~TAssetFile();
 
 		const TString& GetFilename()
 		{
 			return Filename;
 		}
 
-		TI_API const int8* GetString(int32 StringIndex);
+		bool Load(const TString& InFilename);
+		void CreateResource(TVector<TResourcePtr>& OutResources);
+
+		void LoadScene();
+
+		bool ReadFile(const TString& InFilename);
+		bool ParseFile();
 
 	private:
+		void CreateMeshBuffer(TVector<TResourcePtr>& OutResources);
+		void CreateTexture(TVector<TResourcePtr>& OutResources);
+		void CreateMaterial(TVector<TResourcePtr>& OutResources);
+		void CreateMaterialInstance(TVector<TResourcePtr>& OutResources);
+		
+		TI_API const int8* GetString(int32 StringIndex);
+
 		void Destroy();
 		TFile * OpenResFile(const TString& file_name);
 		bool LoadChunks(const char* chunk_start);
 		bool LoadStringList();
-		bool ReadFile(const TString& InFilename);
-		bool ParseFile();
 
 	protected:
 		TString Filename;
@@ -48,7 +49,7 @@ namespace tix
 		TResfileHeader* Header;
 		int32* StringOffsets;
 
-		friend class TResourceLibrary;
+		friend class TAssetLibrary;
 		friend class TResourceLoadingTask;
 	};
 }

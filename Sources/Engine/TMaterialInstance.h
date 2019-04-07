@@ -41,6 +41,6 @@ namespace tix
 		TVector<TTexturePtr> ParamTextures;
 
 	protected:
-		friend class TResourceFile;
+		friend class TAssetFile;
 	};
 }

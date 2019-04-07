@@ -24,5 +24,5 @@ void TVirtualTextureTicker::SetupScene()
 {
 	// Load scene
 	const TString TargetSceneRes = "showcase_01.tres";
-	TResourceLibrary::Get()->LoadScene(TargetSceneRes);
+	TAssetLibrary::Get()->LoadScene(TargetSceneRes);
 }

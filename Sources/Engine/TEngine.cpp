@@ -71,7 +71,7 @@ namespace tix
 		// Create components
 		TI_ASSERT(Scene == nullptr);
 		Scene = ti_new TScene;
-		ResourceLibrary = ti_new TResourceLibrary;
+		ResourceLibrary = ti_new TAssetLibrary;
 
 		// Waiting for render thread create
 		while (!FRenderThread::IsInited())
