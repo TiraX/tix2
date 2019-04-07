@@ -16,6 +16,8 @@
 TString FilenameSrc;
 TString FilenameDst;
 
+TResSettings TResSettings::GlobalSettings;
+
 void ShowUsage()
 {
 	printf("ResConverter src_filename dst_filename\n");
@@ -96,6 +98,7 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 		else if (FilenameSrc == (""))
 		{
 			FilenameSrc = argv[i];
+			GetPathAndName(FilenameSrc, TResSettings::GlobalSettings.SrcPath, TResSettings::GlobalSettings.SrcName);
 		}
 		else if (FilenameDst == (""))
 		{

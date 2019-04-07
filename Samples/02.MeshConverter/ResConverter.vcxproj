@@ -167,6 +167,7 @@
     <ClInclude Include="ResMaterialInstanceHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
     <ClInclude Include="ResSceneHelper.h" />
+    <ClInclude Include="ResSettings.h" />
     <ClInclude Include="ResShaderBindingHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />
     <ClInclude Include="stdafx.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="ResTextureHelper.cpp" />
     <ClCompile Include="ResTextureHelperAstc.cpp" />
     <ClCompile Include="ResTextureHelperDds.cpp" />
+    <ClCompile Include="ResTextureHelperTga.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

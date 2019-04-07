@@ -147,24 +147,8 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadAstcFile(const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat)
+	TResTextureDefine* TResTextureHelper::ConvertDdsToAstc(TResTextureDefine* DDSTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat)
 	{
-		TVector<TImage*> Images;
-
-		TResTextureDefine* DDSTexture = nullptr;
-		// if src format is dds, decode it first
-		if (Filename.rfind(".dds") != TString::npos)
-		{
-			DDSTexture = TResTextureHelper::LoadDdsFile(Filename, LodBias);
-
-			DecodeDXT(DDSTexture, Images);
-		}
-		else
-		{
-			printf("Error: unknown texture format. [%s]\n", Filename.c_str());
-			return nullptr;
-		}
-
 		if (TargetFormat != EPF_UNKNOWN)
 		{
 			if (TargetFormat == DDSTexture->Desc.Format)
@@ -180,6 +164,9 @@ namespace tix
 			// HDR save as dds directly
 			return DDSTexture;
 		}
+
+		TVector<TImage*> Images;
+		DecodeDXT(DDSTexture, Images);
 
 		if (Images.size() == 0)
 		{
@@ -249,16 +236,7 @@ namespace tix
 		}
 
 		TString Name, Path;
-		size_t Mark = Filename.rfind('/');
-		if (Mark == TString::npos)
-		{
-			Name = Filename;
-		}
-		else
-		{
-			Name = Filename.substr(Mark + 1);
-			Path = Filename.substr(0, Mark);
-		}
+		GetPathAndName(Filename, Name, Path);
 
 		TResTextureDefine* Texture = CreateTextureFromASTC(DDSTexture->Desc.Type, DDSTexture->Desc.Mips, AstcFileBuffers);
 		Texture->Name = Name;
@@ -267,8 +245,103 @@ namespace tix
 		DeleteTempFile(TempTGAName);
 		DeleteTempFile(TempASTCName);
 
-		ti_delete DDSTexture;
-
 		return Texture;
+	}
+
+	TResTextureDefine* TResTextureHelper::LoadTgaToAstc(const TResTextureSourceInfo& SrcInfo)
+	{
+		TVector<TImage*> Images;
+		// Load Tga image and generate mipmap
+		TI_ASSERT(0);
+		if (Images.size() == 0)
+		{
+			printf("Error: Failed to decode dds to tga. [%s]\n", SrcInfo.TextureSource.c_str());
+			return nullptr;
+		}
+		return nullptr;
+
+		//TImage* TGAImage = Images[0];
+		//if (TargetFormat != EPF_UNKNOWN)
+		//{
+		//	if (TargetFormat == TGAImage->GetFormat())
+		//	{
+		//		return TGATexture;
+		//	}
+		//	printf("Do not support convert to Target format yet.\n");
+		//	TI_ASSERT(0);
+		//}
+
+		// Find ASTC converter and do convert for LDR image
+		//TString ExePath = GetExecutablePath();
+		//TString ASTCConverter = ExePath + "/astcenc -c ";
+		//const TString TempTGAName = "Temp.tga";
+		//const TString TempASTCName = "Temp.astc";
+		//const TString ConvertParam = " 6x6 -medium -silentmode";
+		//ASTCConverter += TempTGAName + " ";
+		//ASTCConverter += TempASTCName + ConvertParam;
+		//printf("Converting : [%s] to ASTC.\n", Filename.c_str());
+
+		TVector<TStreamPtr> AstcFileBuffers;
+		int32 Faces = 1;
+		// TGA do not support Cubemap
+		//if (DDSTexture->Desc.Type == ETT_TEXTURE_CUBE)
+		//	Faces = 6;
+		
+		//for (int32 f = 0; f < Faces; ++f)
+		//{
+		//	int32 W = Images[f * DDSTexture->Desc.Mips + 0]->GetWidth();
+		//	int32 H = Images[f * DDSTexture->Desc.Mips + 0]->GetHeight();
+
+		//	for (uint32 mip = 0; mip < DDSTexture->Desc.Mips; ++mip)
+		//	{
+		//		TImage* Image = Images[f * DDSTexture->Desc.Mips + mip];
+		//		TI_ASSERT(Image->GetWidth() == W && Image->GetHeight() == H);
+		//		Image->SaveToTga(TempTGAName.c_str());
+
+		//		// Convert to astc
+		//		int ret = system(ASTCConverter.c_str());
+
+		//		if (ret == 0)
+		//		{
+		//			TFile f;
+		//			if (!f.Open(TempASTCName, EFA_READ))
+		//			{
+		//				printf("Error: failed to read converted astc file.\n");
+		//				break;
+		//			}
+
+		//			TStreamPtr FileStream = ti_new TStream;
+
+		//			// Load file to memory
+		//			const int32 FileSize = f.GetSize();
+		//			uint8* FileBuffer = ti_new uint8[FileSize];
+		//			f.Read(FileBuffer, FileSize, FileSize);
+		//			f.Close();
+
+		//			FileStream->Put(FileBuffer, FileSize);
+		//			ti_delete[] FileBuffer;
+		//			AstcFileBuffers.push_back(FileStream);
+		//		}
+		//		else
+		//		{
+		//			printf("Error: failed to convert astc file.\n");
+		//		}
+
+		//		W /= 2;
+		//		H /= 2;
+		//	}
+		//}
+
+		//TString Name, Path;
+		//GetPathAndName(Filename, Name, Path);
+
+		//TResTextureDefine* Texture = CreateTextureFromASTC(DDSTexture->Desc.Type, DDSTexture->Desc.Mips, AstcFileBuffers);
+		//Texture->Name = Name;
+		//Texture->Path = Path;
+
+		//DeleteTempFile(TempTGAName);
+		//DeleteTempFile(TempASTCName);
+
+		//return Texture;
 	}
 }

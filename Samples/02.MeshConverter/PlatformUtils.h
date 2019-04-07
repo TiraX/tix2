@@ -8,7 +8,6 @@
 namespace tix
 {
 	TString GetExecutablePath();
-	void DeleteTempFile(const TString& FileName);
+	int32 DeleteTempFile(TString FileName);
 	bool CreateDirectoryIfNotExist(const TString& Path);
-
 }

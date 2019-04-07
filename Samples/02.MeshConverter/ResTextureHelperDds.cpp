@@ -8,6 +8,9 @@
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "dds.h"
+#include "TImage.h"
+#include "PlatformUtils.h"
+#include <sstream>
 
 namespace tix
 {
@@ -866,10 +869,11 @@ namespace tix
 		}
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadDdsFile(const TString& Filename, int32 LodBias)
+	TResTextureDefine* TResTextureHelper::LoadDdsFile(const TResTextureSourceInfo& SrcInfo)
 	{
 		TFile f;
-		if (!f.Open(Filename, EFA_READ))
+		TString SrcPathName = TResSettings::GlobalSettings.SrcPath + SrcInfo.TextureSource;
+		if (!f.Open(SrcPathName, EFA_READ))
 		{
 			return nullptr;
 		}
@@ -915,22 +919,105 @@ namespace tix
 		}
 
 		TString Name, Path;
-		size_t Mark = Filename.rfind('/');
-		if (Mark == TString::npos)
-		{
-			Name = Filename;
-		}
-		else
-		{
-			Name = Filename.substr(Mark + 1);
-			Path = Filename.substr(0, Mark);
-		}
+		GetPathAndName(SrcPathName, Path, Name);
 
-		TResTextureDefine* Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset, LodBias);
+		TResTextureDefine* Texture = CreateTextureFromDDS(header, FileBuffer + offset, FileSize - offset, SrcInfo.LodBias);
 		Texture->Name = Name;
 		Texture->Path = Path;
 
 		ti_delete[] FileBuffer;
 		return Texture;
+	}
+
+	TResTextureDefine* TResTextureHelper::LoadTgaToDds(const TResTextureSourceInfo& SrcInfo)
+	{
+		// Load Tga Image to find its format and width/height
+		TString SrcName = TResSettings::GlobalSettings.SrcPath + SrcInfo.TextureSource;
+		int32 ImageW, ImageH;
+		E_PIXEL_FORMAT ImageFormat;
+		{
+			TFile ImageFile;
+			if (!ImageFile.Open(SrcName, EFA_READ))
+			{
+				return nullptr;
+			}
+			TImage* TgaImage = TImage::LoadImageTGA(ImageFile);
+			ImageW = TgaImage->GetWidth();
+			ImageH = TgaImage->GetHeight();
+			ImageFormat = TgaImage->GetFormat();
+			ti_delete TgaImage;
+		}
+
+		int32 TargetW = ImageW >> SrcInfo.LodBias;
+		int32 TargetH = ImageH >> SrcInfo.LodBias;
+		TI_ASSERT(TargetW > 0 && TargetH > 0);
+		TString TargetFormatStr;
+		if (SrcInfo.TargetFormat == EPF_UNKNOWN)
+		{
+			switch (ImageFormat)
+			{
+			case EPF_RGB8:
+				TargetFormatStr = "DXT1";
+				break;
+			case EPF_RGBA8:
+				TargetFormatStr = "DXT5";
+				break;
+			default:
+				printf("Error : un-supported ImageFormat : %d.\n", ImageFormat);
+				TI_ASSERT(0);
+				break;
+			}
+		}
+		else
+		{
+			switch (SrcInfo.TargetFormat)
+			{
+			case EPF_A8:
+				TargetFormatStr = "R8_UNORM";
+				break;
+			case EPF_RGBA8:
+				TargetFormatStr = "R8G8B8A8_UNORM";
+				break;
+			default:
+				printf("Error : un-supported TargetFormat : %d.\n", SrcInfo.TargetFormat);
+				TI_ASSERT(0);
+				break;
+			}
+		}
+
+		// Find DDS converter and do convert for LDR image
+		TString CommandLineStr, DebugCommandLineStr;
+		{
+			TString ExePath = GetExecutablePath();
+
+			stringstream CmdSS;
+			CmdSS << "/texconv -pow2 -y -nologo -silent";
+			CmdSS << " -w " << TargetW << " -h " << TargetH;
+			CmdSS << " -f " << TargetFormatStr;
+			if (!SrcInfo.HasMips)
+			{
+				CmdSS << " -m 1";
+			}
+			CmdSS << " " << SrcName;
+			CommandLineStr = ExePath + CmdSS.str();
+			DebugCommandLineStr = CmdSS.str();
+		}
+		printf("  Cmd : %s\n", DebugCommandLineStr.c_str());
+		// Convert to DXT
+		int ret = system(CommandLineStr.c_str());
+		if (ret != 0)
+		{
+			printf("Error: failed to convert DXT file.\n");
+			return nullptr;
+		}
+
+		TResTextureSourceInfo DxtSrcInfo = SrcInfo;
+		TStringReplace(DxtSrcInfo.TextureSource, ".tga", ".DDS");
+		TResTextureDefine * DxtTexture = LoadDdsFile(DxtSrcInfo);
+
+		TString DstPathName = TResSettings::GlobalSettings.SrcPath + DxtSrcInfo.TextureSource;
+		DeleteTempFile(DstPathName);
+
+		return DxtTexture;
 	}
 }

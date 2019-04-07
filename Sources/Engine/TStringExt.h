@@ -28,4 +28,30 @@ namespace tix
 			Pos = String.find(StringSrc, (Pos + DesLen));
 		}
 	}
+
+	inline void GetPathAndName(const TString& FullPathName, TString& Path, TString& Name)
+	{
+		TString FullPathName1 = FullPathName;
+		TStringReplace(FullPathName1, "\\", "/");
+		TString::size_type SlashPos = FullPathName1.rfind('/');
+		if (SlashPos != TString::npos)
+		{
+			Path = FullPathName1.substr(0, SlashPos + 1);
+			Name = FullPathName1.substr(SlashPos + 1);
+		}
+		else
+		{
+			Path = "";
+			Name = FullPathName;
+		}
+	}
+
+	inline TString GetExtName(const TString& FullPathName)
+	{
+		TString::size_type DotPos = FullPathName.rfind('.');
+		if (DotPos == TString::npos)
+			return "";
+		else
+			return FullPathName.substr(DotPos + 1);
+	}
 }

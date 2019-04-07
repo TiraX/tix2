@@ -49,16 +49,17 @@ namespace tix
 		return Ret;
 	}
 
-	void DeleteTempFile(const TString& FileName)
+	int32 DeleteTempFile(TString FileName)
 	{
 		TString CommandLine;
 #if defined (TI_PLATFORM_WIN32)
 		CommandLine = "del ";
+		TStringReplace(FileName, "/", "\\");
 #elif defined (TI_PLATFORM_IOS)
 		CommandLine = "rm ";
 #endif
 		CommandLine += FileName;
-		system(CommandLine.c_str());
+		return system(CommandLine.c_str());
 	}
 	
 	bool IsDirectoryExists(const TString& Path)
