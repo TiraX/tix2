@@ -30,13 +30,21 @@ namespace tix
 		s_instance = nullptr;
 	}
 
+	void TAssetLibrary::AddAsset(const TString& InAssetName, TAssetPtr InAsset)
+	{
+		AssetsLock.lock();
+		AssetsLoaded[InAssetName] = InAsset;
+		AssetsLock.unlock();
+	}
+
 	TAssetPtr TAssetLibrary::LoadAsset(const TString& AssetFilename)
 	{
 		if (AssetsLoaded.find(AssetFilename) == AssetsLoaded.end())
 		{
 			// Load resource to library
 			TAssetPtr Asset = ti_new TAsset(AssetFilename);
-			AssetsLoaded[AssetFilename] = Asset;
+			AddAsset(AssetFilename, Asset);
+
 			Asset->Load(false);
 			return Asset;
 		}
@@ -46,13 +54,15 @@ namespace tix
 		}
 	}
 
-	TAssetPtr TAssetLibrary::LoadAssetAysc(const TString& AssetFilename)
+	TAssetPtr TAssetLibrary::LoadAssetAysc(const TString& AssetFilename, ILoadingTaskNotifier * Notifier)
 	{
 		if (AssetsLoaded.find(AssetFilename) == AssetsLoaded.end())
 		{
 			// Load resource to library
 			TAssetPtr Asset = ti_new TAsset(AssetFilename);
-			AssetsLoaded[AssetFilename] = Asset;
+			Asset->SetLoadingNotifier(Notifier);
+			AddAsset(AssetFilename, Asset);
+
 			Asset->Load(true);
 			return Asset;
 		}
@@ -62,20 +72,10 @@ namespace tix
 		}
 	}
 
-	void TAssetLibrary::LoadScene(const TString& AssetFilename)
-	{
-		TI_ASSERT(0);
-		// Load resource to library
-		//TAssetFilePtr AssetFile = ti_new TAssetFile;
-		//if (ResFile->Load(AssetFilename))
-		//{
-		//	ResFile->LoadScene();
-		//}
-	}
-
 	void TAssetLibrary::RemoveUnusedResources()
 	{
 		MapAssets::iterator it = AssetsLoaded.begin();
+		AssetsLock.lock();
 		for (; it != AssetsLoaded.end(); )
 		{
 			if (!it->second->HasReference())
@@ -91,11 +91,13 @@ namespace tix
 				++it;
 			}
 		}
+		AssetsLock.unlock();
 	}
 
 	void TAssetLibrary::RemoveAllResources()
 	{
 		MapAssets::iterator it = AssetsLoaded.begin();
+		AssetsLock.lock();
 		for (; it != AssetsLoaded.end(); ++ it)
 		{
 			it->second->DestroyRenderThreadResource();
@@ -103,5 +105,6 @@ namespace tix
 			it->second = nullptr;
 		}
 		AssetsLoaded.clear();
+		AssetsLock.unlock();
 	}
 }

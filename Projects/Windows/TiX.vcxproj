@@ -84,6 +84,7 @@
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TSceneLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />

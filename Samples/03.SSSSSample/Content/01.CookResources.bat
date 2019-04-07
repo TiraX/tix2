@@ -19,7 +19,7 @@ if not exist "Cooked" (
 echo Converting tjs files.
 for %%i in (*.tjs) do (
 echo converting - %%~i
-%Converter% %%i Cooked\Windows\%%~ni.tres
+%Converter% %%i Cooked\Windows\%%~ni.tasset
 )
 
 echo copy Config

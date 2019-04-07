@@ -91,6 +91,12 @@ namespace tix
 		return StaticMesh;
 	}
 
+	void TScene::AddStaticMeshNode(TNodeStaticMesh * MeshNode)
+	{
+		TI_ASSERT(IsGameThread());
+		NodeRoot->AddChild(MeshNode);
+	}
+
 	TNodeLight* TScene::AddLight(const vector3df& Position, float Intensity, const SColor& Color)
 	{
 		TNodeLight* Light = TNodeFactory::CreateNode<TNodeLight>(NodeRoot);

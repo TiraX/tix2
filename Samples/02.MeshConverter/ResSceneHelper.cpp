@@ -43,8 +43,8 @@ namespace tix
 		{
 			TJSONNode JAssetList = Doc["dependency"];
 			TJSONNode JAssetTextures = JAssetList["textures"];
-			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
 			TJSONNode JAssetMaterials = JAssetList["materials"];
+			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
 			TJSONNode JAssetMeshes = JAssetList["meshes"];
 
 			Helper.AssetTextures.reserve(JAssetTextures.Size());
@@ -53,17 +53,17 @@ namespace tix
 				TJSONNode JTexture = JAssetTextures[i];
 				Helper.AssetTextures.push_back(JTexture.GetString());
 			}
-			Helper.AssetMaterialInstances.reserve(JAssetMaterialInstances.Size());
-			for (int32 i = 0; i < JAssetMaterialInstances.Size(); ++i)
-			{
-				TJSONNode JMI = JAssetMaterialInstances[i];
-				Helper.AssetMaterialInstances.push_back(JMI.GetString());
-			}
 			Helper.AssetMaterials.reserve(JAssetMaterials.Size());
 			for (int32 i = 0; i < JAssetMaterials.Size(); ++i)
 			{
 				TJSONNode JMaterial = JAssetMaterials[i];
 				Helper.AssetMaterials.push_back(JMaterial.GetString());
+			}
+			Helper.AssetMaterialInstances.reserve(JAssetMaterialInstances.Size());
+			for (int32 i = 0; i < JAssetMaterialInstances.Size(); ++i)
+			{
+				TJSONNode JMI = JAssetMaterialInstances[i];
+				Helper.AssetMaterialInstances.push_back(JMI.GetString());
 			}
 			Helper.AssetMeshes.reserve(JAssetMeshes.Size());
 			for (int32 i = 0; i < JAssetMeshes.Size(); ++i)
@@ -121,8 +121,8 @@ namespace tix
 
 			// Assets Info
 			Define.NumTextures = (int32)AssetTextures.size();
-			Define.NumMaterialInstances = (int32)AssetMaterialInstances.size();
 			Define.NumMaterials = (int32)AssetMaterials.size();
+			Define.NumMaterialInstances = (int32)AssetMaterialInstances.size();
 			Define.NumMeshes = (int32)AssetMeshes.size();
 
 			// Mesh instances Info
@@ -140,12 +140,12 @@ namespace tix
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
-			for (const auto& A : AssetMaterialInstances)
+			for (const auto& A : AssetMaterials)
 			{
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
-			for (const auto& A : AssetMaterials)
+			for (const auto& A : AssetMaterialInstances)
 			{
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));

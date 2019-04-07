@@ -27,8 +27,8 @@ void TSSSSTicker::SetupScene()
 	TScene * Scene = TEngine::Get()->GetScene();
 	// Head
 	{
-		const TString TargetMeshRes = "SM_Head.tres";
-		TAssetPtr MeshRes = TAssetLibrary::Get()->LoadAsset(TargetMeshRes);
+		const TString TargetMeshAsset = "SM_Head.tasset";
+		TAssetPtr MeshRes = TAssetLibrary::Get()->LoadAsset(TargetMeshAsset);
 		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes->GetResourcePtr());
 
 		Scene->AddStaticMesh(MeshBuffer, MeshBuffer->GetDefaultMaterial(), false, false);
@@ -36,7 +36,7 @@ void TSSSSTicker::SetupScene()
 
 	// Sky Dome
 	{
-		const TString TargetMeshRes = "SM_SkyDome.tres";
+		const TString TargetMeshRes = "SM_SkyDome.tasset";
 		TAssetPtr MeshRes = TAssetLibrary::Get()->LoadAsset(TargetMeshRes);
 		TMeshBufferPtr MeshBuffer = static_cast<TMeshBuffer*>(MeshRes->GetResourcePtr());
 

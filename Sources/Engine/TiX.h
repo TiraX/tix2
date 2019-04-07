@@ -47,6 +47,8 @@ using namespace std;
 #include "TFile.h"
 #include "TStream.h"
 #include "TTicker.h"
+#include "TThreadIO.h"
+#include "TThreadLoading.h"
 #include "FRHIConfig.h"
 #include "TResource.h"
 #include "TTexture.h"
@@ -65,8 +67,6 @@ using namespace std;
 #include "TNodeStaticMesh.h"
 #include "TNodeLight.h"
 #include "TScene.h"
-#include "TThreadIO.h"
-#include "TThreadLoading.h"
 
 // RHI things
 #include "FRenderResource.h"

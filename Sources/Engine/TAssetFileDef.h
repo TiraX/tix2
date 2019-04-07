@@ -218,8 +218,8 @@ namespace tix
 		
 		// Scene Meshes and Instances
 		int32 NumTextures;
-		int32 NumMaterialInstances;
 		int32 NumMaterials;
+		int32 NumMaterialInstances;
 		int32 NumMeshes;
 		int32 NumInstances;
 	};

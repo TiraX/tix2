@@ -3,11 +3,11 @@
     "type": "material_instance", 
     "version": 1, 
     "desc": "", 
-    "linked_material": "M_SkyDome.tres", 
+    "linked_material": "M_SkyDome.tasset", 
     "parameters": {
         "TextureSkyMap": {
             "type": "texture", 
-            "value": "TC_EnvCubeMap.tres"
+            "value": "TC_EnvCubeMap.tasset"
         }
     }
 }

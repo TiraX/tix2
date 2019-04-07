@@ -3,27 +3,27 @@
     "type": "material_instance", 
     "version": 1, 
     "desc": "", 
-    "linked_material": "M_SkinBase.tres", 
+    "linked_material": "M_SkinBase.tasset", 
     "parameters": {
         "TextureDiffuse": {
             "type": "texture", 
-            "value": "T_AlbedoMap.tres"
+            "value": "T_AlbedoMap.tasset"
         },
         "TextureNormal": {
             "type": "texture", 
-            "value": "T_NormalMap.tres"
+            "value": "T_NormalMap.tasset"
         },
         "TextureSpecular": {
             "type": "texture", 
-            "value": "T_SpecularAOMap.tres"
+            "value": "T_SpecularAOMap.tasset"
         },
         "TextureBeckmann": {
             "type": "texture", 
-            "value": "T_BeckmannMap.tres"
+            "value": "T_BeckmannMap.tasset"
         },
         "TextureIrr": {
             "type": "texture", 
-            "value": "TC_EnvIrradianceMap.tres"
+            "value": "TC_EnvIrradianceMap.tasset"
         }
     }
 }

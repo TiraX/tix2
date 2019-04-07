@@ -23,8 +23,6 @@ namespace tix
 		bool Load(const TString& InFilename);
 		void CreateResource(TVector<TResourcePtr>& OutResources);
 
-		void LoadScene();
-
 		bool ReadFile(const TString& InFilename);
 		bool ParseFile();
 
@@ -33,6 +31,7 @@ namespace tix
 		void CreateTexture(TVector<TResourcePtr>& OutResources);
 		void CreateMaterial(TVector<TResourcePtr>& OutResources);
 		void CreateMaterialInstance(TVector<TResourcePtr>& OutResources);
+		void CreateScene();
 		
 		TI_API const int8* GetString(int32 StringIndex);
 

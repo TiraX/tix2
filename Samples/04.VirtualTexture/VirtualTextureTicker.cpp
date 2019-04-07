@@ -23,6 +23,6 @@ void TVirtualTextureTicker::Tick(float Dt)
 void TVirtualTextureTicker::SetupScene()
 {
 	// Load scene
-	const TString TargetSceneRes = "showcase_01.tres";
-	TAssetLibrary::Get()->LoadScene(TargetSceneRes);
+	const TString TargetSceneAsset = "showcase_01.tasset";
+	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }

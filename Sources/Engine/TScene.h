@@ -40,6 +40,8 @@ namespace tix
 		TScene();
 		virtual ~TScene();
 
+		TI_API void LoadSceneAync(const TString& InSceneAssetName);
+
 		TI_API void TickAllNodes(float Dt, TNode* Root = nullptr);
 		TI_API void UpdateAllNodesTransforms(TNode* Root = nullptr);
 
@@ -66,6 +68,7 @@ namespace tix
 		TI_API TNodeEnvironment* GetEnvironment();
 
 		TI_API TNodeStaticMesh* AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
+		TI_API void AddStaticMeshNode(TNodeStaticMesh * MeshNode);
 		TI_API TNodeLight* AddLight(const vector3df& Position, float Intensity, const SColor& Color);
 
 		void ResetActiveLists();
@@ -83,6 +86,8 @@ namespace tix
 		TNodeEnvironment* DefaultEnvironment;
 
 		TVector<TNode*> ActiveNodeList[ESLT_COUNT];
+
+		TAssetPtr SceneAssetInLoading;
 	};
 
 } // end namespace tix

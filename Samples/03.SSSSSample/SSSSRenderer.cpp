@@ -30,23 +30,23 @@ FSSSSRenderer::FSSSSRenderer()
 	TI_TODO("High level ");
 	S4Effect = ti_new SeparableSSS(DEG_TO_RAD(40), 250.f);
 
-	const TString SSSBlurMaterialName = "M_SSSBlur.tres";
+	const TString SSSBlurMaterialName = "M_SSSBlur.tasset";
 	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(SSSBlurMaterialName)->GetResourcePtr());
 	PL_SSSBlur = M_SSSBlur->PipelineResource;
 	AB_SSSBlurX = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 	AB_SSSBlurY = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 
-	const TString AddSpecularMaterialName = "M_AddSpecular.tres";
+	const TString AddSpecularMaterialName = "M_AddSpecular.tasset";
 	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(AddSpecularMaterialName)->GetResourcePtr());
 	PL_AddSpecular = M_AddSpecular->PipelineResource;
 	AB_AddSpecular = FRHI::Get()->CreateArgumentBuffer(M_AddSpecular->GetDesc().Shader->ShaderResource);
 
-	const TString GlareDetectionMaterialName = "M_GlareDetection.tres";
+	const TString GlareDetectionMaterialName = "M_GlareDetection.tasset";
 	TMaterialPtr M_GlareDetection = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(GlareDetectionMaterialName)->GetResourcePtr());
 	PL_GlareDetection = M_GlareDetection->PipelineResource;
 	AB_GlareDetection = FRHI::Get()->CreateArgumentBuffer(M_GlareDetection->GetDesc().Shader->ShaderResource);
 
-	const TString BloomMaterialName = "M_Bloom.tres";
+	const TString BloomMaterialName = "M_Bloom.tasset";
 	TMaterialPtr M_Bloom = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(BloomMaterialName)->GetResourcePtr());
 	PL_Bloom = M_Bloom->PipelineResource;
 	for (int32 p = 0; p < BloomPasses; ++p)
@@ -60,7 +60,7 @@ FSSSSRenderer::FSSSSRenderer()
 		PassY.AB = FRHI::Get()->CreateArgumentBuffer(M_Bloom->GetDesc().Shader->ShaderResource);
 	}
 
-	const TString CombineMaterialName = "M_Combine.tres";
+	const TString CombineMaterialName = "M_Combine.tasset";
 	TMaterialPtr M_Combine = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(CombineMaterialName)->GetResourcePtr());
 	PL_Combine = M_Combine->PipelineResource;
 	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);

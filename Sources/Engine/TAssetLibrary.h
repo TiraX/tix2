@@ -13,8 +13,7 @@ namespace tix
 		TI_API static TAssetLibrary* Get();
 
 		TI_API TAssetPtr LoadAsset(const TString& AssetFilename);
-		TI_API TAssetPtr LoadAssetAysc(const TString& AssetFilename);
-		TI_API void LoadScene(const TString& AssetFilename);
+		TI_API TAssetPtr LoadAssetAysc(const TString& AssetFilename, ILoadingTaskNotifier * Notifier = nullptr);
 
 		TI_API void RemoveUnusedResources();
 
@@ -24,10 +23,13 @@ namespace tix
 		virtual ~TAssetLibrary();
 
 		void RemoveAllResources();
+		void AddAsset(const TString& InAssetName, TAssetPtr InAsset);
 
 	private:
+		// Assets loaded, can be modified in different threads, make sure it is thread safe.
 		typedef TMap< TString, TAssetPtr > MapAssets;
 		MapAssets AssetsLoaded;
+		TMutex AssetsLock;
 
 		friend class TEngine;
 	};

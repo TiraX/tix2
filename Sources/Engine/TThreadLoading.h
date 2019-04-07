@@ -7,6 +7,12 @@
 
 namespace tix
 {
+	class ILoadingTaskNotifier
+	{
+	public:
+		virtual void NotifyLoadingFinished(void * Context) = 0;
+	};
+
 	class TLoadingTask : public TTask
 	{
 	public:

@@ -96,6 +96,7 @@ namespace tix
 		: Device(nullptr)
 		, Scene(nullptr)
 		, ResourceLibrary(nullptr)
+		, MainThreadTasks(1024)
 	{
 	}
 

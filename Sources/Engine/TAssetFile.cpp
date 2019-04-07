@@ -62,6 +62,7 @@ namespace tix
 		}
 		if (File == nullptr)
 		{
+			_LOG(Error, "Failed to LoadAsset %s.\n", InFilename.c_str());
 			return false;
 		}
 		Filename = File->GetFileName();
@@ -157,6 +158,9 @@ namespace tix
 		if (ChunkHeader[ECL_MATERIAL_INSTANCE] != nullptr)
 			CreateMaterialInstance(OutResources);
 
+		if (ChunkHeader[ECL_SCENE] != nullptr)
+			CreateScene();
+
 		for (auto& Res : OutResources)
 		{
 			Res->SetResourceName(Filename);
@@ -193,10 +197,6 @@ namespace tix
 
 			// Load material
 			TString MaterialResName = GetString(Header->StrMaterialInstance);
-			if (MaterialResName.find(".tres") == TString::npos)
-			{
-				MaterialResName += ".tres";
-			}
 			TAssetPtr MIRes = TAssetLibrary::Get()->LoadAsset(MaterialResName);
 			if (MIRes == nullptr)
 			{
@@ -422,10 +422,6 @@ namespace tix
 
 			// Link material
 			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
-			if (MaterialResName.find(".tres") == TString::npos)
-			{
-				MaterialResName += ".tres";
-			}
 			TAssetPtr Material = TAssetLibrary::Get()->LoadAsset(MaterialResName);
 			if (Material == nullptr)
 			{
@@ -437,7 +433,7 @@ namespace tix
 		}
 	}
 
-	void TAssetFile::LoadScene()
+	void TAssetFile::CreateScene()
 	{
 		if (ChunkHeader[ECL_SCENE] == nullptr)
 		{
@@ -451,9 +447,6 @@ namespace tix
 		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
 		const uint8* SceneDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderScene)) * 1;
 
-		TMaterialInstancePtr Result;
-		// each ResFile should have only 1 resource
-		for (int32 i = 0; i < 1; ++i)
 		{
 			const THeaderScene* Header = (const THeaderScene*)(HeaderStart);
 
@@ -465,26 +458,45 @@ namespace tix
 
 			// Load assets names
 			const int32* AssetsTextures = (const int32*)(SceneDataStart);
-			const int32* AssetsMaterialInstances = AssetsTextures + Header->NumTextures;
-			const int32* AssetsMaterials = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* AssetsMeshes = AssetsMaterials + Header->NumMaterials;
+			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
+			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
+			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
 			const int32* InstancesCountList = AssetsMeshes + Header->NumMeshes;
-
-			// Do Test
-			for (int32 m = 0; m < Header->NumMeshes; ++m)
-			{
-				_LOG(Log, "mesh : %s\n", GetString(AssetsMeshes[m]));
-			}
+			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(InstancesCountList + Header->NumMeshes);
 
 			// Send Assets to loading thread
-
-			// Create instance nodes
-			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(InstancesCountList + Header->NumMeshes);
+			TAssetLibrary * AssetLib = TAssetLibrary::Get();
+			TVector<TAssetPtr> Meshes;
+			Meshes.reserve(Header->NumMeshes);
+			// Textures
+			for (int32 t = 0; t < Header->NumTextures; ++t)
+			{
+				TString TextureName = GetString(AssetsTextures[t]);
+				AssetLib->LoadAssetAysc(TextureName);
+			}
+			// Materials
+			for (int32 m = 0; m < Header->NumMaterials; ++m)
+			{
+				TString MaterialName = GetString(AssetsMaterials[m]);
+				AssetLib->LoadAssetAysc(MaterialName);
+			}
+			// Material Instances
+			for (int32 mi = 0; mi < Header->NumMaterialInstances; ++mi)
+			{
+				TString MIName = GetString(AssetsMaterialInstances[mi]);
+				AssetLib->LoadAssetAysc(MIName);
+			}
+			// Meshes and Mesh instances
 			int32 TotalInstances = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
+				TNodeStaticMesh * NodeSM = TNodeFactory::CreateNode<TNodeStaticMesh>(nullptr);
+				TString MeshlName = GetString(AssetsMeshes[m]);
+				TAssetPtr Asset = AssetLib->LoadAssetAysc(MeshlName, NodeSM);
+				Meshes.push_back(Asset);
+
 				int32 NumInstances = InstancesCountList[m];
-				for (int32 ins = 0 ; ins < NumInstances; ++ ins)
+				for (int32 ins = 0; ins < NumInstances; ++ins)
 				{
 					const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
 					//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);

@@ -40,6 +40,7 @@ namespace tix
 			TI_ASSERT(AssetFile == nullptr);
 			AssetFile = ti_new TAssetFile;
 			AssetFile->ReadFile(Asset->GetName());
+			_LOG(Log, "IO: %s\n", Asset->GetName().c_str());
 		}
 
 		virtual void ExecuteInLoadingThread() override
@@ -47,6 +48,7 @@ namespace tix
 			AssetFile->ParseFile();
 			AssetFile->CreateResource(Asset->Resources);
 			AssetFile = nullptr;
+			_LOG(Log, "Parsing: %s\n", Asset->GetName().c_str());
 		}
 
 		virtual void ExecuteInMainThread() override
@@ -56,6 +58,11 @@ namespace tix
 			{
 				Res->InitRenderThreadResource();
 			}
+			if (Asset->LoadingNotifier != nullptr)
+			{
+				Asset->LoadingNotifier->NotifyLoadingFinished(Asset.get());
+			}
+			_LOG(Log, "Finish: %s\n", Asset->GetName().c_str());
 		}
 
 	private:

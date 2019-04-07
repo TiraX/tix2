@@ -32,6 +32,7 @@ namespace tix
 		TAsset(const TString& InName)
 			: AssetName(InName)
 			, Loader(nullptr)
+			, LoadingNotifier(nullptr)
 		{}
 
 		~TAsset()
@@ -44,6 +45,11 @@ namespace tix
 		}
 
 		void Load(bool bAync);
+
+		void SetLoadingNotifier(ILoadingTaskNotifier * Notifier)
+		{
+			LoadingNotifier = Notifier;
+		}
 
 		TResource* GetResourcePtr(int32 Index = 0)
 		{
@@ -91,12 +97,18 @@ namespace tix
 		{
 			return AssetName;
 		}
+
+		const TVector<TResourcePtr>& GetResources() const
+		{
+			return Resources;
+		}
 		
 	private:
 		TString AssetName;
 
 		// Hold an source file for asynchronous loading
 		TAssetLoader * Loader;
+		ILoadingTaskNotifier * LoadingNotifier;
 
 		// Resource loaded
 		TVector<TResourcePtr> Resources;

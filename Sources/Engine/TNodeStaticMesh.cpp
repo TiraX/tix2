@@ -16,14 +16,18 @@ namespace tix
 	TNodeStaticMesh::~TNodeStaticMesh()
 	{
 		// Remove Primitive from scene
-		if (LinkedPrimitive != nullptr)
+		if (LinkedPrimitives.size() > 0)
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
-				FPrimitivePtr, Primitive, LinkedPrimitive,
-				{
-					FRenderThread::Get()->GetRenderScene()->RemovePrimitive(Primitive);
-				});
-			LinkedPrimitive = nullptr;
+			TI_TODO("Remove in one RenderCommand.");
+			for (auto P : LinkedPrimitives)
+			{
+				ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
+					FPrimitivePtr, Primitive, P,
+					{
+						FRenderThread::Get()->GetRenderScene()->RemovePrimitive(Primitive);
+					});
+			}
+			LinkedPrimitives.clear();
 		}
 	}
 
@@ -42,7 +46,7 @@ namespace tix
 			});
 
 
-		LinkedPrimitive = Primitive;
+		LinkedPrimitives.push_back(Primitive);
 	}
 
 	void TNodeStaticMesh::UpdateAbsoluteTransformation()
@@ -51,8 +55,12 @@ namespace tix
 
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED))
 		{
-			TI_ASSERT(LinkedPrimitive  != nullptr);
-			TransformedBBox = LinkedPrimitive->BBox;
+			TI_ASSERT(LinkedPrimitives.size() > 0);
+			TransformedBBox = LinkedPrimitives[0]->BBox;
+			for (int32 i = 1; i < (int32)LinkedPrimitives.size(); ++i)
+			{
+				TransformedBBox.addInternalBox(LinkedPrimitives[i]->BBox);
+			}
 			AbsoluteTransformation.transformBoxEx(TransformedBBox);
 		}
 
@@ -106,12 +114,33 @@ namespace tix
 				}
 			}
 			// Init uniform buffer resource in render thread
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
-				FPrimitivePtr, Primitive, LinkedPrimitive,
-				TVector<FLightPtr>, BindedLightResources, BindedLightResources,
-				{
-					BindLightResource_RenderThread(Primitive, BindedLightResources);
-				});
+			TI_TODO("Share the same uniform buffer for sections in this static mesh.");
+			for (auto P : LinkedPrimitives)
+			{
+				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(PrimitiveInitLightBindingUB,
+					FPrimitivePtr, Primitive, P,
+					TVector<FLightPtr>, BindedLightResources, BindedLightResources,
+					{
+						BindLightResource_RenderThread(Primitive, BindedLightResources);
+					});
+			}
 		}
+	}
+
+	void TNodeStaticMesh::NotifyLoadingFinished(void * Context)
+	{
+		TI_ASSERT(IsGameThread());
+		// Mesh asset load finished add it to TScene
+		TAssetPtr Asset = static_cast<TAsset*>(Context);
+		const TVector<TResourcePtr>& Resources = Asset->GetResources();
+		for (auto Res : Resources)
+		{
+			TI_ASSERT(Res->GetType() == ERES_MESH);
+			TMeshBufferPtr MB = static_cast<TMeshBuffer*>(Res.get());
+			LinkMesh(MB, MB->GetDefaultMaterial(), false, false);
+		}
+
+		// Add to scene root
+		TEngine::Get()->GetScene()->AddStaticMeshNode(this);
 	}
 }
