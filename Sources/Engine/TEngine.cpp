@@ -240,7 +240,9 @@ namespace tix
 
 	void TEngine::DoTasks()
 	{
+		const int32 MaxTaskInEachFrame = 10;
 		TTask* Task;
+		int32 TaskExecuted = MaxTaskInEachFrame;
 		while (MainThreadTasks.GetSize() > 0)
 		{
 			MainThreadTasks.PopFront(Task);
@@ -252,6 +254,10 @@ namespace tix
 				ti_delete Task;
 				Task = nullptr;
 			}
+
+			--TaskExecuted;
+			if (TaskExecuted < 0)
+				break;
 		}
 	}
 }
