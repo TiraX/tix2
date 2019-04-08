@@ -240,6 +240,7 @@ namespace tix
 	void FRenderThread::AddTaskToFrame(TTask* Task)
 	{
 		TI_ASSERT(IsGameThread());
+		TI_ASSERT(RenderFrames[PreFrameIndex].FrameTasks.GetSize() + 1 < RenderFrames[PreFrameIndex].FrameTasks.GetContainerSize());
 		RenderFrames[PreFrameIndex].FrameTasks.PushBack(Task);
 	}
 }

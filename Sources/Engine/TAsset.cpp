@@ -40,7 +40,9 @@ namespace tix
 			TI_ASSERT(AssetFile == nullptr);
 			AssetFile = ti_new TAssetFile;
 			AssetFile->ReadFile(Asset->GetName());
-			_LOG(Log, "IO: %s\n", Asset->GetName().c_str());
+#if (TIX_DEBUG_AYNC_LOADING)
+			_LOG(Log, "Thread IO: %s\n", Asset->GetName().c_str());
+#endif
 		}
 
 		virtual void ExecuteInLoadingThread() override
@@ -48,7 +50,9 @@ namespace tix
 			AssetFile->ParseFile();
 			AssetFile->CreateResource(Asset->Resources);
 			AssetFile = nullptr;
-			_LOG(Log, "Parsing: %s\n", Asset->GetName().c_str());
+#if (TIX_DEBUG_AYNC_LOADING)
+			_LOG(Log, "Thread Loading: %s\n", Asset->GetName().c_str());
+#endif
 		}
 
 		virtual void ExecuteInMainThread() override
@@ -62,7 +66,9 @@ namespace tix
 			{
 				Asset->LoadingNotifier->NotifyLoadingFinished(Asset.get());
 			}
+#if (TIX_DEBUG_AYNC_LOADING)
 			_LOG(Log, "Finish: %s\n", Asset->GetName().c_str());
+#endif
 		}
 
 	private:

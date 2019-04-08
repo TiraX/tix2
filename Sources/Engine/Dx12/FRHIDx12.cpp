@@ -479,9 +479,6 @@ namespace tix
 	// Prepare to render the next frame.
 	void FRHIDx12::MoveToNextFrame()
 	{
-		// Remember the frame index to release holded reference.
-		const int32 FrameToRelease = CurrentFrame;
-
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
 		VALIDATE_HRESULT(RenderCommandQueue->Signal(RenderFence.Get(), currentFenceValue));
@@ -499,8 +496,8 @@ namespace tix
 		// Set the fence value for the next frame.
 		FenceValues[CurrentFrame] = currentFenceValue + 1;
 
-		// Release resources references
-		FrameResources[FrameToRelease]->RemoveAllReferences();
+		// Release resources references for next drawing
+		FrameResources[CurrentFrame]->RemoveAllReferences();
 	}
 
 	void FRHIDx12::HoldResourceReference(FRenderResourcePtr InResource)

@@ -14,19 +14,20 @@ namespace tix
 		TQueue(int32 QueueSize = 512);
 		virtual ~TQueue();
 
-		virtual void	PushBack(const T& o);
-		virtual void	PopFront(T& out);
-		virtual void	GetFront(T& out);
+		virtual void PushBack(const T& o);
+		virtual void PopFront(T& out);
+		virtual void GetFront(T& out);
 
-		int32		GetSize();
-		void		Resize(int32 NewSize);
+		int32 GetSize() const;
+		int32 GetContainerSize() const;
+		void Resize(int32 NewSize);
 	private:
-		int			ContainerSize;
-		T*			Queue;
-		int			QueueSize;
+		int32 ContainerSize;
+		T* Queue;
+		int32 QueueSize;
 
-		int			Head;
-		int			Tail;
+		int32 Head;
+		int32 Tail;
 	};
 
 	template <class T>
@@ -77,9 +78,15 @@ namespace tix
 	}
 
 	template <class T>
-	int32 TQueue<T>::GetSize()
+	int32 TQueue<T>::GetSize() const
 	{
-		return	QueueSize;
+		return QueueSize;
+	}
+
+	template <class T>
+	int32 TQueue<T>::GetContainerSize() const
+	{
+		return ContainerSize;
 	}
 
 	template <class T>
@@ -115,11 +122,11 @@ namespace tix
 		TThreadSafeQueue(int queue_size = 512);
 		virtual ~TThreadSafeQueue();
 
-		virtual void	PushBack(const T& o);
-		virtual void	PopFront(T& out);
+		virtual void PushBack(const T& o);
+		virtual void PopFront(T& out);
 
 	private:
-		TMutex		Mutex;
+		TMutex Mutex;
 	};
 
 	template <class T>
