@@ -155,6 +155,7 @@ namespace tix
 
 	void TResMaterialHelper::SetBlendMode(E_BLEND_MODE InBlendMode)
 	{
+		BlendMode = InBlendMode;
 		switch (InBlendMode)
 		{
 		case BLEND_MODE_OPAQUE:
@@ -232,6 +233,7 @@ namespace tix
 			}
 
 			Define.Flags = PipelineDesc.Flags;
+			Define.BlendMode = BlendMode;
 			Define.BlendState = PipelineDesc.BlendState;
 			Define.RasterizerDesc = PipelineDesc.RasterizerDesc;
 			Define.DepthStencilDesc = PipelineDesc.DepthStencilDesc;

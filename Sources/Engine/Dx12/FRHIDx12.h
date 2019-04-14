@@ -35,6 +35,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
+		virtual FInstanceBufferPtr CreateInstanceBuffer() override;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
@@ -42,6 +43,7 @@ namespace tix
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
+		virtual bool UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
@@ -58,7 +60,7 @@ namespace tix
 
 		// Graphics
 		virtual void SetGraphicsPipeline(FPipelinePtr InPipeline) override;
-		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer) override;
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;

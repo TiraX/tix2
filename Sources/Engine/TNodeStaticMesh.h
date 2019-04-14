@@ -16,7 +16,12 @@ namespace tix
 		virtual ~TNodeStaticMesh();
 
 		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) override;
-		void LinkMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow);
+		void LinkMesh(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
+
+		void SetMeshAsset(TAssetPtr InMeshAsset)
+		{
+			MeshAsset = InMeshAsset;
+		}
 
 		// interface from ILoadingTaskNotifier
 		virtual void NotifyLoadingFinished(void * Context) override;
@@ -28,6 +33,8 @@ namespace tix
 		TVector<FPrimitivePtr> LinkedPrimitives;
 		aabbox3df TransformedBBox;
 		TVector<TNodeLight*> BindedLights;
+
+		TAssetPtr MeshAsset;
 	};
 
 } // end namespace tix

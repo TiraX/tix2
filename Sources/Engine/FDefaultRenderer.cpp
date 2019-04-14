@@ -26,21 +26,20 @@ namespace tix
 	{
 		Scene->PrepareViewUniforms();
 
-		const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
+		RenderDrawList(RHI, Scene, LIST_OPAQUE);
+	}
+
+	void FDefaultRenderer::RenderDrawList(FRHI* RHI, FScene* Scene, E_DRAWLIST_TYPE ListType)
+	{
+		const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(ListType);
 		for (const auto& Primitive : Primitives)
 		{
-			for (int32 m = 0; m < (int32)Primitive->MeshBuffers.size(); ++m)
-			{
-				FMeshBufferPtr MB = Primitive->MeshBuffers[m];
-				FPipelinePtr PL = Primitive->Pipelines[m];
-				FArgumentBufferPtr AB = Primitive->Arguments[m];
+			FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+			RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
+			RHI->SetGraphicsPipeline(Primitive->GetPipeline());
+			ApplyShaderParameter(RHI, Scene, Primitive);
 
-				RHI->SetMeshBuffer(MB);
-				RHI->SetGraphicsPipeline(PL);
-				RHI->SetArgumentBuffer(AB);
-
-				RHI->DrawPrimitiveIndexedInstanced(MB, 1);
-			}
+			RHI->DrawPrimitiveIndexedInstanced(Primitive->GetMeshBuffer(), InstanceBuffer == nullptr ? 1 : InstanceBuffer->GetInstancesCount());
 		}
 	}
 
@@ -53,7 +52,7 @@ namespace tix
 			break;
 		case ARGUMENT_EB_PRIMITIVE:
 			TI_ASSERT(Primitive != nullptr);
-			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->PrimitiveUniformBuffer->UniformBuffer);
+			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->GetPrimitiveUniform()->UniformBuffer);
 			break;
 		case ARGUMENT_EB_LIGHTS:
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
@@ -73,10 +72,9 @@ namespace tix
 		RHI->SetArgumentBuffer(ArgumentBuffer);
 	}
 
-	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive, int32 MeshSection)
+	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive)
 	{
-		FPipelinePtr PL = Primitive->Pipelines[MeshSection];
-		FShaderBindingPtr ShaderBinding = PL->GetShader()->ShaderBinding;
+		FShaderBindingPtr ShaderBinding = Primitive->GetPipeline()->GetShader()->ShaderBinding;
 
 		// bind vertex arguments
 		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
@@ -92,8 +90,7 @@ namespace tix
 			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, Primitive);
 		}
 
-		FArgumentBufferPtr AB = Primitive->Arguments[MeshSection];
-		BindMaterialInstanceArgument(RHI, AB);
+		BindMaterialInstanceArgument(RHI, Primitive->GetArgumentBuffer());
 	}
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer)

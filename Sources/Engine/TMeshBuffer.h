@@ -127,4 +127,43 @@ namespace tix
 
 		TMaterialInstancePtr DefaultMaterial;
 	};
+
+	///////////////////////////////////////////////////////////
+
+	// TInstanceBuffer, hold instance data
+	class TI_API TInstanceBuffer : public TResource
+	{
+	public:
+		TInstanceBuffer();
+		~TInstanceBuffer();
+
+	public:
+		FInstanceBufferPtr InstanceResource;
+
+		void SetInstanceStreamData(const void* InInstanceData, int32 InInstanceCount, int32 InStride);
+
+		virtual void InitRenderThreadResource() override;
+		virtual void DestroyRenderThreadResource() override;
+
+		int32 GetInstanceCount() const
+		{
+			return InstanceCount;
+		}
+
+		uint32 GetStride() const
+		{
+			return Stride;
+		}
+
+		const void* GetInstanceData() const
+		{
+			return InstanceData;
+		}
+	protected:
+
+	protected:
+		uint8* InstanceData;
+		int32 InstanceCount;
+		uint32 Stride;
+	};
 }

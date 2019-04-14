@@ -20,9 +20,10 @@ namespace tix
 		virtual void InitInRenderThread() override;
 		virtual void Render(FRHI* RHI, FScene* Scene) override;
 
-		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive, int32 MeshSection);
+		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive);
 		virtual void ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer);
 	protected:
+		void RenderDrawList(FRHI* RHI, FScene* Scene, E_DRAWLIST_TYPE ListType);
 		void BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
 		void BindMaterialInstanceArgument(FRHI * RHI, FArgumentBufferPtr ArgumentBuffer);
 

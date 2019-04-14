@@ -54,12 +54,12 @@ namespace tix
 
 	private:
 		TString MapName;
-		TVector<TSceneMeshInstances> Meshes;
 		TSceneEnvironment Environment;
 
 		TVector<TString> AssetTextures;
 		TVector<TString> AssetMaterialInstances;
 		TVector<TString> AssetMaterials;
 		TVector<TString> AssetMeshes;
+		TVector<TString> AssetInstances;
 	};
 }

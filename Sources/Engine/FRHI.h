@@ -51,6 +51,7 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
+		virtual FInstanceBufferPtr CreateInstanceBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap);
@@ -59,6 +60,7 @@ namespace tix
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
 
 		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
+		virtual bool UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
 		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
@@ -75,7 +77,7 @@ namespace tix
 
 		// Graphics
 		virtual void SetGraphicsPipeline(FPipelinePtr InPipeline) = 0;
-		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
+		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer) = 0;
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;

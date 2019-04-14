@@ -85,7 +85,7 @@ namespace tix
 	void TMeshBuffer::SetVertexStreamData(
 		uint32 InFormat,
 		const void* InVertexData, int32 InVertexCount,
-		E_INDEX_TYPE InIndexType, 
+		E_INDEX_TYPE InIndexType,
 		const void* InIndexData, int32 InIndexCount)
 	{
 		VsFormat = InFormat;
@@ -107,5 +107,57 @@ namespace tix
 		TI_ASSERT(PsData == nullptr);
 		PsData = ti_new uint8[PsBufferSize];
 		memcpy(PsData, InIndexData, PsSize);
+	}
+
+	///////////////////////////////////////////////////////////
+
+	TInstanceBuffer::TInstanceBuffer()
+		: TResource(ERES_INSTANCE)
+		, InstanceData(nullptr)
+		, InstanceCount(0)
+		, Stride(0)
+	{
+	}
+
+	TInstanceBuffer::~TInstanceBuffer()
+	{
+		SAFE_DELETE(InstanceData);
+	}
+
+	void TInstanceBuffer::SetInstanceStreamData(const void* InInstanceData, int32 InInstanceCount, int32 InStride)
+	{
+		InstanceCount = InInstanceCount;
+		Stride = InStride;
+
+		const int32 BufferSize = InstanceCount * Stride;
+		TI_ASSERT(InstanceData == nullptr);
+		InstanceData = ti_new uint8[BufferSize];
+		memcpy(InstanceData, InInstanceData, BufferSize);
+	}
+
+	void TInstanceBuffer::InitRenderThreadResource()
+	{
+		TI_ASSERT(InstanceResource == nullptr);
+		InstanceResource = FRHI::Get()->CreateInstanceBuffer();
+
+		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TInstanceBufferUpdateFInstanceBuffer,
+			FInstanceBufferPtr, InstanceBuffer, InstanceResource,
+			TInstanceBufferPtr, InInstanceData, this,
+			{
+				InstanceBuffer->SetFromTInstanceBuffer(InInstanceData);
+				FRHI::Get()->UpdateHardwareResource(InstanceBuffer, InInstanceData);
+			});
+	}
+
+	void TInstanceBuffer::DestroyRenderThreadResource()
+	{
+		TI_ASSERT(InstanceResource != nullptr);
+
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TInstanceBufferDestroyFInstanceBuffer,
+			FInstanceBufferPtr, InstanceBuffer, InstanceResource,
+			{
+				InstanceBuffer = nullptr;
+			});
+		InstanceResource = nullptr;
 	}
 }

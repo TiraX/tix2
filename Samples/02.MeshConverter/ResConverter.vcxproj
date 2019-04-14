@@ -163,6 +163,7 @@
     <ClInclude Include="PlatformUtils.h" />
     <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />
+    <ClInclude Include="ResInstancesHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
     <ClInclude Include="ResMaterialInstanceHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="PlatformUtils.cpp" />
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
+    <ClCompile Include="ResInstancesHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />
     <ClCompile Include="ResMaterialInstanceHelper.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />

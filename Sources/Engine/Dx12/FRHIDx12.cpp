@@ -437,6 +437,11 @@ namespace tix
 		return ti_new FMeshBufferDx12();
 	}
 
+	FInstanceBufferPtr FRHIDx12::CreateInstanceBuffer()
+	{
+		return ti_new FInstanceBufferDx12();
+	}
+
 	FPipelinePtr FRHIDx12::CreatePipeline(FShaderPtr InShader)
 	{
 		return ti_new FPipelineDx12(InShader);
@@ -755,6 +760,65 @@ namespace tix
 		HoldResourceReference(MeshBuffer);
 		HoldResourceReference(VertexBufferUpload);
 		HoldResourceReference(IndexBufferUpload);
+
+		return true;
+	}
+
+	bool FRHIDx12::UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
+	{
+#if defined (TIX_DEBUG)
+		InstanceBuffer->SetResourceName(InInstanceData->GetResourceName());
+#endif
+		FInstanceBufferDx12 * InsDx12 = static_cast<FInstanceBufferDx12*>(InstanceBuffer.get());
+
+		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
+		// The upload resource must not be released until after the GPU has finished using it.
+		ComPtr<ID3D12Resource> VertexBufferUpload;
+
+		const int32 BufferSize = InInstanceData->GetInstanceCount() * InInstanceData->GetStride();
+		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&defaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&InsDx12->InstanceBuffer)));
+
+		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+			&uploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&vertexBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&VertexBufferUpload)));
+
+		DX_SETNAME(InsDx12->InstanceBuffer.Get(), InstanceBuffer->GetResourceName() + "-INSB");
+
+		// Upload the vertex buffer to the GPU.
+		{
+			D3D12_SUBRESOURCE_DATA VertexData = {};
+			VertexData.pData = reinterpret_cast<const uint8*>(InInstanceData->GetInstanceData());
+			VertexData.RowPitch = BufferSize;
+			VertexData.SlicePitch = VertexData.RowPitch;
+
+			UpdateSubresources(RenderCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+
+			Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		}
+
+		FlushGraphicsBarriers(RenderCommandList.Get());
+
+		// Create vertex/index buffer views.
+		InsDx12->InstanceBufferView.BufferLocation = InsDx12->InstanceBuffer->GetGPUVirtualAddress();
+		InsDx12->InstanceBufferView.StrideInBytes = InInstanceData->GetStride();
+		InsDx12->InstanceBufferView.SizeInBytes = BufferSize;
+
+		// Hold resources used here
+		HoldResourceReference(InstanceBuffer);
+		HoldResourceReference(VertexBufferUpload);
 
 		return true;
 	}
@@ -1820,12 +1884,25 @@ namespace tix
 		HoldResourceReference(InPipeline);
 	}
 
-	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	void FRHIDx12::SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer)
 	{
 		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
 
 		RenderCommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
-		RenderCommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+		if (InInstanceBuffer == nullptr)
+		{
+			RenderCommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+		}
+		else
+		{
+			FInstanceBufferDx12* IBDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
+			D3D12_VERTEX_BUFFER_VIEW Views[2] =
+			{
+				MBDx12->VertexBufferView,
+				IBDx12->InstanceBufferView
+			};
+			RenderCommandList->IASetVertexBuffers(0, 2, Views);
+		}
 		RenderCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
 
 		HoldResourceReference(InMeshBuffer);

@@ -61,6 +61,9 @@
     <ClInclude Include="ResSettings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResInstancesHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -121,6 +124,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResTextureHelperTga.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResInstancesHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

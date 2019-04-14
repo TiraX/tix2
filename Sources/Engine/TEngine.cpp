@@ -240,7 +240,7 @@ namespace tix
 
 	void TEngine::DoTasks()
 	{
-		const int32 MaxTaskInEachFrame = 10;
+		const int32 MaxTaskInEachFrame = 32;
 		TTask* Task;
 		int32 TaskExecuted = MaxTaskInEachFrame;
 		while (MainThreadTasks.GetSize() > 0)

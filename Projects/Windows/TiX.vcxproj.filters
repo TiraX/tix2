@@ -588,6 +588,9 @@
     <ClInclude Include="..\..\Sources\Engine\TAssetFileDef.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTypeScene.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">

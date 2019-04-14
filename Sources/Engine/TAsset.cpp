@@ -41,7 +41,7 @@ namespace tix
 			AssetFile = ti_new TAssetFile;
 			AssetFile->ReadFile(Asset->GetName());
 #if (TIX_DEBUG_AYNC_LOADING)
-			_LOG(Log, "Thread IO: %s\n", Asset->GetName().c_str());
+			_LOG(Log, "TIO: %s\n", Asset->GetName().c_str());
 #endif
 		}
 
@@ -51,7 +51,7 @@ namespace tix
 			AssetFile->CreateResource(Asset->Resources);
 			AssetFile = nullptr;
 #if (TIX_DEBUG_AYNC_LOADING)
-			_LOG(Log, "Thread Loading: %s\n", Asset->GetName().c_str());
+			_LOG(Log, "TLoading: %s\n", Asset->GetName().c_str());
 #endif
 		}
 
@@ -67,7 +67,7 @@ namespace tix
 				Asset->LoadingNotifier->NotifyLoadingFinished(Asset.get());
 			}
 #if (TIX_DEBUG_AYNC_LOADING)
-			_LOG(Log, "Finish: %s\n", Asset->GetName().c_str());
+			_LOG(Log, "TFinish: %s\n", Asset->GetName().c_str());
 #endif
 		}
 

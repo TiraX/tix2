@@ -11,7 +11,6 @@ namespace tix
 	// These lines are coded in Stanford~
 	// Refactor all loading processes, pre-create all game thread resources with empty ones.
 	// Analysis the dependences with different resources and loading them by order.
-	TI_TODO("Refactor resource loadings.");
 
 	TAssetFile::TAssetFile()
 		: Filebuffer(nullptr)
@@ -135,6 +134,10 @@ namespace tix
 				ChunkHeader[ECL_SCENE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SCENE);
 				break;
+			case TIRES_ID_CHUNK_INSTANCES:
+				ChunkHeader[ECL_INSTANCES] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_INSTANCES);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -160,6 +163,9 @@ namespace tix
 
 		if (ChunkHeader[ECL_SCENE] != nullptr)
 			CreateScene();
+
+		if (ChunkHeader[ECL_INSTANCES] != nullptr)
+			CreateInstances(OutResources);
 
 		for (auto& Res : OutResources)
 		{
@@ -307,7 +313,7 @@ namespace tix
 			Material->EnableState(EPSO_STENCIL, (Header->Flags & EPSO_STENCIL) != 0);
 
 			Material->SetShaderVsFormat(Header->VsFormat);
-			Material->SetBlendState(Header->BlendState);
+			Material->SetBlendState((E_BLEND_MODE)Header->BlendMode, Header->BlendState);
 			Material->SetRasterizerState(Header->RasterizerDesc);
 			Material->SetDepthStencilState(Header->DepthStencilDesc);
 			
@@ -461,13 +467,10 @@ namespace tix
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* InstancesCountList = AssetsMeshes + Header->NumMeshes;
-			const THeaderSceneMeshInstance* HeaderMeshInstances = (const THeaderSceneMeshInstance*)(InstancesCountList + Header->NumMeshes);
+			const int32* AssetsInstances = AssetsMeshes + Header->NumMeshes;
 
 			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
-			TVector<TAssetPtr> Meshes;
-			Meshes.reserve(Header->NumMeshes);
 			// Textures
 			for (int32 t = 0; t < Header->NumTextures; ++t)
 			{
@@ -486,25 +489,80 @@ namespace tix
 				TString MIName = GetString(AssetsMaterialInstances[mi]);
 				AssetLib->LoadAssetAysc(MIName);
 			}
-			// Meshes and Mesh instances
-			int32 TotalInstances = 0;
+			// Meshes
+			TVector<TAssetPtr> Meshes;
+			Meshes.reserve(Header->NumMeshes);
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				TNodeStaticMesh * NodeSM = TNodeFactory::CreateNode<TNodeStaticMesh>(nullptr);
-				TString MeshlName = GetString(AssetsMeshes[m]);
-				TAssetPtr Asset = AssetLib->LoadAssetAysc(MeshlName, NodeSM);
-				Meshes.push_back(Asset);
-
-				int32 NumInstances = InstancesCountList[m];
-				for (int32 ins = 0; ins < NumInstances; ++ins)
-				{
-					const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
-					//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);
-				}
-
-				TotalInstances += NumInstances;
-				TI_ASSERT(TotalInstances <= Header->NumInstances);
+				TString MeshName = GetString(AssetsMeshes[m]);
+				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
+				Meshes.push_back(MeshAsset);
 			}
+			TI_ASSERT(Header->NumMeshes == Header->NumInstances);
+			// Instances
+			for (int32 i = 0; i < Header->NumInstances; ++i)
+			{
+				TNodeStaticMesh * NodeSM = TNodeFactory::CreateNode<TNodeStaticMesh>(nullptr);
+				NodeSM->SetMeshAsset(Meshes[i]);
+				TString InstancesName = GetString(AssetsInstances[i]);
+				AssetLib->LoadAssetAysc(InstancesName, NodeSM);
+				//Meshes.push_back(Asset);
+
+				//int32 NumInstances = InstancesCountList[m];
+				//for (int32 ins = 0; ins < NumInstances; ++ins)
+				//{
+				//	const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
+				//	//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);
+				//}
+
+				//TotalInstances += NumInstances;
+				//TI_ASSERT(TotalInstances <= Header->NumInstances);
+			}
+		}
+	}
+
+	void TAssetFile::CreateInstances(TVector<TResourcePtr>& OutResources)
+	{
+		if (ChunkHeader[ECL_INSTANCES] == nullptr)
+		{
+			_LOG(Error, "Can not find instances chunk when loading scene %s.", Filename.c_str());
+			return;
+		}
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_INSTANCES];
+		TI_ASSERT(ChunkHeader[ECL_INSTANCES]->ElementCount == 1);
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* InstancesDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderInstances)) * 1;
+
+		{
+			const THeaderInstances* Header = (const THeaderInstances*)(HeaderStart);
+
+			// Link mesh
+			TString MeshAssetName = GetString(Header->LinkedMeshNameIndex);
+			TAssetPtr Mesh = TAssetLibrary::Get()->LoadAsset(MeshAssetName);
+			if (Mesh == nullptr)
+			{
+				_LOG(Error, "Failed to load mesh [%s] for Instances [%s].\n", MeshAssetName.c_str(), Filename.c_str());
+			}
+
+			OutResources.reserve(1);
+			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(InstancesDataStart);
+
+			TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
+			TVector<FMatrix> InstanceBufferData;
+			InstanceBufferData.resize(Header->NumInstances);
+			for (int32 i = 0; i < Header->NumInstances; ++i)
+			{
+				const THeaderSceneMeshInstance& Instance = InstanceData[i];
+				matrix4 MatInstanceTrans;
+				Instance.Rotation.getMatrix(MatInstanceTrans);
+				MatInstanceTrans.setTranslation(Instance.Position);
+				MatInstanceTrans.postScale(Instance.Scale);
+				InstanceBufferData[i] = MatInstanceTrans;
+			}
+			InstanceBuffer->SetInstanceStreamData(InstanceBufferData.data(), Header->NumInstances, sizeof(FMatrix));
+			OutResources.push_back(InstanceBuffer);
 		}
 	}
 }

@@ -25,6 +25,22 @@ namespace tix
 
 		friend class FRHIDx12;
 	};
+
+	/////////////////////////////////////////////////////////////
+
+	class FInstanceBufferDx12 : public FInstanceBuffer
+	{
+	public:
+		FInstanceBufferDx12();
+		virtual ~FInstanceBufferDx12();
+	protected:
+
+	private:
+		ComPtr<ID3D12Resource> InstanceBuffer;
+		D3D12_VERTEX_BUFFER_VIEW InstanceBufferView;
+
+		friend class FRHIDx12;
+	};
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

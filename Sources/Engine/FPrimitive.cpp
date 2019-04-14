@@ -9,6 +9,7 @@
 namespace tix
 {
 	FPrimitive::FPrimitive()
+		: DrawList(LIST_INVALID)
 	{
 	}
 
@@ -16,30 +17,37 @@ namespace tix
 	{
 	}
 
-	void FPrimitive::AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance)
+	void FPrimitive::AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer)
 	{
-		// Add bbox
-		if (MeshBuffers.empty())
-		{
-			BBox.reset(InMeshBBox);
-		}
-		else
-		{
-			BBox.addInternalBox(InMeshBBox);
-		}
+		// Add bounding box
+		BBox = InMeshBBox;
 
 		// Add mesh buffer
-		MeshBuffers.push_back(InMeshBuffer);
+		MeshBuffer = InMeshBuffer;
+
+		// Add instance buffer
+		InstanceBuffer = InInstanceBuffer;
 
 		// Add pipeline
 		TMaterialPtr Material = InMInstance->LinkedMaterial;
 		TI_ASSERT(Material->PipelineResource != nullptr);
-		Pipelines.push_back(Material->PipelineResource);
+		Pipeline = Material->PipelineResource;
 
 		// Instance material argument buffer
-		Arguments.push_back(InMInstance->ArgumentBuffer);
+		Argument = InMInstance->ArgumentBuffer;
 
-		TI_ASSERT(MeshBuffers.size() == Arguments.size() &&
-			MeshBuffers.size() == Pipelines.size());
+		// Draw List
+		if (Material->GetBlendMode() == BLEND_MODE_OPAQUE)
+		{
+			DrawList = LIST_OPAQUE;
+		}
+		else if (Material->GetBlendMode() == BLEND_MODE_MASK)
+		{
+			DrawList = LIST_MASK;
+		}
+		else
+		{
+			DrawList = LIST_TRANSLUCENT;
+		}
 	}
 }

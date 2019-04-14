@@ -67,4 +67,30 @@ namespace tix
 		uint32				VsFormat;
 		uint32				Stride;
 	};
+
+	///////////////////////////////////////////////////////////
+
+	// FInstanceBuffer, hold instance buffer
+	class FInstanceBuffer : public FRenderResource
+	{
+	public:
+		FInstanceBuffer();
+		virtual ~FInstanceBuffer();
+
+		void TI_API SetFromTInstanceBuffer(TInstanceBufferPtr InstanceData);
+
+		int32 GetInstancesCount() const
+		{
+			return InstanceCount;
+		}
+
+		uint32 GetStride() const
+		{
+			return Stride;
+		}
+
+	private:
+		int32 InstanceCount;
+		uint32 Stride;
+	};
 }

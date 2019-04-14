@@ -8,33 +8,11 @@
 namespace tix
 {
 	TMaterial::TMaterial()
+		: BlendMode(BLEND_MODE_OPAQUE)
 	{}
 
 	TMaterial::~TMaterial()
 	{
-	}
-
-	void TMaterial::SetBlendMode(E_BLEND_MODE InBlendMode)
-	{
-		switch (InBlendMode)
-		{
-		case BLEND_MODE_OPAQUE:
-			Desc.Disable(EPSO_BLEND);
-			break;
-		case BLEND_MODE_TRANSLUCENT:
-			Desc.Enable(EPSO_BLEND);
-			break;
-		case BLEND_MODE_MASK:
-			Desc.Disable(EPSO_BLEND);
-			break;
-		case BLEND_MODE_ADDITIVE:
-			Desc.Enable(EPSO_BLEND);
-			Desc.BlendState.DestBlend = EBF_ONE;
-			break;
-		default:
-			TI_ASSERT(0);
-			break;
-		}
 	}
 
 	void TMaterial::SetShaderVsFormat(uint32 InVsFormat)
@@ -79,8 +57,9 @@ namespace tix
 			Desc.Disable(InState);
 	}
 
-	void TMaterial::SetBlendState(const TBlendState& InBlendState)
+	void TMaterial::SetBlendState(E_BLEND_MODE InBlendMode, const TBlendState& InBlendState)
 	{
+		BlendMode = InBlendMode;
 		Desc.BlendState = InBlendState;
 	}
 

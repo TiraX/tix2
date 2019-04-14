@@ -41,14 +41,13 @@ namespace tix
 		TMaterial();
 		virtual ~TMaterial();
 
-		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);
 
 		void EnableState(E_PIPELINE_STATES_OPTION InState, bool bEnable);
-		void SetBlendState(const TBlendState& InBlendState);
+		void SetBlendState(E_BLEND_MODE InBlendMode, const TBlendState& InBlendState);
 		void SetRasterizerState(const TRasterizerDesc& InRasterizerState);
 		void SetDepthStencilState(const TDepthStencilDesc& InDepthStencilState);
 
@@ -56,7 +55,13 @@ namespace tix
 		void SetRTColor(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBuffer);
 		void SetRTDepth(E_PIXEL_FORMAT Format);
 
+		E_BLEND_MODE GetBlendMode() const
+		{
+			return BlendMode;
+		}
+
 	private:
+		E_BLEND_MODE BlendMode;
 		friend class TPipeline;
 		friend class TAssetFile;
 	};

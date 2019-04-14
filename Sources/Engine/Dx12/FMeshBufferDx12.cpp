@@ -32,6 +32,17 @@ namespace tix
 		VertexBuffer = nullptr;
 		IndexBuffer = nullptr;
 	}
+
+	/////////////////////////////////////////////////////////////
+	FInstanceBufferDx12::FInstanceBufferDx12()
+	{
+	}
+
+	FInstanceBufferDx12::~FInstanceBufferDx12()
+	{
+		TI_ASSERT(IsRenderThread());
+		InstanceBuffer = nullptr;
+	}
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

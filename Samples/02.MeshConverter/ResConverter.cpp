@@ -11,6 +11,7 @@
 #include "ResMaterialHelper.h"
 #include "ResMaterialInstanceHelper.h"
 #include "ResSceneHelper.h"
+#include "ResInstancesHelper.h"
 #include "PlatformUtils.h"
 
 TString FilenameSrc;
@@ -181,6 +182,16 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 				// Scene
 				TStream& MIStream = Resfile.GetChunk(ECL_SCENE);
 				TResSceneHelper::LoadScene(JsonDoc, MIStream, Resfile.Strings);
+			}
+			else if (strcmp(type, "instances") == 0)
+			{
+				// Instances
+				TStream& InsStream = Resfile.GetChunk(ECL_INSTANCES);
+				TResInstancesHelper::LoadInstances(JsonDoc, InsStream, Resfile.Strings);
+			}
+			else
+			{
+				printf("Error: Unknown asset type - %s.\n", type);
 			}
 			ti_delete[] content;
 		}

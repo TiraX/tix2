@@ -33,4 +33,19 @@ namespace tix
 		VsFormat = InMeshBuffer->GetVSFormat();
 		Stride = InMeshBuffer->GetStride();
 	}
+
+	///////////////////////////////////////////////////////////
+	FInstanceBuffer::FInstanceBuffer()
+	{
+	}
+
+	FInstanceBuffer::~FInstanceBuffer()
+	{
+	}
+
+	void FInstanceBuffer::SetFromTInstanceBuffer(TInstanceBufferPtr InInstanceData)
+	{
+		InstanceCount = InInstanceData->GetInstanceCount();
+		Stride = InInstanceData->GetStride();
+	}
 }

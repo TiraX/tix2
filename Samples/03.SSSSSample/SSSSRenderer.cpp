@@ -26,8 +26,6 @@ void FS4TempRenderer::Render(FRHI* RHI, FScene* Scene)
 
 FSSSSRenderer::FSSSSRenderer()
 {
-	// Need high level encapsule for this pipeline creation
-	TI_TODO("High level ");
 	S4Effect = ti_new SeparableSSS(DEG_TO_RAD(40), 250.f);
 
 	const TString SSSBlurMaterialName = "M_SSSBlur.tasset";
@@ -264,22 +262,7 @@ void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 
-	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList();
-	for (const auto& Primitive : Primitives)
-	{
-		for (int32 m = 0; m < (int32)Primitive->MeshBuffers.size(); ++m)
-		{
-			FMeshBufferPtr MB = Primitive->MeshBuffers[m];
-			FPipelinePtr PL = Primitive->Pipelines[m];
-
-			{
-                RHI->SetGraphicsPipeline(PL);
-				RHI->SetMeshBuffer(MB);
-				ApplyShaderParameter(RHI, Scene, Primitive, m);
-				RHI->DrawPrimitiveIndexedInstanced(MB, 1);
-			}
-		}
-	}
+	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 
 	RHI->PopRenderTarget();
     

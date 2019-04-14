@@ -27,21 +27,29 @@ namespace tix
 		SetSceneFlag(ViewProjectionDirty, true);
 	}
 
-	void FScene::AddPrimitive(FPrimitivePtr InPrimitive)
+	void FScene::AddPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
 	{
+		// Send different primitives to different draw list
 		TI_ASSERT(IsRenderThread());
-		StaticDrawList.push_back(InPrimitive);
+		for (auto& P : InPrimitives)
+		{
+			StaticDrawLists[P->GetDrawList()].push_back(P);
+		}
 	}
 
-	void FScene::RemovePrimitive(FPrimitivePtr InPrimitive)
+	void FScene::RemovePrimitives(const TVector<FPrimitivePtr>& InPrimitives)
 	{
 		TI_ASSERT(IsRenderThread());
 		TI_TODO("Find a fast way to locate Primitive in draw list.");
 
-		TVector<FPrimitivePtr>::iterator it = tix_find(StaticDrawList.begin(), StaticDrawList.end(), InPrimitive);
-		if (it != StaticDrawList.end())
+		for (auto& P : InPrimitives)
 		{
-			StaticDrawList.erase(it);
+			TVector<FPrimitivePtr>& DrawList = StaticDrawLists[P->GetDrawList()];
+			TVector<FPrimitivePtr>::iterator it = tix_find(DrawList.begin(), DrawList.end(), P);
+			if (it != DrawList.end())
+			{
+				DrawList.erase(it);
+			}
 		}
 	}
 

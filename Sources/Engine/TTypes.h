@@ -38,7 +38,7 @@ typedef std::mutex TMutex;
 typedef std::condition_variable TCond;
 typedef std::thread::id TThreadId;
 
-#define tix_find	std::find
+#define tix_find std::find
 
 #include "TInputEventType.h"
 #include "TTypeCull.h"
@@ -46,6 +46,7 @@ typedef std::thread::id TThreadId;
 #include "TTypeRenderResource.h"
 #include "TTypeNode.h"
 #include "TTypePixelFormat.h"
+#include "TTypeScene.h"
 
 #include "SColor.h"
 //#include <TiUString.h>

@@ -31,6 +31,7 @@ namespace tix
 		TString ShaderNames[ESS_COUNT];
 		TStream ShaderCodes[ESS_COUNT];
 
+		E_BLEND_MODE BlendMode;
 		TPipelineDesc PipelineDesc;
 	};
 }

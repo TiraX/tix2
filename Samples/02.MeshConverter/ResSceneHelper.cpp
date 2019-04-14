@@ -46,6 +46,7 @@ namespace tix
 			TJSONNode JAssetMaterials = JAssetList["materials"];
 			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
 			TJSONNode JAssetMeshes = JAssetList["meshes"];
+			TJSONNode JAssetInstances = Doc["instances"];
 
 			Helper.AssetTextures.reserve(JAssetTextures.Size());
 			for (int32 i = 0; i < JAssetTextures.Size(); ++i)
@@ -71,31 +72,12 @@ namespace tix
 				TJSONNode JMesh = JAssetMeshes[i];
 				Helper.AssetMeshes.push_back(JMesh.GetString());
 			}
-		}
-
-		// Load scene meshes and instances
-		{
-			TJSONNode JSceneMeshes = Doc["scene"];
-			TI_ASSERT(JSceneMeshes.IsArray());
-			Helper.Meshes.resize(JSceneMeshes.Size());
-			for (int32 m = 0; m < JSceneMeshes.Size(); ++m)
+			Helper.AssetInstances.reserve(JAssetInstances.Size());
+			for (int32 i = 0; i < JAssetInstances.Size(); ++i)
 			{
-				TJSONNode JMesh = JSceneMeshes[m];
-				Helper.Meshes[m].MeshName = JMesh["name"].GetString();
-				TI_ASSERT(Helper.Meshes[m].MeshName == Helper.AssetMeshes[m]);
-
-				TJSONNode JInstances = JMesh["instances"];
-				Helper.Meshes[m].Instances.resize(JInstances.Size());
-				TVector<TSceneMeshInstance>& Instances = Helper.Meshes[m].Instances;
-				for (int32 ins = 0; ins < JInstances.Size(); ++ins)
-				{
-					TJSONNode JInstance = JInstances[ins];
-					Instances[ins].Position = TJSONUtil::JsonArrayToVector3df(JInstance["position"]);
-					Instances[ins].Rotation = TJSONUtil::JsonArrayToQuaternion(JInstance["rotation"]);
-					Instances[ins].Scale = TJSONUtil::JsonArrayToVector3df(JInstance["scale"]);
-				}
+				TJSONNode JInstances = JAssetInstances[i];
+				Helper.AssetInstances.push_back(JInstances.GetString());
 			}
-			TI_ASSERT(Helper.Meshes.size() == Helper.AssetMeshes.size());
 		}
 
 		Helper.OutputScene(OutStream, OutStrings);
@@ -124,15 +106,7 @@ namespace tix
 			Define.NumMaterials = (int32)AssetMaterials.size();
 			Define.NumMaterialInstances = (int32)AssetMaterialInstances.size();
 			Define.NumMeshes = (int32)AssetMeshes.size();
-
-			// Mesh instances Info
-			// Calc total instances
-			int32 TotalInstances = 0;
-			for (uint32 m = 0 ; m < Meshes.size(); ++ m)
-			{
-				TotalInstances += (int32)Meshes[m].Instances.size();
-			}
-			Define.NumInstances = TotalInstances;
+			Define.NumInstances = (int32)AssetInstances.size();
 
 			// Fill Assets Names
 			for (const auto& A : AssetTextures)
@@ -155,26 +129,13 @@ namespace tix
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
+			for (const auto& A : AssetInstances)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
 
-			// Fill Meshes Instances Count
-			for (uint32 m = 0 ; m < Meshes.size(); ++ m)
-			{
-				int32 MeshInstanceCount = (int32)Meshes[m].Instances.size();
-				DataStream.Put(&MeshInstanceCount, sizeof(int32));
-			}
-			// Fill Mesh Instances Data
-			for (uint32 m = 0; m < Meshes.size(); ++m)
-			{
-				TVector<TSceneMeshInstance>& Instances = Meshes[m].Instances;
-				for (int32 ins = 0 ; ins < Instances.size(); ++ ins)
-				{
-					THeaderSceneMeshInstance SceneMeshInstanceDefine;
-					SceneMeshInstanceDefine.Position = Instances[ins].Position;
-					SceneMeshInstanceDefine.Rotation = Instances[ins].Rotation;
-					SceneMeshInstanceDefine.Scale = Instances[ins].Scale;
-					DataStream.Put(&SceneMeshInstanceDefine, sizeof(THeaderSceneMeshInstance));
-				}
-			}
+			TI_ASSERT(AssetMeshes.size() == AssetInstances.size());
 			
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderScene));

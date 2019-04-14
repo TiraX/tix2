@@ -15,5 +15,7 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
-protected:
+	FFullScreenRender FSRender;
+	FRenderTargetPtr RT_BasePass;
+	FArgumentBufferPtr AB_Result;
 };

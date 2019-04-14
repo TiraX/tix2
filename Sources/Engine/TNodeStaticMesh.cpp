@@ -18,35 +18,34 @@ namespace tix
 		// Remove Primitive from scene
 		if (LinkedPrimitives.size() > 0)
 		{
-			TI_TODO("Remove in one RenderCommand.");
-			for (auto P : LinkedPrimitives)
-			{
-				ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
-					FPrimitivePtr, Primitive, P,
-					{
-						FRenderThread::Get()->GetRenderScene()->RemovePrimitive(Primitive);
-					});
-			}
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemovePrimitiveFromScene,
+				TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+				{
+					FRenderThread::Get()->GetRenderScene()->RemovePrimitives(Primitives);
+				});
 			LinkedPrimitives.clear();
 		}
 	}
 
-	void TNodeStaticMesh::LinkMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
+	void TNodeStaticMesh::LinkMesh(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow)
 	{
-		// Create Primitive
-		FPrimitivePtr Primitive = ti_new FPrimitive;
-		TI_ASSERT(InMesh->MeshBufferResource != nullptr);
-		Primitive->AddMesh(InMesh->MeshBufferResource, InMesh->GetBBox(), InMInstance);
+		// Create Primitives
+		LinkedPrimitives.empty();
+		LinkedPrimitives.reserve(InMeshes.size());
+		for (const auto& M : InMeshes)
+		{
+			TI_ASSERT(M->MeshBufferResource != nullptr);
+			FPrimitivePtr Primitive = ti_new FPrimitive;
+			Primitive->AddMesh(M->MeshBufferResource, M->GetBBox(), M->GetDefaultMaterial(), InInstanceBuffer->InstanceResource);
+			LinkedPrimitives.push_back(Primitive);
+		}
 
 		// Add primitive to scene
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitveToScene,
-			FPrimitivePtr, Primitive, Primitive,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitivesToScene,
+			TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 			{
-				FRenderThread::Get()->GetRenderScene()->AddPrimitive(Primitive);
+				FRenderThread::Get()->GetRenderScene()->AddPrimitives(Primitives);
 			});
-
-
-		LinkedPrimitives.push_back(Primitive);
 	}
 
 	void TNodeStaticMesh::UpdateAbsoluteTransformation()
@@ -56,10 +55,10 @@ namespace tix
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED))
 		{
 			TI_ASSERT(LinkedPrimitives.size() > 0);
-			TransformedBBox = LinkedPrimitives[0]->BBox;
+			TransformedBBox = LinkedPrimitives[0]->GetBBox();
 			for (int32 i = 1; i < (int32)LinkedPrimitives.size(); ++i)
 			{
-				TransformedBBox.addInternalBox(LinkedPrimitives[i]->BBox);
+				TransformedBBox.addInternalBox(LinkedPrimitives[i]->GetBBox());
 			}
 			AbsoluteTransformation.transformBoxEx(TransformedBBox);
 		}
@@ -81,7 +80,7 @@ namespace tix
 		}
 		Binding->InitUniformBuffer();
 
-		Primitive->PrimitiveUniformBuffer = Binding;
+		Primitive->SetPrimitiveUniform(Binding);
 	}
 
 	void TNodeStaticMesh::BindLights(TVector<TNode *>& Lights, bool ForceRebind)
@@ -130,17 +129,39 @@ namespace tix
 	void TNodeStaticMesh::NotifyLoadingFinished(void * Context)
 	{
 		TI_ASSERT(IsGameThread());
+
+		TAssetPtr MeshRes = nullptr;
 		// Mesh asset load finished add it to TScene
-		TAssetPtr Asset = static_cast<TAsset*>(Context);
-		const TVector<TResourcePtr>& Resources = Asset->GetResources();
-		for (auto Res : Resources)
+		TAssetPtr InAsset = static_cast<TAsset*>(Context);
+		const TVector<TResourcePtr>& Resources = InAsset->GetResources();
+		TI_ASSERT(Resources.size() > 0);
+		TResourcePtr FirstResource = Resources[0];
+		TInstanceBufferPtr InstanceBuffer = nullptr;
+		if (FirstResource->GetType() == ERES_INSTANCE)
 		{
-			TI_ASSERT(Res->GetType() == ERES_MESH);
-			TMeshBufferPtr MB = static_cast<TMeshBuffer*>(Res.get());
-			LinkMesh(MB, MB->GetDefaultMaterial(), false, false);
+			TI_ASSERT(Resources.size() == 1);
+			InstanceBuffer = static_cast<TInstanceBuffer*>(FirstResource.get());
+			TI_ASSERT(MeshAsset != nullptr && MeshAsset->GetResources().size() > 0);
+			MeshRes = MeshAsset;
 		}
+		else
+		{
+			TI_ASSERT(FirstResource->GetType() == ERES_MESH);
+			MeshRes = InAsset;
+		}
+
+		// Gather mesh resources
+		TVector<TMeshBufferPtr> Meshes;
+		Meshes.reserve(MeshRes->GetResources().size());
+		for (auto Res : MeshRes->GetResources())
+		{
+			TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(Res.get());
+			Meshes.push_back(Mesh);
+		}
+		LinkMesh(Meshes, InstanceBuffer, false, false);
 
 		// Add to scene root
 		TEngine::Get()->GetScene()->AddStaticMeshNode(this);
+		_LOG(Log, "Notify ~ %s.\n", InAsset->GetName().c_str());
 	}
 }

@@ -80,7 +80,7 @@ namespace tix
 	{
 		TI_ASSERT(bInited);
         RHI->SetGraphicsPipeline(FullScreenPipeline);
-        RHI->SetMeshBuffer(FullScreenQuad);
+        RHI->SetMeshBuffer(FullScreenQuad, nullptr);
         RHI->SetShaderTexture(0, Texture);
         
         RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
@@ -89,7 +89,7 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable)
 	{
 		TI_ASSERT(bInited);
-		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
 		RHI->SetGraphicsPipeline(FullScreenPipeline);
 		RHI->SetRenderResourceTable(0, TextureTable);
 
@@ -100,7 +100,7 @@ namespace tix
 	{
 		TI_ASSERT(bInited);
         RHI->SetGraphicsPipeline(FullScreenPipeline);
-		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
 		RHI->SetArgumentBuffer(ArgumentBuffer);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
@@ -109,7 +109,7 @@ namespace tix
 	void FFullScreenRender::DrawFullScreenQuad(FRHI* RHI)
 	{
 		TI_ASSERT(bInited);
-		RHI->SetMeshBuffer(FullScreenQuad);
+		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
 	}
 }

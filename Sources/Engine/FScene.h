@@ -24,8 +24,8 @@ namespace tix
 		virtual void PrepareViewUniforms();
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
-		void AddPrimitive(FPrimitivePtr Primitive);
-		void RemovePrimitive(FPrimitivePtr Primitive);
+		void AddPrimitives(const TVector<FPrimitivePtr>& Primitives);
+		void RemovePrimitives(const TVector<FPrimitivePtr>& Primitives);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
@@ -54,9 +54,9 @@ namespace tix
 			return ViewProjection;
 		}
 
-		const TVector<FPrimitivePtr>& GetStaticDrawList() const
+		const TVector<FPrimitivePtr>& GetStaticDrawList(E_DRAWLIST_TYPE List) const
 		{
-			return StaticDrawList;
+			return StaticDrawLists[List];
 		}
 
 		FViewUniformBufferPtr GetViewUniformBuffer()
@@ -66,7 +66,7 @@ namespace tix
 	protected:
 		FSceneLights * SceneLights;
 
-		TVector<FPrimitivePtr> StaticDrawList;
+		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
 
 		uint32 SceneFlags;
 

@@ -18,15 +18,53 @@ namespace tix
 		FPrimitive();
 		~FPrimitive();
 
-		// Temp solution, re-factor in future
-		void AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance);
+		void AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
 
-		TVector<FMeshBufferPtr> MeshBuffers;
-		TVector<FPipelinePtr> Pipelines;
-		TVector<FArgumentBufferPtr> Arguments;
+		void SetPrimitiveUniform(FPrimitiveUniformBufferPtr InUniform)
+		{
+			PrimitiveUniformBuffer = InUniform;
+		}
+
+		FMeshBufferPtr GetMeshBuffer()
+		{
+			return MeshBuffer;
+		}
+		FInstanceBufferPtr GetInstanceBuffer()
+		{
+			return InstanceBuffer;
+		}
+		FPipelinePtr GetPipeline()
+		{
+			return Pipeline;
+		}
+		FArgumentBufferPtr GetArgumentBuffer()
+		{
+			return Argument;
+		}
+		FPrimitiveUniformBufferPtr GetPrimitiveUniform()
+		{
+			return PrimitiveUniformBuffer;
+		}
+		const aabbox3df& GetBBox() const
+		{
+			return BBox;
+		}
+		E_DRAWLIST_TYPE GetDrawList() const
+		{
+			return DrawList;
+		}
+
+	private:
+		FMeshBufferPtr MeshBuffer;
+		FInstanceBufferPtr InstanceBuffer;
+
+		FPipelinePtr Pipeline;
+		FArgumentBufferPtr Argument;
 
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 		aabbox3df BBox;
+
+		E_DRAWLIST_TYPE DrawList;
 	};
 } // end namespace tix
 
