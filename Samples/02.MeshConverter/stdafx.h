@@ -33,6 +33,14 @@ namespace tix
 		return EVSSEG_POSITION;
 	}
 
+	inline E_INSTANCE_STREAM_SEGMENT GetInstanceSegment(const TString& name)
+	{
+		ReturnEnumValue(name, EINSSEG_POSITION);
+		ReturnEnumValue(name, EINSSEG_TRANSFORM);
+
+		return EINSSEG_TRANSFORM;
+	}
+
 	inline E_BLEND_MODE GetBlendMode(const TString& name)
 	{
 		ReturnEnumValue(name, BLEND_MODE_OPAQUE);

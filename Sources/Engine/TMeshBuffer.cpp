@@ -37,7 +37,7 @@ namespace tix
 		{
 			if ((Format & seg) != 0)
 			{
-				Stride += SemanticSize[i];
+				Stride += TMeshBuffer::SemanticSize[i];
 			}
 		}
 		return Stride;
@@ -113,6 +113,7 @@ namespace tix
 
 	TInstanceBuffer::TInstanceBuffer()
 		: TResource(ERES_INSTANCE)
+		, InsFormat(0)
 		, InstanceData(nullptr)
 		, InstanceCount(0)
 		, Stride(0)
@@ -124,10 +125,41 @@ namespace tix
 		SAFE_DELETE(InstanceData);
 	}
 
-	void TInstanceBuffer::SetInstanceStreamData(const void* InInstanceData, int32 InInstanceCount, int32 InStride)
+	int32 TInstanceBuffer::GetStrideFromFormat(uint32 Format)
 	{
+		// Calculate stride
+		int32 Stride = 0;
+		for (uint32 seg = 1, i = 0; seg <= EINSSEG_TOTAL; seg <<= 1, ++i)
+		{
+			if ((Format & seg) != 0)
+			{
+				Stride += TInstanceBuffer::SemanticSize[i];
+			}
+		}
+		return Stride;
+	}
+
+	TVector<E_INSTANCE_STREAM_INDEX> TInstanceBuffer::GetSteamsFromFormat(uint32 Format)
+	{
+		TVector<E_INSTANCE_STREAM_INDEX> Streams;
+		for (uint32 seg = 1, i = 0; seg <= EINSSEG_TOTAL; seg <<= 1, ++i)
+		{
+			if ((Format & seg) != 0)
+			{
+				Streams.push_back((E_INSTANCE_STREAM_INDEX)i);
+			}
+		}
+		return Streams;
+	}
+
+	void TInstanceBuffer::SetInstanceStreamData(
+		uint32 InFormat, 
+		const void* InInstanceData, int32 InInstanceCount
+	)
+	{
+		InsFormat = InFormat;
 		InstanceCount = InInstanceCount;
-		Stride = InStride;
+		Stride = GetStrideFromFormat(InsFormat);
 
 		const int32 BufferSize = InstanceCount * Stride;
 		TI_ASSERT(InstanceData == nullptr);

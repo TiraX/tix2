@@ -20,6 +20,11 @@ namespace tix
 		Desc.VsFormat = InVsFormat;
 	}
 
+	void TMaterial::SetShaderInsFormat(uint32 InInsFormat)
+	{
+		Desc.InsFormat = InInsFormat;
+	}
+
 	void TMaterial::EnableDepthWrite(bool bEnable)
 	{
 		if (bEnable)

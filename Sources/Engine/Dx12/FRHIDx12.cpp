@@ -1151,15 +1151,16 @@ namespace tix
 			const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
 			TI_ASSERT(Shader == Desc.Shader->ShaderResource);
 
-			TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+			TVector<E_MESH_STREAM_INDEX> VertexStreams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+			TVector<E_INSTANCE_STREAM_INDEX> InstanceStreams = TInstanceBuffer::GetSteamsFromFormat(Desc.InsFormat);
 			TVector<D3D12_INPUT_ELEMENT_DESC> InputLayout;
-			InputLayout.resize(Streams.size());
+			InputLayout.resize(VertexStreams.size() + InstanceStreams.size());
 
 			// Fill layout desc
 			uint32 VertexDataOffset = 0;
-			for (uint32 i = 0; i < InputLayout.size(); ++i)
+			for (uint32 i = 0; i < VertexStreams.size(); ++i)
 			{
-				E_MESH_STREAM_INDEX Stream = Streams[i];
+				E_MESH_STREAM_INDEX Stream = VertexStreams[i];
 				D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
 				InputElement.SemanticName = TMeshBuffer::SemanticName[Stream];
 				InputElement.SemanticIndex = 0;
@@ -1169,6 +1170,21 @@ namespace tix
 				VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
 				InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 				InputElement.InstanceDataStepRate = 0;
+			}
+			uint32 InstanceDataOffset = 0;
+			for (uint32 i = 0; i < InstanceStreams.size(); ++i)
+			{
+				E_INSTANCE_STREAM_INDEX Stream = InstanceStreams[i];
+				D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[VertexStreams.size() + i];
+				InputElement.SemanticName = TInstanceBuffer::SemanticName[Stream];
+				InputElement.SemanticIndex = 0;
+				TI_ASSERT(0);
+				InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
+				InputElement.InputSlot = 0;
+				InputElement.AlignedByteOffset = InstanceDataOffset;
+				InstanceDataOffset += TInstanceBuffer::SemanticSize[Stream];
+				InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+				InputElement.InstanceDataStepRate = 1;
 			}
 
 			FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());

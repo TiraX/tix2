@@ -18,6 +18,7 @@ namespace tix
 		void SetShaderName(E_SHADER_STAGE Stage, const TString& Name);
 		void SetBlendMode(E_BLEND_MODE InBlendMode);
 		void SetShaderVsFormat(uint32 InVsFormat);
+		void SetShaderInsFormat(uint32 InInsFormat);
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);

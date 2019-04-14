@@ -313,6 +313,7 @@ namespace tix
 			Material->EnableState(EPSO_STENCIL, (Header->Flags & EPSO_STENCIL) != 0);
 
 			Material->SetShaderVsFormat(Header->VsFormat);
+			Material->SetShaderInsFormat(Header->InsFormat);
 			Material->SetBlendState((E_BLEND_MODE)Header->BlendMode, Header->BlendState);
 			Material->SetRasterizerState(Header->RasterizerDesc);
 			Material->SetDepthStencilState(Header->DepthStencilDesc);
@@ -506,17 +507,6 @@ namespace tix
 				NodeSM->SetMeshAsset(Meshes[i]);
 				TString InstancesName = GetString(AssetsInstances[i]);
 				AssetLib->LoadAssetAysc(InstancesName, NodeSM);
-				//Meshes.push_back(Asset);
-
-				//int32 NumInstances = InstancesCountList[m];
-				//for (int32 ins = 0; ins < NumInstances; ++ins)
-				//{
-				//	const THeaderSceneMeshInstance& InstanceInfo = HeaderMeshInstances[TotalInstances + ins];
-				//	//_LOG(Log, "Loading mesh ins : %f, %f, %f.\n", InstanceInfo.Position.X, InstanceInfo.Position.Y, InstanceInfo.Position.Z);
-				//}
-
-				//TotalInstances += NumInstances;
-				//TI_ASSERT(TotalInstances <= Header->NumInstances);
 			}
 		}
 	}
@@ -561,7 +551,7 @@ namespace tix
 				MatInstanceTrans.postScale(Instance.Scale);
 				InstanceBufferData[i] = MatInstanceTrans;
 			}
-			InstanceBuffer->SetInstanceStreamData(InstanceBufferData.data(), Header->NumInstances, sizeof(FMatrix));
+			InstanceBuffer->SetInstanceStreamData(Header->InsFormat, InstanceBufferData.data(), Header->NumInstances);
 			OutResources.push_back(InstanceBuffer);
 		}
 	}

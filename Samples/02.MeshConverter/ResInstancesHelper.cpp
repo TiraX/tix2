@@ -10,6 +10,7 @@
 namespace tix
 {
 	TResInstancesHelper::TResInstancesHelper()
+		: InsFormat(0)
 	{
 	}
 
@@ -27,6 +28,18 @@ namespace tix
 		// linked material
 		TJSONNode JLinkedMesh = Doc["linked_mesh"];
 		Helper.LinkedMesh = JLinkedMesh.GetString();
+
+		// instance format
+		{
+			TJSONNode JINSFormat = Doc["ins_format"];
+			TI_ASSERT(JINSFormat.IsArray());
+			uint32 InsFormat = 0;
+			for (int32 vs = 0; vs < JINSFormat.Size(); ++vs)
+			{
+				InsFormat |= GetInstanceSegment(JINSFormat[vs].GetString());
+			}
+			Helper.InsFormat = InsFormat;
+		}
 
 		TJSONNode JInstances = Doc["instances"];
 		TI_ASSERT(JInstances.IsArray());
@@ -70,6 +83,7 @@ namespace tix
 			THeaderInstances InstancesHeader;
 			InstancesHeader.LinkedMeshNameIndex = AddStringToList(OutStrings, LinkedMesh);
 			InstancesHeader.NumInstances = (int32)Instances.size();
+			InstancesHeader.InsFormat = InsFormat;
 
 			HeaderStream.Put(&InstancesHeader, sizeof(THeaderInstances));
 

@@ -31,4 +31,17 @@ namespace tix
 		"BLENDINDEX",	// ESSI_BLENDINDEX,
 		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,
 	};
+
+	///////////////////////////////////////////////////////////
+	const int32 TInstanceBuffer::SemanticSize[EISI_TOTAL] =
+	{
+		64,	// EISI_TRANSFORM,
+		12,	// EISI_POSITION,
+	};
+
+	const int8* TInstanceBuffer::SemanticName[EISI_TOTAL] =
+	{
+		"INS-TRANSFORM",	// EISI_TRANSFORM,
+		"INS-POSITION",		// EISI_POSITION,
+	};
 }

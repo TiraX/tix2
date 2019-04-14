@@ -42,6 +42,7 @@ namespace tix
 		virtual ~TMaterial();
 
 		void SetShaderVsFormat(uint32 InVsFormat);
+		void SetShaderInsFormat(uint32 InInsFormat);
 		void EnableDepthWrite(bool bEnable);
 		void EnableDepthTest(bool bEnable);
 		void EnableTwoSides(bool bEnable);

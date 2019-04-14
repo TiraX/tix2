@@ -23,6 +23,7 @@ namespace tix
 		void OutputInstances(TStream& OutStream, TVector<TString>& OutStrings);
 
 		TString LinkedMesh;
+		uint32 InsFormat;
 		TVector<TResInstance> Instances;
 	};
 }

@@ -189,6 +189,7 @@ namespace tix
 		TRasterizerDesc RasterizerDesc;
 		TDepthStencilDesc DepthStencilDesc;
 		uint32 VsFormat;
+		uint32 InsFormat;
 		uint32 PrimitiveType;
 
 		TShaderPtr Shader;
@@ -201,6 +202,7 @@ namespace tix
 		TPipelineDesc()
 			: Flags(EPSO_DEPTH | EPSO_DEPTH_TEST)
 			, VsFormat(EVSSEG_POSITION)
+			, InsFormat(0)
 			, PrimitiveType(EPT_TRIANGLELIST)
 			, RTCount(1)
 		{

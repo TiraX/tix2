@@ -188,6 +188,7 @@ namespace tix
 		TRasterizerDesc RasterizerDesc;
 		TDepthStencilDesc DepthStencilDesc;
 		uint32 VsFormat;
+		uint32 InsFormat;
 
 		uint8 ColorBuffers[ERTC_COUNT];
 		int32 DepthBuffer;
@@ -232,6 +233,7 @@ namespace tix
 	{
 		int32 LinkedMeshNameIndex;
 		int32 NumInstances;
+		uint32 InsFormat;
 	};
 
 	struct THeaderSceneMeshInstance

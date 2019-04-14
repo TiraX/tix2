@@ -32,15 +32,32 @@ namespace tix
 			Helper.SetShaderName((E_SHADER_STAGE)s, Shaders[s].GetString());
 		}
 
-		// vs format
-		TJSONNode VSFormat = Doc["vs_format"];
-		TI_ASSERT(VSFormat.IsArray());
-		uint32 Format = 0;
-		for (int32 vs = 0; vs < VSFormat.Size(); ++vs)
+		// vertex format
 		{
-			Format |= GetVertexSegment(VSFormat[vs].GetString());
+			TJSONNode JVSFormat = Doc["vs_format"];
+			TI_ASSERT(JVSFormat.IsArray());
+			uint32 VsFormat = 0;
+			for (int32 vs = 0; vs < JVSFormat.Size(); ++vs)
+			{
+				VsFormat |= GetVertexSegment(JVSFormat[vs].GetString());
+			}
+			Helper.SetShaderVsFormat(VsFormat);
 		}
-		Helper.SetShaderVsFormat(Format);
+
+		// instance format
+		{
+			TJSONNode JINSFormat = Doc["ins_format"];
+			if (!JINSFormat.IsNull())
+			{
+				TI_ASSERT(JINSFormat.IsArray());
+				uint32 InsFormat = 0;
+				for (int32 vs = 0; vs < JINSFormat.Size(); ++vs)
+				{
+					InsFormat |= GetInstanceSegment(JINSFormat[vs].GetString());
+				}
+				Helper.SetShaderInsFormat(InsFormat);
+			}
+		}
 
 		// blend mode
 		TJSONNode BM = Doc["blend_mode"];
@@ -191,6 +208,11 @@ namespace tix
 		PipelineDesc.VsFormat = InVsFormat;
 	}
 
+	void TResMaterialHelper::SetShaderInsFormat(uint32 InInsFormat)
+	{
+		PipelineDesc.InsFormat = InInsFormat;
+	}
+
 	void TResMaterialHelper::EnableDepthWrite(bool bEnable)
 	{
 		if (bEnable)
@@ -238,6 +260,7 @@ namespace tix
 			Define.RasterizerDesc = PipelineDesc.RasterizerDesc;
 			Define.DepthStencilDesc = PipelineDesc.DepthStencilDesc;
 			Define.VsFormat = PipelineDesc.VsFormat;
+			Define.InsFormat = PipelineDesc.InsFormat;
 
 			int32 cb = 0;
 			for (; cb < ERTC_COUNT; ++cb)

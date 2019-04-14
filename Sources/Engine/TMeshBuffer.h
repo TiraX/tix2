@@ -137,10 +137,18 @@ namespace tix
 		TInstanceBuffer();
 		~TInstanceBuffer();
 
+		static const int32 SemanticSize[EISI_TOTAL];
+		static const int8* SemanticName[EISI_TOTAL];
+
 	public:
 		FInstanceBufferPtr InstanceResource;
 
-		void SetInstanceStreamData(const void* InInstanceData, int32 InInstanceCount, int32 InStride);
+		static int32 GetStrideFromFormat(uint32 Format);
+		static TVector<E_INSTANCE_STREAM_INDEX> GetSteamsFromFormat(uint32 Format);
+		void SetInstanceStreamData(
+			uint32 InFormat, 
+			const void* InInstanceData, int32 InInstanceCount
+		);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
@@ -162,6 +170,7 @@ namespace tix
 	protected:
 
 	protected:
+		uint32 InsFormat;
 		uint8* InstanceData;
 		int32 InstanceCount;
 		uint32 Stride;
