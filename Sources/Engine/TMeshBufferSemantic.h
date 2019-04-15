@@ -32,16 +32,40 @@ namespace tix
 		"BLENDWEIGHT",	// ESSI_BLENDWEIGHT,
 	};
 
+	const int32 TMeshBuffer::SemanticIndex[ESSI_TOTAL] =
+	{
+		0,		// ESSI_POSITION,
+		0,		// ESSI_NORMAL,
+		0,		// ESSI_COLOR,
+		0,		// ESSI_TEXCOORD0,
+		0,		// ESSI_TEXCOORD1,
+		0,		// ESSI_TANGENT,
+		0,		// ESSI_BLENDINDEX,
+		0,		// ESSI_BLENDWEIGHT,
+	};
+
 	///////////////////////////////////////////////////////////
 	const int32 TInstanceBuffer::SemanticSize[EISI_TOTAL] =
 	{
-		64,	// EISI_TRANSFORM,
-		12,	// EISI_POSITION,
+		16,	// EISI_TRANSITION,
+		8,	// EISI_ROT_SCALE_MAT0,
+		8,	// EISI_ROT_SCALE_MAT1,
+		8,	// EISI_ROT_SCALE_MAT2,
 	};
 
 	const int8* TInstanceBuffer::SemanticName[EISI_TOTAL] =
 	{
-		"INS-TRANSFORM",	// EISI_TRANSFORM,
-		"INS-POSITION",		// EISI_POSITION,
+		"INS_TRANSITION",		// EISI_TRANSITION,
+		"INS_TRANSFORM",	// EISI_ROT_SCALE_MAT0,
+		"INS_TRANSFORM",	// EISI_ROT_SCALE_MAT1,
+		"INS_TRANSFORM",	// EISI_ROT_SCALE_MAT2,
+	};
+
+	const int32 TInstanceBuffer::SemanticIndex[EISI_TOTAL] =
+	{
+		0,		// EISI_TRANSITION,
+		0,		// EISI_ROT_SCALE_MAT0,
+		1,		// EISI_ROT_SCALE_MAT1,
+		2,		// EISI_ROT_SCALE_MAT2
 	};
 }

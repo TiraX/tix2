@@ -7,27 +7,28 @@
 
 namespace tix
 {
-	class FFloat4
+	template < typename T >
+	class FVec4
 	{
 	public:
-		FFloat4()
+		FVec4()
 			: X(0.f)
 			, Y(0.f)
 			, Z(0.f)
 			, W(1.f)
 		{}
 
-		FFloat4(float InX, float InY, float InZ, float InW)
+		FVec4(T InX, T InY, T InZ, T InW)
 			: X(InX)
 			, Y(InY)
 			, Z(InZ)
 			, W(InW)
 		{}
 
-		~FFloat4()
+		~FVec4()
 		{}
 
-		FFloat4& operator = (const vector2df& Other)
+		FVec4& operator = (const vector2d<T>& Other)
 		{
 			X = Other.X;
 			Y = Other.Y;
@@ -35,7 +36,7 @@ namespace tix
 			return *this;
 		}
 
-		FFloat4& operator = (const vector3df& Other)
+		FVec4& operator = (const vector3d<T>& Other)
 		{
 			X = Other.X;
 			Y = Other.Y;
@@ -44,7 +45,7 @@ namespace tix
 			return *this;
 		}
 
-		FFloat4& operator = (const vector4df& Other)
+		FVec4& operator = (const vector4d<T>& Other)
 		{
 			X = Other.X;
 			Y = Other.Y;
@@ -54,7 +55,7 @@ namespace tix
 			return *this;
 		}
 
-		FFloat4& operator = (const SColorf& Other)
+		FVec4& operator = (const SColorf& Other)
 		{
 			X = Other.R;
 			Y = Other.G;
@@ -64,7 +65,7 @@ namespace tix
 			return *this;
 		}
 
-		FFloat4& operator = (const SColor& Other)
+		FVec4& operator = (const SColor& Other)
 		{
 			SColorf C(Other);
 			X = C.R;
@@ -75,7 +76,7 @@ namespace tix
 			return *this;
 		}
 
-		FFloat4& operator = (const quaternion& Other)
+		FVec4& operator = (const quaternion& Other)
 		{
 			X = Other.X;
 			Y = Other.Y;
@@ -85,30 +86,33 @@ namespace tix
 			return *this;
 		}
 
-		float* getDataPtr()
+		T* getDataPtr()
 		{
-			return reinterpret_cast<float*>(this);
+			return reinterpret_cast<T*>(this);
 		}
 
-		const float* getDataPtr() const
+		const T* getDataPtr() const
 		{
 			return reinterpret_cast<const float*>(this);
 		}
 		
-		float& operator [] (uint32 i)
+		T& operator [] (uint32 i)
 		{
 			TI_ASSERT(i < 4);
 			return getDataPtr()[i];
 		}
 
-		const float& operator [] (uint32 i) const
+		const T& operator [] (uint32 i) const
 		{
 			TI_ASSERT(i < 4);
 			return getDataPtr()[i];
 		}
 	public:
-		float X,Y,Z,W;
+		T X,Y,Z,W;
 	};
+
+	typedef FVec4<float> FFloat4;
+	typedef FVec4<half> FHalf4;
 
 	class FInt4
 	{

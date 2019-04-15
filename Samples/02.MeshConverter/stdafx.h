@@ -35,10 +35,12 @@ namespace tix
 
 	inline E_INSTANCE_STREAM_SEGMENT GetInstanceSegment(const TString& name)
 	{
-		ReturnEnumValue(name, EINSSEG_POSITION);
-		ReturnEnumValue(name, EINSSEG_TRANSFORM);
+		ReturnEnumValue(name, EINSSEG_TRANSITION);
+		ReturnEnumValue(name, EINSSEG_ROT_SCALE_MAT0);
+		ReturnEnumValue(name, EINSSEG_ROT_SCALE_MAT1);
+		ReturnEnumValue(name, EINSSEG_ROT_SCALE_MAT2);
 
-		return EINSSEG_TRANSFORM;
+		return EINSSEG_TRANSITION;
 	}
 
 	inline E_BLEND_MODE GetBlendMode(const TString& name)

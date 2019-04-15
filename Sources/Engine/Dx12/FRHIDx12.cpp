@@ -1163,7 +1163,7 @@ namespace tix
 				E_MESH_STREAM_INDEX Stream = VertexStreams[i];
 				D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[i];
 				InputElement.SemanticName = TMeshBuffer::SemanticName[Stream];
-				InputElement.SemanticIndex = 0;
+				InputElement.SemanticIndex = TMeshBuffer::SemanticIndex[Stream];
 				InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
 				InputElement.InputSlot = 0;
 				InputElement.AlignedByteOffset = VertexDataOffset;
@@ -1177,10 +1177,9 @@ namespace tix
 				E_INSTANCE_STREAM_INDEX Stream = InstanceStreams[i];
 				D3D12_INPUT_ELEMENT_DESC& InputElement = InputLayout[VertexStreams.size() + i];
 				InputElement.SemanticName = TInstanceBuffer::SemanticName[Stream];
-				InputElement.SemanticIndex = 0;
-				TI_ASSERT(0);
-				InputElement.Format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
-				InputElement.InputSlot = 0;
+				InputElement.SemanticIndex = TInstanceBuffer::SemanticIndex[Stream];
+				InputElement.Format = k_INSTANCEBUFFER_STREAM_FORMAT_MAP[Stream];
+				InputElement.InputSlot = 1;
 				InputElement.AlignedByteOffset = InstanceDataOffset;
 				InstanceDataOffset += TInstanceBuffer::SemanticSize[Stream];
 				InputElement.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;

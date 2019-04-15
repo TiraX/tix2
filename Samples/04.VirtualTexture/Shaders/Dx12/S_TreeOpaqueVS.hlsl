@@ -17,7 +17,11 @@ struct VSInput
     float3 position : POSITION;
 	float3 normal : NORMAL;
     float2 texcoord0 : TEXCOORD;
-    float3 tangent : TANGENT;
+	float3 tangent : TANGENT;
+	float4 ins_transition : INS_TRANSITION;
+	half4 ins_transform0 : INS_TRANSFORM0;
+	half4 ins_transform1 : INS_TRANSFORM1;
+	half4 ins_transform2 : INS_TRANSFORM2;
 };
 
 struct VSOutput
@@ -35,7 +39,10 @@ VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;
 
-    vsOutput.position = mul(float4(vsInput.position, 1.0), ViewProjection);
+	float3x3 RotMat = float3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
+	float3 position = mul(vsInput.position, RotMat);
+	position += vsInput.ins_transition;
+    vsOutput.position = mul(float4(position, 1.0), ViewProjection);
     vsOutput.texCoord = vsInput.texcoord0;
 	//vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
 

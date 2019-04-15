@@ -54,6 +54,12 @@ namespace tix
 			return *this;
 		}
 
+		float operator [] (uint32 Index)
+		{
+			TI_ASSERT(Index < 16);
+			return M[Index];
+		}
+
 		float* Data()
 		{
 			return M;

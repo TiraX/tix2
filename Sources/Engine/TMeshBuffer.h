@@ -16,6 +16,7 @@ namespace tix
 
 		static const int32 SemanticSize[ESSI_TOTAL];
 		static const int8* SemanticName[ESSI_TOTAL];
+		static const int32 SemanticIndex[ESSI_TOTAL];
 
 	public:
 		FMeshBufferPtr MeshBufferResource;
@@ -139,6 +140,7 @@ namespace tix
 
 		static const int32 SemanticSize[EISI_TOTAL];
 		static const int8* SemanticName[EISI_TOTAL];
+		static const int32 SemanticIndex[EISI_TOTAL];
 
 	public:
 		FInstanceBufferPtr InstanceResource;

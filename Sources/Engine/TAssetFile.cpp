@@ -540,18 +540,33 @@ namespace tix
 			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(InstancesDataStart);
 
 			TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
-			TVector<FMatrix> InstanceBufferData;
-			InstanceBufferData.resize(Header->NumInstances);
+			const int32 InsStride = TInstanceBuffer::GetStrideFromFormat(Header->InsFormat);
+			TStream InsBufferData(InsStride * Header->NumInstances);
 			for (int32 i = 0; i < Header->NumInstances; ++i)
 			{
 				const THeaderSceneMeshInstance& Instance = InstanceData[i];
 				matrix4 MatInstanceTrans;
 				Instance.Rotation.getMatrix(MatInstanceTrans);
-				MatInstanceTrans.setTranslation(Instance.Position);
 				MatInstanceTrans.postScale(Instance.Scale);
-				InstanceBufferData[i] = MatInstanceTrans;
+				FMatrix Mat = MatInstanceTrans;
+				FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
+				FHalf4 RotScaleMat[3];
+				RotScaleMat[0].X = Mat[0];
+				RotScaleMat[0].Y = Mat[1];
+				RotScaleMat[0].Z = Mat[2];
+				RotScaleMat[0].W = Mat[3];
+				RotScaleMat[1].X = Mat[4];
+				RotScaleMat[1].Y = Mat[5];
+				RotScaleMat[1].Z = Mat[6];
+				RotScaleMat[1].W = Mat[7];
+				RotScaleMat[2].X = Mat[8];
+				RotScaleMat[2].Y = Mat[9];
+				RotScaleMat[2].Z = Mat[10];
+				RotScaleMat[2].W = Mat[11];
+				InsBufferData.Put(&Transition, sizeof(FFloat4));
+				InsBufferData.Put(RotScaleMat, sizeof(RotScaleMat));
 			}
-			InstanceBuffer->SetInstanceStreamData(Header->InsFormat, InstanceBufferData.data(), Header->NumInstances);
+			InstanceBuffer->SetInstanceStreamData(Header->InsFormat, InsBufferData.GetBuffer(), Header->NumInstances);
 			OutResources.push_back(InstanceBuffer);
 		}
 	}

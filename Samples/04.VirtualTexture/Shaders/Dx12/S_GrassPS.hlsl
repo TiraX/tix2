@@ -30,7 +30,7 @@ cbuffer EB_Lights : register(b5)
 SamplerState sampler0 : register(s0);
 
 [RootSignature(BasePass_RootSig)]
-float4 main(VSOutput input, out float4 specularColor : SV_Target1) : SV_Target0
+float4 main(VSOutput input) : SV_Target0
 {
 	float3 BaseColor = texBaseColor.Sample(sampler0, input.uv).xyz;
 	float3 Normal = texNormal.Sample(sampler0, input.uv).xyz;
