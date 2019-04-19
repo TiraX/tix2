@@ -220,6 +220,9 @@ namespace tix
 		vector3df MainLightDirection;
 		SColorf MainLightColor;
 		float MainLightIntensity;
+
+		// Camera Info
+		int32 NumCameras;
 		
 		// Scene Meshes and Instances
 		int32 NumTextures;
@@ -227,6 +230,13 @@ namespace tix
 		int32 NumMaterialInstances;
 		int32 NumMeshes;
 		int32 NumInstances;
+	};
+
+	struct THeaderCameraInfo
+	{
+		vector3df Location;
+		vector3df Target;
+		float FOV;
 	};
 
 	struct THeaderInstances

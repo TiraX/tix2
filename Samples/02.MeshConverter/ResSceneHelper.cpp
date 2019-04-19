@@ -39,6 +39,22 @@ namespace tix
 			Helper.Environment.SunLight.Intensity = JSunLight["intensity"].GetFloat();
 		}
 
+		// Load cameras. 
+		{
+			TJSONNode JCameras = Doc["cameras"];
+			Helper.Cameras.empty();
+			Helper.Cameras.reserve(JCameras.Size());
+			for (int32 c = 0; c < JCameras.Size(); ++c)
+			{
+				TJSONNode JCam = JCameras[c];
+				THeaderCameraInfo Cam;
+				Cam.Location = TJSONUtil::JsonArrayToVector3df(JCam["location"]);
+				Cam.Target = TJSONUtil::JsonArrayToVector3df(JCam["target"]);
+				Cam.FOV = JCam["fov"].GetFloat();
+				Helper.Cameras.push_back(Cam);
+			}
+		}
+
 		// Load asset list
 		{
 			TJSONNode JAssetList = Doc["dependency"];
@@ -100,6 +116,13 @@ namespace tix
 			Define.MainLightDirection = Environment.SunLight.Direction;
 			Define.MainLightColor = Environment.SunLight.Color;
 			Define.MainLightIntensity = Environment.SunLight.Intensity;
+
+			// Cameras
+			Define.NumCameras = (int32)Cameras.size();
+			for (const auto& C : Cameras)
+			{
+				DataStream.Put(&C, sizeof(THeaderCameraInfo));
+			}
 
 			// Assets Info
 			Define.NumTextures = (int32)AssetTextures.size();

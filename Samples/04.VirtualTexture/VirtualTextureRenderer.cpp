@@ -50,6 +50,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->PushRenderTarget(RT_BasePass);
 	// Render Base Pass
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
+	RenderDrawList(RHI, Scene, LIST_MASK);
 	RHI->PopRenderTarget();
 
 	RHI->BeginRenderToFrameBuffer();

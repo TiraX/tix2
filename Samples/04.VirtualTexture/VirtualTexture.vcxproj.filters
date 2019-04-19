@@ -45,6 +45,9 @@
     <None Include="Shaders\Dx12\S_BasePassRS.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="Shaders\Dx12\S_GrassRS.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_TreeOpaquePS.hlsl">

@@ -55,6 +55,7 @@ namespace tix
 	private:
 		TString MapName;
 		TSceneEnvironment Environment;
+		TVector<THeaderCameraInfo> Cameras;
 
 		TVector<TString> AssetTextures;
 		TVector<TString> AssetMaterialInstances;

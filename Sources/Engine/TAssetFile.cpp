@@ -197,9 +197,11 @@ namespace tix
 			// Load vertex data and index data
 			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
 			const int8* VertexData = VertexDataStart + MeshDataOffset;
-			const int8* IndexData = VertexDataStart + ti_align4(Header->VertexCount * VertexStride);
+			const int8* IndexData = VertexDataStart + MeshDataOffset + ti_align4(Header->VertexCount * VertexStride);
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 			Mesh->SetBBox(Header->BBox);
+			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride) 
+				+ ti_align4((int32)(((Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32)) * Header->PrimitiveCount * 3));
 
 			// Load material
 			TString MaterialResName = GetString(Header->StrMaterialInstance);
@@ -463,8 +465,20 @@ namespace tix
 			Env->SetMainLightColor(Header->MainLightColor);
 			Env->SetMainLightIntensity(Header->MainLightIntensity);
 
+			// Load Cameras
+			if (Header->NumCameras > 0)
+			{
+				const THeaderCameraInfo * CamInfoData = (const THeaderCameraInfo*)(SceneDataStart);
+				// Pick the first for now
+				const THeaderCameraInfo& CamInfo = CamInfoData[0];
+				TNodeCamera * Camera = TEngine::Get()->GetScene()->GetActiveCamera();
+				Camera->SetPosition(CamInfo.Location);
+				Camera->SetTarget(CamInfo.Target);
+				Camera->SetFOV(DEG_TO_RAD(CamInfo.FOV));
+			}
+
 			// Load assets names
-			const int32* AssetsTextures = (const int32*)(SceneDataStart);
+			const int32* AssetsTextures = (const int32*)(SceneDataStart + sizeof(THeaderCameraInfo) * Header->NumCameras);
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;

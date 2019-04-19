@@ -183,6 +183,7 @@ copy $(ProjectDir)\..\..\Projects\Windows\x64\Release\*.cso $(ProjectDir)\Conten
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Dx12\S_BasePassRS.hlsli" />
+    <None Include="Shaders\Dx12\S_GrassRS.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_GrassPS.hlsl">

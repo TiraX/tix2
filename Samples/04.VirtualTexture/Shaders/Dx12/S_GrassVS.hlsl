@@ -1,4 +1,4 @@
-#include "S_BasePassRS.hlsli"
+#include "S_GrassRS.hlsli"
 
 cbuffer EB_View : register(b0)
 {
@@ -34,7 +34,7 @@ struct VSOutput
 	float4 worldPosition : TexCoord2;
 };
 
-[RootSignature(BasePass_RootSig)]
+[RootSignature(Grass_RootSig)]
 VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;
