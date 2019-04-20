@@ -50,7 +50,7 @@ namespace tix
 	template <class T>
 	void TQueue<T>::PushBack(const T& o)
 	{
-		if (QueueSize + 1 > ContainerSize)
+		if (QueueSize + 1 >= ContainerSize)
 		{
 			Resize(ContainerSize * 2);
 		}
@@ -93,23 +93,25 @@ namespace tix
 	void TQueue<T>::Resize(int32 NewSize)
 	{
 		TI_ASSERT(NewSize >= GetSize());
+		TI_ASSERT(Head != Tail);
 		T* OldQueue = Queue;
 		Queue = ti_new T[NewSize];
 		memset(Queue, 0, NewSize * sizeof(T));
 		// Move old data to new queue
 		if (Head < Tail)
 		{
-			memcpy(OldQueue + Head, Queue, GetSize() * sizeof(T));
+			memcpy(Queue, OldQueue + Head, GetSize() * sizeof(T));
 			Head = 0;
 			Tail = GetSize();
 		}
 		else if (Head > Tail)
 		{
-			memcpy(OldQueue + Head, Queue, (ContainerSize - Head) * sizeof(T));
-			memcpy(OldQueue, Queue + (ContainerSize - Head), Tail * sizeof(T));
+			memcpy(Queue, OldQueue + Head, (ContainerSize - Head) * sizeof(T));
+			memcpy(Queue + (ContainerSize - Head), OldQueue, Tail * sizeof(T));
 			Head = 0;
 			Tail = GetSize();
 		}
+		ti_delete[] OldQueue;
 		ContainerSize = NewSize;
 	}
 
