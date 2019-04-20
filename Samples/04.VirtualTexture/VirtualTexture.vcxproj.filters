@@ -48,6 +48,9 @@
     <None Include="Shaders\Dx12\S_GrassRS.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="Shaders\Dx12\S_SkyRS.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_TreeOpaquePS.hlsl">
@@ -66,6 +69,12 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_GrassVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyPS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
