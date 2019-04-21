@@ -244,6 +244,9 @@
     <ClCompile Include="..\..\Sources\Engine\TSceneLoading.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FVTSystem.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -590,6 +593,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTypeScene.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FVTSystem.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

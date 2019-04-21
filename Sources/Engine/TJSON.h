@@ -182,6 +182,15 @@ namespace tix
 	class TJSONUtil
 	{
 	public:
+		static vector2di JsonArrayToVector2di(TJSONNode ArrayNode)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 3);
+			vector2di Result;
+			Result.X = ArrayNode[0].GetInt();
+			Result.Y = ArrayNode[1].GetInt();
+
+			return Result;
+		}
 		static vector3df JsonArrayToVector3df(TJSONNode ArrayNode)
 		{
 			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 3);

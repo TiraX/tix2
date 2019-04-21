@@ -18,7 +18,7 @@ namespace tix
 		FPrimitive();
 		~FPrimitive();
 
-		void AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
+		void SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
 
 		void SetPrimitiveUniform(FPrimitiveUniformBufferPtr InUniform)
 		{

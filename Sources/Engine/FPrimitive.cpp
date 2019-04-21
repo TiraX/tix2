@@ -17,7 +17,7 @@ namespace tix
 	{
 	}
 
-	void FPrimitive::AddMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer)
+	void FPrimitive::SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer)
 	{
 		// Add bounding box
 		BBox = InMeshBBox;

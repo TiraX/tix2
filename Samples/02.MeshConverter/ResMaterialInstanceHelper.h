@@ -35,6 +35,7 @@ namespace tix
 		TString ParamName;
 		uint8 ParamType;
 		TMIParamValue ParamValue;
+		vector2di ParamValueSize;
 
 		TMIParam()
 			: ParamName("None")
@@ -65,7 +66,7 @@ namespace tix
 		void AddParameter(const TString& InParamName, const vector3df& Value);
 		void AddParameter(const TString& InParamName, const quaternion& Value);
 		void AddParameter(const TString& InParamName, const SColorf& Value);
-		void AddParameter(const TString& InParamName, const TString& Value);
+		void AddParameter(const TString& InParamName, const TString& Value, const vector2di& Size);
 
 		void OutputMaterialInstance(TStream& OutStream, TVector<TString>& OutStrings);
 

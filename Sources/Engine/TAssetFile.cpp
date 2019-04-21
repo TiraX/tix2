@@ -377,16 +377,17 @@ namespace tix
 		{
 			const THeaderMaterialInstance* Header = (const THeaderMaterialInstance*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * i);
 			TMaterialInstancePtr MInstance = ti_new TMaterialInstance;
-			
-			MInstance->ParamNames.reserve(Header->ParamCount);
-			MInstance->ParamTypes.reserve(Header->ParamCount);
+
+			const int32 TotalParamCount = Header->ParamDataCount + Header->ParamTextureCount;
+			MInstance->ParamNames.reserve(TotalParamCount);
+			MInstance->ParamTypes.reserve(TotalParamCount);
 
 			const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
-			const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount);
-			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * Header->ParamCount + ti_align4(Header->ParamCount));
+			const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * TotalParamCount);
+			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * TotalParamCount + ti_align4(TotalParamCount));
 
 			int32 TotalValueBufferLength = 0;
-			for (int32 p = 0; p < Header->ParamCount; ++p)
+			for (int32 p = 0; p < TotalParamCount; ++p)
 			{
 				E_MI_PARAM_TYPE ParamType = (E_MI_PARAM_TYPE)(ParamTypeOffset[p]);
 				const int32 ValueBytes = TMaterialInstance::GetParamTypeBytes(ParamType);
@@ -402,7 +403,11 @@ namespace tix
 
 			// Load param names and types
 			int32 ValueOffset = 0;
-			for (int32 p = 0; p < Header->ParamCount; ++p)
+#if ENABLE_VT_SYSTEM
+			MInstance->ParamTextureNames.reserve(Header->ParamTextureCount);
+			MInstance->ParamTextureSizes.reserve(Header->ParamTextureCount);
+#endif
+			for (int32 p = 0; p < TotalParamCount; ++p)
 			{
 				MInstance->ParamNames.push_back(GetString(ParamNameOffset[p]));
 				E_MI_PARAM_TYPE ParamType = (E_MI_PARAM_TYPE)(ParamTypeOffset[p]);
@@ -412,7 +417,13 @@ namespace tix
 				{
 					// texture params
 					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
+					const int16 * TextureSize = (const int16*)(ParamValueOffset + ValueOffset + sizeof(int32));
 					TString TextureName = GetString(TextureNameIndex);
+#if ENABLE_VT_SYSTEM
+					MInstance->ParamTextureNames.push_back(TextureName);
+					vector2di Size = vector2di(TextureSize[0], TextureSize[1]);
+					MInstance->ParamTextureSizes.push_back(Size);
+#else	// ENABLE_VT_SYSTEM
 					TAssetPtr TextureRes = TAssetLibrary::Get()->LoadAsset(TextureName);
 					if (TextureRes == nullptr)
 					{
@@ -420,6 +431,7 @@ namespace tix
 					}
 					TTexturePtr Texture = static_cast<TTexture*>(TextureRes->GetResourcePtr());
 					MInstance->ParamTextures.push_back(Texture);
+#endif	// ENABLE_VT_SYSTEM
 				}
 				else
 				{
@@ -487,11 +499,13 @@ namespace tix
 			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
 			// Textures
+#if !ENABLE_VT_SYSTEM
 			for (int32 t = 0; t < Header->NumTextures; ++t)
 			{
 				TString TextureName = GetString(AssetsTextures[t]);
 				AssetLib->LoadAssetAysc(TextureName);
 			}
+#endif
 			// Materials
 			for (int32 m = 0; m < Header->NumMaterials; ++m)
 			{

@@ -198,7 +198,8 @@ namespace tix
 	{
 		int32 NameIndex;
 		int32 LinkedMaterialIndex;
-		int32 ParamCount;
+		int32 ParamDataCount;
+		int32 ParamTextureCount;
 	};
 
 	struct THeaderShaderBinding

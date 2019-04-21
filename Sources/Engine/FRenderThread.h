@@ -139,6 +139,11 @@ namespace tix
 			return RenderScene;
 		}
 
+		FVTSystem* GetVTSystem()
+		{
+			return VTSystem;
+		}
+
 	private:
 		static FRenderThread* RenderThread;
 		FRenderThread();
@@ -166,7 +171,11 @@ namespace tix
 		// Render components
 		FRHI * RHI;
 		TVector<FRenderer*> Renderers;
+
 		FScene * RenderScene;
+#if ENABLE_VT_SYSTEM
+		FVTSystem * VTSystem;
+#endif
 
 		static bool Inited;
 		static bool ThreadEnabled;

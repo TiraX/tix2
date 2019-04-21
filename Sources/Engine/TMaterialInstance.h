@@ -38,7 +38,12 @@ namespace tix
 		TVector<TString> ParamNames;
 		TVector<int32> ParamTypes;
 		TStreamPtr ParamValueBuffer;
+#if ENABLE_VT_SYSTEM
+		TVector<TString> ParamTextureNames;
+		TVector<vector2di> ParamTextureSizes;
+#else
 		TVector<TTexturePtr> ParamTextures;
+#endif
 
 	protected:
 		friend class TAssetFile;

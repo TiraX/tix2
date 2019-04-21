@@ -57,10 +57,12 @@ namespace tix
 					q[pv] = ParamValue[pv].GetFloat();
 				Helper.AddParameter(ParamName, q);
 			}
-			else if (ParamType == "texture")
+			else if (ParamType == "texture2d" || ParamType == "texturecube")
 			{
 				TI_ASSERT(ParamValue.IsString());
-				Helper.AddParameter(ParamName, ParamValue.GetString());
+				TJSONNode ParamSize = Param["size"];
+				vector2di Size = TJSONUtil::JsonArrayToVector2di(ParamSize);
+				Helper.AddParameter(ParamName, ParamValue.GetString(), Size);
 			}
 			else
 			{
@@ -152,13 +154,14 @@ namespace tix
 		ValueParameters.push_back(V);
 	}
 
-	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const TString& Value)
+	void TResMaterialInstanceHelper::AddParameter(const TString& InParamName, const TString& Value, const vector2di& Size)
 	{
 		if (IsParamExisted(InParamName))
 			return;
 		TMIParam V(InParamName);
 		V.ParamValue.ValueString = Value;
 		V.ParamType = MIPT_TEXTURE;
+		V.ParamValueSize = Size;
 		TextureParameters.push_back(V);
 	}
 	
@@ -175,7 +178,8 @@ namespace tix
 			THeaderMaterialInstance Define;
 			Define.NameIndex = AddStringToList(OutStrings, InstanceName);
 			Define.LinkedMaterialIndex = AddStringToList(OutStrings, LinkedMaterial);
-			Define.ParamCount = (int32)(ValueParameters.size() + TextureParameters.size());
+			Define.ParamDataCount = (int32)ValueParameters.size();
+			Define.ParamTextureCount = (int32)TextureParameters.size();
 			
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderMaterialInstance));
@@ -215,6 +219,10 @@ namespace tix
 				{
 					int32 TextureNameIndex = AddStringToList(OutStrings, Param.ParamValue.ValueString);
 					SValue.Put(&TextureNameIndex, sizeof(int32));
+					int16 Size[2];
+					Size[0] = (int16)Param.ParamValueSize.X;
+					Size[1] = (int16)Param.ParamValueSize.Y;
+					SValue.Put(Size, sizeof(Size));
 				}
 				break;
 				default:

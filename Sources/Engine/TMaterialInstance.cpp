@@ -17,6 +17,23 @@ namespace tix
 
 	void TMaterialInstance::InitRenderThreadResource()
 	{
+#if ENABLE_VT_SYSTEM
+		if (ParamValueBuffer != nullptr)
+		{
+			TI_ASSERT(ArgumentBuffer == nullptr);
+			TI_ASSERT(LinkedMaterial->GetDesc().Shader != nullptr);
+			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer(LinkedMaterial->GetDesc().Shader->ShaderResource);
+			ArgumentBuffer->SetTextureNames(ParamTextureNames);
+			ArgumentBuffer->SetTextureSizes(ParamTextureSizes);
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer2,
+				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
+				TStreamPtr, UniformBufferData, ParamValueBuffer,
+				{
+					TVector<FTexturePtr> EmptyTextures;
+					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, EmptyTextures);
+				});
+		}
+#else
 		if (ParamValueBuffer != nullptr || ParamTextures.size() > 0)
 		{
 			TI_ASSERT(ArgumentBuffer == nullptr);
@@ -28,7 +45,7 @@ namespace tix
 				TI_ASSERT(Tex->TextureResource != nullptr);
 				Textures.push_back(Tex->TextureResource);
 			}
-			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer3,
 				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
 				TStreamPtr, UniformBufferData, ParamValueBuffer,
 				TVector<FTexturePtr>, Textures, Textures,
@@ -36,6 +53,7 @@ namespace tix
 					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, Textures);
 				});
 		}
+#endif
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()
@@ -58,7 +76,7 @@ namespace tix
 		4,	//MIPT_FLOAT,
 		16,	//MIPT_INT4,
 		16,	//MIPT_FLOAT4,
-		4,	//MIPT_TEXTURE (int),
+		8,	//MIPT_TEXTURE ((int32) + (int16) * 2),
 	};
 
 	int32 TMaterialInstance::GetParamTypeBytes(E_MI_PARAM_TYPE Type)

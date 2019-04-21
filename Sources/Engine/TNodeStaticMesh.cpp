@@ -36,7 +36,7 @@ namespace tix
 		{
 			TI_ASSERT(M->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
-			Primitive->AddMesh(M->MeshBufferResource, M->GetBBox(), M->GetDefaultMaterial(), InInstanceBuffer->InstanceResource);
+			Primitive->SetMesh(M->MeshBufferResource, M->GetBBox(), M->GetDefaultMaterial(), InInstanceBuffer->InstanceResource);
 			LinkedPrimitives.push_back(Primitive);
 		}
 
