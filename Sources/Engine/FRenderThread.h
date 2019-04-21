@@ -173,9 +173,7 @@ namespace tix
 		TVector<FRenderer*> Renderers;
 
 		FScene * RenderScene;
-#if ENABLE_VT_SYSTEM
 		FVTSystem * VTSystem;
-#endif
 
 		static bool Inited;
 		static bool ThreadEnabled;

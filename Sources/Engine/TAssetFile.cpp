@@ -403,10 +403,8 @@ namespace tix
 
 			// Load param names and types
 			int32 ValueOffset = 0;
-#if ENABLE_VT_SYSTEM
 			MInstance->ParamTextureNames.reserve(Header->ParamTextureCount);
 			MInstance->ParamTextureSizes.reserve(Header->ParamTextureCount);
-#endif
 			for (int32 p = 0; p < TotalParamCount; ++p)
 			{
 				MInstance->ParamNames.push_back(GetString(ParamNameOffset[p]));
@@ -419,19 +417,19 @@ namespace tix
 					int32 TextureNameIndex = *(const int32*)(ParamValueOffset + ValueOffset);
 					const int16 * TextureSize = (const int16*)(ParamValueOffset + ValueOffset + sizeof(int32));
 					TString TextureName = GetString(TextureNameIndex);
-#if ENABLE_VT_SYSTEM
 					MInstance->ParamTextureNames.push_back(TextureName);
 					vector2di Size = vector2di(TextureSize[0], TextureSize[1]);
 					MInstance->ParamTextureSizes.push_back(Size);
-#else	// ENABLE_VT_SYSTEM
-					TAssetPtr TextureRes = TAssetLibrary::Get()->LoadAsset(TextureName);
-					if (TextureRes == nullptr)
+					if (!FVTSystem::IsEnabled())
 					{
-						_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
+						TAssetPtr TextureRes = TAssetLibrary::Get()->LoadAsset(TextureName);
+						if (TextureRes == nullptr)
+						{
+							_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
+						}
+						TTexturePtr Texture = static_cast<TTexture*>(TextureRes->GetResourcePtr());
+						MInstance->ParamTextures.push_back(Texture);
 					}
-					TTexturePtr Texture = static_cast<TTexture*>(TextureRes->GetResourcePtr());
-					MInstance->ParamTextures.push_back(Texture);
-#endif	// ENABLE_VT_SYSTEM
 				}
 				else
 				{
@@ -499,13 +497,15 @@ namespace tix
 			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
 			// Textures
-#if !ENABLE_VT_SYSTEM
-			for (int32 t = 0; t < Header->NumTextures; ++t)
+			if (!FVTSystem::IsEnabled())
 			{
-				TString TextureName = GetString(AssetsTextures[t]);
-				AssetLib->LoadAssetAysc(TextureName);
+				// Virtual texture delay load texture
+				for (int32 t = 0; t < Header->NumTextures; ++t)
+				{
+					TString TextureName = GetString(AssetsTextures[t]);
+					AssetLib->LoadAssetAysc(TextureName);
+				}
 			}
-#endif
 			// Materials
 			for (int32 m = 0; m < Header->NumMaterials; ++m)
 			{

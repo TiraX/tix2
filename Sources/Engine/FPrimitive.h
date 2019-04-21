@@ -53,6 +53,13 @@ namespace tix
 		{
 			return DrawList;
 		}
+		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale)
+		{
+			UVTransform.X = UOffset;
+			UVTransform.Y = VOffset;
+			UVTransform.Z = UScale;
+			UVTransform.W = VScale;
+		}
 
 	private:
 		FMeshBufferPtr MeshBuffer;
@@ -63,6 +70,8 @@ namespace tix
 
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 		aabbox3df BBox;
+
+		FFloat4 UVTransform;
 
 		E_DRAWLIST_TYPE DrawList;
 	};

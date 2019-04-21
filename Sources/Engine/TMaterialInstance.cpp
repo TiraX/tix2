@@ -17,35 +17,26 @@ namespace tix
 
 	void TMaterialInstance::InitRenderThreadResource()
 	{
-#if ENABLE_VT_SYSTEM
-		if (ParamValueBuffer != nullptr)
+		if (ParamValueBuffer != nullptr || ParamTextureNames.size() > 0)
 		{
 			TI_ASSERT(ArgumentBuffer == nullptr);
 			TI_ASSERT(LinkedMaterial->GetDesc().Shader != nullptr);
 			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer(LinkedMaterial->GetDesc().Shader->ShaderResource);
 			ArgumentBuffer->SetTextureNames(ParamTextureNames);
 			ArgumentBuffer->SetTextureSizes(ParamTextureSizes);
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer2,
-				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
-				TStreamPtr, UniformBufferData, ParamValueBuffer,
-				{
-					TVector<FTexturePtr> EmptyTextures;
-					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, EmptyTextures);
-				});
-		}
-#else
-		if (ParamValueBuffer != nullptr || ParamTextures.size() > 0)
-		{
-			TI_ASSERT(ArgumentBuffer == nullptr);
-			TI_ASSERT(LinkedMaterial->GetDesc().Shader != nullptr);
-			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer(LinkedMaterial->GetDesc().Shader->ShaderResource);
+
 			TVector<FTexturePtr> Textures;
-			for (auto Tex : ParamTextures)
+			if (!FVTSystem::IsEnabled())
 			{
-				TI_ASSERT(Tex->TextureResource != nullptr);
-				Textures.push_back(Tex->TextureResource);
+				// No virtual texture, put texture parameters in material instance directly.
+				TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
+				for (auto Tex : ParamTextures)
+				{
+					TI_ASSERT(Tex->TextureResource != nullptr);
+					Textures.push_back(Tex->TextureResource);
+				}
 			}
-			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer3,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer,
 				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
 				TStreamPtr, UniformBufferData, ParamValueBuffer,
 				TVector<FTexturePtr>, Textures, Textures,
@@ -53,7 +44,6 @@ namespace tix
 					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, Textures);
 				});
 		}
-#endif
 	}
 
 	void TMaterialInstance::DestroyRenderThreadResource()

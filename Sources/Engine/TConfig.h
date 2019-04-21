@@ -35,9 +35,6 @@
 #	include <Windows.h>
 #endif
 
-// Module config
-#define ENABLE_VT_SYSTEM	(1)
-
 // Define DEBUG System
 #ifdef TIX_DEBUG
 #	define TIX_DEBUG_RENDER_TASK_NAME 1

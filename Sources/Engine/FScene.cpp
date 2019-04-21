@@ -33,6 +33,10 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 		for (auto& P : InPrimitives)
 		{
+			// Allocate virtual texture position for this primitive
+			FVTSystem::Get()->AllocatePositionForPrimitive(P);
+
+			// Add to draw list
 			StaticDrawLists[P->GetDrawList()].push_back(P);
 		}
 	}
@@ -44,12 +48,16 @@ namespace tix
 
 		for (auto& P : InPrimitives)
 		{
+			// Remove from draw list
 			TVector<FPrimitivePtr>& DrawList = StaticDrawLists[P->GetDrawList()];
 			TVector<FPrimitivePtr>::iterator it = tix_find(DrawList.begin(), DrawList.end(), P);
 			if (it != DrawList.end())
 			{
 				DrawList.erase(it);
 			}
+
+			// Remove from virtual texture
+			FVTSystem::Get()->RemovePositionForPrimitive(P);
 		}
 	}
 

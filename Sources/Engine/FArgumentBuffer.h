@@ -18,7 +18,6 @@ namespace tix
 			return Shader;
 		}
 
-#if ENABLE_VT_SYSTEM
 		void SetTextureNames(const TVector<TString>& InTextureNames)
 		{
 			TextureNames = InTextureNames;
@@ -28,17 +27,24 @@ namespace tix
 		{
 			TextureSizes = InSizes;
 		}
-#endif
+
+		const TVector<TString>& GetTextureNames() const
+		{
+			return TextureNames;
+		}
+
+		const TVector<vector2di>& GetTextureSizes() const
+		{
+			return TextureSizes;
+		}
 
 	protected:
 
 	protected:
 		FShaderPtr Shader;
 
-#if ENABLE_VT_SYSTEM
 		// For VT System
 		TVector<TString> TextureNames;
 		TVector<vector2di> TextureSizes;
-#endif
 	};
 }
