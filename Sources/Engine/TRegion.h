@@ -24,13 +24,13 @@ namespace tix
 		void GetRegionSizeRequirement(int32& Width, int32& Height);
 
 	protected:
-		void SubDivideRegion(TRegionDesc* r, int32 NewXCount, int32 NewYCount);
+		void SubDivideRegion(uint32 MatchRegionId, int32 NewXCount, int32 NewYCount);
 
 	private:
 		int32 RegionSize;
 		int32 CellSize;
 
 		TVector<TRegionDesc> Regions;
-		TVector<TRegionDesc*> AvailableRegions;
+		TVector<uint32> AvailableRegions;
 	};
 } // end namespace tix

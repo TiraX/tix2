@@ -44,13 +44,23 @@ namespace tix
 
 		for (uint32 i = 0; i < AvailableRegions.size(); i++)
 		{
-			DEBUG_REGION_PRINT(Log, "\ttest TRegionDesc %d %dx%d\n", i, AvailableRegions[i]->XCount, AvailableRegions[i]->YCount);
-
-			if (AvailableRegions[i]->XCount >= XCount && AvailableRegions[i]->YCount >= YCount)
+			const TRegionDesc& AvailableRegionDesc = Regions[AvailableRegions[i]];
+			DEBUG_REGION_PRINT(Log, "\ttest TRegionDesc %d %dx%d\n", i, AvailableRegionDesc.XCount, AvailableRegionDesc.YCount);
+			if (AvailableRegionDesc.XCount >= XCount && AvailableRegionDesc.YCount >= YCount)
 			{
 				// better than current match?
-				if (Match == -1 || (AvailableRegions[i]->XCount < AvailableRegions[Match]->XCount || AvailableRegions[i]->YCount < AvailableRegions[Match]->YCount))
+				if (Match == -1)
+				{
 					Match = i;
+				}
+				else
+				{
+					const TRegionDesc& MatchRegion = Regions[AvailableRegions[Match]];
+					if (AvailableRegionDesc.XCount < MatchRegion.XCount || AvailableRegionDesc.YCount < MatchRegion.YCount)
+					{
+						Match = i;
+					}
+				}
 			}
 		}
 
@@ -58,32 +68,34 @@ namespace tix
 
 		if (Match != -1)
 		{
-			TRegionDesc* MatchRegion = AvailableRegions[Match];
+			const TRegionDesc& MatchRegion = Regions[AvailableRegions[Match]];
 
 			// no more available
-			TVector<TRegionDesc*>::iterator it = AvailableRegions.begin() + Match;
+			TVector<uint32>::iterator it = AvailableRegions.begin() + Match;
 			AvailableRegions.erase(it);
 
 			// need to subdivide TRegionDesc?
-			if (MatchRegion->XCount > XCount || MatchRegion->YCount > YCount)
-				SubDivideRegion(MatchRegion, XCount, YCount);
+			if (MatchRegion.XCount > XCount || MatchRegion.YCount > YCount)
+				SubDivideRegion(AvailableRegions[Match], XCount, YCount);
 
 			DEBUG_VERIFY_INTEGRITY();
-			return MatchRegion;
+			return &Regions[AvailableRegions[Match]];
 		}
 
 		return nullptr;
 	}
 
-	void TRegion::SubDivideRegion(TRegionDesc* R, int32 NewXCount, int32 NewYCount)
+	void TRegion::SubDivideRegion(uint32 MatchRegionId, int32 NewXCount, int32 NewYCount)
 	{
 		DEBUG_VERIFY_INTEGRITY();
 
-		const int32 XCount = R->XCount;
-		const int32 YCount = R->YCount;
+		TRegionDesc& R = Regions[MatchRegionId];
+
+		const int32 XCount = R.XCount;
+		const int32 YCount = R.YCount;
 		const int32 Pitch = RegionSize / CellSize;
 		//m_bitmap->get_width() / CellSize;
-		const int32 Offset = (int32)(R - &Regions[0]);
+		const int32 Offset = (int32)(MatchRegionId);
 
 		TI_ASSERT(NewXCount > 0 && NewYCount > 0);
 
@@ -96,7 +108,7 @@ namespace tix
 			Right->XCount = XCount - NewXCount;
 			Right->YCount = NewYCount;
 			DEBUG_REGION_PRINT(Log, "\tright %dx%d\n", Right->XCount, Right->YCount);
-			AvailableRegions.push_back(Right);
+			AvailableRegions.push_back(Offset + NewXCount);
 
 			DEBUG_VERIFY_INTEGRITY();
 		}
@@ -108,14 +120,14 @@ namespace tix
 			Bottom->XCount = XCount;
 			Bottom->YCount = YCount - NewYCount;
 			DEBUG_REGION_PRINT(Log, "\tbottom %dx%d\n", Bottom->XCount, Bottom->YCount);
-			AvailableRegions.push_back(Bottom);
+			AvailableRegions.push_back(Offset + Pitch * NewYCount);
 
 			DEBUG_VERIFY_INTEGRITY();
 		}
 
 		// resized TRegionDesc
-		R->XCount = NewXCount;
-		R->YCount = NewYCount;
+		R.XCount = NewXCount;
+		R.YCount = NewYCount;
 
 		DEBUG_VERIFY_INTEGRITY();
 	}
@@ -145,6 +157,6 @@ namespace tix
 		Regions.resize(R.XCount * R.YCount);
 
 		Regions[0] = R;
-		AvailableRegions.push_back(&Regions[0]);
+		AvailableRegions.push_back(0);
 	}
 }
