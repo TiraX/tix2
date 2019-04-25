@@ -16,8 +16,7 @@ Texture2D<float4> texBaseColor : register(t0);
 
 cbuffer EB_Primitive : register(b4)
 {
-	int4 LightCount;
-	int4 LightIndex;
+	float4x4 WorldTransform;
 };
 
 cbuffer EB_Lights : register(b5)

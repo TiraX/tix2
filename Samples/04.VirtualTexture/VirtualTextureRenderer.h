@@ -18,4 +18,6 @@ private:
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 	FArgumentBufferPtr AB_Result;
+
+	FRenderTargetPtr RT_UVAnalysis;
 };

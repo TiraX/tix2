@@ -8,8 +8,7 @@
 namespace tix
 {
 	BEGIN_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightsNum)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FInt4, LightIndices)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, WorldTransform)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
 	class FPrimitive : public IReferenceCounted

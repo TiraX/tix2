@@ -58,8 +58,6 @@ namespace tix
 
 		TI_TODO("Use parallel transform update.");
 		Root->UpdateAllTransformation();
-
-		BindLights();
 	}
 
 	void TScene::SetActiveCamera(TNodeCamera* camera)
@@ -124,6 +122,8 @@ namespace tix
 
 	void TScene::BindLights()
 	{
+		// Dynamic lighting will be re-design
+		TI_ASSERT(0);
 		if (ActiveNodeList[ESLT_LIGHTS].size() > 0)
 		{
 			bool bLightsDirty = HasSceneFlag(SF_LIGHTS_DIRTY);

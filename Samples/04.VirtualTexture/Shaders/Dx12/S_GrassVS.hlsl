@@ -9,7 +9,7 @@ cbuffer EB_View : register(b0)
 
 cbuffer EB_Primitive : register(b1)
 {
-	float4x4 World;
+	float4x4 WorldTransform;
 };
 
 struct VSInput

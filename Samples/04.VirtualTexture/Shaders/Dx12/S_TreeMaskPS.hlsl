@@ -17,8 +17,7 @@ Texture2D<float3> texNormal : register(t1);
 
 cbuffer EB_Primitive : register(b4)
 {
-	int4 LightCount;
-	int4 LightIndex;
+	float4x4 WorldTransform;
 };
 
 cbuffer EB_Lights : register(b5)
@@ -38,7 +37,7 @@ float4 main(VSOutput input) : SV_Target0
 	float3 Normal = texNormal.Sample(sampler0, input.uv).xyz;
 
 	float4 Color = float4(0, 0, 0, 1);
-	Color.xyz = BaseColor * Normal.z;
+	Color.xyz = BaseColor.xyz * Normal.z;
 	
 	return Color;
 }

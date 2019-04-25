@@ -56,5 +56,7 @@ namespace tix
 			{}
 		};
 		THMap<uint32, FRegionInfo> RegionsAllocated;
+
+		FPipelinePtr PipelineUVCheck;
 	};
 }
