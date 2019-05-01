@@ -17,9 +17,6 @@ namespace tix
 		: VTRegion(VTSize, PPSize)
 	{
 		VTSystem = this;
-
-		// Init VT System Resources
-		TI_ASSERT(0);
 	}
 
 	FVTSystem::~FVTSystem()

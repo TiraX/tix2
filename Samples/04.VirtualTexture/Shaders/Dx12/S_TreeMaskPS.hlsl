@@ -29,7 +29,7 @@ cbuffer EB_Lights : register(b5)
 SamplerState sampler0 : register(s0);
 
 [RootSignature(BasePass_RootSig)]
-float4 main(VSOutput input) : SV_Target0
+float4 main(VSOutput input, out float4 uvLayer : SV_Target1) : SV_Target0
 {
 	float4 BaseColor = texBaseColor.Sample(sampler0, input.uv);
 	clip(BaseColor.w - 0.2);
@@ -38,6 +38,9 @@ float4 main(VSOutput input) : SV_Target0
 
 	float4 Color = float4(0, 0, 0, 1);
 	Color.xyz = BaseColor.xyz * Normal.z;
+
+	// output uv
+	uvLayer = float4(0, 0.5, 0, 1);
 	
 	return Color;
 }

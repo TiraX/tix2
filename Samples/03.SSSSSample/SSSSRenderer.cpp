@@ -257,8 +257,6 @@ void FSSSSRenderer::InitInRenderThread()
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	Scene->PrepareViewUniforms();
-    
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 

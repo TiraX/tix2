@@ -9,12 +9,16 @@
 namespace tix
 {
 	FPrimitive::FPrimitive()
-		: DrawList(LIST_INVALID)
+		: PrimitiveFlag(0)
+		, DrawList(LIST_INVALID)
 	{
+		PrimitiveUniformBuffer = ti_new FPrimitiveUniformBuffer;
 	}
 
 	FPrimitive::~FPrimitive()
 	{
+		TI_ASSERT(IsRenderThread());
+		PrimitiveUniformBuffer = nullptr;
 	}
 
 	void FPrimitive::SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer)
@@ -49,5 +53,26 @@ namespace tix
 		{
 			DrawList = LIST_TRANSLUCENT;
 		}
+	}
+
+	void FPrimitive::SetWorldTransform(const matrix4 InWorldTransform)
+	{
+		TI_ASSERT(IsRenderThread());
+		PrimitiveUniformBuffer->UniformBufferData[0].WorldTransform = InWorldTransform;
+		PrimitiveFlag |= PrimitiveUniformBufferDirty;
+	}
+
+	void FPrimitive::SetUVTransform(float UOffset, float VOffset, float UScale, float VScale)
+	{
+		TI_ASSERT(IsRenderThread());
+		PrimitiveUniformBuffer->UniformBufferData[0].VTUVTransform = FFloat4(UOffset, VOffset, UScale, VScale);
+		PrimitiveFlag |= PrimitiveUniformBufferDirty;
+	}
+
+	void FPrimitive::UpdatePrimitiveBuffer_RenderThread()
+	{
+		TI_ASSERT(IsRenderThread());
+		PrimitiveUniformBuffer->InitUniformBuffer();
+		PrimitiveFlag &= ~PrimitiveUniformBufferDirty;
 	}
 }

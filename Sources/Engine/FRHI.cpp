@@ -28,7 +28,6 @@ namespace tix
 #else
 #error("No avaible RHI for this platform.")
 #endif
-		RHI->InitRHI();
 	}
 
 	void FRHI::ReleaseRHI()

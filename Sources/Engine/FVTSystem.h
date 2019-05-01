@@ -23,7 +23,7 @@ namespace tix
 
 		static const float UVInv;
 
-		static bool IsEnabled()
+		static TI_API bool IsEnabled()
 		{
 			return Enabled;
 		}

@@ -99,6 +99,7 @@ using namespace std;
 #include "TEngineDesc.h"
 #include "TConsoleVariable.h"
 #include "TPath.h"
+#include "TEngineResources.h"
 #include "TEngine.h"
 
 using namespace tix;

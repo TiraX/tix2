@@ -9,20 +9,20 @@ namespace tix
 {
 	BEGIN_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, WorldTransform)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTUVTransform)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
-	class FPrimitive : public IReferenceCounted
+		class FPrimitive : public IReferenceCounted
 	{
 	public:
+		enum {
+			PrimitiveUniformBufferDirty = 1 << 0,
+		};
+
 		FPrimitive();
 		~FPrimitive();
 
 		void SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
-
-		void SetPrimitiveUniform(FPrimitiveUniformBufferPtr InUniform)
-		{
-			PrimitiveUniformBuffer = InUniform;
-		}
 
 		FMeshBufferPtr GetMeshBuffer()
 		{
@@ -52,25 +52,26 @@ namespace tix
 		{
 			return DrawList;
 		}
-		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale)
+		bool IsPrimitiveBufferDirty() const
 		{
-			UVTransform.X = UOffset;
-			UVTransform.Y = VOffset;
-			UVTransform.Z = UScale;
-			UVTransform.W = VScale;
+			return (PrimitiveFlag & PrimitiveUniformBufferDirty) != 0;
 		}
+		void SetWorldTransform(const matrix4 InWorldTransform);
+		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
 
+		void UpdatePrimitiveBuffer_RenderThread();
 	private:
+		uint32 PrimitiveFlag;
+
 		FMeshBufferPtr MeshBuffer;
 		FInstanceBufferPtr InstanceBuffer;
 
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;
 
+		// Every primitive has a unique Primitive uniform buffer, because VT UVTransform
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 		aabbox3df BBox;
-
-		FFloat4 UVTransform;
 
 		E_DRAWLIST_TYPE DrawList;
 	};

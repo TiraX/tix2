@@ -22,10 +22,27 @@ namespace tix
 	{
 	}
 
-	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
+	void FDefaultRenderer::InitRenderFrame(FScene* Scene)
 	{
+		// Prepare frame view uniform buffer
 		Scene->PrepareViewUniforms();
 
+		// Prepare frame primitive uniform buffers
+		for (int32 List = 0; List < LIST_COUNT; ++List)
+		{
+			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList((E_DRAWLIST_TYPE)List);
+			for (auto& Primitive : Primitives)
+			{
+				if (Primitive->IsPrimitiveBufferDirty())
+				{
+					Primitive->UpdatePrimitiveBuffer_RenderThread();
+				}
+			}
+		}
+	}
+
+	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
+	{
 		RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	}
 

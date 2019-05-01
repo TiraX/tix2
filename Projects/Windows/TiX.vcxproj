@@ -69,6 +69,7 @@
     <ClCompile Include="..\..\Sources\Engine\TDevice.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TEngine.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TDeviceWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TEngineResources.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TINIParser.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="..\..\Sources\Engine\TDevice.h" />
     <ClInclude Include="..\..\Sources\Engine\TDeviceWin32.h" />
     <ClInclude Include="..\..\Sources\Engine\TEngineDesc.h" />
+    <ClInclude Include="..\..\Sources\Engine\TEngineResources.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TINIParser.h" />

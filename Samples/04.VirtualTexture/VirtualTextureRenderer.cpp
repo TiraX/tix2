@@ -31,6 +31,12 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	RT_BasePass->SetResourceName("BasePass");
 #endif
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+
+	if (FVTSystem::IsEnabled())
+	{
+		// Second for render uv onto it.
+		RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	}
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->Compile();
 
@@ -41,26 +47,10 @@ void FVirtualTextureRenderer::InitInRenderThread()
 		ArgumentTextures.push_back(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
 	}
-
-	// Setup uv rt target
-	RT_UVAnalysis = FRenderTarget::Create(ViewWidth, ViewHeight);
-#if defined (TIX_DEBUG)
-	RT_UVAnalysis->SetResourceName("UVPass");
-#endif
-	RT_UVAnalysis->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
-	RT_UVAnalysis->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
-	RT_UVAnalysis->Compile();
 }
 
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	Scene->PrepareViewUniforms();
-
-	// Render UV Pass
-	RHI->PushRenderTarget(RT_UVAnalysis, "UVPass");
-	TI_ASSERT(0);
-	RHI->PopRenderTarget();
-
 	// Render Base Pass
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);

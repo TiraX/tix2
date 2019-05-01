@@ -332,6 +332,12 @@ namespace tix
 					++RTNum;
 				}
 			}
+			if (FVTSystem::IsEnabled())
+			{
+				TI_ASSERT(RTNum == 1);
+				// This is not a good way. Force the second output as the uv check layer
+				Material->SetRTColor(EPF_RGBA16F, ERTC_COLOR1);
+			}
 			if (Header->DepthBuffer != EPF_UNKNOWN)
 			{
 				Material->SetRTDepth((E_PIXEL_FORMAT)Header->DepthBuffer);
@@ -429,6 +435,11 @@ namespace tix
 						}
 						TTexturePtr Texture = static_cast<TTexture*>(TextureRes->GetResourcePtr());
 						MInstance->ParamTextures.push_back(Texture);
+					}
+					else
+					{
+						// Virtual texture enabled, use an empty texture for place holder
+						MInstance->ParamTextures.push_back(TEngineResources::EmptyTextureWhite);
 					}
 				}
 				else

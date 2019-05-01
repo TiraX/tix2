@@ -18,6 +18,7 @@ namespace tix
 		virtual ~FRenderer();
 
 		virtual void InitInRenderThread() = 0;
+		virtual void InitRenderFrame(FScene* Scene) = 0;
 		virtual void Render(FRHI* RHI, FScene* Scene) = 0;
 
 	protected:

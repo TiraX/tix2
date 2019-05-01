@@ -48,21 +48,6 @@ namespace tix
 			});
 	}
 
-	static void UpdatePrimitiveBuffer_RenderThread(
-		const TVector<FPrimitivePtr>& Primitives, 
-		const matrix4& InWorldTransform)
-	{
-		FPrimitiveUniformBufferPtr PrimitiveBuffer = ti_new FPrimitiveUniformBuffer;
-		PrimitiveBuffer->UniformBufferData[0].WorldTransform = InWorldTransform;
-
-		PrimitiveBuffer->InitUniformBuffer();
-
-		for (auto P : Primitives)
-		{
-			P->SetPrimitiveUniform(PrimitiveBuffer);
-		}
-	}
-
 	void TNodeStaticMesh::UpdateAbsoluteTransformation()
 	{
 		TNode::UpdateAbsoluteTransformation();
@@ -82,7 +67,10 @@ namespace tix
 				TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 				matrix4, WorldTransform, AbsoluteTransformation,
 				{
-					UpdatePrimitiveBuffer_RenderThread(Primitives, WorldTransform);
+					for (auto P : Primitives)
+					{
+						P->SetWorldTransform(WorldTransform);
+					}
 				});
 		}
 
@@ -185,6 +173,8 @@ namespace tix
 
 		// Add to scene root
 		TEngine::Get()->GetScene()->AddStaticMeshNode(this);
+#if (TIX_DEBUG_AYNC_LOADING)
 		_LOG(Log, "Notify ~ %s.\n", InAsset->GetName().c_str());
+#endif
 	}
 }

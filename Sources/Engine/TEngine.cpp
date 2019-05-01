@@ -68,6 +68,9 @@ namespace tix
 		// Create Render Thread
 		FRenderThread::CreateRenderThread();
 
+		// Create Global Resources
+		TEngineResources::CreateGlobalResources();
+
 		// Create components
 		TI_ASSERT(Scene == nullptr);
 		Scene = ti_new TScene;
@@ -102,6 +105,8 @@ namespace tix
 
 	TEngine::~TEngine()
 	{
+		TEngineResources::DestroyGlobalResources();
+
 		// Remove all tickers
 		for (auto T : Tickers)
 		{

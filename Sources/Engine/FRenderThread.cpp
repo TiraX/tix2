@@ -71,6 +71,7 @@ namespace tix
 		, PreFrameIndex(0)
 		, RenderFrameIndex(0)
 	{
+		FRHI::CreateRHI();
 	}
 
 	FRenderThread::~FRenderThread()
@@ -87,8 +88,8 @@ namespace tix
 	void FRenderThread::CreateRenderComponents()
 	{
 		// Create RHI to submit commands to GPU
-		FRHI::CreateRHI();
 		RHI = FRHI::Get();
+		RHI->InitRHI();
 
 		// Create render scene
 		RenderScene = ti_new FScene;
@@ -135,6 +136,7 @@ namespace tix
 		// Go through each renderer
 		for (auto Renderer : Renderers)
 		{
+			Renderer->InitRenderFrame(RenderScene);
 			Renderer->Render(RHI, RenderScene);
 		}
 		RHI->EndFrame();
