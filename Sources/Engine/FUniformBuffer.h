@@ -56,7 +56,7 @@ namespace tix
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
 			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::Elements); \
-			RHI->UpdateHardwareResource(UniformBuffer, UniformBufferData); \
+			RHI->UpdateHardwareResourceUB(UniformBuffer, UniformBufferData); \
 			return UniformBuffer; \
 		} \
 	}; \
@@ -67,7 +67,8 @@ namespace tix
 	
 	enum E_UNIFORMBUFFER_FLAG
 	{
-		UB_FLAG_COMPUTE_WRITABLE = 1,
+		UB_FLAG_COMPUTE_WRITABLE = 1 << 0,
+		UB_FLAG_COMPUTE_WITH_COUNTER = 1 << 1,
 	};
 	class FUniformBuffer : public FRenderResource
 	{

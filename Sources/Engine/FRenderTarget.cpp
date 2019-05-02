@@ -102,14 +102,14 @@ namespace tix
 				break;
 			
 			TI_ASSERT(ColorBuffer.Texture != nullptr);
-			RHI->UpdateHardwareResource(ColorBuffer.Texture);
+			RHI->UpdateHardwareResourceTexture(ColorBuffer.Texture);
 		}
 
 		if (RTDepthStencilBuffer.Texture != nullptr)
 		{
-			RHI->UpdateHardwareResource(RTDepthStencilBuffer.Texture);
+			RHI->UpdateHardwareResourceTexture(RTDepthStencilBuffer.Texture);
 		}
 
-		RHI->UpdateHardwareResource(this);
+		RHI->UpdateHardwareResourceRT(this);
 	}
 }

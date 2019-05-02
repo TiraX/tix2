@@ -59,15 +59,15 @@ namespace tix
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) = 0;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
 
-		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
-		virtual bool UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) = 0;
-		virtual bool UpdateHardwareResource(FTexturePtr Texture) = 0;
-		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) = 0;
-		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) = 0;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) = 0;
-		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
-		virtual bool UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
+		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
+		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) = 0;
+		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) = 0;
+		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) = 0;
+		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
+		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) = 0;
+		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
+		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;

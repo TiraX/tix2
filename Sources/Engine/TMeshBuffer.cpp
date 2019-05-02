@@ -66,7 +66,7 @@ namespace tix
 			TMeshBufferPtr, InMeshData, this,
 			{
 				MeshBuffer->SetFromTMeshBuffer(InMeshData);
-				FRHI::Get()->UpdateHardwareResource(MeshBuffer, InMeshData);
+				FRHI::Get()->UpdateHardwareResourceMesh(MeshBuffer, InMeshData);
 			});
 	}
 
@@ -177,7 +177,7 @@ namespace tix
 			TInstanceBufferPtr, InInstanceData, this,
 			{
 				InstanceBuffer->SetFromTInstanceBuffer(InInstanceData);
-				FRHI::Get()->UpdateHardwareResource(InstanceBuffer, InInstanceData);
+				FRHI::Get()->UpdateHardwareResourceIB(InstanceBuffer, InInstanceData);
 			});
 	}
 

@@ -38,7 +38,7 @@ namespace tix
 				TStreamPtr, UniformBufferData, ParamValueBuffer,
 				TVector<FTexturePtr>, Textures, Textures,
 				{
-					FRHI::Get()->UpdateHardwareResource(ArgumentBuffer, UniformBufferData, Textures);
+					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, UniformBufferData, Textures);
 				});
 		}
 	}

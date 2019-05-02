@@ -42,15 +42,15 @@ namespace tix
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;
 
-		virtual bool UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
-		virtual bool UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
-		virtual bool UpdateHardwareResource(FTexturePtr Texture) override;
-		virtual bool UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData) override;
-		virtual bool UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData) override;
-		virtual bool UpdateHardwareResource(FRenderTargetPtr RenderTarget) override;
-		virtual bool UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
-		virtual bool UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) override;
+		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
+		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
+		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) override;
+		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) override;
+		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
+		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) override;
+		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;
+		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) override;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;

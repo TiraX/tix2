@@ -43,7 +43,7 @@ namespace tix
 		MBData->SetVertexStreamData(EVSSEG_POSITION | EVSSEG_TEXCOORD0, FullScreenQuadVertices, 4, EIT_16BIT, FullScreenQuadIndices, 6);
 		FullScreenQuad = RHI->CreateMeshBuffer();
 		FullScreenQuad->SetFromTMeshBuffer(MBData);
-		RHI->UpdateHardwareResource(FullScreenQuad, MBData);
+		RHI->UpdateHardwareResourceMesh(FullScreenQuad, MBData);
 		MBData = nullptr;
 
 		// Create full screen render pipeline
@@ -58,7 +58,7 @@ namespace tix
 		TShaderPtr Shader = ti_new TShader(ShaderNames);
 		Shader->LoadShaderCode();
 		Shader->ShaderResource = RHI->CreateShader(ShaderNames);
-		RHI->UpdateHardwareResource(Shader->ShaderResource, Shader);
+		RHI->UpdateHardwareResourceShader(Shader->ShaderResource, Shader);
 		FSMaterial->SetShader(Shader);
 		FullScreenShader = Shader->ShaderResource;
 
@@ -70,7 +70,7 @@ namespace tix
 
 		// Pipeline
 		FullScreenPipeline = RHI->CreatePipeline(FullScreenShader);
-		RHI->UpdateHardwareResource(FullScreenPipeline, FSMaterial);
+		RHI->UpdateHardwareResourcePL(FullScreenPipeline, FSMaterial);
 		FSMaterial = nullptr;
 
 		bInited = true;

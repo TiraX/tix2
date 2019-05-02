@@ -8,6 +8,12 @@
 
 namespace tix
 {
+	TShader::TShader(const TString& InComputeName)
+		: TResource(ERES_SHADER)
+	{
+		Names.ShaderNames[0] = InComputeName;
+	}
+
 	TShader::TShader(const TShaderNames& InNames)
 		: TResource(ERES_SHADER)
 	{
@@ -60,7 +66,7 @@ namespace tix
 			TShaderPtr, ShaderSource, this,
 			{
 				// Add TShader -> Shader Codes herer.
-				FRHI::Get()->UpdateHardwareResource(Shader_RT, ShaderSource);
+				FRHI::Get()->UpdateHardwareResourceShader(Shader_RT, ShaderSource);
 			});
 	}
 

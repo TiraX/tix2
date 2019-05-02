@@ -138,7 +138,7 @@ void FSSSSRenderer::InitInRenderThread()
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(SceneColor);
 		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResource(AB_SSSBlurX, ArgumentValues, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_SSSBlurX, ArgumentValues, ArgumentTextures);
 
 		ArgumentValues->Reset();
 		BlurDir = FFloat4(0.f, 1.f, 0.f, 0.f);
@@ -150,7 +150,7 @@ void FSSSSRenderer::InitInRenderThread()
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
 		ArgumentTextures.push_back(TextureBlurX);
 		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResource(AB_SSSBlurY, ArgumentValues, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_SSSBlurY, ArgumentValues, ArgumentTextures);
 	}
 
 	// AB_AddSpecular
@@ -158,7 +158,7 @@ void FSSSSRenderer::InitInRenderThread()
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(SceneColor);
 		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResource(AB_AddSpecular, nullptr, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_AddSpecular, nullptr, ArgumentTextures);
 	}
 
 	const float Exposure = 2.f;
@@ -177,7 +177,7 @@ void FSSSSRenderer::InitInRenderThread()
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(TextureBlurX);
-		RHI->UpdateHardwareResource(AB_GlareDetection, ArgumentValues, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_GlareDetection, ArgumentValues, ArgumentTextures);
 	}
 
 	// Bloom Blur Passes
@@ -202,7 +202,7 @@ void FSSSSRenderer::InitInRenderThread()
 			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 			ArgumentTextures.clear();
 			ArgumentTextures.push_back(LastResult);
-            RHI->UpdateHardwareResource(PassX.AB, ArgumentValues, ArgumentTextures);
+            RHI->UpdateHardwareResourceAB(PassX.AB, ArgumentValues, ArgumentTextures);
 		}
 		LastResult = PassX.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -218,7 +218,7 @@ void FSSSSRenderer::InitInRenderThread()
 			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 			ArgumentTextures.clear();
 			ArgumentTextures.push_back(LastResult);
-            RHI->UpdateHardwareResource(PassY.AB, ArgumentValues, ArgumentTextures);
+            RHI->UpdateHardwareResourceAB(PassY.AB, ArgumentValues, ArgumentTextures);
 		}
 		LastResult = PassY.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -242,7 +242,7 @@ void FSSSSRenderer::InitInRenderThread()
 		ArgumentTextures.push_back(TextureBlurX);
 		ArgumentTextures.push_back(BloomPass[0][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
 		ArgumentTextures.push_back(BloomPass[1][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResource(AB_Combine, ArgumentValues, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_Combine, ArgumentValues, ArgumentTextures);
 	}
 
 	// Output result
@@ -251,7 +251,7 @@ void FSSSSRenderer::InitInRenderThread()
         ArgumentValues->Reset();
         ArgumentTextures.clear();
         ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
-        RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
+        RHI->UpdateHardwareResourceAB(AB_Result, ArgumentValues, ArgumentTextures);
     }
 }
 

@@ -6,6 +6,52 @@
 #include "stdafx.h"
 #include "VirtualTextureRenderer.h"
 
+FComputeUVDiscard::FComputeUVDiscard(int32 W, int32 H)
+	: FComputeTask("S_UVDiscardCS")
+	, InputSize(W, H)
+{
+}
+
+FComputeUVDiscard::~FComputeUVDiscard()
+{}
+
+void FComputeUVDiscard::FinalizeInRenderThread()
+{
+	FComputeTask::FinalizeInRenderThread();
+
+	// Init Constant Buffer
+	InputInfoBuffer = ti_new FUVDiscardInput;
+	InputInfoBuffer->UniformBufferData[0].Info.X = float(InputSize.X / ThreadBlockSize);	// Group rows
+	InputInfoBuffer->InitUniformBuffer();
+}
+
+void FComputeUVDiscard::Run(FRHI * RHI)
+{
+	//uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
+	//RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
+
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
+	RHI->SetComputeResourceTable(1, ResourceTable);
+
+	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
+}
+
+void FComputeUVDiscard::PrepareBuffers(FTexturePtr UVInput)
+{
+	// prepare compute parameters
+	const int32 BufferSize = InputSize.X / ThreadBlockSize * InputSize.Y / ThreadBlockSize;
+	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE);
+	FRHI::Get()->UpdateHardwareResourceUB(OutputUVBuffer, nullptr);
+	
+	// Create Render Resource Table
+	ResourceTable = FRHI::Get()->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
+	ResourceTable->PutTextureInTable(UVInput, 0);
+	ResourceTable->PutBufferInTable(OutputUVBuffer, 1);
+}
+
+////////////////////////////////////////////////////////
+
 FVirtualTextureRenderer::FVirtualTextureRenderer()
 {
 }
@@ -21,6 +67,8 @@ void FVirtualTextureRenderer::InitInRenderThread()
 
 	const int32 ViewWidth = 1600;
 	const int32 ViewHeight = TEngine::AppInfo.Height * ViewWidth / TEngine::AppInfo.Width;
+
+	ComputeUVDiscard = ti_new FComputeUVDiscard(ViewWidth, ViewHeight);
 
 	TStreamPtr ArgumentValues = ti_new TStream;
 	TVector<FTexturePtr> ArgumentTextures;
@@ -45,8 +93,11 @@ void FVirtualTextureRenderer::InitInRenderThread()
 		ArgumentValues->Reset();
 		ArgumentTextures.clear();
 		ArgumentTextures.push_back(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResource(AB_Result, ArgumentValues, ArgumentTextures);
+		RHI->UpdateHardwareResourceAB(AB_Result, ArgumentValues, ArgumentTextures);
 	}
+
+	ComputeUVDiscard->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
+	ComputeUVDiscard->Finalize();
 }
 
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
@@ -56,6 +107,9 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	RenderDrawList(RHI, Scene, LIST_MASK);
 	RHI->PopRenderTarget();
+
+	// Do UV discard check
+	ComputeUVDiscard->Run(RHI);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

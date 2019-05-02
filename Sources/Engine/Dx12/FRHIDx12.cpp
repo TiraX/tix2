@@ -663,7 +663,7 @@ namespace tix
 		}
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
+	bool FRHIDx12::UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
 #if defined (TIX_DEBUG)
 		MeshBuffer->SetResourceName(InMeshData->GetResourceName());
@@ -764,7 +764,7 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
+	bool FRHIDx12::UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
 	{
 #if defined (TIX_DEBUG)
 		InstanceBuffer->SetResourceName(InInstanceData->GetResourceName());
@@ -957,7 +957,7 @@ namespace tix
 			return DXGI_FORMAT_UNKNOWN;
 		}
 	}
-	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture)
+	bool FRHIDx12::UpdateHardwareResourceTexture(FTexturePtr Texture)
 	{
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		if (TexDx12->TextureResource.IsInited())
@@ -1028,7 +1028,7 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
+	bool FRHIDx12::UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData)
 	{
 		TI_ASSERT(InTexData != nullptr);
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
@@ -1137,7 +1137,7 @@ namespace tix
 		return nullptr;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
+	bool FRHIDx12::UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
 	{
 		FPipelineDx12 * PipelineDx12 = static_cast<FPipelineDx12*>(Pipeline.get());
 		FShaderPtr Shader = Pipeline->GetShader();
@@ -1265,14 +1265,17 @@ namespace tix
 	}
 
 	static const int32 UniformBufferAlignSize = 256;
-	bool FRHIDx12::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData)
+	bool FRHIDx12::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
 		
 		if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
 		{
 			// Add a counter for UAV
-			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(UniformBuffer->GetTotalBufferSize() + sizeof(uint32), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+			int32 BufferSize = UniformBuffer->GetTotalBufferSize();
+			if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+				BufferSize += sizeof(uint32);
+			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 			CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 			UniformBufferDx12->BufferResource.CreateResource(
@@ -1322,7 +1325,7 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+	bool FRHIDx12::UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget)
 	{
 		FRenderTargetDx12 * RTDx12 = static_cast<FRenderTargetDx12*>(RenderTarget.get());
 		// Create render target render resource tables
@@ -1423,7 +1426,7 @@ namespace tix
 		return -1;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FShaderPtr ShaderResource, TShaderPtr InShaderSource)
+	bool FRHIDx12::UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource)
 	{
 		// Dx12 shader only need load byte code.
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
@@ -1433,34 +1436,16 @@ namespace tix
 		if (ShaderResource->GetShaderType() == EST_COMPUTE)
 		{
 			const TStream& ShaderCode = InShaderSource->GetComputeShaderCode();
-			TI_ASSERT(0);
-			//TString ShaderName = ShaderDx12->GetComputeShaderName();
-			//if (!ShaderName.empty())
-			//{
-			//	if (ShaderName.rfind(".cso") == TString::npos)
-			//		ShaderName += ".cso";
+			TI_ASSERT(ShaderCode.GetLength() > 0);
 
-			//	// Load shader code
-			//	TFile File;
-			//	if (File.Open(ShaderName, EFA_READ))
-			//	{
-			//		ShaderDx12->ShaderCodes[0].Reset();
-			//		ShaderDx12->ShaderCodes[0].Put(File);
-			//		File.Close();
-
-			//		if (RSDeserializer == nullptr)
-			//		{
-			//			VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[0].GetBuffer(),
-			//				ShaderDx12->ShaderCodes[0].GetLength(),
-			//				__uuidof(ID3D12RootSignatureDeserializer),
-			//				reinterpret_cast<void**>(&RSDeserializer)));
-			//		}
-			//	}
-			//	else
-			//	{
-			//		_LOG(Fatal, "Failed to load shader code [%s].\n", ShaderName.c_str());
-			//	}
-			//}
+			ShaderDx12->ShaderCodes[0] = ShaderCode;
+			if (RSDeserializer == nullptr)
+			{
+				VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderDx12->ShaderCodes[0].GetBuffer(),
+					ShaderDx12->ShaderCodes[0].GetLength(),
+					__uuidof(ID3D12RootSignatureDeserializer),
+					reinterpret_cast<void**>(&RSDeserializer)));
+			}
 		}
 		else
 		{
@@ -1638,7 +1623,7 @@ namespace tix
 		return ShaderBinding;
 	}
 
-	bool FRHIDx12::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
+	bool FRHIDx12::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
 	{
 		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
 		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
@@ -1647,7 +1632,7 @@ namespace tix
 		{
 			// Create uniform buffer
 			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentData->GetLength(), 1);
-			this->UpdateHardwareResource(ArgumentDx12->UniformBuffer, ArgumentData->GetBuffer());
+			this->UpdateHardwareResourceUB(ArgumentDx12->UniformBuffer, ArgumentData->GetBuffer());
 
 			// Get Uniform buffer Bind Index
 			FShaderPtr Shader = ArgumentBuffer->GetShader();
@@ -1797,14 +1782,16 @@ namespace tix
 			UAVDesc.Buffer.FirstElement = 0;
 			UAVDesc.Buffer.NumElements = InBuffer->GetElements();
 			UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-			UAVDesc.Buffer.CounterOffsetInBytes = InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes();
+			UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ? 
+				InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes() : 0;
 			UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 
 			D3dDevice->CreateUnorderedAccessView(
 				UBDx12->BufferResource.GetResource().Get(),
-				UBDx12->BufferResource.GetResource().Get(),
+				(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
+					UBDx12->BufferResource.GetResource().Get() : nullptr,
 				&UAVDesc,
 				Descriptor);
 		}

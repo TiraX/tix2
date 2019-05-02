@@ -24,6 +24,7 @@ namespace tix
 	class TShader : public TResource
 	{
 	public:
+		TShader(const TString& InComputeName);
 		TShader(const TShaderNames& InNames);
 		virtual ~TShader();
 		

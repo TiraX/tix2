@@ -35,7 +35,7 @@ namespace tix
 			FPipelinePtr, Pipeline_RT, PipelineResource,
 			TPipelinePtr, PipeDesc, this,
 			{
-				FRHI::Get()->UpdateHardwareResource(Pipeline_RT, PipeDesc);
+				FRHI::Get()->UpdateHardwareResourcePL(Pipeline_RT, PipeDesc);
 			});
 	}
 

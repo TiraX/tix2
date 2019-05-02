@@ -39,10 +39,11 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 
-		TI_ASSERT(0);
-		//FRHI::Get()->UpdateHardwareResource(ComputeShader);
+		TShaderPtr ShaderCode = ti_new TShader(ShaderName);
+		ShaderCode->LoadShaderCode();
+		FRHI::Get()->UpdateHardwareResourceShader(ComputeShader, ShaderCode);
 
 		TPipelinePtr PipelineDesc = nullptr;
-		FRHI::Get()->UpdateHardwareResource(ComputePipeline, PipelineDesc);
+		FRHI::Get()->UpdateHardwareResourcePL(ComputePipeline, PipelineDesc);
 	}
 }
