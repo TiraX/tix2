@@ -337,6 +337,7 @@ namespace tix
 				TI_ASSERT(RTNum == 1);
 				// This is not a good way. Force the second output as the uv check layer
 				Material->SetRTColor(EPF_RGBA16F, ERTC_COLOR1);
+				++RTNum;
 			}
 			if (Header->DepthBuffer != EPF_UNKNOWN)
 			{

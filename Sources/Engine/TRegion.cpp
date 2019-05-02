@@ -68,7 +68,8 @@ namespace tix
 
 		if (Match != -1)
 		{
-			const TRegionDesc& MatchRegion = Regions[AvailableRegions[Match]];
+			uint32 MatchRegionId = AvailableRegions[Match];
+			const TRegionDesc& MatchRegion = Regions[MatchRegionId];
 
 			// no more available
 			TVector<uint32>::iterator it = AvailableRegions.begin() + Match;
@@ -76,10 +77,10 @@ namespace tix
 
 			// need to subdivide TRegionDesc?
 			if (MatchRegion.XCount > XCount || MatchRegion.YCount > YCount)
-				SubDivideRegion(AvailableRegions[Match], XCount, YCount);
+				SubDivideRegion(MatchRegionId, XCount, YCount);
 
 			DEBUG_VERIFY_INTEGRITY();
-			return &Regions[AvailableRegions[Match]];
+			return &Regions[MatchRegionId];
 		}
 
 		return nullptr;

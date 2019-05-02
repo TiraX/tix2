@@ -26,16 +26,13 @@ namespace tix
 			ArgumentBuffer->SetTextureSizes(ParamTextureSizes);
 
 			TVector<FTexturePtr> Textures;
-			if (!FVTSystem::IsEnabled())
+			TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
+			for (auto Tex : ParamTextures)
 			{
-				// No virtual texture, put texture parameters in material instance directly.
-				TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
-				for (auto Tex : ParamTextures)
-				{
-					TI_ASSERT(Tex->TextureResource != nullptr);
-					Textures.push_back(Tex->TextureResource);
-				}
+				TI_ASSERT(Tex->TextureResource != nullptr);
+				Textures.push_back(Tex->TextureResource);
 			}
+
 			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer,
 				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
 				TStreamPtr, UniformBufferData, ParamValueBuffer,

@@ -221,7 +221,7 @@ namespace tix
 		uint32 Hash = 0;
 		while (*Data)
 		{
-			uint8 B = *Data;
+			uint8 B = *Data ++;
 			Hash = ((Hash >> 8) & 0x00FFFFFF) ^ CRCTable[(Hash ^ B) & 0x000000FF];
 		}
 		return Hash;

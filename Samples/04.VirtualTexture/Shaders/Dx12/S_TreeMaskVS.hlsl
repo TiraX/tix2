@@ -10,6 +10,7 @@ cbuffer EB_View : register(b0)
 cbuffer EB_Primitive : register(b1)
 {
 	float4x4 WorldTransform;
+	float4 VTUVTransform;
 };
 
 struct VSInput
@@ -43,7 +44,7 @@ VSOutput main(VSInput vsInput)
 	float3 position = mul(vsInput.position, RotMat);
 	position += vsInput.ins_transition.xyz;
 	vsOutput.position = mul(float4(position, 1.0), ViewProjection);
-	vsOutput.texCoord = vsInput.texcoord0;
+	vsOutput.texCoord = vsInput.texcoord0 * VTUVTransform.zw + VTUVTransform.xy;
 	//vsOutput.texCoord.y = 1.0 - vsOutput.texCoord.y;
 
     vsOutput.normal = vsInput.normal * 2.0 - 1.0;

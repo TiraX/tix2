@@ -8,7 +8,7 @@
 
 namespace tix
 {
-	const bool FVTSystem::Enabled = !true;
+	const bool FVTSystem::Enabled = true;
 	FVTSystem * FVTSystem::VTSystem = nullptr;
 
 	const float FVTSystem::UVInv = (float)PPSize / (float)VTSize;

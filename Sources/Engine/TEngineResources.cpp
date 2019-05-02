@@ -17,7 +17,7 @@ namespace tix
 	{
 		const int32 W = 2;
 		const int32 H = 2;
-		const uint32 WhiteData[W * H] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff };
+		const uint32 WhiteData[W * H] = { 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0 };
 		const uint32 BlackData[W * H] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
 		const uint32 NormalData[W * H] = { 0xff8080ff, 0xff8080ff, 0xff8080ff, 0xff8080ff };
 		// Empty Textures
