@@ -29,6 +29,10 @@ namespace tix
 		virtual void EndFrame() override;
 		virtual void BeginRenderToFrameBuffer() override;
 
+		virtual void InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList) override;
+		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) override;
+		virtual void EndPopulateCommandList() override;
+
 		virtual void WaitingForGpu() override;
 
 		virtual FTexturePtr CreateTexture() override;
@@ -85,20 +89,6 @@ namespace tix
 		ComPtr<ID3D12Device> GetD3dDevice()
 		{
 			return D3dDevice;
-		}
-
-		// For test only 
-		TI_API ComPtr<ID3D12Device> GetD3DDevice()
-		{
-			return D3dDevice;
-		}
-		TI_API ComPtr<ID3D12GraphicsCommandList> GetRenderCommandList()
-		{
-			return RenderCommandList;
-		}
-		TI_API ComPtr<ID3D12GraphicsCommandList> GetComputeCommandList()
-		{
-			return ComputeCommandList;
 		}
 	protected: 
 		FRHIDx12();
@@ -168,14 +158,85 @@ namespace tix
 		FRenderResourceTablePtr DepthStencilDescriptorTable;
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilDescriptor;
 
+		struct FCommandListDx12
+		{
+			ComPtr<ID3D12CommandAllocator> Allocators[FRHIConfig::FrameBufferNum];
+			ComPtr<ID3D12GraphicsCommandList> CommandList;
+
+			FCommandListDx12& operator = (const FCommandListDx12& Other)
+			{
+				for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
+				{
+					Allocators[i] = Other.Allocators[i];
+				}
+				CommandList = Other.CommandList;
+				return *this;
+			}
+
+			void Create(ComPtr<ID3D12Device> Device, E_PIPELINE_TYPE PLType, int32 Index)
+			{
+				wchar_t Name[128];
+				TWString AllocatorName, ListName;
+				D3D12_COMMAND_LIST_TYPE ListType;
+				if (PLType == EPL_GRAPHICS)
+				{
+					AllocatorName = L"GraphicsCommandAllocator";
+					ListName = L"GraphicsCommandList";
+					ListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+				}
+				else
+				{
+					AllocatorName = L"ComputeCommandAllocator";
+					ListName = L"ComputeCommandList";
+					ListType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+				}
+				for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
+				{
+					swprintf_s(Name, 128, L"%s%d_%d", AllocatorName.c_str(), Index, n);
+					VALIDATE_HRESULT(Device->CreateCommandAllocator(ListType, IID_PPV_ARGS(&Allocators[n])));
+					Allocators[n]->SetName(Name);
+				}
+				swprintf_s(Name, 128, L"%s%d", ListName.c_str(), Index);
+				VALIDATE_HRESULT(Device->CreateCommandList(
+					0,
+					ListType,
+					Allocators[0].Get(),
+					nullptr,
+					IID_PPV_ARGS(&CommandList)));
+				CommandList->SetName(Name);
+				VALIDATE_HRESULT(CommandList->Close());
+			}
+		};
+
 		// Commands
-		ComPtr<ID3D12CommandQueue> RenderCommandQueue;
-		ComPtr<ID3D12CommandAllocator> RenderCommandAllocators[FRHIConfig::FrameBufferNum];
-		ComPtr<ID3D12GraphicsCommandList> RenderCommandList;
+		ComPtr<ID3D12CommandQueue> GraphicsCommandQueue;
+		TVector<FCommandListDx12> GraphicsCommandLists;
+		FCommandListDx12 DefaultGraphicsCommandList;	// Default command list for render thread task render command execution
+
 		// Compute Commands
 		ComPtr<ID3D12CommandQueue> ComputeCommandQueue;
-		ComPtr<ID3D12CommandAllocator> ComputeCommandAllocators[FRHIConfig::FrameBufferNum];
-		ComPtr<ID3D12GraphicsCommandList> ComputeCommandList;
+		TVector<FCommandListDx12> ComputeCommandLists;
+
+		struct FCommandListState
+		{
+			int32 ListType;
+			int32 ListIndex;
+
+			FCommandListState()
+				: ListType(-1)
+				, ListIndex(-1)
+			{}
+
+			void Reset()
+			{
+				ListType = -1;
+				ListIndex = -1;
+			}
+		};
+		FCommandListState CurrentCommandListState;
+		TVector<FCommandListState> ListExecuteOrder;
+		int32 CurrentCommandListCounter[EPL_NUM];
+		ComPtr<ID3D12GraphicsCommandList> CurrentWorkingCommandList;
 
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];

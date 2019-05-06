@@ -63,6 +63,7 @@ FVirtualTextureRenderer::~FVirtualTextureRenderer()
 void FVirtualTextureRenderer::InitInRenderThread()
 {
 	FRHI * RHI = FRHI::Get();
+	RHI->InitCommandLists(GraphicsCount, ComputeCount);
 	FSRender.InitCommonResources(RHI);
 
 	const int32 ViewWidth = 1600;
@@ -103,14 +104,20 @@ void FVirtualTextureRenderer::InitInRenderThread()
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	// Render Base Pass
+	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	RenderDrawList(RHI, Scene, LIST_MASK);
 	RHI->PopRenderTarget();
+	RHI->EndPopulateCommandList();
 
 	// Do UV discard check
+	RHI->BeginPopulateCommandList(EPL_COMPUTE);
 	ComputeUVDiscard->Run(RHI);
+	RHI->EndPopulateCommandList();
 
+	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+	RHI->EndPopulateCommandList();
 }

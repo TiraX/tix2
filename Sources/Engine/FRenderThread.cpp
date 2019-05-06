@@ -131,7 +131,9 @@ namespace tix
         
 		RHI->BeginFrame();
 		// Do render thread tasks
+		RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 		DoRenderTasks();
+		RHI->EndPopulateCommandList();
 
 		// Go through each renderer
 		for (auto Renderer : Renderers)

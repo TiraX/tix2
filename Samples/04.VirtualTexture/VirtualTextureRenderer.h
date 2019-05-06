@@ -34,6 +34,21 @@ typedef TI_INTRUSIVE_PTR(FComputeUVDiscard) FComputeUVDiscardPtr;
 
 ////////////////////////////////////////////////////////
 
+enum E_Graphics_Pipeline
+{
+	GraphicsBasePass,
+	GraphicsBlit,
+
+	GraphicsCount
+};
+
+enum E_Compute_Pipeline
+{
+	ComputeDiscardUV,
+
+	ComputeCount
+};
+
 class FVirtualTextureRenderer : public FDefaultRenderer
 {
 public:

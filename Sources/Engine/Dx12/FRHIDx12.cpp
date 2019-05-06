@@ -110,8 +110,8 @@ namespace tix
 		QueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		QueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&RenderCommandQueue)));
-		RenderCommandQueue->SetName(L"CommandQueue");
+		VALIDATE_HRESULT(D3dDevice->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&GraphicsCommandQueue)));
+		GraphicsCommandQueue->SetName(L"GraphicsCommandQueue");
 
 		D3D12_COMMAND_QUEUE_DESC ComputeQueueDesc = {};
 		ComputeQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -123,20 +123,7 @@ namespace tix
 		// Create descriptor heaps for render target views and depth stencil views.
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-
-		wchar_t AllocatorName[128];
-		// Create command allocator and command list.
-		for (uint32 n = 0; n < FRHIConfig::FrameBufferNum; n++)
-		{
-			swprintf_s(AllocatorName, 128, L"RenderCommandAllocator%d", n);
-			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&RenderCommandAllocators[n])));
-			RenderCommandAllocators[n]->SetName(AllocatorName);
-
-			swprintf_s(AllocatorName, 128, L"ComputeCommandAllocator%d", n);
-			VALIDATE_HRESULT(D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&ComputeCommandAllocators[n])));
-			ComputeCommandAllocators[n]->SetName(AllocatorName);
-		}
-
+		
 		// Create synchronization objects.
 		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&RenderFence)));
 		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&ComputeFence)));
@@ -154,14 +141,11 @@ namespace tix
 		// Describe and create a shader resource view (SRV) heap for the texture.
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		// Create Default Command list
-		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, RenderCommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&RenderCommandList)));
-		RenderCommandList->SetName(L"RenderCommandList");
-		VALIDATE_HRESULT(RenderCommandList->Close());
-		VALIDATE_HRESULT(D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COMPUTE, ComputeCommandAllocators[CurrentFrame].Get(), nullptr, IID_PPV_ARGS(&ComputeCommandList)));
-		ComputeCommandList->SetName(L"ComputeCommandList");
-		VALIDATE_HRESULT(ComputeCommandList->Close());
-
+		// Create default command list
+		DefaultGraphicsCommandList.Create(D3dDevice, EPL_GRAPHICS, 0);
+		GraphicsCommandLists.resize(1);
+		GraphicsCommandLists[0] = DefaultGraphicsCommandList;
+		
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
 
@@ -265,7 +249,7 @@ namespace tix
 			HWND HWnd = DeviceWin32->GetWnd();
 
 			hr = DxgiFactory->CreateSwapChainForHwnd(
-				RenderCommandQueue.Get(),								// Swap chains need a reference to the command queue in DirectX 12.
+				GraphicsCommandQueue.Get(),								// Swap chains need a reference to the command queue in DirectX 12.
 				HWnd,
 				&swapChainDesc,
 				nullptr,
@@ -337,84 +321,134 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
-		TI_TODO("Deal with Empty compute allocator");
-		// Reset command allocator
-		VALIDATE_HRESULT(ComputeCommandAllocators[CurrentFrame]->Reset());
-		VALIDATE_HRESULT(RenderCommandAllocators[CurrentFrame]->Reset());
+		CurrentCommandListState.Reset();
+		CurrentCommandListCounter[EPL_GRAPHICS] = -1;
+		CurrentCommandListCounter[EPL_COMPUTE] = -1;
+		ListExecuteOrder.empty();
+		CurrentWorkingCommandList = nullptr;
 		TI_ASSERT(GraphicsNumBarriersToFlush == 0);
 		TI_ASSERT(ComputeNumBarriersToFlush == 0);
 
-		// Reset command list
-		VALIDATE_HRESULT(ComputeCommandList->Reset(ComputeCommandAllocators[CurrentFrame].Get(), nullptr));
-		VALIDATE_HRESULT(RenderCommandList->Reset(RenderCommandAllocators[CurrentFrame].Get(), nullptr));
-
-		// Set the graphics root signature and descriptor heaps to be used by this frame.
-		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
-		RenderCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-		ComputeCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-		// Set the viewport and scissor rectangle.
-		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-		RenderCommandList->RSSetViewports(1, &ViewportDx);
-		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-		RenderCommandList->RSSetScissorRects(1, &ScissorRect);
+		//// Set the viewport and scissor rectangle.
+		//D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+		//RenderCommandList->RSSetViewports(1, &ViewportDx);
+		//D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+		//RenderCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
 	void FRHIDx12::BeginRenderToFrameBuffer()
 	{
-		// Start render to frame buffer.
-		// Indicate this resource will be in use as a render target.
-		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		TI_ASSERT(0);
+		//// Start render to frame buffer.
+		//// Indicate this resource will be in use as a render target.
+		//Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		//FlushGraphicsBarriers(RenderCommandList.Get());
 
-		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
-		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-		RenderCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
-		RenderCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		//D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
+		//D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
+		//RenderCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
+		//RenderCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-		RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+		//RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 	}
 
 	void FRHIDx12::EndFrame()
 	{
-		// Indicate that the render target will now be used to present when the command list is done executing.
-		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		TI_ASSERT(0);
+		//// Indicate that the render target will now be used to present when the command list is done executing.
+		//Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		//FlushGraphicsBarriers(RenderCommandList.Get());
 
-		// Execute the command list.
-		VALIDATE_HRESULT(ComputeCommandList->Close());
-		ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
-		ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
+		//// Execute the command list.
+		//VALIDATE_HRESULT(ComputeCommandList->Close());
+		//ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
+		//ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
 
-		ComputeCommandQueue->Signal(ComputeFence.Get(), FenceValues[CurrentFrame]);
+		//ComputeCommandQueue->Signal(ComputeFence.Get(), FenceValues[CurrentFrame]);
 
-		// Execute the rendering work only when the compute work is complete.
-		RenderCommandQueue->Wait(ComputeFence.Get(), FenceValues[CurrentFrame]);
+		//// Execute the rendering work only when the compute work is complete.
+		//GraphicsCommandQueue->Wait(ComputeFence.Get(), FenceValues[CurrentFrame]);
 
-		VALIDATE_HRESULT(RenderCommandList->Close());
-		ID3D12CommandList* ppCommandLists[] = { RenderCommandList.Get() };
-		RenderCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		//VALIDATE_HRESULT(RenderCommandList->Close());
+		//ID3D12CommandList* ppCommandLists[] = { RenderCommandList.Get() };
+		//GraphicsCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-		// The first argument instructs DXGI to block until VSync, putting the application
-		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
-		// frames that will never be displayed to the screen.
-		HRESULT hr = SwapChain->Present(1, 0);
+		//// The first argument instructs DXGI to block until VSync, putting the application
+		//// to sleep until the next VSync. This ensures we don't waste any cycles rendering
+		//// frames that will never be displayed to the screen.
+		//HRESULT hr = SwapChain->Present(1, 0);
 
-		// If the device was removed either by a disconnection or a driver upgrade, we 
-		// must recreate all device resources.
-		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+		//// If the device was removed either by a disconnection or a driver upgrade, we 
+		//// must recreate all device resources.
+		//if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+		//{
+		//}
+		//else
+		//{
+		//	VALIDATE_HRESULT(hr);
+
+		//	MoveToNextFrame();
+		//}
+
+		//// Reset current bound resources
+		//CurrentBoundResource.Reset();
+	}
+
+	void FRHIDx12::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
+	{
+		// the 1st Graphics command list is the default command list, need one more space for default command list
+		GraphicsCommandLists.resize(NumGraphicsList + 1);
+		ComputeCommandLists.resize(NumComputeList);
+
+		// Create graphics command allocator and list
+		GraphicsCommandLists[0] = DefaultGraphicsCommandList;
+		for (uint32 i = 1; i < NumGraphicsList + 1; ++i)
 		{
+			GraphicsCommandLists[i].Create(D3dDevice, EPL_GRAPHICS, i);
 		}
-		else
+		// Create compute command allocator and list.
+		for (uint32 i = 0; i < NumComputeList; ++i)
 		{
-			VALIDATE_HRESULT(hr);
-
-			MoveToNextFrame();
+			ComputeCommandLists[i].Create(D3dDevice, EPL_COMPUTE, i);
 		}
+	}
 
-		// Reset current bound resources
-		CurrentBoundResource.Reset();
+	void FRHIDx12::BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType)
+	{
+		TVector<FCommandListDx12>& Lists = (PipelineType == EPL_GRAPHICS) ? GraphicsCommandLists : ComputeCommandLists;
+		if (CurrentCommandListState.ListType != PipelineType)
+		{
+			// Close last command list
+			if (CurrentWorkingCommandList != nullptr)
+			{
+				VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
+			}
+
+			// Use a new command list
+			CurrentCommandListCounter[PipelineType] ++;
+			TI_ASSERT(CurrentCommandListCounter[PipelineType] < (int32)Lists.size());
+
+			// Remember the list we are using, and push it to order vector
+			CurrentCommandListState.ListType = PipelineType;
+			CurrentCommandListState.ListIndex = CurrentCommandListCounter[PipelineType];
+			ListExecuteOrder.push_back(CurrentCommandListState);
+
+			// Grab current command list.
+			FCommandListDx12& List = Lists[CurrentCommandListCounter[PipelineType]];
+			CurrentWorkingCommandList = List.CommandList;
+
+			// Reset command list
+			VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
+			VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
+
+			// Set the descriptor heaps to be used by this frame.
+			ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
+			CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		}
+	}
+
+	void FRHIDx12::EndPopulateCommandList()
+	{
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture()
@@ -471,7 +505,7 @@ namespace tix
 	void FRHIDx12::WaitingForGpu()
 	{
 		// Schedule a Signal command in the queue.
-		VALIDATE_HRESULT(RenderCommandQueue->Signal(RenderFence.Get(), FenceValues[CurrentFrame]));
+		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(RenderFence.Get(), FenceValues[CurrentFrame]));
 
 		// Wait until the fence has been crossed.
 		VALIDATE_HRESULT(RenderFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
@@ -486,7 +520,7 @@ namespace tix
 	{
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
-		VALIDATE_HRESULT(RenderCommandQueue->Signal(RenderFence.Get(), currentFenceValue));
+		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(RenderFence.Get(), currentFenceValue));
 
 		// Advance the frame index.
 		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
@@ -703,7 +737,7 @@ namespace tix
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
-			UpdateSubresources(RenderCommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
 			Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
@@ -740,12 +774,12 @@ namespace tix
 			IndexData.RowPitch = IndexBufferSize;
 			IndexData.SlicePitch = IndexData.RowPitch;
 
-			UpdateSubresources(RenderCommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
+			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
 			Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		}
 
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		// Create vertex/index buffer views.
 		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer->GetGPUVirtualAddress();
@@ -804,12 +838,12 @@ namespace tix
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
-			UpdateSubresources(RenderCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+			UpdateSubresources(CurrentWorkingCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
 			Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 		}
 
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		// Create vertex/index buffer views.
 		InsDx12->InstanceBufferView.BufferLocation = InsDx12->InstanceBuffer->GetGPUVirtualAddress();
@@ -1097,7 +1131,7 @@ namespace tix
 			texData.SlicePitch = Surface->DataSize;
 		}
 
-		UpdateSubresources(RenderCommandList.Get(), TexDx12->TextureResource.GetResource().Get(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
+		UpdateSubresources(CurrentWorkingCommandList.Get(), TexDx12->TextureResource.GetResource().Get(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
 		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 
@@ -1119,7 +1153,7 @@ namespace tix
 		//D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(Texture);
 		//D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource(), &SRVDesc, Descriptor);
 
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 		// Hold resources used here
 		HoldResourceReference(Texture);
 		HoldResourceReference(TextureUploadHeap);
@@ -1858,11 +1892,11 @@ namespace tix
 			if (CurrentBoundResource.ShaderBinding != ShaderBinding)
 			{
 				FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
-				RenderCommandList->SetGraphicsRootSignature(RSDx12->Get());
+				CurrentWorkingCommandList->SetGraphicsRootSignature(RSDx12->Get());
 				CurrentBoundResource.ShaderBinding = ShaderBinding;
 			}
 
-			RenderCommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+			CurrentWorkingCommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 
 			HoldResourceReference(InPipeline);
 
@@ -1878,10 +1912,10 @@ namespace tix
 		FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
 		TI_ASSERT(ShaderBinding != nullptr);
 
-		ComputeCommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
+		CurrentWorkingCommandList->SetPipelineState(PipelineDx12->PipelineState.Get());
 
 		FRootSignatureDx12 * RSDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
-		ComputeCommandList->SetComputeRootSignature(RSDx12->Get());
+		CurrentWorkingCommandList->SetComputeRootSignature(RSDx12->Get());
 
 		HoldResourceReference(InPipeline);
 	}
@@ -1890,10 +1924,10 @@ namespace tix
 	{
 		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
 
-		RenderCommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
+		CurrentWorkingCommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
 		if (InInstanceBuffer == nullptr)
 		{
-			RenderCommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
+			CurrentWorkingCommandList->IASetVertexBuffers(0, 1, &MBDx12->VertexBufferView);
 		}
 		else
 		{
@@ -1903,9 +1937,9 @@ namespace tix
 				MBDx12->VertexBufferView,
 				IBDx12->InstanceBufferView
 			};
-			RenderCommandList->IASetVertexBuffers(0, 2, Views);
+			CurrentWorkingCommandList->IASetVertexBuffers(0, 2, Views);
 		}
-		RenderCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+		CurrentWorkingCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
 
 		HoldResourceReference(InMeshBuffer);
 	}
@@ -1915,7 +1949,7 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		RenderCommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
+		CurrentWorkingCommandList->SetGraphicsRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
 
 		HoldResourceReference(InUniformBuffer);
 	}
@@ -1925,7 +1959,7 @@ namespace tix
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		ComputeCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
+		CurrentWorkingCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
 
 		HoldResourceReference(InUniformBuffer);
 	}
@@ -1933,7 +1967,7 @@ namespace tix
 	void FRHIDx12::SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
 	{
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
-		RenderCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
+		CurrentWorkingCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
 		HoldResourceReference(RenderResourceTable);
 	}
@@ -1941,14 +1975,14 @@ namespace tix
 	void FRHIDx12::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
 	{
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
-		ComputeCommandList->SetComputeRootDescriptorTable(BindIndex, Descriptor);
+		CurrentWorkingCommandList->SetComputeRootDescriptorTable(BindIndex, Descriptor);
 
 		HoldResourceReference(RenderResourceTable);
 	}
 
 	void FRHIDx12::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
 	{
-		ComputeCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
+		CurrentWorkingCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
 	}
 
 	void FRHIDx12::ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
@@ -1956,7 +1990,7 @@ namespace tix
 		FUniformBufferDx12 * DestDx12 = static_cast<FUniformBufferDx12*>(Dest.get());
 		FUniformBufferDx12 * SrcDx12 = static_cast<FUniformBufferDx12*>(Src.get());
 
-		ComputeCommandList->CopyBufferRegion(
+		CurrentWorkingCommandList->CopyBufferRegion(
 			DestDx12->BufferResource.GetResource().Get(), DestOffset,
 			SrcDx12->BufferResource.GetResource().Get(), SrcOffset,
 			CopySize);
@@ -1991,12 +2025,12 @@ namespace tix
 
 	void FRHIDx12::SetStencilRef(uint32 InRefValue)
 	{
-		RenderCommandList->OMSetStencilRef(InRefValue);
+		CurrentWorkingCommandList->OMSetStencilRef(InRefValue);
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
-		RenderCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
+		CurrentWorkingCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
 	}
 
 	void FRHIDx12::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
@@ -2009,7 +2043,7 @@ namespace tix
 		FRHI::SetViewport(VP);
 
 		D3D12_VIEWPORT ViewportDx = { float(VP.Left), float(VP.Top), float(VP.Width), float(VP.Height), 0.f, 1.f };
-		RenderCommandList->RSSetViewports(1, &ViewportDx);
+		CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
 	}
 
 	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
@@ -2034,7 +2068,7 @@ namespace tix
 				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 			}
 		}
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		TVector<D3D12_CPU_DESCRIPTOR_HANDLE> RTVDescriptors;
 		const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
@@ -2060,19 +2094,19 @@ namespace tix
 		}
 
 		// Set render target
-		RenderCommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
+		CurrentWorkingCommandList->OMSetRenderTargets(RT->GetColorBufferCount(), Rtv, false, Dsv);
 
 		// Clear render target
 		if (CBCount > 0)
 		{
 			for (int32 cb = 0; cb < CBCount; ++cb)
 			{
-				RenderCommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
+				CurrentWorkingCommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
 			}
 		}
 		if (Dsv != nullptr)
 		{
-			RenderCommandList->ClearDepthStencilView(*Dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+			CurrentWorkingCommandList->ClearDepthStencilView(*Dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		}
 	}
 
@@ -2106,7 +2140,7 @@ namespace tix
 				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 			}
 		}
-		FlushGraphicsBarriers(RenderCommandList.Get());
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		// Pop rt
 		FRenderTargetPtr RT = FRHI::PopRenderTarget();
@@ -2116,7 +2150,7 @@ namespace tix
 			// Set back to frame buffer
 			D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
 			D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-			RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+			CurrentWorkingCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 		}
 		else
 		{

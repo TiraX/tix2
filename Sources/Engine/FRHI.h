@@ -19,6 +19,14 @@ namespace tix
 		ERHI_NUM,
 	};
 
+	enum E_PIPELINE_TYPE
+	{
+		EPL_GRAPHICS,
+		EPL_COMPUTE,
+
+		EPL_NUM,
+	};
+
 	struct FBoundResource
 	{
 		FPipelinePtr Pipeline;
@@ -43,7 +51,11 @@ namespace tix
 		virtual void InitRHI() = 0;
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
-        virtual void BeginRenderToFrameBuffer() {}; // For metal to require drawable layer
+        virtual void BeginRenderToFrameBuffer() {};
+
+		virtual void InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList) = 0;
+		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) = 0;
+		virtual void EndPopulateCommandList() = 0;
 
 		virtual void WaitingForGpu() = 0;
 
