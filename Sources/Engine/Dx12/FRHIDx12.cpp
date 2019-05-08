@@ -46,6 +46,7 @@ namespace tix
 		{
 			ResHolders[i] = ti_new FFrameResourcesDx12;
 			FrameResources[i] = ResHolders[i];
+			FenceValues[i] = 0;
 		}
 	}
 
@@ -338,29 +339,62 @@ namespace tix
 
 	void FRHIDx12::BeginRenderToFrameBuffer()
 	{
-		TI_ASSERT(0);
-		//// Start render to frame buffer.
-		//// Indicate this resource will be in use as a render target.
-		//Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		//FlushGraphicsBarriers(RenderCommandList.Get());
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		// Start render to frame buffer.
+		// Indicate this resource will be in use as a render target.
+		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
-		//D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
-		//D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-		//RenderCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
-		//RenderCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
+		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
+		CurrentWorkingCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
+		CurrentWorkingCommandList->ClearDepthStencilView(depthStencilView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-		//RenderCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
+		CurrentWorkingCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
 	}
 
 	void FRHIDx12::EndFrame()
 	{
-		TI_ASSERT(0);
-		//// Indicate that the render target will now be used to present when the command list is done executing.
-		//Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		//FlushGraphicsBarriers(RenderCommandList.Get());
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		TI_ASSERT(CurrentWorkingCommandList != nullptr);
+		// Indicate that the render target will now be used to present when the command list is done executing.
+		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
-		//// Execute the command list.
-		//VALIDATE_HRESULT(ComputeCommandList->Close());
+		VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
+		// Execute the command list by ListExecuteOrder.
+		TI_ASSERT(0);
+		ComPtr<ID3D12Fence> LastFence = nullptr;
+		for (uint32 i = 0; i < ListExecuteOrder.size(); ++i)
+		{
+			const FCommandListState& State = ListExecuteOrder[i];
+			
+			if (State.ListType == EPL_GRAPHICS)
+			{
+				if (LastFence != nullptr)
+				{
+					GraphicsCommandQueue->Wait(LastFence.Get(), FenceValues[CurrentFrame]);
+				}
+				FCommandListDx12& CommandList = GraphicsCommandLists[State.ListIndex];
+				ID3D12CommandList* ppCommandLists[] = { CommandList.CommandList.Get() };
+				GraphicsCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+				GraphicsCommandQueue->Signal(CommandList.Fence.Get(), FenceValues[CurrentFrame]);
+				LastFence = CommandList.Fence;
+			}
+			else
+			{
+				TI_ASSERT(State.ListType == EPL_COMPUTE);
+				if (LastFence != nullptr)
+				{
+					ComputeCommandQueue->Wait(LastFence.Get(), FenceValues[CurrentFrame]);
+				}
+				FCommandListDx12& CommandList = ComputeCommandLists[State.ListIndex];
+				ID3D12CommandList* ppCommandLists[] = { CommandList.CommandList.Get() };
+				ComputeCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+				ComputeCommandQueue->Signal(CommandList.Fence.Get(), FenceValues[CurrentFrame]);
+				LastFence = CommandList.Fence;
+			}
+		}
 		//ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
 		//ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
 

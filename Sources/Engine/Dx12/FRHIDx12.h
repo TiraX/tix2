@@ -162,6 +162,7 @@ namespace tix
 		{
 			ComPtr<ID3D12CommandAllocator> Allocators[FRHIConfig::FrameBufferNum];
 			ComPtr<ID3D12GraphicsCommandList> CommandList;
+			ComPtr<ID3D12Fence> Fence;
 
 			FCommandListDx12& operator = (const FCommandListDx12& Other)
 			{
@@ -170,6 +171,7 @@ namespace tix
 					Allocators[i] = Other.Allocators[i];
 				}
 				CommandList = Other.CommandList;
+				Fence = Other.Fence;
 				return *this;
 			}
 
@@ -205,6 +207,8 @@ namespace tix
 					IID_PPV_ARGS(&CommandList)));
 				CommandList->SetName(Name);
 				VALIDATE_HRESULT(CommandList->Close());
+				TI_ASSERT(0);
+				TI_TODO("Create Fence");
 			}
 		};
 
@@ -242,8 +246,6 @@ namespace tix
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 		// CPU/GPU Synchronization.
-		ComPtr<ID3D12Fence> RenderFence;
-		ComPtr<ID3D12Fence> ComputeFence;
 		uint64 FenceValues[FRHIConfig::FrameBufferNum];
 		HANDLE FenceEvent;
 		uint32 CurrentFrame;
