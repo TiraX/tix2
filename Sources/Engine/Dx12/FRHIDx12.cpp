@@ -125,9 +125,6 @@ namespace tix
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		
-		// Create synchronization objects.
-		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&RenderFence)));
-		VALIDATE_HRESULT(D3dDevice->CreateFence(FenceValues[CurrentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&ComputeFence)));
 		FenceValues[CurrentFrame]++;
 
 		FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -325,16 +322,11 @@ namespace tix
 		CurrentCommandListState.Reset();
 		CurrentCommandListCounter[EPL_GRAPHICS] = -1;
 		CurrentCommandListCounter[EPL_COMPUTE] = -1;
-		ListExecuteOrder.empty();
+		ListExecuteOrder.clear();
 		CurrentWorkingCommandList = nullptr;
 		TI_ASSERT(GraphicsNumBarriersToFlush == 0);
 		TI_ASSERT(ComputeNumBarriersToFlush == 0);
-
-		//// Set the viewport and scissor rectangle.
-		//D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-		//RenderCommandList->RSSetViewports(1, &ViewportDx);
-		//D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-		//RenderCommandList->RSSetScissorRects(1, &ScissorRect);
+		FrameFence = nullptr;
 	}
 
 	void FRHIDx12::BeginRenderToFrameBuffer()
@@ -362,70 +354,58 @@ namespace tix
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
+		TI_ASSERT(FrameFence == nullptr);
 		// Execute the command list by ListExecuteOrder.
-		TI_ASSERT(0);
-		ComPtr<ID3D12Fence> LastFence = nullptr;
 		for (uint32 i = 0; i < ListExecuteOrder.size(); ++i)
 		{
 			const FCommandListState& State = ListExecuteOrder[i];
 			
 			if (State.ListType == EPL_GRAPHICS)
 			{
-				if (LastFence != nullptr)
+				if (FrameFence != nullptr)
 				{
-					GraphicsCommandQueue->Wait(LastFence.Get(), FenceValues[CurrentFrame]);
+					GraphicsCommandQueue->Wait(FrameFence.Get(), FenceValues[CurrentFrame]);
 				}
 				FCommandListDx12& CommandList = GraphicsCommandLists[State.ListIndex];
 				ID3D12CommandList* ppCommandLists[] = { CommandList.CommandList.Get() };
 				GraphicsCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 				GraphicsCommandQueue->Signal(CommandList.Fence.Get(), FenceValues[CurrentFrame]);
-				LastFence = CommandList.Fence;
+				FrameFence = CommandList.Fence;
 			}
 			else
 			{
 				TI_ASSERT(State.ListType == EPL_COMPUTE);
-				if (LastFence != nullptr)
+				if (FrameFence != nullptr)
 				{
-					ComputeCommandQueue->Wait(LastFence.Get(), FenceValues[CurrentFrame]);
+					ComputeCommandQueue->Wait(FrameFence.Get(), FenceValues[CurrentFrame]);
 				}
 				FCommandListDx12& CommandList = ComputeCommandLists[State.ListIndex];
 				ID3D12CommandList* ppCommandLists[] = { CommandList.CommandList.Get() };
 				ComputeCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 				ComputeCommandQueue->Signal(CommandList.Fence.Get(), FenceValues[CurrentFrame]);
-				LastFence = CommandList.Fence;
+				FrameFence = CommandList.Fence;
 			}
 		}
-		//ID3D12CommandList* ppComputeCommandLists[] = { ComputeCommandList.Get() };
-		//ComputeCommandQueue->ExecuteCommandLists(_countof(ppComputeCommandLists), ppComputeCommandLists);
 
-		//ComputeCommandQueue->Signal(ComputeFence.Get(), FenceValues[CurrentFrame]);
+		// The first argument instructs DXGI to block until VSync, putting the application
+		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
+		// frames that will never be displayed to the screen.
+		HRESULT hr = SwapChain->Present(1, 0);
 
-		//// Execute the rendering work only when the compute work is complete.
-		//GraphicsCommandQueue->Wait(ComputeFence.Get(), FenceValues[CurrentFrame]);
+		// If the device was removed either by a disconnection or a driver upgrade, we 
+		// must recreate all device resources.
+		if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+		{
+		}
+		else
+		{
+			VALIDATE_HRESULT(hr);
 
-		//VALIDATE_HRESULT(RenderCommandList->Close());
-		//ID3D12CommandList* ppCommandLists[] = { RenderCommandList.Get() };
-		//GraphicsCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+			MoveToNextFrame();
+		}
 
-		//// The first argument instructs DXGI to block until VSync, putting the application
-		//// to sleep until the next VSync. This ensures we don't waste any cycles rendering
-		//// frames that will never be displayed to the screen.
-		//HRESULT hr = SwapChain->Present(1, 0);
-
-		//// If the device was removed either by a disconnection or a driver upgrade, we 
-		//// must recreate all device resources.
-		//if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
-		//{
-		//}
-		//else
-		//{
-		//	VALIDATE_HRESULT(hr);
-
-		//	MoveToNextFrame();
-		//}
-
-		//// Reset current bound resources
-		//CurrentBoundResource.Reset();
+		// Reset current bound resources
+		CurrentBoundResource.Reset();
 	}
 
 	void FRHIDx12::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
@@ -478,6 +458,15 @@ namespace tix
 			// Set the descriptor heaps to be used by this frame.
 			ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
 			CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+			if (PipelineType == EPL_GRAPHICS)
+			{
+				// Set the viewport and scissor rectangle.
+				D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+				CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
+				D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+				CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
+			}
 		}
 	}
 
@@ -538,11 +527,13 @@ namespace tix
 	// Wait for pending GPU work to complete.
 	void FRHIDx12::WaitingForGpu()
 	{
+		// Frame fence is the last fence of current frame
+		TI_ASSERT(FrameFence != nullptr);
 		// Schedule a Signal command in the queue.
-		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(RenderFence.Get(), FenceValues[CurrentFrame]));
+		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(FrameFence.Get(), FenceValues[CurrentFrame]));
 
 		// Wait until the fence has been crossed.
-		VALIDATE_HRESULT(RenderFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+		VALIDATE_HRESULT(FrameFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 		WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
 
 		// Increment the fence value for the current frame.
@@ -554,15 +545,16 @@ namespace tix
 	{
 		// Schedule a Signal command in the queue.
 		const uint64 currentFenceValue = FenceValues[CurrentFrame];
-		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(RenderFence.Get(), currentFenceValue));
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(FrameFence.Get(), currentFenceValue));
 
 		// Advance the frame index.
 		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
 
 		// Check to see if the next frame is ready to start.
-		if (RenderFence->GetCompletedValue() < FenceValues[CurrentFrame])
+		if (FrameFence->GetCompletedValue() < FenceValues[CurrentFrame])
 		{
-			VALIDATE_HRESULT(RenderFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+			VALIDATE_HRESULT(FrameFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
 		}
 

@@ -207,8 +207,8 @@ namespace tix
 					IID_PPV_ARGS(&CommandList)));
 				CommandList->SetName(Name);
 				VALIDATE_HRESULT(CommandList->Close());
-				TI_ASSERT(0);
-				TI_TODO("Create Fence");
+
+				VALIDATE_HRESULT(Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence)));
 			}
 		};
 
@@ -220,6 +220,7 @@ namespace tix
 		// Compute Commands
 		ComPtr<ID3D12CommandQueue> ComputeCommandQueue;
 		TVector<FCommandListDx12> ComputeCommandLists;
+		ComPtr<ID3D12Fence> FrameFence;
 
 		struct FCommandListState
 		{
