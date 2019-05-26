@@ -30,6 +30,8 @@ void FComputeUVDiscard::Run(FRHI * RHI)
 	//uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
 	//RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
 
+	RHI->SetResourceStateUB(OutputUVBuffer, RESOURCE_STATE_COPY_DEST);
+
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
 	RHI->SetComputeResourceTable(1, ResourceTable);
@@ -41,13 +43,23 @@ void FComputeUVDiscard::PrepareBuffers(FTexturePtr UVInput)
 {
 	// prepare compute parameters
 	const int32 BufferSize = InputSize.X / ThreadBlockSize * InputSize.Y / ThreadBlockSize;
-	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE);
+	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
 	FRHI::Get()->UpdateHardwareResourceUB(OutputUVBuffer, nullptr);
 	
 	// Create Render Resource Table
 	ResourceTable = FRHI::Get()->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
 	ResourceTable->PutTextureInTable(UVInput, 0);
 	ResourceTable->PutBufferInTable(OutputUVBuffer, 1);
+}
+
+void FComputeUVDiscard::PrepareDataForCPU(FRHI * RHI)
+{
+	RHI->PrepareDataForCPU(OutputUVBuffer);
+}
+
+uint8* FComputeUVDiscard::ReadUVBuffer()
+{
+	return OutputUVBuffer->ReadBufferData();
 }
 
 ////////////////////////////////////////////////////////
@@ -103,6 +115,8 @@ void FVirtualTextureRenderer::InitInRenderThread()
 
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	ComputeUVDiscard->ReadUVBuffer();
+
 	// Render Base Pass
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
@@ -114,6 +128,9 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Do UV discard check
 	RHI->BeginPopulateCommandList(EPL_COMPUTE);
 	ComputeUVDiscard->Run(RHI);
+
+	// TODO Read UV buffer back
+	ComputeUVDiscard->PrepareDataForCPU(RHI);
 	RHI->EndPopulateCommandList();
 
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);

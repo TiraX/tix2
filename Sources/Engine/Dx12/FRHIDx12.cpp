@@ -468,10 +468,13 @@ namespace tix
 				CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
 			}
 		}
+		CommandListStateDebug.ListType = PipelineType;
+		CommandListStateDebug.ListIndex = CurrentCommandListCounter[PipelineType];
 	}
 
 	void FRHIDx12::EndPopulateCommandList()
 	{
+		CommandListStateDebug.Reset();
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture()
@@ -486,7 +489,14 @@ namespace tix
 
 	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag)
 	{
-		return ti_new FUniformBufferDx12(InStructureSizeInBytes, Elements, Flag);
+		if ((Flag & UB_FLAG_READBACK) != 0)
+		{
+			return ti_new FUniformBufferReadableDx12(InStructureSizeInBytes, Elements, Flag);
+		}
+		else
+		{
+			return ti_new FUniformBufferDx12(InStructureSizeInBytes, Elements, Flag);
+		}
 	}
 
 	FMeshBufferPtr FRHIDx12::CreateMeshBuffer()
@@ -1337,7 +1347,6 @@ namespace tix
 				BufferSize += sizeof(uint32);
 			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-			CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 			UniformBufferDx12->BufferResource.CreateResource(
 				D3dDevice.Get(),
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -1383,6 +1392,51 @@ namespace tix
 		HoldResourceReference(UniformBuffer);
 
 		return true;
+	}
+
+	void FRHIDx12::PrepareDataForCPU(FUniformBufferPtr UniformBuffer)
+	{
+		if ((UniformBuffer->GetFlag() & UB_FLAG_READBACK) != 0)
+		{
+			FUniformBufferReadableDx12 * UniformBufferDx12 = static_cast<FUniformBufferReadableDx12*>(UniformBuffer.get());
+			if (UniformBufferDx12->ReadbackResource.GetResource() == nullptr)
+			{
+				int32 BufferSize = UniformBuffer->GetTotalBufferSize();
+				D3D12_HEAP_PROPERTIES ReadbackHeapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK) };
+				D3D12_RESOURCE_DESC ReadbackBufferDesc{ CD3DX12_RESOURCE_DESC::Buffer(BufferSize) };
+
+				UniformBufferDx12->ReadbackResource.CreateResource(
+					D3dDevice.Get(),
+					&ReadbackHeapProperties,
+					D3D12_HEAP_FLAG_NONE,
+					&ReadbackBufferDesc,
+					D3D12_RESOURCE_STATE_COPY_DEST);
+			}
+			
+			{
+				// Transition the status of uniform from D3D12_RESOURCE_STATE_COPY_DEST to D3D12_RESOURCE_STATE_COPY_SOURCE
+				TI_ASSERT(UniformBufferDx12->BufferResource.GetCurrentState() == D3D12_RESOURCE_STATE_COPY_DEST);
+				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+			}
+
+			CurrentWorkingCommandList->CopyResource(UniformBufferDx12->ReadbackResource.GetResource().Get(), UniformBufferDx12->BufferResource.GetResource().Get());
+			HoldResourceReference(UniformBuffer);
+
+			// Code goes here to close, execute (and optionally reset) the command list, and also
+			// to use a fence to wait for the command queue.
+		}
+		else
+		{
+			_LOG(Error, "Can not read buffer without flag UB_FLAG_READBACK.\n");
+		}
+	}
+
+	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
+	{
+		FUniformBufferReadableDx12 * UniformBufferDx12 = static_cast<FUniformBufferReadableDx12*>(InUniformBuffer.get());
+		Transition(&UniformBufferDx12->BufferResource, TiX2DxResourceStateMap[NewState]);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
 	bool FRHIDx12::UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget)
@@ -2008,6 +2062,7 @@ namespace tix
 
 	void FRHIDx12::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
 	{
+		TI_ASSERT(CommandListStateDebug.ListType == EPL_COMPUTE);
 		CurrentWorkingCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
 	}
 
@@ -2056,6 +2111,7 @@ namespace tix
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
+		TI_ASSERT(CommandListStateDebug.ListType == EPL_GRAPHICS);
 		CurrentWorkingCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
 	}
 

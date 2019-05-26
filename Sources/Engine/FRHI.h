@@ -27,6 +27,25 @@ namespace tix
 		EPL_NUM,
 	};
 
+	enum E_RESOURCE_STATE
+	{
+		RESOURCE_STATE_COMMON,
+		RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+		RESOURCE_STATE_INDEX_BUFFER,
+		RESOURCE_STATE_RENDER_TARGET,
+		RESOURCE_STATE_UNORDERED_ACCESS,
+		RESOURCE_STATE_DEPTH_WRITE,
+		RESOURCE_STATE_DEPTH_READ,
+		RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		RESOURCE_STATE_STREAM_OUT,
+		RESOURCE_STATE_INDIRECT_ARGUMENT,
+		RESOURCE_STATE_COPY_DEST,
+		RESOURCE_STATE_COPY_SOURCE,
+
+		RESOURCE_STATE_NUM,
+	};
+
 	struct FBoundResource
 	{
 		FPipelinePtr Pipeline;
@@ -80,6 +99,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
 		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
+		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
@@ -94,6 +114,7 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) = 0;
+		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) = 0;
 
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) = 0;

@@ -69,12 +69,15 @@ namespace tix
 	{
 		UB_FLAG_COMPUTE_WRITABLE = 1 << 0,
 		UB_FLAG_COMPUTE_WITH_COUNTER = 1 << 1,
+		UB_FLAG_READBACK = 1 << 2,
 	};
 	class FUniformBuffer : public FRenderResource
 	{
 	public:
 		FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements, uint32 InUBFlag);
 		virtual ~FUniformBuffer();
+
+		virtual uint8* ReadBufferData() { return nullptr; }
 
 		uint32 GetTotalBufferSize() const
 		{

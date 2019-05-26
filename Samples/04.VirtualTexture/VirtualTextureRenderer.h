@@ -20,6 +20,8 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void PrepareBuffers(FTexturePtr UVInput);
+	void PrepareDataForCPU(FRHI * RHI);
+	uint8* ReadUVBuffer();
 protected:
 	virtual void FinalizeInRenderThread() override;
 
