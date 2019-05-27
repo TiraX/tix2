@@ -22,20 +22,23 @@ struct UVBuffer
 {
 	float4 color;
 };
-StructuredBuffer<UVBuffer> inputUVs : register(t0);	// SRV: Indirect commands
+//StructuredBuffer<UVBuffer> inputUVs : register(t0);	// SRV: Indirect commands
+Texture2D<float4> inputUVs : register(t0);
 RWStructuredBuffer<UVBuffer> outputUVs : register(u0);	// UAV: Processed indirect commands
 
 #define threadBlockSize 8
 
 [RootSignature(UVDiscard_RootSig)]
 [numthreads(threadBlockSize, threadBlockSize, 1)]
-void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID)
+void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	if (threadIDInGroup.x == 0 && threadIDInGroup.y == 0)
 	{
 		uint GroupW = uint(Info.x);
 		uint input_index = (groupId.y * threadBlockSize + threadIDInGroup.y) * threadBlockSize * GroupW + groupId.x * threadBlockSize + threadIDInGroup.x;
 		uint output_index = groupId.y * GroupW + groupId.x;
-		outputUVs[output_index] = inputUVs[input_index];
+
+		//outputUVs[output_index] = inputUVs[input_index];
+		outputUVs[output_index].color = inputUVs[dispatchThreadId.xy];
 	}
 }
