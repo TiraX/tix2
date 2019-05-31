@@ -23,7 +23,7 @@
     <ProjectGuid>{0C0C8AF9-DC50-4197-ACD1-9D6A885F3E7D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MeshConverter</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>02.ResConverter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -105,13 +105,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TI_LINK_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>../../Sources/Externals/ISPCTextureCompressor-master/libs/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ispc_texcomp_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,13 +145,15 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TI_LINK_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../../Sources/Externals/ISPCTextureCompressor-master/libs/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ispc_texcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)..\..\Binary\Windows</Command>

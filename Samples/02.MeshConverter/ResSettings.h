@@ -10,8 +10,10 @@ class TResSettings
 public:
 	static TResSettings GlobalSettings;
 	TResSettings()
+		: ISPCCompress(true)
 	{}
 
 	TString SrcPath;
 	TString SrcName;
+	bool ISPCCompress;
 };

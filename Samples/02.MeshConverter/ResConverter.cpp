@@ -90,6 +90,10 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			{
 				bShowExample = true;
 			}
+			else if (key == "ispccompress")
+			{
+				TResSettings::GlobalSettings.ISPCCompress = (value == "0") ? false : true;
+			}
 
 			//if (key == "texture_path")
 			//{
