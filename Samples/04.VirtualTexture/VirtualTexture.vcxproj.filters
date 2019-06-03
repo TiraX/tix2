@@ -51,6 +51,15 @@
     <None Include="Shaders\Dx12\S_SkyRS.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="Shaders\Dx12\PS_Common.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\VS_Instanced.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\PS_VT.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_TreeOpaquePS.hlsl">
