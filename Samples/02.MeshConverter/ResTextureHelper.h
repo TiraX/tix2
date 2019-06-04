@@ -4,15 +4,10 @@
 */
 
 #pragma once
+#include "TImage.h"
 
 namespace tix
 {
-	struct TResSurfaceData
-	{
-		int32 W, H;
-		int32 RowPitch;
-		TStream Data;
-	};
 	struct TResTextureDefine
 	{
 		TString Name;
@@ -20,7 +15,7 @@ namespace tix
 		int32 LodBias;
 
 		TTextureDesc Desc;
-		TVector<TResSurfaceData> Surfaces;
+		TVector<TImage*> ImageSurfaces;
 	};
 
 	struct TResTextureSourceInfo
@@ -57,5 +52,5 @@ namespace tix
 		TVector<TResTextureDefine*> Textures;
 	};
 
-	void DecodeDXT(TResTextureDefine* Texture, TVector<TImage*>& Images);
+	TImage* DecodeDXT(TResTextureDefine* Texture);
 }

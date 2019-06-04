@@ -794,7 +794,7 @@ namespace tix
 			Texture->Desc.SRGB = 0;
 			Texture->Desc.Mips = mipCount - LodBias;
 
-			Texture->Surfaces.resize((mipCount - LodBias) * arraySize);
+			Texture->ImageSurfaces.resize(arraySize);
 
 			const uint8* SrcData = Data;
 			uint32 NumBytes = 0;
@@ -805,6 +805,10 @@ namespace tix
 				uint32 w = width;
 				uint32 h = height;
 				uint32 d = depth;
+				TImage * Image = ti_new TImage(Texture->Desc.Format, Texture->Desc.Width, Texture->Desc.Height);
+				Texture->ImageSurfaces[j] = Image;
+				Image->AllocEmptyMipmaps();
+
 				for (uint32 i = 0; i < mipCount; i++)
 				{
 					GetSurfaceInfo(w,
@@ -817,10 +821,9 @@ namespace tix
 
 					if (i >= (uint32)LodBias)
 					{
-						TResSurfaceData& Surface = Texture->Surfaces[j * (mipCount - LodBias) + (i - LodBias)];
-						Surface.W = w;
-						Surface.H = h;
-						Surface.RowPitch = RowBytes;
+						// Set data
+						TImage::TImageSurfaceData& Surface = Image->GetMipmap(i - LodBias);
+						TI_ASSERT(NumBytes == Surface.Data.GetBufferSize());
 						Surface.Data.Put(SrcData, NumBytes);
 					}
 
@@ -848,20 +851,27 @@ namespace tix
 			if (Texture->Desc.Format == EPF_RGBA32F)
 			{
 				TStream Buffer;
-				for (auto& Surface : Texture->Surfaces)
+				for (auto& Image : Texture->ImageSurfaces)
 				{
-					Buffer.Reset();
-					Buffer.Put(Surface.Data.GetBuffer(), Surface.Data.GetLength());
-					Surface.Data.Reset();
-
-					const int32 DataNum = Buffer.GetLength() / sizeof(float);
-					const float* Data = (const float*)Buffer.GetBuffer();
-					for (int i = 0; i < DataNum; ++i)
+					TImage * F32Image = Image;
+					TImage * F16Image = ti_new TImage(EPF_RGBA16F, F32Image->GetWidth(), F32Image->GetHeight());
+					F16Image->AllocEmptyMipmaps();
+					Image = F16Image;
+					for (int32 Mip = 0 ; Mip < F32Image->GetMipmapCount() ; ++ Mip)
 					{
-						half hf = half(Data[i]);
-						Surface.Data.Put(&hf, sizeof(half));
+						TImage::TImageSurfaceData& F32Data = F32Image->GetMipmap(Mip);
+						TImage::TImageSurfaceData& F16Data = F16Image->GetMipmap(Mip);
+						F16Data.Data.Reset();
+
+						const int32 DataNum = F32Data.Data.GetLength() / sizeof(float);
+						const float* Data = (const float*)F32Data.Data.GetBuffer();
+						for (int i = 0; i < DataNum; ++i)
+						{
+							half hf = half(Data[i]);
+							F16Data.Data.Put(&hf, sizeof(half));
+						}
 					}
-					Surface.RowPitch = Texture->Desc.Width * 8;
+					ti_delete F32Image;
 				}
 				Texture->Desc.Format = EPF_RGBA16F;
 			}

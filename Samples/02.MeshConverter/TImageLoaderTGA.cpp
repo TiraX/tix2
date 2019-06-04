@@ -240,8 +240,13 @@ namespace tix
 		return image;
 	}
 
-	bool TImage::SaveToTga(const char* filename)
+	bool TImage::SaveToTga(const char* filename, int32 MipIndex)
 	{
+		int32 Width = Mipmaps[MipIndex].W;
+		int32 Height = Mipmaps[MipIndex].H;
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
+
 		FILE *fp;
 		fp	= fopen(filename, "wb");
 		if (fp == NULL)

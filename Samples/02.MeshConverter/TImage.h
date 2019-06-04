@@ -10,70 +10,88 @@ namespace tix
 	class TImage
 	{
 	public:
-		TImage(E_PIXEL_FORMAT pixel_format, int32 w, int32 h);
-		virtual ~TImage();
+		TImage(E_PIXEL_FORMAT InPixelFormat, int32 Width, int32 Height);
+		~TImage();
+		static int32 GetPixelSizeInBytes(E_PIXEL_FORMAT Format);
+		static int32 GetBlockSizeInBytes(E_PIXEL_FORMAT Format);
+		static vector2di GetBlockSize(E_PIXEL_FORMAT Format);
+		static int32 GetDataSize(E_PIXEL_FORMAT Format, int32 Width, int32 Height);
+		static bool IsCompressedFormat(E_PIXEL_FORMAT Format);
 
 		static TImage* LoadImageTGA(TFile& FileInput);
-		bool SaveToTga(const char* filename);
+		bool SaveToTga(const char* filename, int32 MipIndex = 0);
 
 		void FlipY();
 		void ClearMipmaps();
 
-		void SetPixel(int32 x, int32 y, const SColor& c);
-		void SetPixel(int32 x, int32 y, uint8 c);
-		void SetPixel(int32 x, int32 y, const SColorf& c);
-		SColor GetPixel(int32 x, int32 y);
-		SColor GetPixel(float x, float y);
-		SColorf GetPixelFloat(int32 x, int32 y);
-		SColorf GetPixelFloat(float x, float y);
+		struct TImageSurfaceData
+		{
+			int32 W, H;
+			union
+			{
+				int32 RowPitch;
+				int32 BlockSize;
+			};
+			TStream Data;
 
-		virtual uint8* Lock();
+			TImageSurfaceData()
+				: W(0)
+				, H(0)
+				, RowPitch(0)
+			{}
+		};
+
+		void SetPixel(int32 x, int32 y, const SColor& c, int32 MipIndex = 0);
+		void SetPixel(int32 x, int32 y, uint8 c, int32 MipIndex = 0);
+		void SetPixel(int32 x, int32 y, const SColorf& c, int32 MipIndex = 0);
+		SColor GetPixel(int32 x, int32 y, int32 MipIndex = 0);
+		SColor GetPixel(float x, float y, int32 MipIndex = 0);
+		SColorf GetPixelFloat(int32 x, int32 y, int32 MipIndex = 0);
+		SColorf GetPixelFloat(float x, float y, int32 MipIndex = 0);
+
+		virtual uint8* Lock(int32 MipIndex = 0);
 		virtual void Unlock();
 
-		virtual int32 GetPitch();
-
-		int32 GetWidth()
+		virtual int32 GetPitch() const
 		{
-			return Width;
+			return Mipmaps[0].RowPitch;
 		}
 
-		int32 GetHeight()
+		int32 GetWidth() const
 		{
-			return Height;
+			return Mipmaps[0].W;
 		}
 
-		E_PIXEL_FORMAT GetFormat()
+		int32 GetHeight() const
+		{
+			return Mipmaps[0].H;
+		}
+
+		E_PIXEL_FORMAT GetFormat() const
 		{
 			return PixelFormat;
 		}
 
-		int32 GetMipmapCount()
+		int32 GetMipmapCount() const
 		{
 			return (int32)Mipmaps.size();
 		}
 
-		void AddMipmap(TImage* image)
+		const TImageSurfaceData& GetMipmap(int32 MipLevel) const
 		{
-			Mipmaps.push_back(image);
+			return Mipmaps[MipLevel];
 		}
-        
-        int32 GetDataLength()
-        {
-            return  DataSize;
-        }
 
-		TImage*GetMipmap(int32 mipmap_level);
+		TImageSurfaceData& GetMipmap(int32 MipLevel)
+		{
+			return Mipmaps[MipLevel];
+		}
 
+		void AllocEmptyMipmaps();
 	protected:
 		E_PIXEL_FORMAT PixelFormat;
-		int32 Width;
-		int32 Height;
-		int32 Pitch;
-		int32 DataSize;
 
-		uint8* Data;
-
-		typedef std::vector<TImage*> VecMipmapImages;
+		typedef TVector<TImageSurfaceData> VecMipmapImages;
 		VecMipmapImages Mipmaps;
 	};
 }

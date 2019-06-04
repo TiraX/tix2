@@ -127,19 +127,20 @@ namespace tix
 			TextureHeader.AddressMode = Define->Desc.AddressMode;
 			TextureHeader.SRGB = Define->Desc.SRGB;
 			TextureHeader.Mips = Define->Desc.Mips;
-			TextureHeader.Surfaces = (uint32)Define->Surfaces.size();
+			TextureHeader.Surfaces = (uint32)Define->ImageSurfaces.size() * Define->Desc.Mips;
+			TI_ASSERT(Define->Desc.Mips == Define->ImageSurfaces[0]->GetMipmapCount());
 
 			HeaderStream.Put(&TextureHeader, sizeof(THeaderTexture));
 			FillZero4(HeaderStream);
 
-			const TVector<TResSurfaceData>& Surfaces = Define->Surfaces;
-			for (int32 f = 0; f < Faces; ++f)
+			const TVector<TImage*>& Surfaces = Define->ImageSurfaces;
+			for (int32 Face = 0; Face < Faces; ++Face)
 			{
-				for (uint32 mip = 0; mip < Define->Desc.Mips; ++mip)
+				for (uint32 Mip = 0; Mip < Define->Desc.Mips; ++Mip)
 				{
-					int32 SurfaceIndex = f * Define->Desc.Mips + mip;
+					int32 SurfaceIndex = Face * Define->Desc.Mips + Mip;
 
-					const TResSurfaceData& Surface = Surfaces[SurfaceIndex];
+					const TImage::TImageSurfaceData& Surface = Surfaces[Face]->GetMipmap(Mip);
 					int32 DataLength = ti_align4(Surface.Data.GetLength());
 					DataStream.Put(&Surface.W, sizeof(int32));
 					DataStream.Put(&Surface.H, sizeof(int32));

@@ -11,7 +11,8 @@ namespace tix
 	{
 	public:
 		TStream(int32 buf_size = 0)
-			: BufferSize(buf_size)
+			: Buffer(nullptr)
+			, BufferSize(buf_size)
 			, Pos(0)
 		{
 			if (buf_size > 0)
@@ -25,7 +26,9 @@ namespace tix
 		}
 
 		TStream(void* buf, int32 buf_size)
-			: Pos(buf_size)
+			: Buffer(nullptr)
+			, BufferSize(buf_size)
+			, Pos(buf_size)
 		{
 			TI_ASSERT(buf_size != 0);
 			BufferSize = (buf_size + 3) & (~3);
@@ -39,6 +42,14 @@ namespace tix
 			Destroy();
 		}
 
+		TStream(const TStream& Other)
+			: Buffer(nullptr)
+			, BufferSize(0)
+			, Pos(0)
+		{
+			*this = Other;
+		}
+
 		TStream& operator = (const TStream& Other)
 		{
 			if (Buffer != nullptr)
@@ -48,8 +59,11 @@ namespace tix
 			}
 			Pos = Other.Pos;
 			BufferSize = Other.BufferSize;
-			Buffer = ti_new char[BufferSize];
-			memcpy(Buffer, Other.Buffer, Pos);
+			if (BufferSize > 0)
+			{
+				Buffer = ti_new char[BufferSize];
+				memcpy(Buffer, Other.Buffer, Pos);
+			}
 
 			return *this;
 		}
@@ -80,6 +94,27 @@ namespace tix
 			Pos = 0;
 		}
 
+		void ReserveAndClear(int32 InSize)
+		{
+			TI_ASSERT(InSize > 0);
+			if (InSize != BufferSize)
+			{
+				if (Buffer != nullptr)
+				{
+					ti_delete[] Buffer;
+					Buffer = nullptr;
+				}
+				Pos = 0;
+				BufferSize = InSize;
+				if (BufferSize > 0)
+				{
+					Buffer = ti_new char[InSize];
+				}
+			}
+			if (InSize > 0)
+				memset(Buffer, 0, InSize);
+		}
+
 		void Destroy()
 		{
 			if (Buffer != nullptr)
@@ -104,6 +139,11 @@ namespace tix
 		int32 GetLength() const
 		{
 			return Pos;
+		}
+
+		int32 GetBufferSize() const
+		{
+			return BufferSize;
 		}
 
 	protected:

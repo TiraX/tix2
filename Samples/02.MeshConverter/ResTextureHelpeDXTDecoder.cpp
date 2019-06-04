@@ -106,7 +106,7 @@ namespace tix
 		}
 	}
 
-	void DecompressDXT1(TResTextureDefine* Texture, TVector<TImage*>& Images) 
+	TImage* DecompressDXT1(TResTextureDefine* Texture) 
 	{
 		uint32 BlockW = (Texture->Desc.Width + 3) >> 2;
 		uint32 BlockH = (Texture->Desc.Height + 3) >> 2;
@@ -116,23 +116,28 @@ namespace tix
 		if (BlockSize == 0)
 		{
 			printf("Error: Invalid block size.\n");
-			return;
+			return nullptr;
 		}
 
 		if (Texture->Desc.Type != ETT_TEXTURE_2D)
 		{
 			printf("Error: Not support DXT1 format other than Texture2D.");
-			return;
+			return nullptr;
 		}
 
 		// decode mipmaps
 		int32 Width = Texture->Desc.Width;
 		int32 Height = Texture->Desc.Height;
 
-		for (int32 mip = 0; mip < (int32)Texture->Surfaces.size(); ++mip)
+		TImage* DecompressedImage = ti_new TImage(EPF_RGB8, Width, Height);
+		DecompressedImage->AllocEmptyMipmaps();
+		TI_ASSERT(Texture->ImageSurfaces.size() > 0);
+		TImage* CompressedImage = Texture->ImageSurfaces[0];
+		TI_ASSERT(CompressedImage->GetMipmapCount() <= DecompressedImage->GetMipmapCount());
+
+		for (int32 Mip = 0; Mip < CompressedImage->GetMipmapCount(); ++Mip)
 		{
-			uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[mip].Data.GetBuffer());
-			TImage* TGAImage = ti_new TImage(EPF_RGB8, Width, Height);
+			const uint8 * InputData = (const uint8*)CompressedImage->GetMipmap(Mip).Data.GetBuffer();
 
 			SColor BlockColor[16];
 			memset(BlockColor, 0xFF, sizeof(BlockColor));
@@ -140,23 +145,25 @@ namespace tix
 			BlockW = (Width + 3) >> 2;
 			BlockH = (Height + 3) >> 2;
 
-			for (uint32 h = 0; h < BlockH; h++)
+			for (uint32 y = 0; y < BlockH; y++)
 			{
-				for (uint32 w = 0; w < BlockW; w++)
+				for (uint32 x = 0; x < BlockW; x++)
 				{
-					uint32 Offset = (h * BlockW + w) * BlockSize;
+					uint32 Offset = (y * BlockW + x) * BlockSize;
 					DecompressDXT1Block(InputData + Offset, BlockColor, true);
 
-					uint32 DecompWidth = ti_min(4, Width - w * 4);
-					uint32 DecompHeight = ti_min(4, Height - h * 4);
+					uint32 DecompWidth = ti_min(4, Width - x * 4);
+					uint32 DecompHeight = ti_min(4, Height - y * 4);
 
-					for (uint32 y = 0; y < DecompHeight; y++)
+					for (uint32 dy = 0; dy < DecompHeight; dy++)
 					{
-						for (uint32 x = 0; x < DecompWidth; x++)
+						for (uint32 dx = 0; dx < DecompWidth; dx++)
 						{
-							int32 StartX = w * 4;
-							int32 StartY = h * 4;
-							TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+							int32 XPos = x * 4 + dx;
+							int32 YPos = y * 4 + dy;
+							if (XPos >= Width) XPos = Width - 1;
+							if (YPos >= Height) YPos = Height - 1;
+							DecompressedImage->SetPixel(XPos, YPos, BlockColor[dy * 4 + dx], Mip);
 						}
 					}
 				}
@@ -164,12 +171,11 @@ namespace tix
 
 			Width /= 2;
 			Height /= 2;
-
-			Images.push_back(TGAImage);
 		}
+		return DecompressedImage;
 	}
 
-	void DecompressDXT5(TResTextureDefine* Texture, TVector<TImage*>& Images)
+	TImage* DecompressDXT5(TResTextureDefine* Texture)
 	{
 		uint32 BlockW = (Texture->Desc.Width + 3) >> 2;
 		uint32 BlockH = (Texture->Desc.Height + 3) >> 2;
@@ -179,23 +185,28 @@ namespace tix
 		if (BlockSize == 0)
 		{
 			printf("Error: Invalid block size.\n");
-			return;
+			return nullptr;
 		}
 
 		if (Texture->Desc.Type != ETT_TEXTURE_2D)
 		{
 			printf("Error: Not support DXT5 format other than Texture2D.");
-			return;
+			return nullptr;
 		}
 
 		int32 Width = Texture->Desc.Width;
 		int32 Height = Texture->Desc.Height;
 
+		TImage* DecompressedImage = ti_new TImage(EPF_RGB8, Width, Height);
+		DecompressedImage->AllocEmptyMipmaps();
+		TI_ASSERT(Texture->ImageSurfaces.size() > 0);
+		TImage* CompressedImage = Texture->ImageSurfaces[0];
+		TI_ASSERT(CompressedImage->GetMipmapCount() <= DecompressedImage->GetMipmapCount());
+
 		// Decode mipmaps
-		for (int32 mip = 0; mip < (int32)Texture->Surfaces.size(); ++mip)
+		for (int32 Mip = 0; Mip < CompressedImage->GetMipmapCount(); ++Mip)
 		{
-			uint8 * InputData = reinterpret_cast<uint8 *>(Texture->Surfaces[mip].Data.GetBuffer());
-			TImage* TGAImage = ti_new TImage(EPF_RGBA8, Width, Height);
+			const uint8 * InputData = (const uint8*)CompressedImage->GetMipmap(Mip).Data.GetBuffer();
 
 			SColor BlockColor[16];
 			memset(BlockColor, 0xFF, sizeof(BlockColor));
@@ -203,24 +214,26 @@ namespace tix
 			BlockW = (Width + 3) >> 2;
 			BlockH = (Height + 3) >> 2;
 
-			for (uint32 h = 0; h < BlockH; h++)
+			for (uint32 y = 0; y < BlockH; y++)
 			{
-				for (uint32 w = 0; w < BlockW; w++)
+				for (uint32 x = 0; x < BlockW; x++)
 				{
-					uint32 Offset = (h * BlockW + w) * BlockSize;
+					uint32 Offset = (y * BlockW + x) * BlockSize;
 					DecompressDXT5Block(InputData + Offset, BlockColor);
 					DecompressDXT1Block(InputData + Offset + BlockSize / 2, BlockColor, false);
 
-					uint32 decompWidth = ti_min(4, Width - w * 4);
-					uint32 decompHeight = ti_min(4, Height - h * 4);
+					uint32 decompWidth = ti_min(4, Width - x * 4);
+					uint32 decompHeight = ti_min(4, Height - y * 4);
 
-					for (uint32 y = 0; y < decompHeight; y++)
+					for (uint32 dy = 0; dy < decompHeight; dy++)
 					{
-						for (uint32 x = 0; x < decompWidth; x++)
+						for (uint32 dx = 0; dx < decompWidth; dx++)
 						{
-							int32 StartX = w * 4;
-							int32 StartY = h * 4;
-							TGAImage->SetPixel(StartX + x, StartY + y, BlockColor[y * 4 + x]);
+							int32 XPos = x * 4 + dx;
+							int32 YPos = y * 4 + dy;
+							if (XPos >= Width) XPos = Width - 1;
+							if (YPos >= Height) YPos = Height - 1;
+							DecompressedImage->SetPixel(XPos, YPos, BlockColor[dy * 4 + dx], Mip);
 						}
 					}
 				}
@@ -228,182 +241,178 @@ namespace tix
 
 			Width /= 2;
 			Height /= 2;
-
-			Images.push_back(TGAImage);
 		}
+		return DecompressedImage;
 	}
 
-	void DecodeDXT(TResTextureDefine* Texture, TVector<TImage*>& Images)
+	TImage* DecodeDXT(TResTextureDefine* Texture)
 	{
 		if (Texture == nullptr)
 		{
-			return;
+			return nullptr;
 		}
 
+		TImage * Result = nullptr;
 		if (Texture->Desc.Format == EPF_DDS_DXT1)
 		{
-			DecompressDXT1(Texture, Images);
+			Result = DecompressDXT1(Texture);
 		}
 		else if (Texture->Desc.Format == EPF_DDS_DXT5)
 		{
-			DecompressDXT5(Texture, Images);
+			Result = DecompressDXT5(Texture);
 		}
 		else if (Texture->Desc.Format == EPF_A8)
 		{
 			if (Texture->Desc.Type != ETT_TEXTURE_2D)
 			{
 				printf("Error: Not support EPF_A8 format other than Texture2D.");
-				return;
+				return nullptr;
 			}
 			// Copy pixel data to TImage directly
 			int32 W = Texture->Desc.Width;
 			int32 H = Texture->Desc.Height;
 			for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
 			{
-				TResSurfaceData& MipData = Texture->Surfaces[mip];
-				TImage * Image = ti_new TImage(EPF_A8, W, H);
+				const TImage::TImageSurfaceData& MipData = Texture->ImageSurfaces[0]->GetMipmap(mip);
+				Result = ti_new TImage(EPF_A8, W, H);
 				TI_ASSERT(W * H == MipData.Data.GetLength());
-				memcpy(Image->Lock(), MipData.Data.GetBuffer(), W * H);
-				Image->Unlock();
+				memcpy(Result->Lock(), MipData.Data.GetBuffer(), W * H);
+				Result->Unlock();
 
 				W /= 2;
 				H /= 2;
-				Images.push_back(Image);
 			}
 		}
-		else if (Texture->Desc.Format == EPF_RGBA8)
-		{
-			int32 W = Texture->Desc.Width;
-			int32 H = Texture->Desc.Height;
-			// make sure alpha have value
-			bool HasAlpha = false;
+		//else if (Texture->Desc.Format == EPF_RGBA8)
+		//{
+		//	int32 W = Texture->Desc.Width;
+		//	int32 H = Texture->Desc.Height;
+		//	// make sure alpha have value
+		//	bool HasAlpha = false;
 
-			int32 Faces = 1;
-			if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
-				Faces = 6;
+		//	int32 Faces = 1;
+		//	if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
+		//		Faces = 6;
 
-			for (int32 f = 0; f < Faces; ++f)
-			{
-				uint8* Data = (uint8*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
-				for (int32 y = 0; y < H; ++y)
-				{
-					for (int32 x = 0; x < W; ++x)
-					{
-						uint8* c = Data + (y * W + x) * 4;
-						if (c[3] > 0)
-						{
-							HasAlpha = true;
-							break;
-						}
-					}
-				}
-			}
-			for (int32 f = 0; f < Faces; ++f)
-			{
-				W = Texture->Desc.Width;
-				H = Texture->Desc.Height;
-				for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
-				{
-					TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
-					uint8* Data = (uint8*)MipData.Data.GetBuffer();
-					TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA8 : EPF_RGB8, W, H);
-					TI_ASSERT(W * H * 4 == MipData.Data.GetLength());
+		//	for (int32 f = 0; f < Faces; ++f)
+		//	{
+		//		uint8* Data = (uint8*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
+		//		for (int32 y = 0; y < H; ++y)
+		//		{
+		//			for (int32 x = 0; x < W; ++x)
+		//			{
+		//				uint8* c = Data + (y * W + x) * 4;
+		//				if (c[3] > 0)
+		//				{
+		//					HasAlpha = true;
+		//					break;
+		//				}
+		//			}
+		//		}
+		//	}
+		//	for (int32 f = 0; f < Faces; ++f)
+		//	{
+		//		W = Texture->Desc.Width;
+		//		H = Texture->Desc.Height;
+		//		for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+		//		{
+		//			TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
+		//			uint8* Data = (uint8*)MipData.Data.GetBuffer();
+		//			TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA8 : EPF_RGB8, W, H);
+		//			TI_ASSERT(W * H * 4 == MipData.Data.GetLength());
 
-					for (int32 y = 0; y < H; ++y)
-					{
-						for (int32 x = 0; x < W; ++x)
-						{
-							uint8* cd = Data + (y * W + x) * 4;
-							SColor c;
-							c.R = cd[2];
-							c.G = cd[1];
-							c.B = cd[0];
-							c.A = cd[3];
-							Image->SetPixel(x, y, c);
-						}
-					}
+		//			for (int32 y = 0; y < H; ++y)
+		//			{
+		//				for (int32 x = 0; x < W; ++x)
+		//				{
+		//					uint8* cd = Data + (y * W + x) * 4;
+		//					SColor c;
+		//					c.R = cd[2];
+		//					c.G = cd[1];
+		//					c.B = cd[0];
+		//					c.A = cd[3];
+		//					Image->SetPixel(x, y, c);
+		//				}
+		//			}
 
-					W /= 2;
-					H /= 2;
-					Images.push_back(Image);
-				}
-			}
-		}
-		else if (Texture->Desc.Format == EPF_RGBA32F ||
-			Texture->Desc.Format == EPF_RGBA16F)
-		{
-			// HDR Astc is not supported by Metal
+		//			W /= 2;
+		//			H /= 2;
+		//			Images.push_back(Image);
+		//		}
+		//	}
+		//}
+		//else if (Texture->Desc.Format == EPF_RGBA32F ||
+		//	Texture->Desc.Format == EPF_RGBA16F)
+		//{
+		//	// HDR Astc is not supported by Metal
 
-			//int32 W = Texture->Desc.Width;
-			//int32 H = Texture->Desc.Height;
-			//// make sure alpha have value
-			//bool HasAlpha = false;
+		//	//int32 W = Texture->Desc.Width;
+		//	//int32 H = Texture->Desc.Height;
+		//	//// make sure alpha have value
+		//	//bool HasAlpha = false;
 
-			//int32 Faces = 1;
-			//if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
-			//	Faces = 6;
+		//	//int32 Faces = 1;
+		//	//if (Texture->Desc.Type == ETT_TEXTURE_CUBE)
+		//	//	Faces = 6;
 
-			//for (int32 f = 0; f < Faces; ++f)
-			//{
-			//	float* Data = (float*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
-			//	for (int32 y = 0; y < H; ++y)
-			//	{
-			//		for (int32 x = 0; x < W; ++x)
-			//		{
-			//			float* c = Data + (y * W + x) * 4;
-			//			if (c[3] < 1.f)
-			//			{
-			//				HasAlpha = true;
-			//				break;
-			//			}
-			//		}
-			//	}
-			//}
+		//	//for (int32 f = 0; f < Faces; ++f)
+		//	//{
+		//	//	float* Data = (float*)Texture->Surfaces[f * Texture->Desc.Mips + 0].Data.GetBuffer();
+		//	//	for (int32 y = 0; y < H; ++y)
+		//	//	{
+		//	//		for (int32 x = 0; x < W; ++x)
+		//	//		{
+		//	//			float* c = Data + (y * W + x) * 4;
+		//	//			if (c[3] < 1.f)
+		//	//			{
+		//	//				HasAlpha = true;
+		//	//				break;
+		//	//			}
+		//	//		}
+		//	//	}
+		//	//}
 
-			//for (int32 f = 0; f < Faces; ++f)
-			//{
-			//	W = Texture->Desc.Width;
-			//	H = Texture->Desc.Height;
-			//	for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
-			//	{
-			//		TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
-			//		float* Data = (float*)MipData.Data.GetBuffer();
-			//		TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
-			//		TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
+		//	//for (int32 f = 0; f < Faces; ++f)
+		//	//{
+		//	//	W = Texture->Desc.Width;
+		//	//	H = Texture->Desc.Height;
+		//	//	for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
+		//	//	{
+		//	//		TResSurfaceData& MipData = Texture->Surfaces[f * Texture->Desc.Mips + mip];
+		//	//		float* Data = (float*)MipData.Data.GetBuffer();
+		//	//		TImage * Image = ti_new TImage(HasAlpha ? EPF_RGBA16F : EPF_RGB16F, W, H);
+		//	//		TI_ASSERT(W * H * sizeof(float) * 4 == MipData.Data.GetLength());
 
-			//		for (int32 y = 0; y < H; ++y)
-			//		{
-			//			for (int32 x = 0; x < W; ++x)
-			//			{
-			//				float* cd = Data + (y * W + x) * 4;
-			//				SColorf c;
-			//				c.R = cd[2];
-			//				c.G = cd[1];
-			//				c.B = cd[0];
-			//				c.A = cd[3];
-			//				Image->SetPixel(x, y, c);
-			//			}
-			//		}
+		//	//		for (int32 y = 0; y < H; ++y)
+		//	//		{
+		//	//			for (int32 x = 0; x < W; ++x)
+		//	//			{
+		//	//				float* cd = Data + (y * W + x) * 4;
+		//	//				SColorf c;
+		//	//				c.R = cd[2];
+		//	//				c.G = cd[1];
+		//	//				c.B = cd[0];
+		//	//				c.A = cd[3];
+		//	//				Image->SetPixel(x, y, c);
+		//	//			}
+		//	//		}
 
-			//		W /= 2;
-			//		H /= 2;
-			//		Images.push_back(Image);
-			//	}
-			//}
-		}
+		//	//		W /= 2;
+		//	//		H /= 2;
+		//	//		Images.push_back(Image);
+		//	//	}
+		//	//}
+		//}
 		else
 		{
 			TI_ASSERT(0);
 			printf("Error: Unsupported dds format.\n");
 		}
 
-		if (Images.size() > 0)
+		if (Result != nullptr)
 		{
-			for (int32 i = 0; i < (int32)Images.size(); ++i)
-			{
-				TImage* TGAImage = Images[i];
-				TGAImage->FlipY();
-			}
+			Result->FlipY();
 		}
+		return Result;
 	}
 }

@@ -95,18 +95,19 @@ namespace tix
 			printf("Error: unknown texture pixel format.\n");
 			TI_ASSERT(0);
 		}
+
+		int32 Faces = 1;
+		if (TextureType == ETT_TEXTURE_CUBE)
+			Faces = 6;
+
 		Texture->Desc.Width = Width;
 		Texture->Desc.Height = Height;
 		Texture->Desc.AddressMode = ETC_REPEAT;
 		Texture->Desc.SRGB = 0;
 		Texture->Desc.Mips = Mips;
-		Texture->Surfaces.resize((int32)AstcBuffers.size());
+		Texture->ImageSurfaces.resize(Faces);
 		
 		const uint32 BlockSize = 4 * 4;
-
-		int32 Faces = 1;
-		if (TextureType == ETT_TEXTURE_CUBE)
-			Faces = 6;
 
 		TI_ASSERT(Faces * Mips == AstcBuffers.size());
 
@@ -114,6 +115,11 @@ namespace tix
 		{
 			Width = (ASTCHeader->xSize[2] << 16) + (ASTCHeader->xSize[1] << 8) + ASTCHeader->xSize[0];
 			Height = (ASTCHeader->ySize[2] << 16) + (ASTCHeader->ySize[1] << 8) + ASTCHeader->ySize[0];
+
+			TImage * Image = ti_new TImage(Texture->Desc.Format, Width, Height);
+			Texture->ImageSurfaces[f] = Image;
+			Image->AllocEmptyMipmaps();
+			TI_ASSERT(00);
 
 			for (int32 mip = 0; mip < Mips; ++mip)
 			{
@@ -133,10 +139,11 @@ namespace tix
 				TI_ASSERT(W == Width && H == Height);
 
 				const uint8* SrcData = (const uint8*)FileBuffer->GetBuffer() + sizeof(TASTCHeader);
-				TResSurfaceData& Surface = Texture->Surfaces[mip];
+				TImage::TImageSurfaceData& Surface = Image->GetMipmap(Mips);
 				Surface.W = W;
 				Surface.H = H;
-				Surface.RowPitch = WidthInBlocks * BlockSize;
+				TI_ASSERT(0); // Calc ASTC Row Pitch size;
+				//Surface.BlockSize = BlockSize;
 				Surface.Data.Put(SrcData, DataLength);
 
 				Width /= 2;
@@ -165,10 +172,10 @@ namespace tix
 			return DDSTexture;
 		}
 
-		TVector<TImage*> Images;
-		DecodeDXT(DDSTexture, Images);
+		TImage * DecodeResult = DecodeDXT(DDSTexture);
+		TI_ASSERT(DDSTexture->Desc.Type == ETT_TEXTURE_2D);
 
-		if (Images.size() == 0)
+		if (DecodeResult == nullptr)
 		{
 			printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());
 			return nullptr;
@@ -185,21 +192,16 @@ namespace tix
 
 		TVector<TStreamPtr> AstcFileBuffers;
 		int32 Faces = 1;
-		if (DDSTexture->Desc.Type == ETT_TEXTURE_CUBE)
-			Faces = 6;
-
-		TI_ASSERT(Faces * DDSTexture->Desc.Mips == Images.size());
+		TI_ASSERT(Faces * DDSTexture->Desc.Mips == DecodeResult->GetMipmapCount());
 
 		for (int32 f = 0; f < Faces; ++f)
 		{
-			int32 W = Images[f * DDSTexture->Desc.Mips + 0]->GetWidth();
-			int32 H = Images[f * DDSTexture->Desc.Mips + 0]->GetHeight();
+			int32 W = DecodeResult->GetWidth();
+			int32 H = DecodeResult->GetHeight();
 
 			for (uint32 mip = 0; mip < DDSTexture->Desc.Mips; ++mip)
 			{
-				TImage* Image = Images[f * DDSTexture->Desc.Mips + mip];
-				TI_ASSERT(Image->GetWidth() == W && Image->GetHeight() == H);
-				Image->SaveToTga(TempTGAName.c_str());
+				DecodeResult->SaveToTga(TempTGAName.c_str(), mip);
 
 				// Convert to astc
 				int ret = system(ASTCConverter.c_str());

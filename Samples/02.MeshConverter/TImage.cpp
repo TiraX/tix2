@@ -8,8 +8,9 @@
 
 namespace tix
 {
-	inline int32 GetPixelSizeInBytes(E_PIXEL_FORMAT Format)
+	int32 TImage::GetPixelSizeInBytes(E_PIXEL_FORMAT Format)
 	{
+		TI_ASSERT(!IsCompressedFormat(Format));
 		switch (Format)
 		{
 		case EPF_A8:
@@ -51,41 +52,130 @@ namespace tix
 		}
 	}
 
-	TImage::TImage(E_PIXEL_FORMAT pixel_format, int32 w, int32 h)
-		: PixelFormat(pixel_format)
-		, Width(w)
-		, Height(h)
+	int32 TImage::GetBlockSizeInBytes(E_PIXEL_FORMAT Format)
 	{
-		Pitch = Width * GetPixelSizeInBytes(pixel_format);
-		TI_ASSERT(Pitch != 0);
-		DataSize = Pitch * Height;
-		Data = ti_new uint8[DataSize];
-		memset(Data, 0, sizeof(uint8) * DataSize);
+		TI_ASSERT(IsCompressedFormat(Format));
+		switch (Format)
+		{
+		case EPF_DDS_DXT1:
+		case EPF_DDS_DXT1_SRGB:
+		case EPF_DDS_DXT3:
+		case EPF_DDS_DXT3_SRGB:
+			return 8;
+		case EPF_DDS_DXT5:
+		case EPF_DDS_DXT5_SRGB:
+		case EPF_DDS_BC5:
+			return 16;
+
+				// ASTC formats 
+		case EPF_ASTC4x4:
+		case EPF_ASTC4x4_SRGB:
+		case EPF_ASTC6x6:
+		case EPF_ASTC6x6_SRGB:
+		case EPF_ASTC8x8:
+		case EPF_ASTC8x8_SRGB:
+			TI_ASSERT(0);
+			return 0;
+		default:
+			return 0;
+		}
+	}
+
+	vector2di TImage::GetBlockSize(E_PIXEL_FORMAT Format)
+	{
+		TI_ASSERT(IsCompressedFormat(Format));
+		switch (Format)
+		{
+		case EPF_DDS_DXT1:
+		case EPF_DDS_DXT1_SRGB:
+		case EPF_DDS_DXT3:
+		case EPF_DDS_DXT3_SRGB:
+		case EPF_DDS_DXT5:
+		case EPF_DDS_DXT5_SRGB:
+		case EPF_DDS_BC5:
+			return vector2di(4, 4);
+
+			// ASTC formats 
+		case EPF_ASTC4x4:
+		case EPF_ASTC4x4_SRGB:
+			return vector2di(4, 4);
+		case EPF_ASTC6x6:
+		case EPF_ASTC6x6_SRGB:
+			return vector2di(6, 6);
+		case EPF_ASTC8x8:
+		case EPF_ASTC8x8_SRGB:
+			return vector2di(8, 8);
+		default:
+			return vector2di();
+		}
+	}
+
+	bool TImage::IsCompressedFormat(E_PIXEL_FORMAT Format)
+	{
+		return Format >= EPF_DDS_DXT1;
+	}
+
+	inline int32 GetBlockWidth(int32 PixelWidth, int32 BlockSize)
+	{
+		return (PixelWidth + BlockSize - 1) / BlockSize;
+	}
+
+	int32 TImage::GetDataSize(E_PIXEL_FORMAT Format, int32 Width, int32 Height)
+	{
+		if (IsCompressedFormat(Format))
+		{
+			int32 BlockSize = GetBlockSizeInBytes(Format);
+			TI_ASSERT(BlockSize != 0);
+			vector2di Block = GetBlockSize(Format);
+			int32 BlockW = GetBlockWidth(Width, Block.X);
+			int32 BlockH = GetBlockWidth(Height, Block.Y);
+			return (BlockSize * BlockW * BlockH);
+		}
+		else
+		{
+			int32 RowPitch = Width * GetPixelSizeInBytes(Format);
+			TI_ASSERT(RowPitch != 0);
+			return (RowPitch * Height);
+		}
+	}
+
+	TImage::TImage(E_PIXEL_FORMAT InPixelFormat, int32 Width, int32 Height)
+		: PixelFormat(InPixelFormat)
+	{
+		Mipmaps.push_back(TImageSurfaceData());
+		TImageSurfaceData& Mip0 = Mipmaps[0];
+		Mip0.W = Width;
+		Mip0.H = Height;
+		if (IsCompressedFormat(InPixelFormat))
+		{
+			Mip0.BlockSize = GetBlockSizeInBytes(InPixelFormat);
+		}
+		else
+		{
+			Mip0.RowPitch = Width * GetPixelSizeInBytes(InPixelFormat);
+		}
+		Mip0.Data.ReserveAndClear(GetDataSize(InPixelFormat, Width, Height));
 	}
 
 	TImage::~TImage()
 	{
 		ClearMipmaps();
-
-		ti_delete[] Data;
 	}
 
-	uint8* TImage::Lock()
+	uint8* TImage::Lock(int32 MipIndex)
 	{
-		return Data;
+		return (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
 	}
 
 	void TImage::Unlock()
 	{
 	}
 
-	int32 TImage::GetPitch()
+	void TImage::SetPixel(int32 x, int32 y, const SColor& c, int32 MipIndex)
 	{
-		return Pitch;
-	}
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
 
-	void TImage::SetPixel(int32 x, int32 y, const SColor& c)
-	{
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
 		switch (PixelFormat)
 		{
@@ -107,8 +197,11 @@ namespace tix
 		}
 	}
 
-	void TImage::SetPixel(int32 x, int32 y, const SColorf& c)
+	void TImage::SetPixel(int32 x, int32 y, const SColorf& c, int32 MipIndex)
 	{
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
+
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
 		float* fdata = (float*)(Data + offset);
 		half* hdata = (half*)(Data + offset);
@@ -136,8 +229,11 @@ namespace tix
 		}
 	}
 
-	void TImage::SetPixel(int32 x, int32 y, uint8 c)
+	void TImage::SetPixel(int32 x, int32 y, uint8 c, int32 MipIndex)
 	{
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
+
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
 		switch (PixelFormat)
 		{
@@ -150,8 +246,13 @@ namespace tix
 		}
 	}
 
-	SColor TImage::GetPixel(int32 x, int32 y)
+	SColor TImage::GetPixel(int32 x, int32 y, int32 MipIndex)
 	{
+		int32 Width = Mipmaps[MipIndex].W;
+		int32 Height = Mipmaps[MipIndex].H;
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
+
 		if ( x >= Width) x = Width - 1;
 		if ( y >= Height) y = Height - 1;
 		if ( x < 0) x = 0;
@@ -192,7 +293,7 @@ namespace tix
 		return color;
 	}
 
-	SColor TImage::GetPixel(float x, float y)
+	SColor TImage::GetPixel(float x, float y, int32 MipIndex)
 	{
 		int32 xi=(int32)(x); if (x<0) xi--;   //these replace (incredibly slow) floor (Visual c++ 2003, AMD Athlon)
 		int32 yi=(int32)(y); if (y<0) yi--;
@@ -203,10 +304,10 @@ namespace tix
 		float c=t2-d;
 		float a=1-t1-c;
 		SColor rgb11,rgb21,rgb12,rgb22;
-		rgb11 = GetPixel(xi, yi);
-		rgb21 = GetPixel(xi+1, yi);
-		rgb12 = GetPixel(xi, yi+1);
-		rgb22 = GetPixel(xi+1, yi+1);
+		rgb11 = GetPixel(xi, yi, MipIndex);
+		rgb21 = GetPixel(xi+1, yi, MipIndex);
+		rgb12 = GetPixel(xi, yi+1, MipIndex);
+		rgb22 = GetPixel(xi+1, yi+1, MipIndex);
 
 		SColor color;
 		//calculate linear interpolation
@@ -218,8 +319,13 @@ namespace tix
 		return color;
 	}
 
-	SColorf TImage::GetPixelFloat(int32 x, int32 y)
+	SColorf TImage::GetPixelFloat(int32 x, int32 y, int32 MipIndex)
 	{
+		int32 Width = Mipmaps[MipIndex].W;
+		int32 Height = Mipmaps[MipIndex].H;
+		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
+
 		TI_ASSERT(x >= 0);
 		TI_ASSERT(y >= 0);
 		if (x >= Width)
@@ -255,7 +361,7 @@ namespace tix
 		return c;
 	}
 
-	SColorf TImage::GetPixelFloat(float x, float y)
+	SColorf TImage::GetPixelFloat(float x, float y, int32 MipIndex)
 	{
 		int32 xi=(int32)(x); if (x<0) xi--;   //these replace (incredibly slow) floor (Visual c++ 2003, AMD Athlon)
 		int32 yi=(int32)(y); if (y<0) yi--;
@@ -266,10 +372,10 @@ namespace tix
 		float c=t2-d;
 		float a=1-t1-c;
 		SColorf rgb11,rgb21,rgb12,rgb22;
-		rgb11 = GetPixelFloat(xi, yi);
-		rgb21 = GetPixelFloat(xi+1, yi);
-		rgb12 = GetPixelFloat(xi, yi+1);
-		rgb22 = GetPixelFloat(xi+1, yi+1);
+		rgb11 = GetPixelFloat(xi, yi, MipIndex);
+		rgb21 = GetPixelFloat(xi+1, yi, MipIndex);
+		rgb12 = GetPixelFloat(xi, yi+1, MipIndex);
+		rgb22 = GetPixelFloat(xi+1, yi+1, MipIndex);
 
 		SColorf color;
 		//calculate linear interpolation
@@ -284,11 +390,50 @@ namespace tix
 	void TImage::ClearMipmaps()
 	{
 		// delete mipmaps
-		for (int32 i = 0 ; i < (int32)Mipmaps.size() ; ++ i)
-		{
-			ti_delete Mipmaps[i];
-		}
 		Mipmaps.clear();
+	}
+
+	void TImage::AllocEmptyMipmaps()
+	{
+		TI_ASSERT(Mipmaps.size() > 0);
+		int32 W = Mipmaps[0].W;
+		int32 H = Mipmaps[0].H;
+		bool IsCompressed = IsCompressedFormat(PixelFormat);
+
+		int32 MipCount = 0;
+		while (W > 0 && H > 0)
+		{
+			++MipCount;
+			W /= 2;
+			H /= 2;
+		}
+
+		Mipmaps.resize(MipCount);
+
+		W = Mipmaps[0].W;
+		H = Mipmaps[0].H;
+		for (int32 Mip = 0; Mip < MipCount; ++Mip)
+		{
+			TImageSurfaceData* MipData = &Mipmaps[Mip];
+
+			if (Mip > 0)
+			{
+				MipData->W = W;
+				MipData->H = H;
+				if (IsCompressed)
+				{
+					MipData->BlockSize = GetBlockSizeInBytes(PixelFormat);
+				}
+				else
+				{
+					MipData->RowPitch = GetPixelSizeInBytes(PixelFormat) * W;
+				}
+				MipData->Data.ReserveAndClear(GetDataSize(PixelFormat, W, H));
+			}
+
+			W /= 2;
+			H /= 2;
+		}
 	}
 
 	static const SColor k_mipmap_color[]	= {
@@ -308,16 +453,24 @@ namespace tix
 
 	void TImage::FlipY()
 	{
-		uint8* tmp = ti_new uint8[Pitch];
-		for (int32 y = 0 ; y < Height / 2 ; ++ y)
+		for (int32 Mip = 0 ; Mip < (int32)Mipmaps.size() ; ++ Mip)
 		{
-			int32 y0 = y * Pitch;
-			int32 y1 = (Height - y - 1) * Pitch;
+			int32 Width = Mipmaps[Mip].W;
+			int32 Height = Mipmaps[Mip].H;
+			int32 Pitch = Mipmaps[Mip].RowPitch;
+			uint8* Data = (uint8*)Mipmaps[Mip].Data.GetBuffer();
 
-			memcpy(tmp, Data + y0, Pitch);
-			memcpy(Data + y0, Data + y1, Pitch);
-			memcpy(Data + y1, tmp, Pitch);
+			uint8* tmp = ti_new uint8[Pitch];
+			for (int32 y = 0; y < Height / 2; ++y)
+			{
+				int32 y0 = y * Pitch;
+				int32 y1 = (Height - y - 1) * Pitch;
+
+				memcpy(tmp, Data + y0, Pitch);
+				memcpy(Data + y0, Data + y1, Pitch);
+				memcpy(Data + y1, tmp, Pitch);
+			}
+			ti_delete[] tmp;
 		}
-		ti_delete[] tmp;
 	}
 }
