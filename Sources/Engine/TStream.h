@@ -115,6 +115,27 @@ namespace tix
 				memset(Buffer, 0, InSize);
 		}
 
+		void ReserveAndFill(int32 InSize)
+		{
+			TI_ASSERT(InSize > 0);
+			if (InSize != BufferSize)
+			{
+				if (Buffer != nullptr)
+				{
+					ti_delete[] Buffer;
+					Buffer = nullptr;
+				}
+				Pos = InSize;
+				BufferSize = InSize;
+				if (BufferSize > 0)
+				{
+					Buffer = ti_new char[InSize];
+				}
+			}
+			if (InSize > 0)
+				memset(Buffer, 0, InSize);
+		}
+
 		void Destroy()
 		{
 			if (Buffer != nullptr)

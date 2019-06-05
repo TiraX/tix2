@@ -11,6 +11,7 @@
 #include "TImage.h"
 #include "PlatformUtils.h"
 #include <sstream>
+#include "ispc_texcomp.h"
 
 namespace tix
 {
@@ -939,7 +940,7 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadTgaToDds(const TResTextureSourceInfo& SrcInfo)
+	TResTextureDefine* LoadTgaToDds(const TResTextureSourceInfo& SrcInfo)
 	{
 		// Load Tga Image to find its format and width/height
 		TString SrcName = TResSettings::GlobalSettings.SrcPath + SrcInfo.TextureSource;
@@ -1023,11 +1024,83 @@ namespace tix
 
 		TResTextureSourceInfo DxtSrcInfo = SrcInfo;
 		TStringReplace(DxtSrcInfo.TextureSource, ".tga", ".DDS");
-		TResTextureDefine * DxtTexture = LoadDdsFile(DxtSrcInfo);
+		TResTextureDefine * DxtTexture = TResTextureHelper::LoadDdsFile(DxtSrcInfo);
 
 		TString DstPathName = TResSettings::GlobalSettings.SrcPath + DxtSrcInfo.TextureSource;
 		DeleteTempFile(DstPathName);
 
 		return DxtTexture;
 	}
+
+	TResTextureDefine* TResTextureHelper::ConvertToDds(TResTextureDefine* SrcImage)
+	{
+		E_PIXEL_FORMAT SrcFormat = SrcImage->ImageSurfaces[0]->GetFormat();
+		E_PIXEL_FORMAT DstFormat = EPF_UNKNOWN;
+
+		if (SrcFormat == EPF_RGB8)
+		{
+			DstFormat = EPF_DDS_DXT1;
+		}
+		else if (SrcFormat == EPF_RGBA8)
+		{
+			if (SrcImage->TGASourcePixelDepth == 24)
+			{
+				DstFormat = EPF_DDS_DXT1;
+			}
+			else
+			{
+				DstFormat = EPF_DDS_DXT5;
+			}
+		}
+		else
+		{
+			// Do not need compress
+			return SrcImage;
+		}
+		TResTextureDefine* DstImage = ti_new TResTextureDefine;
+		DstImage->Name = SrcImage->Name;
+		DstImage->Path = SrcImage->Path;
+		DstImage->LodBias = SrcImage->LodBias;
+		DstImage->Desc = SrcImage->Desc;
+		DstImage->Desc.Format = DstFormat;
+
+		DstImage->ImageSurfaces.resize(SrcImage->ImageSurfaces.size());
+
+
+		for (int32 i = 0 ; i < (int32)SrcImage->ImageSurfaces.size() ; ++ i)
+		{
+			TImage * TgaImage = SrcImage->ImageSurfaces[i];
+			TImage * DxtImage = ti_new TImage(DstFormat, TgaImage->GetWidth(), TgaImage->GetHeight());
+			DstImage->ImageSurfaces[i] = DxtImage;
+			if (TgaImage->GetMipmapCount() > 1)
+			{
+				DxtImage->AllocEmptyMipmaps();
+			}
+
+			for (int32 Mip = 0 ; Mip < DxtImage->GetMipmapCount(); ++ Mip)
+			{
+				const TImage::TImageSurfaceData& SrcData = TgaImage->GetMipmap(Mip);
+				TImage::TImageSurfaceData& DstData = DxtImage->GetMipmap(Mip);
+
+				rgba_surface Surface;
+				Surface.ptr = (uint8_t*)SrcData.Data.GetBuffer();
+				Surface.width = SrcData.W;
+				Surface.height = SrcData.H;
+				Surface.stride = SrcData.RowPitch;
+
+				uint8_t* Dst = (uint8_t*)DstData.Data.GetBuffer();
+				// Call ISPC function to convert
+				if (DstFormat == EPF_DDS_DXT1)
+				{
+					CompressBlocksBC1(&Surface, Dst);
+				}
+				else if (DstFormat == EPF_DDS_DXT5)
+				{
+					CompressBlocksBC3(&Surface, Dst);
+				}
+			}
+		}
+		return DstImage;
+	}
+
 }

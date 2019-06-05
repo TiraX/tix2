@@ -13,6 +13,7 @@
 #include "ResSceneHelper.h"
 #include "ResInstancesHelper.h"
 #include "PlatformUtils.h"
+#include "ResMultiThreadTask.h"
 
 TString FilenameSrc;
 TString FilenameDst;
@@ -141,6 +142,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 		return 0;
 	}
 
+	TResMTTaskExecuter::Create();
 	TResFileHelper Resfile;
 	{
 		// Read json file.
@@ -219,6 +221,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 	{
 		printf("Failed to save resfile : %s\n", FilenameDst.c_str());
 	}
+	TResMTTaskExecuter::Destroy();
 
     return 0;
 }

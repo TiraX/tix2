@@ -16,6 +16,14 @@ namespace tix
 
 		TTextureDesc Desc;
 		TVector<TImage*> ImageSurfaces;
+
+		// Extra Info
+		int32 TGASourcePixelDepth;
+
+		TResTextureDefine()
+			: LodBias(0)
+			, TGASourcePixelDepth(0)
+		{}
 	};
 
 	struct TResTextureSourceInfo
@@ -38,10 +46,15 @@ namespace tix
 
 		static bool LoadTextureFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static TResTextureDefine* LoadDdsFile(const TResTextureSourceInfo& SrcInfo);
-		static TResTextureDefine* ConvertDdsToAstc(TResTextureDefine* DdsTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat);
+		static TResTextureDefine* LoadTgaFile(const TResTextureSourceInfo& SrcInfo);
 
-		static TResTextureDefine* LoadTgaToDds(const TResTextureSourceInfo& SrcInfo);
-		static TResTextureDefine* LoadTgaToAstc(const TResTextureSourceInfo& SrcInfo);
+		static TResTextureDefine* ConvertToDds(TResTextureDefine* SrcImage);
+		static TResTextureDefine* ConvertToAstc(TResTextureDefine* SrcImage);
+
+		//static TResTextureDefine* ConvertDdsToAstc(TResTextureDefine* DdsTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat);
+
+		//static TResTextureDefine* LoadTgaToDds(const TResTextureSourceInfo& SrcInfo);
+		//static TResTextureDefine* LoadTgaToAstc(const TResTextureSourceInfo& SrcInfo);
 
 		void AddTexture(TResTextureDefine* Texture);
 		void OutputTexture(TStream& OutStream, TVector<TString>& OutStrings);

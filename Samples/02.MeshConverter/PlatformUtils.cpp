@@ -129,4 +129,16 @@ namespace tix
 		}
 		return true;
 	}
+
+	int32 GetProcessorCount()
+	{
+#if defined (TI_PLATFORM_WIN32)
+		// Figure out how many cores there are on this machine
+		SYSTEM_INFO sysinfo;
+		GetSystemInfo(&sysinfo);
+		return sysinfo.dwNumberOfProcessors;
+#else
+		TI_ASSERT(0);
+#endif
+	}
 }

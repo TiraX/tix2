@@ -154,7 +154,7 @@ namespace tix
 		{
 			Mip0.RowPitch = Width * GetPixelSizeInBytes(InPixelFormat);
 		}
-		Mip0.Data.ReserveAndClear(GetDataSize(InPixelFormat, Width, Height));
+		Mip0.Data.ReserveAndFill(GetDataSize(InPixelFormat, Width, Height));
 	}
 
 	TImage::~TImage()
@@ -393,6 +393,20 @@ namespace tix
 		Mipmaps.clear();
 	}
 
+	int32 TImage::CalcMipCount(int32 Width, int32 Height)
+	{
+		int32 MipCount = 0;
+		int32 W = Width;
+		int32 H = Height;
+		while (W > 0 && H > 0)
+		{
+			++MipCount;
+			W /= 2;
+			H /= 2;
+		}
+		return MipCount;
+	}
+
 	void TImage::AllocEmptyMipmaps()
 	{
 		TI_ASSERT(Mipmaps.size() > 0);
@@ -400,18 +414,9 @@ namespace tix
 		int32 H = Mipmaps[0].H;
 		bool IsCompressed = IsCompressedFormat(PixelFormat);
 
-		int32 MipCount = 0;
-		while (W > 0 && H > 0)
-		{
-			++MipCount;
-			W /= 2;
-			H /= 2;
-		}
-
+		int32 MipCount = CalcMipCount(W, H);
 		Mipmaps.resize(MipCount);
 
-		W = Mipmaps[0].W;
-		H = Mipmaps[0].H;
 		for (int32 Mip = 0; Mip < MipCount; ++Mip)
 		{
 			TImageSurfaceData* MipData = &Mipmaps[Mip];
@@ -428,7 +433,58 @@ namespace tix
 				{
 					MipData->RowPitch = GetPixelSizeInBytes(PixelFormat) * W;
 				}
-				MipData->Data.ReserveAndClear(GetDataSize(PixelFormat, W, H));
+				MipData->Data.ReserveAndFill(GetDataSize(PixelFormat, W, H));
+			}
+
+			W /= 2;
+			H /= 2;
+		}
+	}
+
+	void TImage::GenerateMipmaps()
+	{
+		TI_ASSERT(Mipmaps.size() > 0);
+		int32 W = Mipmaps[0].W;
+		int32 H = Mipmaps[0].H;
+		bool IsCompressed = IsCompressedFormat(PixelFormat);
+		if (IsCompressed)
+		{
+			return;
+		}
+		int32 MipCount = CalcMipCount(W, H);
+		if (Mipmaps.size() < MipCount)
+		{
+			AllocEmptyMipmaps();
+		}
+
+		// Down sample to generate all mips
+		for (int32 Mip = 0 ; Mip < MipCount - 1 ; ++ Mip)
+		{
+			for (int32 y = 0 ; y < H ; y += 2)
+			{
+				for (int32 x = 0 ; x < W ; x += 2)
+				{
+					SColor c00 = GetPixel(x + 0, y + 0, Mip);
+					SColor c10 = GetPixel(x + 1, y + 0, Mip);
+					SColor c01 = GetPixel(x + 0, y + 1, Mip);
+					SColor c11 = GetPixel(x + 1, y + 1, Mip);
+
+					float Rf, Gf, Bf, Af;
+					Rf = (float)(c00.R + c10.R + c01.R + c11.R);
+					Gf = (float)(c00.G + c10.G + c01.G + c11.G);
+					Bf = (float)(c00.B + c10.B + c01.B + c11.B);
+					Af = (float)(c00.A + c10.A + c01.A + c11.A);
+
+					// Calc average
+					SColor Target;
+					Target.R = ti_round(Rf * 0.25f);
+					Target.G = ti_round(Gf * 0.25f);
+					Target.B = ti_round(Bf * 0.25f);
+					Target.A = ti_round(Af * 0.25f);
+
+					// Set to next mip
+					SetPixel(x / 2, y / 2, Target, Mip + 1);
+				}
 			}
 
 			W /= 2;

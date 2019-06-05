@@ -163,6 +163,7 @@
     <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TJSON.h" />
+    <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="dds.h" />
     <ClInclude Include="PlatformUtils.h" />
     <ClInclude Include="ResConverter.h" />
@@ -171,6 +172,7 @@
     <ClInclude Include="ResMaterialHelper.h" />
     <ClInclude Include="ResMaterialInstanceHelper.h" />
     <ClInclude Include="ResMeshHelper.h" />
+    <ClInclude Include="ResMultiThreadTask.h" />
     <ClInclude Include="ResSceneHelper.h" />
     <ClInclude Include="ResSettings.h" />
     <ClInclude Include="ResShaderBindingHelper.h" />
@@ -182,6 +184,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="MainWin32.cpp" />
     <ClCompile Include="PlatformUtils.cpp" />
     <ClCompile Include="ResConverter.cpp" />
@@ -191,6 +194,7 @@
     <ClCompile Include="ResMaterialInstanceHelper.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
     <ClCompile Include="ResMeshHelperObj.cpp" />
+    <ClCompile Include="ResMultiThreadTask.cpp" />
     <ClCompile Include="ResSceneHelper.cpp" />
     <ClCompile Include="ResShaderBindingHelper.cpp" />
     <ClCompile Include="ResTextureHelpeDXTDecoder.cpp" />

@@ -117,6 +117,12 @@ namespace tix
 									*pSrc = *(pDst + 2);\
 									*(pDst + 2)	= tmp;\
 									}
+#define BGR8_TO_RGBA8(pSrc, pDst)	{\
+									uint8 tmp = *pSrc;\
+									*pSrc = *(pDst + 2);\
+									*(pDst + 2)	= tmp;\
+									*(pDst + 3) = 255;\
+									}
 
 
 	void ConvertPixelFormat(uint8* dst, uint8* src,
@@ -149,13 +155,26 @@ namespace tix
 				}
 			}
 		}
+		else if (srcFmt == EPF_BGR8 &&
+				(dstFmt == EPF_RGBA8))
+		{
+			for (int32 y = h - 1; y >= 0; --y)
+			{
+				for (int32 x = w - 1; x >= 0; --x)
+				{
+					BGR8_TO_RGBA8(src, dst);
+					dst += 4;
+					src += 3;
+				}
+			}
+		}
 		else
 		{
 			TI_ASSERT(0);
 		}
 	}
 
-	TImage* TImage::LoadImageTGA(TFile& FileInput)
+	TImage* TImage::LoadImageTGA(TFile& FileInput, int32* PixelDepth)
 	{
 		STGAHeader header;
 
@@ -169,6 +188,10 @@ namespace tix
 		{
 			// skip color map
 			FileInput.Seek(header.ColorMapEntrySize / 8 * header.ColorMapLength, true);
+		}
+		if (PixelDepth != nullptr)
+		{
+			*PixelDepth = header.PixelDepth;
 		}
 
 		E_PIXEL_FORMAT srcFmt = EPF_UNKNOWN;
@@ -185,14 +208,14 @@ namespace tix
 			case 24:
 			{
 				srcFmt = EPF_BGR8;
-				dstFmt = EPF_RGB8;
+				dstFmt = EPF_RGBA8;	// Always convert to 32 bit
 			}
 			break;
 
 			case 32:
 			{
 				srcFmt = EPF_BGRA8;
-				dstFmt = EPF_RGBA8;	//need convert.
+				dstFmt = EPF_RGBA8;	// need convert.
 			}
 			break;
 
@@ -209,24 +232,27 @@ namespace tix
 			return NULL;
 		}
 
-		TImage* image = ti_new TImage(dstFmt, header.ImageWidth, header.ImageHeight);
-		if (image)
+		TImage* Image = ti_new TImage(dstFmt, header.ImageWidth, header.ImageHeight);
+		if (Image)
 		{
-			void* src = image->Lock();
-
 			// read image
 			if (header.ImageType == TGA_IMAGETYPE_TRUECOLOR)
 			{
-				const int imageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
-				FileInput.Read(src, imageSize, imageSize);
-				ConvertPixelFormat((unsigned char*)src, (unsigned char*)src,
+				const int ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
+				char* SrcBuffer = ti_new char[ImageSize];
+				FileInput.Read(SrcBuffer, ImageSize, ImageSize);
+				ConvertPixelFormat((unsigned char*)Image->Lock(0), (unsigned char*)SrcBuffer,
 					dstFmt, srcFmt,
 					header.ImageWidth, header.ImageHeight);
+				ti_delete[] SrcBuffer;
 			}
 			else if (header.ImageType == TGA_IMAGETYPE_GREYSCALE)
 			{
-				const int32 imageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
-				FileInput.Read(src, imageSize, imageSize);
+				const int32 ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
+				char* SrcBuffer = ti_new char[ImageSize];
+				FileInput.Read(SrcBuffer, ImageSize, ImageSize);
+				Image->GetMipmap(0).Data.Put(SrcBuffer, ImageSize);
+				ti_delete[] SrcBuffer;
 			}
 			else //if (header.ImageType == 10)
 			{
@@ -234,10 +260,10 @@ namespace tix
 				printf("Compressed TGA format is not supported yet.");
 			}
 
-			image->Unlock();
+			Image->Unlock();
 		}
 
-		return image;
+		return Image;
 	}
 
 	bool TImage::SaveToTga(const char* filename, int32 MipIndex)

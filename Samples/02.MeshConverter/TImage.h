@@ -17,8 +17,9 @@ namespace tix
 		static vector2di GetBlockSize(E_PIXEL_FORMAT Format);
 		static int32 GetDataSize(E_PIXEL_FORMAT Format, int32 Width, int32 Height);
 		static bool IsCompressedFormat(E_PIXEL_FORMAT Format);
+		static int32 CalcMipCount(int32 Width, int32 Height);
 
-		static TImage* LoadImageTGA(TFile& FileInput);
+		static TImage* LoadImageTGA(TFile& FileInput, int32* PixelDepth = nullptr);
 		bool SaveToTga(const char* filename, int32 MipIndex = 0);
 
 		void FlipY();
@@ -88,6 +89,7 @@ namespace tix
 		}
 
 		void AllocEmptyMipmaps();
+		void GenerateMipmaps();
 	protected:
 		E_PIXEL_FORMAT PixelFormat;
 

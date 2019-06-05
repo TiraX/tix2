@@ -154,7 +154,7 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::ConvertDdsToAstc(TResTextureDefine* DDSTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat)
+	TResTextureDefine* ConvertDdsToAstc(TResTextureDefine* DDSTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat)
 	{
 		if (TargetFormat != EPF_UNKNOWN)
 		{
@@ -250,7 +250,7 @@ namespace tix
 		return Texture;
 	}
 
-	TResTextureDefine* TResTextureHelper::LoadTgaToAstc(const TResTextureSourceInfo& SrcInfo)
+	TResTextureDefine* LoadTgaToAstc(const TResTextureSourceInfo& SrcInfo)
 	{
 		TVector<TImage*> Images;
 		// Load Tga image and generate mipmap
@@ -345,5 +345,12 @@ namespace tix
 		//DeleteTempFile(TempASTCName);
 
 		//return Texture;
+	}
+
+	TResTextureDefine* TResTextureHelper::ConvertToAstc(TResTextureDefine* SrcImage)
+	{
+
+		TI_ASSERT(0);
+		return nullptr;
 	}
 }

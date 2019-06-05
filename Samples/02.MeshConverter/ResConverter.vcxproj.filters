@@ -64,6 +64,12 @@
     <ClInclude Include="ResInstancesHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResMultiThreadTask.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TThread.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -128,6 +134,12 @@
     </ClCompile>
     <ClCompile Include="ResInstancesHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResMultiThreadTask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TThread.cpp">
+      <Filter>Source Files\TiX2</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

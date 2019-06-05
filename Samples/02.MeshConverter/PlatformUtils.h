@@ -10,4 +10,5 @@ namespace tix
 	TString GetExecutablePath();
 	int32 DeleteTempFile(TString FileName);
 	bool CreateDirectoryIfNotExist(const TString& Path);
+	int32 GetProcessorCount();
 }
