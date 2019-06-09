@@ -118,11 +118,11 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 		size_t pos = FilenameSrc.rfind('.');
 		if (pos != TString::npos)
 		{
-			FilenameDst = FilenameSrc.substr(0, pos) + ".tres";
+			FilenameDst = FilenameSrc.substr(0, pos) + ".tasset";
 		}
 		else
 		{
-			FilenameDst = FilenameSrc + ".tres";
+			FilenameDst = FilenameSrc + ".tasset";
 		}
 	}
 	return true;

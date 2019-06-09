@@ -25,13 +25,16 @@ namespace tix
 		unique_lock<TMutex> TaskLock(TaskMutex);
 		TaskCond.wait(TaskLock);
 
-		for (auto T : Tasks)
+		if (Tasks.size() > 0)
 		{
-			T->Exec();
-		}
-		Tasks.clear();
+			for (auto T : Tasks)
+			{
+				T->Exec();
+			}
+			Tasks.clear();
 
-		Executer->NotifyThreadFinished(TaskIndex);
+			Executer->NotifyThreadFinished(TaskIndex);
+		}
 	}
 
 	void TResTaskThread::Stop()

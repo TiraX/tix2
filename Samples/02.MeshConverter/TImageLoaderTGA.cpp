@@ -162,7 +162,10 @@ namespace tix
 			{
 				for (int32 x = w - 1; x >= 0; --x)
 				{
-					BGR8_TO_RGBA8(src, dst);
+					dst[0] = src[2];
+					dst[1] = src[1];
+					dst[2] = src[0];
+					dst[3] = 0;
 					dst += 4;
 					src += 3;
 				}
