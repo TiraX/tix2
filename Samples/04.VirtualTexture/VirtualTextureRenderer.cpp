@@ -5,6 +5,8 @@
 
 #include "stdafx.h"
 #include "VirtualTextureRenderer.h"
+#include "FVTSystem.h"
+#include "FVTTaskThread.h"
 
 FComputeUVDiscard::FComputeUVDiscard(int32 W, int32 H)
 	: FComputeTask("S_UVDiscardCS")
@@ -57,7 +59,7 @@ void FComputeUVDiscard::PrepareDataForCPU(FRHI * RHI)
 	RHI->PrepareDataForCPU(OutputUVBuffer);
 }
 
-uint8* FComputeUVDiscard::ReadUVBuffer()
+TStreamPtr FComputeUVDiscard::ReadUVBuffer()
 {
 	return OutputUVBuffer->ReadBufferData();
 }
@@ -115,7 +117,8 @@ void FVirtualTextureRenderer::InitInRenderThread()
 
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	ComputeUVDiscard->ReadUVBuffer();
+	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
+	FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
 
 	// Render Base Pass
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);

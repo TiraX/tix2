@@ -253,6 +253,9 @@
     <ClCompile Include="..\..\Sources\Engine\TEngineResources.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FVTTaskThread.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -608,6 +611,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TEngineResources.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FVTTaskThread.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

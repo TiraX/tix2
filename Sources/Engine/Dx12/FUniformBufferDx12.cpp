@@ -32,7 +32,7 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 	}
 
-	uint8* FUniformBufferReadableDx12::ReadBufferData()
+	TStreamPtr FUniformBufferReadableDx12::ReadBufferData()
 	{
 		if (ReadbackResource.GetResource() != nullptr)
 		{
@@ -43,10 +43,13 @@ namespace tix
 			HRESULT Hr = ReadbackResource.GetResource()->Map(0, &ReadbackBufferRange, reinterpret_cast<void**>(&Result));
 			TI_ASSERT(SUCCEEDED(Hr));
 
+			TStreamPtr Data = ti_new TStream(BufferSize);
+			Data->Put(Result, BufferSize);
+
 			// Code goes here to access the data via pReadbackBufferData.
 			D3D12_RANGE EmptyRange{ 0, 0 };
 			ReadbackResource.GetResource()->Unmap(0, &EmptyRange);
-			return Result;
+			return Data;
 		}
 		return nullptr;
 	}

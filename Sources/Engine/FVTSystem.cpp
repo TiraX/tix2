@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "FVTSystem.h"
+#include "FVTTaskThread.h"
 
 namespace tix
 {
@@ -17,11 +18,16 @@ namespace tix
 		: VTRegion(VTSize, PPSize)
 	{
 		VTSystem = this;
+		VTTaskThread = ti_new FVTTaskThread;
+		VTTaskThread->Start();
 	}
 
 	FVTSystem::~FVTSystem()
 	{
 		VTSystem = nullptr;
+		VTTaskThread->Stop();
+		ti_delete VTTaskThread;
+		VTTaskThread = nullptr;
 	}
 
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)

@@ -77,7 +77,7 @@ namespace tix
 		FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements, uint32 InUBFlag);
 		virtual ~FUniformBuffer();
 
-		virtual uint8* ReadBufferData() { return nullptr; }
+		virtual TStreamPtr ReadBufferData() { return nullptr; }
 
 		uint32 GetTotalBufferSize() const
 		{

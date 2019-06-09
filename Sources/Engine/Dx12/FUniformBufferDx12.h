@@ -30,7 +30,7 @@ namespace tix
 		FUniformBufferReadableDx12(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag);
 		virtual ~FUniformBufferReadableDx12();
 
-		virtual uint8* ReadBufferData();
+		virtual TStreamPtr ReadBufferData();
 	protected:
 		FGPUResourceDx12 ReadbackResource;
 		friend class FRHIDx12;

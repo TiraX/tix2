@@ -16,7 +16,7 @@ float4 main(VSOutput input, out float4 uvLayer : SV_Target1) : SV_Target0
 	Color.xyz = BaseColor * Normal.z;
 
 	// output uv
-	uvLayer = float4(input.uv.xy, mip_map_level(input.uv.zw), 1);
+	uvLayer = float4(input.uv.xy, mip_map_level(input.uv.zw, 1024), 1);
 	
 	return Color;
 }

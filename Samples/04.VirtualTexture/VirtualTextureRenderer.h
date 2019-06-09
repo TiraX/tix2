@@ -21,7 +21,7 @@ public:
 
 	void PrepareBuffers(FTexturePtr UVInput);
 	void PrepareDataForCPU(FRHI * RHI);
-	uint8* ReadUVBuffer();
+	TStreamPtr ReadUVBuffer();
 protected:
 	virtual void FinalizeInRenderThread() override;
 

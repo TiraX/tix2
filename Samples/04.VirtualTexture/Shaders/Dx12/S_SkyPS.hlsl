@@ -11,10 +11,12 @@ float4 main(VSOutput input, out float4 uvLayer : SV_Target1) : SV_Target0
 	float4 BaseColor = texBaseColor.Sample(sampler0, input.uv.xy);
 
 	float4 Color = float4(0, 0, 0, 1);
-	Color.xyz = BaseColor.xyz;
+	Color.xyz =  BaseColor.xyz;
 
 	// output uv
-	uvLayer = float4(input.uv.xy, mip_map_level(input.uv.zw), 1);
+	uvLayer = float4(input.uv.xy, mip_map_level(input.uv.zw, 1024), 1);
+
+	Color.xyz = uvLayer.zzz;
 	
 	return Color;
 }

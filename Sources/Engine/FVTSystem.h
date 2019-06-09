@@ -11,6 +11,7 @@ namespace tix
 {
 	// Refs:
 	// Adaptive Virtual Texture Rendering in Far Cry 4
+	class FVTTaskThread;
 	class FVTSystem
 	{
 	public:
@@ -27,13 +28,18 @@ namespace tix
 		{
 			return Enabled;
 		}
-		static FVTSystem * Get()
+		static TI_API FVTSystem * Get()
 		{
 			return VTSystem;
 		}
 
 		FVTSystem();
 		~FVTSystem();
+
+		TI_API FVTTaskThread * GetVTTaskThread()
+		{
+			return VTTaskThread;
+		}
 
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
@@ -57,6 +63,6 @@ namespace tix
 		};
 		THMap<uint32, FRegionInfo> RegionsAllocated;
 
-		FPipelinePtr PipelineUVCheck;
+		FVTTaskThread * VTTaskThread;
 	};
 }
