@@ -17,10 +17,10 @@ namespace tix
 	public:
 		// Virtual texture size
 		static const int32 VTSize = 512 * 1024;
-		// Indirection texture size
-		static const int32 ITSize = 2 * 1024;
 		// Physical page size
 		static const int32 PPSize = 256;
+		// Indirection texture size
+		static const int32 ITSize = VTSize / PPSize;
 
 		static const float UVInv;
 
@@ -44,8 +44,17 @@ namespace tix
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
+		struct FPageInfo
+		{
+			TString TextureName;
+			vector2di TextureSize;
+			vector2di PageStart;
+		};
+		FPageInfo GetPageInfoByPosition(const vector2di& InPosition);
+
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
+		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
 
 	private:
 		static const bool Enabled;
@@ -61,7 +70,27 @@ namespace tix
 				, Refs(0)
 			{}
 		};
+		// Texture already in VT, Refs means how many primitives use this texture
 		THMap<uint32, FRegionInfo> RegionsAllocated;
+
+		// Data index link to primitive
+		TVector<int32> RegionData;
+
+		struct FTextureInfo
+		{
+			TString TextureName;
+			vector2di TextureSize;
+
+			FTextureInfo()
+			{}
+
+			FTextureInfo(const TString& InName, const vector2di& InSize)
+				: TextureName(InName)
+				, TextureSize(InSize)
+			{}
+		};
+		// Texture loaded, Key is offset in RegionData
+		THMap<uint32, FTextureInfo> TexturesInVT;
 
 		FVTTaskThread * VTTaskThread;
 	};

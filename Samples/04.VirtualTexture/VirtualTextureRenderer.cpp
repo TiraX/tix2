@@ -118,7 +118,10 @@ void FVirtualTextureRenderer::InitInRenderThread()
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
-	FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
+	if (UVBuffer != nullptr)
+	{
+		FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
+	}
 
 	// Render Base Pass
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);

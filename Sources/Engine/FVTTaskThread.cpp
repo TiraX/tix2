@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "FVTTaskThread.h"
+#include "FVTSystem.h"
 
 namespace tix
 {
@@ -53,7 +54,21 @@ namespace tix
 		Buffers.pop_front();
 		BufferMutex.unlock();
 
-		const FFloat4* Data = (const FFloat4*)Buffer->GetBuffer();
+		FVTSystem * VTSystem = FVTSystem::Get();
+		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
+		for (int32 i = 0 ; i < DataCount ; ++ i)
+		{
+			const FFloat4& Data = DataPtr[i];
+			if (Data.W > 0.f)
+			{
+				vector2di Position;
+				Position.X = (int32)(Data.X * FVTSystem::VTSize);
+				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
+
+				FVTSystem::FPageInfo PageInfo = VTSystem->GetPageInfoByPosition(Position);
+				TI_ASSERT(0);
+			}
+		}
 	}
 }

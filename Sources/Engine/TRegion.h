@@ -20,7 +20,7 @@ namespace tix
 		};
 
 		void Reset();
-		TRegionDesc* FindAvailbleRegion(int32 Width, int32 Height);
+		TRegionDesc* FindAvailbleRegion(int32 Width, int32 Height, uint32* OutRegionIndex = nullptr);
 		void GetRegionSizeRequirement(int32& Width, int32& Height);
 
 	protected:

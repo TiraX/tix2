@@ -29,7 +29,7 @@ namespace tix
 #define DEBUG_VERIFY_INTEGRITY()
 #endif
 
-	TRegion::TRegionDesc* TRegion::FindAvailbleRegion(int32 Width, int32 Height)
+	TRegion::TRegionDesc* TRegion::FindAvailbleRegion(int32 Width, int32 Height, uint32 * OutRegionIndex)
 	{
 		DEBUG_VERIFY_INTEGRITY();
 
@@ -80,6 +80,10 @@ namespace tix
 				SubDivideRegion(MatchRegionId, XCount, YCount);
 
 			DEBUG_VERIFY_INTEGRITY();
+			if (OutRegionIndex != nullptr)
+			{
+				*OutRegionIndex = MatchRegionId;
+			}
 			return &Regions[MatchRegionId];
 		}
 
