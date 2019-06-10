@@ -28,17 +28,15 @@ namespace tix
 		struct TImageSurfaceData
 		{
 			int32 W, H;
-			union
-			{
-				int32 RowPitch;
-				int32 BlockSize;
-			};
+			int32 RowPitch;
+			int32 BlockSize;
 			TStream Data;
 
 			TImageSurfaceData()
 				: W(0)
 				, H(0)
 				, RowPitch(0)
+				, BlockSize(0)
 			{}
 		};
 

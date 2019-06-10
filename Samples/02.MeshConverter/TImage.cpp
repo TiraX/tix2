@@ -148,7 +148,10 @@ namespace tix
 		Mip0.H = Height;
 		if (IsCompressedFormat(InPixelFormat))
 		{
+			vector2di Block = GetBlockSize(InPixelFormat);
 			Mip0.BlockSize = GetBlockSizeInBytes(InPixelFormat);
+			int32 BlockW = GetBlockWidth(Width, Block.X);
+			Mip0.RowPitch = Mip0.BlockSize * BlockW;
 		}
 		else
 		{
@@ -427,7 +430,10 @@ namespace tix
 				MipData->H = H;
 				if (IsCompressed)
 				{
+					vector2di Block = GetBlockSize(PixelFormat);
 					MipData->BlockSize = GetBlockSizeInBytes(PixelFormat);
+					int32 BlockW = GetBlockWidth(W, Block.X);
+					MipData->RowPitch = MipData->BlockSize * BlockW;
 				}
 				else
 				{

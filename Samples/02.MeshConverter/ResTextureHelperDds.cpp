@@ -808,7 +808,10 @@ namespace tix
 				uint32 d = depth;
 				TImage * Image = ti_new TImage(Texture->Desc.Format, Texture->Desc.Width, Texture->Desc.Height);
 				Texture->ImageSurfaces[j] = Image;
-				Image->AllocEmptyMipmaps();
+				if (Texture->Desc.Mips > 1)
+				{
+					Image->AllocEmptyMipmaps();
+				}
 
 				for (uint32 i = 0; i < mipCount; i++)
 				{
@@ -825,7 +828,7 @@ namespace tix
 						// Set data
 						TImage::TImageSurfaceData& Surface = Image->GetMipmap(i - LodBias);
 						TI_ASSERT(NumBytes == Surface.Data.GetBufferSize());
-						Surface.Data.Put(SrcData, NumBytes);
+						memcpy(Surface.Data.GetBuffer(), SrcData, NumBytes);
 					}
 
 					SrcData += NumBytes * d;
