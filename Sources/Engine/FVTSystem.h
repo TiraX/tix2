@@ -47,8 +47,9 @@ namespace tix
 		struct FPageInfo
 		{
 			TString TextureName;
-			vector2di TextureSize;
-			vector2di PageStart;
+			vector2du16 TextureSize;
+			vector2du16 PageStart;
+			uint32 RegionData;
 		};
 		FPageInfo GetPageInfoByPosition(const vector2di& InPosition);
 
@@ -73,18 +74,18 @@ namespace tix
 		// Texture already in VT, Refs means how many primitives use this texture
 		THMap<uint32, FRegionInfo> RegionsAllocated;
 
-		// Data index link to primitive
+		// Data index link to primitive, first 1 bit mark as loaded flag
 		TVector<int32> RegionData;
 
 		struct FTextureInfo
 		{
 			TString TextureName;
-			vector2di TextureSize;
+			vector2du16 TextureSize;
 
 			FTextureInfo()
 			{}
 
-			FTextureInfo(const TString& InName, const vector2di& InSize)
+			FTextureInfo(const TString& InName, const vector2du16& InSize)
 				: TextureName(InName)
 				, TextureSize(InSize)
 			{}

@@ -34,7 +34,7 @@ namespace tix
 			}
 			else if (VTLoadTasks.size() > 0)
 			{
-				// Do loading task
+				DoLoadingTask();
 			}
 		}
 	}
@@ -67,8 +67,26 @@ namespace tix
 				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
 
 				FVTSystem::FPageInfo PageInfo = VTSystem->GetPageInfoByPosition(Position);
-				TI_ASSERT(0);
+				if ((PageInfo.RegionData & 0x80000000) != 0)
+				{
+					VTLoadTasks.push_back(PageInfo);
+				}
 			}
+		}
+	}
+
+	void FVTTaskThread::DoLoadingTask()
+	{
+		FVTSystem::FPageInfo Task = VTLoadTasks.front();
+		VTLoadTasks.pop_front();
+
+		TAssetFilePtr AssetFile = ti_new TAssetFile;
+		if (AssetFile->Load(Task.TextureName))
+		{
+			int32 StartX = Task.PageStart.X * FVTSystem::PPSize;
+			int32 StartY = Task.PageStart.Y * FVTSystem::PPSize;
+			TTexturePtr Tex = AssetFile->CreateTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
+
 		}
 	}
 }

@@ -26,6 +26,7 @@ namespace tix
 		bool ReadFile(const TString& InFilename);
 		bool ParseFile();
 
+		TTexturePtr CreateTextureWithRegion(int32 Mip, int32 StartX, int32 StartY, int32 EndX, int32 EndY);
 	private:
 		void CreateMeshBuffer(TVector<TResourcePtr>& OutResources);
 		void CreateTexture(TVector<TResourcePtr>& OutResources);

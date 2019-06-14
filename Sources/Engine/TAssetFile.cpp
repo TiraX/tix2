@@ -281,6 +281,62 @@ namespace tix
 		}
 	}
 
+	TTexturePtr TAssetFile::CreateTextureWithRegion(int32 Mip, int32 StartX, int32 StartY, int32 EndX, int32 EndY)
+	{
+		TI_ASSERT(0);
+
+		TI_ASSERT(ChunkHeader[ECL_TEXTURES] != nullptr);
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_TEXTURES];
+		const int32 TextureCount = ChunkHeader[ECL_TEXTURES]->ElementCount;
+		TI_ASSERT(TextureCount == 1);
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* TextureDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * TextureCount;
+
+		// Only load 1 texture resource
+		TTexturePtr Texture;
+		for (int32 i = 0; i < TextureCount; ++i)
+		{
+			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * i);
+
+			TTextureDesc Desc;
+			Desc.Type = (E_TEXTURE_TYPE)Header->Type;
+			Desc.Format = (E_PIXEL_FORMAT)Header->Format;
+			Desc.Width = Header->Width;
+			Desc.Height = Header->Height;
+			Desc.AddressMode = (E_TEXTURE_ADDRESS_MODE)Header->AddressMode;
+			Desc.SRGB = Header->SRGB;
+			Desc.Mips = Header->Mips;
+
+			if (Desc.SRGB != 0)
+			{
+				Desc.Format = GetSRGBFormat(Desc.Format);
+			}
+			TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
+
+			int32 ArraySize = 1;
+			TI_ASSERT(Header->Surfaces == ArraySize * Desc.Mips);
+
+			int32 DataOffset = 0;
+			for (int32 a = 0; a < ArraySize; ++a)
+			{
+				for (uint32 m = 0; m < Texture->GetDesc().Mips; ++m)
+				{
+					const uint8* Data = TextureDataStart + DataOffset;
+					int32 Width = *(const int32*)(Data + sizeof(int32) * 0);
+					int32 Height = *(const int32*)(Data + sizeof(int32) * 1);
+					int32 RowPitch = *(const int32*)(Data + sizeof(int32) * 2);
+					int32 Size = *(const int32*)(Data + sizeof(int32) * 3);
+					Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, RowPitch, Size);
+					DataOffset += Size + sizeof(uint32) * 4;
+					DataOffset = ti_align4(DataOffset);
+				}
+			}
+		}
+		return Texture;
+	}
+
 	void TAssetFile::CreateMaterial(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_MATERIAL] == nullptr)

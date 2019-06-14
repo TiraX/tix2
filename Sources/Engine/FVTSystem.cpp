@@ -78,6 +78,7 @@ namespace tix
 			//VTRegion.GetRegionSizeRequirement(W, H);
 			uint32 RegionIndex = uint32(-1);
 			Region = VTRegion.FindAvailbleRegion(W, H, &RegionIndex);
+			TI_ASSERT(RegionIndex < 0x7fffffff);
 			FRegionInfo Info;
 			Info.Desc = Region;
 			Info.Refs = 1;
@@ -85,7 +86,7 @@ namespace tix
 
 			// Add texture info
 			TI_ASSERT(TexturesInVT.find(RegionIndex) == TexturesInVT.end());
-			TexturesInVT[RegionIndex] = FTextureInfo(TextureNames[0], TextureSizes[0]);
+			TexturesInVT[RegionIndex] = FTextureInfo(TextureNames[0], vector2du16(TextureSizes[0].X, TextureSizes[0].Y));
 
 			// Mark texture info in this region
 			MarkRegion(RegionIndex, Region);
@@ -139,7 +140,7 @@ namespace tix
 		int32 PageX = InPosition.X / PPSize;
 		int32 PageY = InPosition.Y / PPSize;
 		int32 PageIndex = PageY * ITSize + PageX;
-		int32 RegionIndex = RegionData[PageIndex];
+		int32 RegionIndex = RegionData[PageIndex] & 0x7fffffff;
 		TI_ASSERT(RegionIndex != -1);
 		TI_ASSERT(TexturesInVT.find(RegionIndex) != TexturesInVT.end());
 
@@ -151,6 +152,7 @@ namespace tix
 		PageInfo.TextureSize = TextureInfo.TextureSize;
 		PageInfo.PageStart.X = PageX - RegionCellStartX;
 		PageInfo.PageStart.Y = PageY - RegionCellStartY;
+		PageInfo.RegionData = uint32(RegionData[PageIndex]);
 
 		return PageInfo;
 	}

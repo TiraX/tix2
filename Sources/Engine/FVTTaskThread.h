@@ -18,12 +18,12 @@ namespace tix
 
 	protected:
 		void AnalysisBuffer();
+		void DoLoadingTask();
 
 	private:
 		TMutex BufferMutex;
 		TList<TStreamPtr> Buffers;
-
-		TVector<int32> VTLoadTasks;
+		TList<FVTSystem::FPageInfo> VTLoadTasks;
 	};
 
 }
