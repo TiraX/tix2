@@ -7,6 +7,10 @@
 #include "FVTSystem.h"
 #include "FVTTaskThread.h"
 
+#if defined (TIX_DEBUG)
+#	define DEBUG_IT_INFO
+#endif
+
 namespace tix
 {
 	const bool FVTSystem::Enabled = true;
@@ -90,6 +94,9 @@ namespace tix
 
 			// Mark texture info in this region
 			MarkRegion(RegionIndex, Region);
+			int32 x = RegionIndex % ITSize;
+			int32 y = RegionIndex / ITSize;
+			InPrimitive->SetVTDebugInfo(x, y, W, H);
 		}
 
 		TI_ASSERT(Region != nullptr);
@@ -109,6 +116,12 @@ namespace tix
 			}
 			Index += ITSize;
 		}
+#ifdef DEBUG_IT_INFO
+		static int32 counter = 0;
+		int32 x = Index % ITSize;
+		int32 y = Index / ITSize;
+		_LOG(Log, "%d, Mark region %d, %d, [%d, %d]\n", counter ++, x, y, InRegion->XCount, InRegion->YCount);
+#endif
 	}
 
 	void FVTSystem::RemovePositionForPrimitive(FPrimitivePtr InPrimitive)
@@ -140,6 +153,20 @@ namespace tix
 		int32 PageX = InPosition.X / PPSize;
 		int32 PageY = InPosition.Y / PPSize;
 		int32 PageIndex = PageY * ITSize + PageX;
+#ifdef DEBUG_IT_INFO
+		if (RegionData[PageIndex] == -1)
+		{
+			int32 out = false;
+			if (out)
+			{
+				OutputDebugInfo();
+			}
+			FPageInfo PageInfo;
+			PageInfo.RegionData = 0x80000000;
+			return PageInfo;
+		}
+#endif
+		TI_ASSERT(RegionData[PageIndex] != -1);
 		int32 RegionIndex = RegionData[PageIndex] & 0x7fffffff;
 		TI_ASSERT(RegionIndex != -1);
 		TI_ASSERT(TexturesInVT.find(RegionIndex) != TexturesInVT.end());
@@ -155,5 +182,46 @@ namespace tix
 		PageInfo.RegionData = uint32(RegionData[PageIndex]);
 
 		return PageInfo;
+	}
+
+	void FVTSystem::OutputDebugInfo()
+	{
+#ifdef DEBUG_IT_INFO
+		// Indirect texture 
+		TStringStream ss;
+		THMap<int32, int32> Images;
+		for (int32 x = 0; x < ITSize; ++x)
+		{
+			ss << x + 1 << ", ";
+		}
+		ss << "\n";
+		for (int32 y = 0 ; y < ITSize ; ++ y)
+		{
+			for (int32 x = 0 ; x < ITSize ; ++ x)
+			{
+				int32 PageIndex = y * ITSize + x;
+				int32 RegionIndex = RegionData[PageIndex];
+				if (RegionIndex == -1)
+				{
+					ss << "-1, ";
+				}
+				else
+				{
+					int32 Loaded = (RegionIndex & 0x80000000) >> 31;
+					RegionIndex = RegionIndex & 0x7fffffff;
+					ss << Loaded << "/" << RegionIndex << ", ";
+					Images[RegionIndex] = 1;
+				} 
+			}
+			ss << "\n";
+		}
+
+		ss << "Images : , " << Images.size() << " \n";
+
+		TFile RegionDataFile;
+		RegionDataFile.Open("region_data.csv", EFA_CREATEWRITE);
+		TString csvString = ss.str();
+		RegionDataFile.Write(csvString.c_str(), (int32)csvString.size());
+#endif
 	}
 }

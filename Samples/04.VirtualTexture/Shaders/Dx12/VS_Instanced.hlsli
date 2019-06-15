@@ -10,6 +10,7 @@ cbuffer EB_Primitive : register(b1)
 {
 	float4x4 WorldTransform;
 	float4 VTUVTransform;
+	float4 VTDebugInfo;
 };
 
 struct VSInput
@@ -46,6 +47,6 @@ float4 GetVTTextureCoords(in VSInput vsInput, in float4 VTUVTransform)
 {
 	float4 TexCoord;
 	TexCoord.xy = vsInput.texcoord0 * VTUVTransform.zw + VTUVTransform.xy;
-	TexCoord.zw = vsInput.texcoord0;
+	TexCoord.zw = VTDebugInfo.xy;
 	return TexCoord;
 }

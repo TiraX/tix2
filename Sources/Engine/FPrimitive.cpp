@@ -69,6 +69,13 @@ namespace tix
 		PrimitiveFlag |= PrimitiveUniformBufferDirty;
 	}
 
+	void FPrimitive::SetVTDebugInfo(float A, float B, float C, float D)
+	{
+		TI_ASSERT(IsRenderThread());
+		PrimitiveUniformBuffer->UniformBufferData[0].VTDebugInfo = FFloat4(A, B, C, D);
+		PrimitiveFlag |= PrimitiveUniformBufferDirty;
+	}
+
 	void FPrimitive::UpdatePrimitiveBuffer_RenderThread()
 	{
 		TI_ASSERT(IsRenderThread());

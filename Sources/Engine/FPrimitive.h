@@ -10,6 +10,7 @@ namespace tix
 	BEGIN_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, WorldTransform)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTUVTransform)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTDebugInfo)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
 		class FPrimitive : public IReferenceCounted
@@ -58,6 +59,7 @@ namespace tix
 		}
 		void SetWorldTransform(const matrix4 InWorldTransform);
 		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
+		void SetVTDebugInfo(float A, float B, float C, float D);
 
 		void UpdatePrimitiveBuffer_RenderThread();
 	private:

@@ -15,6 +15,7 @@ float4 main(VSOutput input, out float4 uvLayer : SV_Target1) : SV_Target0
 
 	// output uv
 	uvLayer = float4(input.uv.xy, mip_map_level(input.uv.zw, 1024), 1);
+	uvLayer = input.uv;
 
 	Color.xyz = uvLayer.zzz;
 	

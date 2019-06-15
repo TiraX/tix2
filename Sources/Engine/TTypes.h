@@ -31,8 +31,9 @@ typedef double float64;
 #define THMap std::unordered_map
 #define TSort std::sort
 
-typedef std::string	TString;
+typedef std::string TString;
 typedef std::wstring TWString;
+typedef std::stringstream TStringStream;
 
 typedef std::mutex TMutex;
 typedef std::condition_variable TCond;

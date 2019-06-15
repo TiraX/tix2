@@ -16,7 +16,7 @@ namespace tix
 	{
 	public:
 		// Virtual texture size
-		static const int32 VTSize = 512 * 1024;
+		static const int32 VTSize = 256 * 1024;
 		// Physical page size
 		static const int32 PPSize = 256;
 		// Indirection texture size
@@ -52,6 +52,8 @@ namespace tix
 			uint32 RegionData;
 		};
 		FPageInfo GetPageInfoByPosition(const vector2di& InPosition);
+
+		void OutputDebugInfo();
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
