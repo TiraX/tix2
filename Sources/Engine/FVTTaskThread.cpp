@@ -58,7 +58,6 @@ namespace tix
 		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
 
-		TVector<vector2di> DebugInfo;
 		for (int32 i = 0 ; i < DataCount ; ++ i)
 		{
 			const FFloat4& Data = DataPtr[i];
@@ -69,23 +68,10 @@ namespace tix
 				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
 
 				FVTSystem::FPageInfo PageInfo = VTSystem->GetPageInfoByPosition(Position);
-				if (PageInfo.RegionData == 0x80000000)
-				{
-					DebugInfo.push_back(Position);
-				}
 				if ((PageInfo.RegionData & 0x80000000) != 0)
 				{
 					VTLoadTasks.push_back(PageInfo);
 				}
-			}
-		}
-
-		if (DebugInfo.size() > 0)
-		{
-			_LOG(Log, "%d ==================================\n ", DebugInfo.size());
-			for (const auto& info : DebugInfo)
-			{
-				_LOG(Log, "err %d, %d - %d, %d\n", info.X, info.Y, info.X / FVTSystem::PPSize, info.Y / FVTSystem::PPSize);
 			}
 		}
 	}

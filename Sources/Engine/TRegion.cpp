@@ -90,6 +90,11 @@ namespace tix
 		return nullptr;
 	}
 
+	TRegion::TRegionDesc* TRegion::GetRegionByIndex(uint32 RegionIndex)
+	{
+		return &Regions[RegionIndex];
+	}
+
 	void TRegion::SubDivideRegion(uint32 MatchRegionId, int32 NewXCount, int32 NewYCount)
 	{
 		DEBUG_VERIFY_INTEGRITY();

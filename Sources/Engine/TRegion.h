@@ -21,6 +21,7 @@ namespace tix
 
 		void Reset();
 		TRegionDesc* FindAvailbleRegion(int32 Width, int32 Height, uint32* OutRegionIndex = nullptr);
+		TRegionDesc* GetRegionByIndex(uint32 RegionIndex);
 		void GetRegionSizeRequirement(int32& Width, int32& Height);
 
 	protected:

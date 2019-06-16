@@ -66,10 +66,10 @@ namespace tix
 		TRegion VTRegion;
 		struct FRegionInfo
 		{
-			TRegion::TRegionDesc* Desc;
+			uint32 RegionIndex;
 			int32 Refs;
 			FRegionInfo()
-				: Desc(nullptr)
+				: RegionIndex(uint32(-1))
 				, Refs(0)
 			{}
 		};

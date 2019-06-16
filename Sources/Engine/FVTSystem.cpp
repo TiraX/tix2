@@ -8,7 +8,7 @@
 #include "FVTTaskThread.h"
 
 #if defined (TIX_DEBUG)
-#	define DEBUG_IT_INFO
+//#	define DEBUG_IT_INFO
 #endif
 
 namespace tix
@@ -62,7 +62,8 @@ namespace tix
 			return;
 
 		uint32 TexturesHash = GetPrimitiveTextureHash(InPrimitive);
-		TRegion::TRegionDesc * Region = nullptr;
+		uint32 RegionIndex = uint32(-1);
+		TRegion::TRegionDesc* Region = nullptr;
 
 		THMap<uint32, FRegionInfo>::iterator It = RegionsAllocated.find(TexturesHash);
 		if (It != RegionsAllocated.end())
@@ -70,7 +71,8 @@ namespace tix
 			// Already allocated
 			FRegionInfo& Info = It->second;
 			Info.Refs++;
-			Region = Info.Desc;
+			RegionIndex = Info.RegionIndex;
+			Region = VTRegion.GetRegionByIndex(RegionIndex);
 		}
 		else
 		{
@@ -80,11 +82,10 @@ namespace tix
 
 			// Assume all textures are power of 2 sizes
 			//VTRegion.GetRegionSizeRequirement(W, H);
-			uint32 RegionIndex = uint32(-1);
 			Region = VTRegion.FindAvailbleRegion(W, H, &RegionIndex);
 			TI_ASSERT(RegionIndex < 0x7fffffff);
 			FRegionInfo Info;
-			Info.Desc = Region;
+			Info.RegionIndex = (RegionIndex & 0x7fffffff);
 			Info.Refs = 1;
 			RegionsAllocated[TexturesHash] = Info;
 
@@ -94,14 +95,14 @@ namespace tix
 
 			// Mark texture info in this region
 			MarkRegion(RegionIndex, Region);
-			int32 x = RegionIndex % ITSize;
-			int32 y = RegionIndex / ITSize;
-			InPrimitive->SetVTDebugInfo(x, y, W, H);
 		}
 
-		TI_ASSERT(Region != nullptr);
+		TI_ASSERT(RegionIndex != uint32(-1));
 
-		InPrimitive->SetUVTransform(Region->XCount * UVInv, Region->YCount * UVInv, UVInv, UVInv);
+		int32 x = RegionIndex % ITSize;
+		int32 y = RegionIndex / ITSize;
+		InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
+		InPrimitive->SetVTDebugInfo(x, y, Region->XCount, Region->YCount);
 	}
 
 	void FVTSystem::MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion)
@@ -116,12 +117,6 @@ namespace tix
 			}
 			Index += ITSize;
 		}
-#ifdef DEBUG_IT_INFO
-		static int32 counter = 0;
-		int32 x = Index % ITSize;
-		int32 y = Index / ITSize;
-		_LOG(Log, "%d, Mark region %d, %d, [%d, %d]\n", counter ++, x, y, InRegion->XCount, InRegion->YCount);
-#endif
 	}
 
 	void FVTSystem::RemovePositionForPrimitive(FPrimitivePtr InPrimitive)
