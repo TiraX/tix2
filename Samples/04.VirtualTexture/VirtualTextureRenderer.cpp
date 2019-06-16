@@ -120,7 +120,13 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
 	if (UVBuffer != nullptr)
 	{
-		FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
+		// temp solution ...
+		static int32 a = 0;
+		if (a < 10)
+		{
+			FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
+		}
+		++a;
 	}
 
 	// Render Base Pass

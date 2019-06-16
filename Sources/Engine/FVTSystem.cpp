@@ -102,7 +102,7 @@ namespace tix
 		int32 x = RegionIndex % ITSize;
 		int32 y = RegionIndex / ITSize;
 		InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
-		InPrimitive->SetVTDebugInfo(x, y, Region->XCount, Region->YCount);
+		InPrimitive->SetVTDebugInfo((float)x, (float)y, (float)Region->XCount, (float)Region->YCount);
 	}
 
 	void FVTSystem::MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion)

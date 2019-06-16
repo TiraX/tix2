@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "FVTTaskThread.h"
 #include "FVTSystem.h"
+#include "TTextureLoader.h"
 
 namespace tix
 {
@@ -68,8 +69,9 @@ namespace tix
 				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
 
 				FVTSystem::FPageInfo PageInfo = VTSystem->GetPageInfoByPosition(Position);
-				if ((PageInfo.RegionData & 0x80000000) != 0)
+				if ((PageInfo.RegionData & 0x80000000) == 0)
 				{
+					// Not loaded, add to load queue
 					VTLoadTasks.push_back(PageInfo);
 				}
 			}
@@ -81,13 +83,9 @@ namespace tix
 		FVTSystem::FPageInfo Task = VTLoadTasks.front();
 		VTLoadTasks.pop_front();
 
-		TAssetFilePtr AssetFile = ti_new TAssetFile;
-		if (AssetFile->Load(Task.TextureName))
-		{
-			int32 StartX = Task.PageStart.X * FVTSystem::PPSize;
-			int32 StartY = Task.PageStart.Y * FVTSystem::PPSize;
-			TTexturePtr Tex = AssetFile->CreateTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
-
-		}
+		int32 StartX = Task.PageStart.X * FVTSystem::PPSize;
+		int32 StartY = Task.PageStart.Y * FVTSystem::PPSize;
+		TTexturePtr Tex = TTextureLoader::LoadTextureWithRegion(Task.TextureName, 0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
+		TI_ASSERT(0);
 	}
 }

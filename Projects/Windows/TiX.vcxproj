@@ -73,6 +73,8 @@
     <ClCompile Include="..\..\Sources\Engine\TEngineResources.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TINIParser.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMaterial.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TMaterialInstance.cpp" />
@@ -93,6 +95,7 @@
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TTextureLoader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
@@ -177,6 +180,7 @@
     <ClInclude Include="..\..\Sources\Engine\TEngineResources.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\FRenderThread.h" />
+    <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TINIParser.h" />
     <ClInclude Include="..\..\Sources\Engine\TMaterial.h" />
     <ClInclude Include="..\..\Sources\Engine\TMaterialInstance.h" />
@@ -200,6 +204,7 @@
     <ClInclude Include="..\..\Sources\Engine\TStringExt.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TTexture.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTextureLoader.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TStream.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />

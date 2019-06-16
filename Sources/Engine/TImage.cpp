@@ -74,8 +74,7 @@ namespace tix
 		case EPF_ASTC6x6_SRGB:
 		case EPF_ASTC8x8:
 		case EPF_ASTC8x8_SRGB:
-			TI_ASSERT(0);
-			return 0;
+			return 16;
 		default:
 			return 0;
 		}
@@ -136,6 +135,22 @@ namespace tix
 			int32 RowPitch = Width * GetPixelSizeInBytes(Format);
 			TI_ASSERT(RowPitch != 0);
 			return (RowPitch * Height);
+		}
+	}
+
+	int32 TImage::GetRowPitch(E_PIXEL_FORMAT Format, int32 Width)
+	{
+		if (IsCompressedFormat(Format))
+		{
+			int32 BlockSize = GetBlockSizeInBytes(Format);
+			TI_ASSERT(BlockSize != 0);
+			vector2di Block = GetBlockSize(Format);
+			int32 BlockW = GetBlockWidth(Width, Block.X);
+			return (BlockSize * BlockW);
+		}
+		else
+		{
+			return Width * GetPixelSizeInBytes(Format);
 		}
 	}
 

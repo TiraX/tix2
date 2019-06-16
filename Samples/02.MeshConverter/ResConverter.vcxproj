@@ -23,7 +23,7 @@
     <ProjectGuid>{0C0C8AF9-DC50-4197-ACD1-9D6A885F3E7D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MeshConverter</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectName>02.ResConverter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TJSON.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="dds.h" />
@@ -179,11 +180,12 @@
     <ClInclude Include="ResTextureHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="TImage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="MainWin32.cpp" />
     <ClCompile Include="PlatformUtils.cpp" />
@@ -208,8 +210,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TImage.cpp" />
-    <ClCompile Include="TImageLoaderTGA.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

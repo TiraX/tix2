@@ -47,6 +47,7 @@ using namespace std;
 #include "TTimer.h"
 #include "TFile.h"
 #include "TStream.h"
+#include "TImage.h"
 #include "TTicker.h"
 #include "TThreadIO.h"
 #include "TThreadLoading.h"
