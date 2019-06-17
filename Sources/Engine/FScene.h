@@ -19,6 +19,7 @@ namespace tix
 		enum SceneFlag
 		{
 			ViewProjectionDirty = 1 << 0,
+			ScenePrimitivesDirty = 1 << 1,
 		};
 
 		virtual void PrepareViewUniforms();
@@ -32,16 +33,14 @@ namespace tix
 			return (SceneFlags & Flag) != 0;
 		}
 
-		void SetSceneFlag(SceneFlag Flag, bool Enable)
+		void SetSceneFlag(SceneFlag Flag)
 		{
-			if (Enable)
-			{
-				SceneFlags |= Flag;
-			}
-			else
-			{
-				SceneFlags &= ~Flag;
-			}
+			SceneFlags |= Flag;
+		}
+
+		void ClearSceneFlags()
+		{
+			SceneFlags = 0;
 		}
 
 		FSceneLights * GetSceneLights()
@@ -68,6 +67,7 @@ namespace tix
 
 		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
 
+		// Scene flags per frame, will be cleared by the end of this frame
 		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;

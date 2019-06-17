@@ -19,6 +19,7 @@ namespace tix
 
 		virtual void InitInRenderThread() override;
 		virtual void InitRenderFrame(FScene* Scene) override;
+		virtual void EndRenderFrame(FScene* Scene) override;
 		virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive);

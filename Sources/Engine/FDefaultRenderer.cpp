@@ -41,6 +41,12 @@ namespace tix
 		}
 	}
 
+	void FDefaultRenderer::EndRenderFrame(FScene* Scene)
+	{
+		// Clear the flags in this frame.
+		Scene->ClearSceneFlags();
+	}
+
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		RenderDrawList(RHI, Scene, LIST_OPAQUE);

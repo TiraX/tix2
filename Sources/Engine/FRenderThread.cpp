@@ -140,6 +140,7 @@ namespace tix
 		{
 			Renderer->InitRenderFrame(RenderScene);
 			Renderer->Render(RHI, RenderScene);
+			Renderer->EndRenderFrame(RenderScene);
 		}
 		RHI->EndFrame();
         

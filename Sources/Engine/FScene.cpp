@@ -24,7 +24,7 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 		ViewProjection = Info;
-		SetSceneFlag(ViewProjectionDirty, true);
+		SetSceneFlag(ViewProjectionDirty);
 	}
 
 	void FScene::AddPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
@@ -74,9 +74,6 @@ namespace tix
 			ViewUniformBuffer->UniformBufferData[0].ViewPos = VPInfo.CamPos;
 
 			ViewUniformBuffer->InitUniformBuffer();
-
-			// remove vp dirty flag
-			SetSceneFlag(FScene::ViewProjectionDirty, false);
 		}
 	}
 }
