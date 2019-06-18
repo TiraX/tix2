@@ -31,6 +31,8 @@ private:
 
 	FUniformBufferPtr OutputUVBuffer;
 	FRenderResourceTablePtr ResourceTable;
+
+	bool UVBufferTriggerd;
 };
 typedef TI_INTRUSIVE_PTR(FComputeUVDiscard) FComputeUVDiscardPtr;
 

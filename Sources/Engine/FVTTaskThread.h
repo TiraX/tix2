@@ -23,7 +23,9 @@ namespace tix
 	private:
 		TMutex BufferMutex;
 		TList<TStreamPtr> Buffers;
-		TList<FVTSystem::FPageInfo> VTLoadTasks;
+
+		TList<uint32> VTTaskOrder;
+		THMap<uint32, FVTSystem::FPageInfo> VTLoadTasks;
 	};
 
 }

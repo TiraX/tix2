@@ -49,9 +49,10 @@ namespace tix
 			TString TextureName;
 			vector2du16 TextureSize;
 			vector2du16 PageStart;
-			uint32 RegionData;
+			uint32 PageIndex;
 		};
 		FPageInfo GetPageInfoByPosition(const vector2di& InPosition);
+		void MarkPageAsLoaded(uint32 RegionIndex, bool Loaded);
 
 		void OutputDebugInfo();
 

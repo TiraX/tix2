@@ -11,6 +11,7 @@
 FComputeUVDiscard::FComputeUVDiscard(int32 W, int32 H)
 	: FComputeTask("S_UVDiscardCS")
 	, InputSize(W, H)
+	, UVBufferTriggerd(false)
 {
 }
 
@@ -45,7 +46,8 @@ void FComputeUVDiscard::PrepareBuffers(FTexturePtr UVInput)
 {
 	// prepare compute parameters
 	const int32 BufferSize = InputSize.X / ThreadBlockSize * InputSize.Y / ThreadBlockSize;
-	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
+	TI_TODO("Try if OutputUVBuffer can use uint4 instead of ffloat4.");
+	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(16, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
 	FRHI::Get()->UpdateHardwareResourceUB(OutputUVBuffer, nullptr);
 	
 	// Create Render Resource Table
@@ -57,11 +59,18 @@ void FComputeUVDiscard::PrepareBuffers(FTexturePtr UVInput)
 void FComputeUVDiscard::PrepareDataForCPU(FRHI * RHI)
 {
 	RHI->PrepareDataForCPU(OutputUVBuffer);
+	UVBufferTriggerd = true;
 }
 
 TStreamPtr FComputeUVDiscard::ReadUVBuffer()
 {
-	return OutputUVBuffer->ReadBufferData();
+	if (UVBufferTriggerd)
+	{
+		TStreamPtr Result = OutputUVBuffer->ReadBufferData();
+		UVBufferTriggerd = false;
+		return Result;
+	}
+	return nullptr;
 }
 
 ////////////////////////////////////////////////////////
@@ -120,13 +129,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
 	if (UVBuffer != nullptr)
 	{
-		// temp solution ...
-		static int32 a = 0;
-		if (a < 10)
-		{
-			FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
-		}
-		++a;
+		FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
 	}
 
 	// Render Base Pass
@@ -137,13 +140,15 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->PopRenderTarget();
 	RHI->EndPopulateCommandList();
 
-	// Do UV discard check
-	RHI->BeginPopulateCommandList(EPL_COMPUTE);
-	ComputeUVDiscard->Run(RHI);
+	// Do UV discard check, only check when camera moved or primitives changed
+	if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+	{
+		RHI->BeginPopulateCommandList(EPL_COMPUTE);
+		ComputeUVDiscard->Run(RHI);
 
-	// TODO Read UV buffer back
-	ComputeUVDiscard->PrepareDataForCPU(RHI);
-	RHI->EndPopulateCommandList();
+		ComputeUVDiscard->PrepareDataForCPU(RHI);
+		RHI->EndPopulateCommandList();
+	}
 
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->BeginRenderToFrameBuffer();

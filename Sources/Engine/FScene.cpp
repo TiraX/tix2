@@ -38,6 +38,9 @@ namespace tix
 
 			// Add to draw list
 			StaticDrawLists[P->GetDrawList()].push_back(P);
+
+			// Mark flag primitives dirty
+			SetSceneFlag(ScenePrimitivesDirty);
 		}
 	}
 
@@ -58,6 +61,9 @@ namespace tix
 
 			// Remove from virtual texture
 			FVTSystem::Get()->RemovePositionForPrimitive(P);
+
+			// Mark flag primitives dirty
+			SetSceneFlag(ScenePrimitivesDirty);
 		}
 	}
 

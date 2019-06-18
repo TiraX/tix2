@@ -102,7 +102,8 @@ namespace tix
 		int32 x = RegionIndex % ITSize;
 		int32 y = RegionIndex / ITSize;
 		InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
-		InPrimitive->SetVTDebugInfo((float)x, (float)y, (float)Region->XCount, (float)Region->YCount);
+		InPrimitive->SetVTDebugInfo((float)x, (float)y + 1.f, (float)Region->XCount, (float)Region->YCount);
+		//InPrimitive->SetVTDebugInfo(0.f, 1.f, 0.f, 0.f);
 	}
 
 	void FVTSystem::MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion)
@@ -147,7 +148,8 @@ namespace tix
 		FPageInfo PageInfo;
 		int32 PageX = InPosition.X / PPSize;
 		int32 PageY = InPosition.Y / PPSize;
-		int32 PageIndex = PageY * ITSize + PageX;
+		TI_ASSERT(PageX >= 0 && PageY >= 0);
+		uint32 PageIndex = PageY * ITSize + PageX;
 #ifdef DEBUG_IT_INFO
 		if (RegionData[PageIndex] == -1)
 		{
@@ -157,7 +159,7 @@ namespace tix
 				OutputDebugInfo();
 			}
 			FPageInfo PageInfo;
-			PageInfo.RegionData = 0x80000000;
+			PageInfo.PageIndex = 0x80000000;
 			return PageInfo;
 		}
 #endif
@@ -174,9 +176,21 @@ namespace tix
 		PageInfo.TextureSize = TextureInfo.TextureSize;
 		PageInfo.PageStart.X = PageX - RegionCellStartX;
 		PageInfo.PageStart.Y = PageY - RegionCellStartY;
-		PageInfo.RegionData = uint32(RegionData[PageIndex]);
+		PageInfo.PageIndex = uint32(RegionData[PageIndex] & 0x80000000) | PageIndex;
 
 		return PageInfo;
+	}
+
+	void FVTSystem::MarkPageAsLoaded(uint32 RegionIndex, bool Loaded)
+	{
+		if (Loaded)
+		{
+			RegionData[RegionIndex] |= 0x80000000;
+		}
+		else
+		{
+			RegionData[RegionIndex] &= ~(0x80000000);
+		}
 	}
 
 	void FVTSystem::OutputDebugInfo()

@@ -46,7 +46,11 @@ float3 GetWorldPosition(in VSInput vsInput)
 float4 GetVTTextureCoords(in VSInput vsInput, in float4 VTUVTransform)
 {
 	float4 TexCoord;
-	TexCoord.xy = vsInput.texcoord0 * VTUVTransform.zw + VTUVTransform.xy;
+	// temp , use frac to keep uv in 0.0-1.0.
+	// this is not correct, should use frac in pixel shader, not vertex
+	TexCoord.xy = frac(vsInput.texcoord0) * VTUVTransform.zw + VTUVTransform.xy;
 	TexCoord.zw = VTDebugInfo.xy;
+	TexCoord.z = (vsInput.texcoord0.y);
+	//TexCoord.zw = vsInput.texcoord0;
 	return TexCoord;
 }
