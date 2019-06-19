@@ -8,7 +8,7 @@ VSOutput main(VSInput vsInput)
 
 	float3 WorldPosition = GetWorldPosition(vsInput);
 	vsOutput.position = mul(float4(WorldPosition, 1.0), ViewProjection);
-	vsOutput.texCoord = GetVTTextureCoords(vsInput, VTUVTransform);
+	vsOutput.texcoord0 = GetTextureCoords(vsInput);
 
     vsOutput.normal = vsInput.normal * 2.0 - 1.0;
     vsOutput.tangent = vsInput.tangent * 2.0 - 1.0;

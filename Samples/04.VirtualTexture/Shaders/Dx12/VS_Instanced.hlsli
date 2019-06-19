@@ -28,7 +28,7 @@ struct VSInput
 struct VSOutput
 {
     float4 position : SV_Position;
-    float4 texCoord : TexCoord0;
+    float2 texcoord0 : TexCoord0;
     float3 normal : Normal;
     float3 tangent : Tangent;
 	float3 view : TexCoord1;
@@ -43,14 +43,16 @@ float3 GetWorldPosition(in VSInput vsInput)
 	return position;
 }
 
-float4 GetVTTextureCoords(in VSInput vsInput, in float4 VTUVTransform)
+float2 GetTextureCoords(in VSInput vsInput)
 {
-	float4 TexCoord;
-	// temp , use frac to keep uv in 0.0-1.0.
-	// this is not correct, should use frac in pixel shader, not vertex
-	TexCoord.xy = frac(vsInput.texcoord0) * VTUVTransform.zw + VTUVTransform.xy;
-	TexCoord.zw = VTDebugInfo.xy;
-	TexCoord.z = (vsInput.texcoord0.y);
-	//TexCoord.zw = vsInput.texcoord0;
-	return TexCoord;
+	return vsInput.texcoord0;
 }
+
+//float4 GetVTTextureCoords(in VSInput vsInput, in float4 VTUVTransform)
+//{
+//	float4 TexCoord;
+//	TexCoord.xy = (vsInput.texcoord0) * VTUVTransform.zw + VTUVTransform.xy;
+//	TexCoord.zw = VTDebugInfo.xy;
+//	TexCoord.z = vsInput.texcoord0.y;
+//	return TexCoord;
+//}

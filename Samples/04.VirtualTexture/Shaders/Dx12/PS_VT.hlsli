@@ -6,3 +6,11 @@ float mip_map_level(in float2 texture_coordinate, float texture_size) // in texe
 	return max(0.0, 0.5 * log2(delta_max_sqr));
 	//return ddx(texture_coordinate).x;
 }
+
+float4 GetVTTextureCoords(in float2 texcoord)
+{
+	float4 TexCoord;
+	TexCoord.xy = frac(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
+	TexCoord.zw = VTDebugInfo.xy;
+	return TexCoord;
+}
