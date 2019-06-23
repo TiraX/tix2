@@ -439,6 +439,7 @@ namespace tix
 					}
 					else
 					{
+						TI_TODO("Remove this, for debug, VT System do not need this temp texture.");
 						// Virtual texture enabled, use an empty texture for place holder
 						MInstance->ParamTextures.push_back(TEngineResources::EmptyTextureWhite);
 					}

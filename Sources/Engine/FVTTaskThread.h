@@ -14,11 +14,13 @@ namespace tix
 		virtual ~FVTTaskThread();
 
 		TI_API void AddUVBuffer(TStreamPtr Buffer);
+		virtual void OnThreadStart() override;
 		virtual void Run() override;
 
 	protected:
 		void AnalysisBuffer();
 		void DoLoadingTask();
+		void OutputDebugTasks();
 
 	private:
 		TMutex BufferMutex;

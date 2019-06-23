@@ -19,6 +19,12 @@ namespace tix
 	{
 	}
 
+	void FVTTaskThread::OnThreadStart()
+	{
+		TThread::OnThreadStart();
+		TThread::IndicateVTTaskThread();
+	}
+
 	void FVTTaskThread::Run()
 	{
 		if (Buffers.size() == 0 && VTLoadTasks.size() == 0)
@@ -47,6 +53,20 @@ namespace tix
 		BufferMutex.unlock();
 	}
 
+	struct FSortTask
+	{
+		FSortTask(THMap<uint32, FVTSystem::FPageInfo>& InTasks)
+			: LoadTasks(InTasks)
+		{}
+
+		THMap<uint32, FVTSystem::FPageInfo>& LoadTasks;
+
+		bool operator()(uint32 A, uint32 B)
+		{
+			return LoadTasks[A] < LoadTasks[B];
+		}
+	};
+
 	void FVTTaskThread::AnalysisBuffer()
 	{
 		TStreamPtr Buffer;
@@ -68,7 +88,8 @@ namespace tix
 				Position.X = (int32)(Data.X * FVTSystem::VTSize);
 				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
 
-				FVTSystem::FPageInfo PageInfo = VTSystem->GetPageInfoByPosition(Position);
+				FVTSystem::FPageInfo PageInfo;
+				VTSystem->GetPageInfoByPosition(Position, PageInfo);
 				if ((PageInfo.PageIndex & 0x80000000) == 0)
 				{
 					static int32 a = 0;
@@ -82,6 +103,20 @@ namespace tix
 					}
 				}
 			}
+			TI_TODO("Remove tasks in the queue if it is not in this frame.");
+		}
+		//OutputDebugTasks();
+		VTTaskOrder.sort(FSortTask(VTLoadTasks));
+		//_LOG(Log, "------------------------\n");
+		//OutputDebugTasks();
+		//_LOG(Log, "------------------------\n");
+	}
+
+	void FVTTaskThread::OutputDebugTasks()
+	{
+		for (auto& i : VTTaskOrder)
+		{
+			_LOG(Log, "[%4d, %4d] %s.\n", VTLoadTasks[i].PageStart.X, VTLoadTasks[i].PageStart.Y, VTLoadTasks[i].TextureName.c_str());
 		}
 	}
 
@@ -94,8 +129,9 @@ namespace tix
 		FVTSystem::FPageInfo Task = VTLoadTasks[TaskIndex];
 		VTLoadTasks.erase(TaskIndex);
 
+		FVTSystem* VTSystem = FVTSystem::Get();
 		// Mark this page as loaded
-		FVTSystem::Get()->MarkPageAsLoaded(Task.PageIndex, true);
+		VTSystem->MarkPageAsLoaded(Task.PageIndex, true);
 		TI_ASSERT((Task.PageIndex & 0x80000000) == 0);
 
 		// Load texture region
@@ -104,7 +140,15 @@ namespace tix
 		TTexturePtr Tex = TTextureLoader::LoadTextureWithRegion(Task.TextureName, 0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
 		static int32 a = 0;
 		_LOG(Log, "%d, Load tex [%4d, %4d] : %s\n", a++, StartX, StartY, Task.TextureName.c_str());
-		//TI_ASSERT(0);
 
+		// Send to render thread to init render resource of this texture
+		FVTSystem::FPhysicPageTexture PhysicPageTexture;
+		PhysicPageTexture.Texture = Tex;
+		PhysicPageTexture.PhysicPagePosition = Task.PhysicPage;
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(FVTTaskInitPhysicTexture,
+			FVTSystem::FPhysicPageTexture, PhysicPageTexture, PhysicPageTexture,
+			{
+				FVTSystem::Get()->UpdatePhysicPage_RenderThread(PhysicPageTexture);
+			});
 	}
 }

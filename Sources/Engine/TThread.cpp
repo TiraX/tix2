@@ -10,6 +10,7 @@ namespace tix
 {
 	TThreadId TThread::GameThreadId;
 	TThreadId TThread::RenderThreadId;
+	TThreadId TThread::VTTaskThreadId;
 
 	TThread::TThread(const TString& Name)
 		: IsRunning(false)
@@ -43,6 +44,11 @@ namespace tix
 		RenderThreadId = GetThreadId();
 	}
 
+	void TThread::IndicateVTTaskThread()
+	{
+		VTTaskThreadId = GetThreadId();
+	}
+
 	bool TThread::IsGameThread()
 	{
 		return GetThreadId() == GameThreadId;
@@ -51,6 +57,11 @@ namespace tix
 	bool TThread::IsRenderThread()
 	{
 		return GetThreadId() == RenderThreadId;
+	}
+
+	bool TThread::IsVTTaskThread()
+	{
+		return GetThreadId() == VTTaskThreadId;
 	}
 
 	void* TThread::ThreadExecute(void* param)

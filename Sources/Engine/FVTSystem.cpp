@@ -20,7 +20,9 @@ namespace tix
 
 	FVTSystem::FVTSystem()
 		: VTRegion(VTSize, PPSize)
+		, IndirectTextureDirty(false)
 	{
+		TI_ASSERT(IsRenderThread());
 		VTSystem = this;
 
 		// Start task thread
@@ -30,14 +32,26 @@ namespace tix
 		// Init region data
 		RegionData.resize(ITSize * ITSize);
 		memset(RegionData.data(), -1, ITSize * ITSize * sizeof(int32));
+
+		// Init render resources
+		PhysicPageTextures.resize(PPCount);
+		for (int32 i = 0; i < PPCount; ++i)
+		{
+			PhysicPageTextures[i] = TEngineResources::EmptyTextureWhite->TextureResource;
+		}
+		IndirectTextureDirty = true;
 	}
 
 	FVTSystem::~FVTSystem()
 	{
+		TI_ASSERT(IsRenderThread());
 		VTSystem = nullptr;
 		VTTaskThread->Stop();
 		ti_delete VTTaskThread;
 		VTTaskThread = nullptr;
+
+		PhysicPageTextures.clear();
+		PhysicPageResource = nullptr;
 	}
 
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)
@@ -143,9 +157,8 @@ namespace tix
 		}
 	}
 
-	FVTSystem::FPageInfo FVTSystem::GetPageInfoByPosition(const vector2di& InPosition)
+	void FVTSystem::GetPageInfoByPosition(const vector2di& InPosition, FPageInfo& OutInfo)
 	{
-		FPageInfo PageInfo;
 		int32 PageX = InPosition.X / PPSize;
 		int32 PageY = InPosition.Y / PPSize;
 		TI_ASSERT(PageX >= 0 && PageY >= 0);
@@ -172,13 +185,13 @@ namespace tix
 		int32 RegionCellStartY = RegionIndex / ITSize;
 
 		FTextureInfo& TextureInfo = TexturesInVT[RegionIndex];
-		PageInfo.TextureName = TextureInfo.TextureName;
-		PageInfo.TextureSize = TextureInfo.TextureSize;
-		PageInfo.PageStart.X = PageX - RegionCellStartX;
-		PageInfo.PageStart.Y = PageY - RegionCellStartY;
-		PageInfo.PageIndex = uint32(RegionData[PageIndex] & 0x80000000) | PageIndex;
-
-		return PageInfo;
+		OutInfo.TextureName = TextureInfo.TextureName;
+		OutInfo.TextureSize = TextureInfo.TextureSize;
+		OutInfo.PageStart.X = PageX - RegionCellStartX;
+		OutInfo.PageStart.Y = PageY - RegionCellStartY;
+		OutInfo.PhysicPage.X = PageX;
+		OutInfo.PhysicPage.Y = PageY;
+		OutInfo.PageIndex = uint32(RegionData[PageIndex] & 0x80000000) | PageIndex;
 	}
 
 	void FVTSystem::MarkPageAsLoaded(uint32 RegionIndex, bool Loaded)
@@ -232,5 +245,27 @@ namespace tix
 		TString csvString = ss.str();
 		RegionDataFile.Write(csvString.c_str(), (int32)csvString.size());
 #endif
+	}
+
+	void FVTSystem::UpdatePhysicPage_RenderThread(FPhysicPageTexture& PhysicPageTexture)
+	{
+		TI_ASSERT(IsRenderThread());
+
+		IndirectTextureDirty = true;
+	}
+
+	void FVTSystem::PrepareVTIndirectTexture()
+	{
+		TI_ASSERT(IsRenderThread());
+		if (IndirectTextureDirty)
+		{
+			PhysicPageResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
+			for (int32 i = 0; i < PPCount; ++i)
+			{
+				PhysicPageResource->PutTextureInTable(PhysicPageTextures[i], i);
+			}
+
+			IndirectTextureDirty = false;
+		}
 	}
 }

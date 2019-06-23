@@ -22,6 +22,9 @@ namespace tix
 		// Indirection texture size
 		static const int32 ITSize = VTSize / PPSize;
 
+		// Physical page count
+		static const int32 PPCount = 32 * 32;
+
 		static const float UVInv;
 
 		static TI_API bool IsEnabled()
@@ -44,14 +47,40 @@ namespace tix
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
+		struct FPhysicPageTexture
+		{
+			TTexturePtr Texture;
+			vector2du16 PhysicPagePosition;
+		};
+		void UpdatePhysicPage_RenderThread(FPhysicPageTexture& PhysicPageTexture);
+		void PrepareVTIndirectTexture();
+
 		struct FPageInfo
 		{
 			TString TextureName;
 			vector2du16 TextureSize;
 			vector2du16 PageStart;
+			vector2du16 PhysicPage;
 			uint32 PageIndex;
+
+			bool operator < (const FPageInfo& Other) const
+			{
+				if (TextureName != Other.TextureName)
+				{
+					return TextureName < Other.TextureName;
+				}
+				if (PageStart.Y != Other.PageStart.Y)
+				{
+					return PageStart.Y < Other.PageStart.Y;
+				}
+				if (PageStart.X != Other.PageStart.X)
+				{
+					return PageStart.X < Other.PageStart.X;
+				}
+				return true;
+			}
 		};
-		FPageInfo GetPageInfoByPosition(const vector2di& InPosition);
+		void GetPageInfoByPosition(const vector2di& InPosition, FPageInfo& OutInfo);
 		void MarkPageAsLoaded(uint32 RegionIndex, bool Loaded);
 
 		void OutputDebugInfo();
@@ -95,6 +124,10 @@ namespace tix
 		};
 		// Texture loaded, Key is offset in RegionData
 		THMap<uint32, FTextureInfo> TexturesInVT;
+
+		TVector<FTexturePtr> PhysicPageTextures;
+		FRenderResourceTablePtr PhysicPageResource;
+		bool IndirectTextureDirty;
 
 		FVTTaskThread * VTTaskThread;
 	};
