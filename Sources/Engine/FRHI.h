@@ -76,6 +76,7 @@ namespace tix
 		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) = 0;
 		virtual void EndPopulateCommandList() = 0;
 
+		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;
 
 		virtual FTexturePtr CreateTexture() = 0;

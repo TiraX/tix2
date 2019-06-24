@@ -33,6 +33,7 @@ namespace tix
 		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) override;
 		virtual void EndPopulateCommandList() override;
 
+		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
 
 		virtual FTexturePtr CreateTexture() override;

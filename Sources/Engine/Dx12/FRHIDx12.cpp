@@ -534,6 +534,11 @@ namespace tix
 		return ti_new FArgumentBufferDx12(InShader);
 	}
 
+	int32 FRHIDx12::GetCurrentEncodingFrameIndex()
+	{
+		return CurrentFrame;
+	}
+
 	// Wait for pending GPU work to complete.
 	void FRHIDx12::WaitingForGpu()
 	{

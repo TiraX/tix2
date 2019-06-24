@@ -126,7 +126,7 @@ namespace tix
 		THMap<uint32, FTextureInfo> TexturesInVT;
 
 		TVector<FTexturePtr> PhysicPageTextures;
-		FRenderResourceTablePtr PhysicPageResource;
+		FRenderResourceTablePtr PhysicPageResource[FRHIConfig::FrameBufferNum];
 		bool IndirectTextureDirty;
 
 		FVTTaskThread * VTTaskThread;

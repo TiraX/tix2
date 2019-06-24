@@ -34,6 +34,10 @@ namespace tix
 		memset(RegionData.data(), -1, ITSize * ITSize * sizeof(int32));
 
 		// Init render resources
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
+		{
+			PhysicPageResource[i] = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
+		}
 		PhysicPageTextures.resize(PPCount);
 		for (int32 i = 0; i < PPCount; ++i)
 		{
@@ -51,7 +55,10 @@ namespace tix
 		VTTaskThread = nullptr;
 
 		PhysicPageTextures.clear();
-		PhysicPageResource = nullptr;
+		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
+		{
+			PhysicPageResource[i] = nullptr;
+		}
 	}
 
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)
@@ -259,10 +266,10 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 		if (IndirectTextureDirty)
 		{
-			PhysicPageResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
+			FRenderResourceTablePtr VTTable = PhysicPageResource[FRHI::Get()->GetCurrentEncodingFrameIndex()];
 			for (int32 i = 0; i < PPCount; ++i)
 			{
-				PhysicPageResource->PutTextureInTable(PhysicPageTextures[i], i);
+				VTTable->PutTextureInTable(PhysicPageTextures[i], i);
 			}
 
 			IndirectTextureDirty = false;
