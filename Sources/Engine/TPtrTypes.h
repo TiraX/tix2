@@ -12,6 +12,7 @@ namespace tix
 	typedef TI_INTRUSIVE_PTR(ClassName) ClassName##Ptr
 
 	DECLARE_INSTRUSIVE_PTR(TAssetFile);
+	DECLARE_INSTRUSIVE_PTR(TImage);
 	DECLARE_INSTRUSIVE_PTR(TStream);
 	DECLARE_INSTRUSIVE_PTR(TMaterial);
 	DECLARE_INSTRUSIVE_PTR(TMaterialInstance);

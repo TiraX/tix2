@@ -1082,6 +1082,7 @@ namespace tix
 		);
 		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 
+		Texture->SetTextureFlag(ETF_RENDER_RESOURCE_UPDATED, true);
 		// Describe and create a SRV for the texture.
 		//D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 
@@ -1177,6 +1178,8 @@ namespace tix
 		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 
 		ti_delete[] TextureDatas;
+
+		Texture->SetTextureFlag(ETF_RENDER_RESOURCE_UPDATED, true);
 
 		// Describe and create a SRV for the texture.
 		//D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};

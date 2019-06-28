@@ -90,17 +90,21 @@ namespace tix
 
 				FVTSystem::FPageInfo PageInfo;
 				VTSystem->GetPageInfoByPosition(Position, PageInfo);
-				if ((PageInfo.PageIndex & 0x80000000) == 0)
+
+				if (CachedTextures.find(PageInfo.PageIndex) == CachedTextures.end())
 				{
-					static int32 a = 0;
-					//_LOG(Log, "%d, Need Page [%4d, %4d], %s\n", a++, Position.X, Position.Y, PageInfo.TextureName.c_str());
-					// Not loaded, add to load queue
+					// Not in cache, add a task to load it.
 					if (VTLoadTasks.find(PageInfo.PageIndex) == VTLoadTasks.end())
 					{
 						// Not in loading queue, add to it
 						VTTaskOrder.push_back(PageInfo.PageIndex);
 						VTLoadTasks[PageInfo.PageIndex] = PageInfo;
 					}
+				}
+				else
+				{
+					// Already in cache, send to render thread directly.
+					TI_ASSERT(0);
 				}
 			}
 			TI_TODO("Remove tasks in the queue if it is not in this frame.");
@@ -130,16 +134,17 @@ namespace tix
 		VTLoadTasks.erase(TaskIndex);
 
 		FVTSystem* VTSystem = FVTSystem::Get();
-		// Mark this page as loaded
-		VTSystem->MarkPageAsLoaded(Task.PageIndex, true);
-		TI_ASSERT((Task.PageIndex & 0x80000000) == 0);
 
 		// Load texture region
 		int32 StartX = Task.PageStart.X * FVTSystem::PPSize;
 		int32 StartY = Task.PageStart.Y * FVTSystem::PPSize;
 		TTexturePtr Tex = TTextureLoader::LoadTextureWithRegion(Task.TextureName, 0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
-		static int32 a = 0;
-		_LOG(Log, "%d, Load tex [%4d, %4d] : %s\n", a++, StartX, StartY, Task.TextureName.c_str());
+		Tex->TextureResource = FRHI::Get()->CreateTexture(Tex->GetDesc());
+
+		{
+			static int32 a = 0;
+			_LOG(Log, "%d, Load tex [%4d, %4d] : %s\n", a++, StartX, StartY, Task.TextureName.c_str());
+		}
 
 		// Send to render thread to init render resource of this texture
 		FVTSystem::FPhysicPageTexture PhysicPageTexture;

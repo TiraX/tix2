@@ -7,7 +7,7 @@
 
 namespace tix
 {
-	class TImage
+	class TImage : public IReferenceCounted
 	{
 	public:
 		TImage(E_PIXEL_FORMAT InPixelFormat, int32 Width, int32 Height);

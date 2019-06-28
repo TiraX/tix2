@@ -24,10 +24,18 @@ namespace tix
 
 	private:
 		TMutex BufferMutex;
+
+		// VT UV Buffers of 1/8 x 1/8 screen, send from Render Thread
 		TList<TStreamPtr> Buffers;
 
+		// Task execute order, point to VTLoadTasks
 		TList<uint32> VTTaskOrder;
+
+		// The actual load task, Key is Page Index, Value is Page Load Info
 		THMap<uint32, FVTSystem::FPageInfo> VTLoadTasks;
+
+		// Cached textures, Key is Page Index, Value is FTexture
+		THMap<uint32, FTexturePtr> CachedTextures;
 	};
 
 }

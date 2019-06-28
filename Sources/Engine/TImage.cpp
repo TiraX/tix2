@@ -235,6 +235,13 @@ namespace tix
 			fdata[2] = c.B;
 			fdata[3] = c.A;
 			break;
+		case EPF_R16F:
+			hdata[0] = half(c.R);
+			break;
+		case EPF_RG16F:
+			hdata[0] = half(c.R);
+			hdata[1] = half(c.G);
+			break;
 		case EPF_RGBA16F:
 			hdata[0] = half(c.R);
 			hdata[1] = half(c.G);

@@ -70,6 +70,8 @@ namespace tix
 		ETF_NONE = 0,
 		ETF_RT_COLORBUFFER = 1 << 0,
 		ETF_RT_DSBUFFER = 1 << 1,
+
+		ETF_RENDER_RESOURCE_UPDATED = 1 << 2,	// Used for FTexture
 	};
 
 	struct TTextureDesc

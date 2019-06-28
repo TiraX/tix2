@@ -20,6 +20,11 @@ namespace tix
 		{
 			return TextureDesc;
 		}
+
+		bool HasTextureFlag(E_TEXTURE_FLAG Flag)
+		{
+			return (TextureDesc.Flags & Flag) != 0;
+		}
 		
 		void SetTextureFlag(E_TEXTURE_FLAG Flag, bool bEnable)
 		{

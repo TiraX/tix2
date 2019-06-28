@@ -19,7 +19,8 @@ namespace tix
 	const float FVTSystem::UVInv = (float)PPSize / (float)VTSize;
 
 	FVTSystem::FVTSystem()
-		: VTRegion(VTSize, PPSize)
+		: VTTaskThread(nullptr)
+		, VTRegion(VTSize, PPSize)
 		, IndirectTextureDirty(false)
 	{
 		TI_ASSERT(IsRenderThread());
@@ -41,9 +42,14 @@ namespace tix
 		PhysicPageTextures.resize(PPCount);
 		for (int32 i = 0; i < PPCount; ++i)
 		{
-			PhysicPageTextures[i] = TEngineResources::EmptyTextureWhite->TextureResource;
+			PhysicPageTextures[i] = uint32(-1);
 		}
+		IndirectTextureData = ti_new TImage(EPF_R16F, ITSize, ITSize);
 		IndirectTextureDirty = true;
+
+		// Init available locations
+		AvailbleLocations.reserve(PPCount);
+		FillAvailbleLocations();
 	}
 
 	FVTSystem::~FVTSystem()
@@ -59,6 +65,7 @@ namespace tix
 		{
 			PhysicPageResource[i] = nullptr;
 		}
+		//IndirectTextureData = nullptr;
 	}
 
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)
@@ -104,9 +111,9 @@ namespace tix
 			// Assume all textures are power of 2 sizes
 			//VTRegion.GetRegionSizeRequirement(W, H);
 			Region = VTRegion.FindAvailbleRegion(W, H, &RegionIndex);
-			TI_ASSERT(RegionIndex < 0x7fffffff);
+			TI_ASSERT(RegionIndex != uint32(-1));
 			FRegionInfo Info;
-			Info.RegionIndex = (RegionIndex & 0x7fffffff);
+			Info.RegionIndex = RegionIndex;
 			Info.Refs = 1;
 			RegionsAllocated[TexturesHash] = Info;
 
@@ -179,12 +186,11 @@ namespace tix
 				OutputDebugInfo();
 			}
 			FPageInfo PageInfo;
-			PageInfo.PageIndex = 0x80000000;
 			return PageInfo;
 		}
 #endif
 		TI_ASSERT(RegionData[PageIndex] != -1);
-		int32 RegionIndex = RegionData[PageIndex] & 0x7fffffff;
+		int32 RegionIndex = RegionData[PageIndex];
 		TI_ASSERT(RegionIndex != -1);
 		TI_ASSERT(TexturesInVT.find(RegionIndex) != TexturesInVT.end());
 
@@ -198,19 +204,7 @@ namespace tix
 		OutInfo.PageStart.Y = PageY - RegionCellStartY;
 		OutInfo.PhysicPage.X = PageX;
 		OutInfo.PhysicPage.Y = PageY;
-		OutInfo.PageIndex = uint32(RegionData[PageIndex] & 0x80000000) | PageIndex;
-	}
-
-	void FVTSystem::MarkPageAsLoaded(uint32 RegionIndex, bool Loaded)
-	{
-		if (Loaded)
-		{
-			RegionData[RegionIndex] |= 0x80000000;
-		}
-		else
-		{
-			RegionData[RegionIndex] &= ~(0x80000000);
-		}
+		OutInfo.PageIndex = PageIndex;
 	}
 
 	void FVTSystem::OutputDebugInfo()
@@ -236,9 +230,7 @@ namespace tix
 				}
 				else
 				{
-					int32 Loaded = (RegionIndex & 0x80000000) >> 31;
-					RegionIndex = RegionIndex & 0x7fffffff;
-					ss << Loaded << "/" << RegionIndex << ", ";
+					ss << RegionIndex << ", ";
 					Images[RegionIndex] = 1;
 				} 
 			}
@@ -254,9 +246,50 @@ namespace tix
 #endif
 	}
 
+	void FVTSystem::FillAvailbleLocations()
+	{
+		AvailbleLocations.clear();
+		for (uint32 i = 0 ; i < PPCount ; ++ i)
+		{
+			AvailbleLocations[i] = 0;
+		}
+	}
+
 	void FVTSystem::UpdatePhysicPage_RenderThread(FPhysicPageTexture& PhysicPageTexture)
 	{
 		TI_ASSERT(IsRenderThread());
+
+		// Create texture render thread resource
+		FTexturePtr TextureResource;
+		if (PhysicPageTexture.TextureResource == nullptr)
+		{
+			TI_ASSERT(PhysicPageTexture.Texture->TextureResource != nullptr);
+			FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageTexture.Texture->TextureResource, PhysicPageTexture.Texture);
+			TextureResource = PhysicPageTexture.Texture->TextureResource;
+		}
+		else
+		{
+			TextureResource = PhysicPageTexture.TextureResource;
+			TI_ASSERT(TextureResource->HasTextureFlag(ETF_RENDER_RESOURCE_UPDATED));
+		}
+
+		uint32 PageIndex = PhysicPageTexture.PhysicPagePosition.Y * ITSize + PhysicPageTexture.PhysicPagePosition.X;
+		// Check which textures should be add to texture array
+		if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
+		{
+			// Not in PhysicPageTextures, remember it, add it later in PrepareVTIndirectTexture()
+			TI_ASSERT(NewPages.find(PageIndex) == NewPages.end());
+			NewPages[PageIndex] = TextureResource;
+		}
+		else
+		{
+			// Already in PhysicPageTextures, remove this location from AvailbleLocations
+			TI_ASSERT(AvailbleLocations.find(PhysicPagesMap[PageIndex]) != AvailbleLocations.end());
+			AvailbleLocations.erase(PhysicPagesMap[PageIndex]);
+		}
+		
+		// Pages updated in one frame can not exceed PPCount(1024)
+		TI_ASSERT(NewPages.size() < PPCount);
 
 		IndirectTextureDirty = true;
 	}
@@ -267,10 +300,48 @@ namespace tix
 		if (IndirectTextureDirty)
 		{
 			FRenderResourceTablePtr VTTable = PhysicPageResource[FRHI::Get()->GetCurrentEncodingFrameIndex()];
-			for (int32 i = 0; i < PPCount; ++i)
+
+			// Fill new pages into Physic Page Array
+			SColorf Color;
+			for (auto& P : NewPages)
 			{
-				VTTable->PutTextureInTable(PhysicPageTextures[i], i);
+				uint32 PageIndex = P.first;
+				FTexturePtr TextureResource = P.second;
+
+				// Page position
+				int32 PageX = PageIndex % ITSize;
+				int32 PageY = PageIndex / ITSize;
+
+				// Location in PhysicPageTextures
+				TI_ASSERT(AvailbleLocations.size() > 0);
+				uint32 Location = AvailbleLocations.begin()->first;
+
+				// Remove old texture info from PhysicPagesMap
+				if (PhysicPageTextures[Location] != uint32(-1))
+				{
+					TI_ASSERT(PhysicPagesMap.find(PhysicPageTextures[Location]) != PhysicPagesMap.end());
+					PhysicPagesMap.erase(PhysicPageTextures[Location]);
+				}
+
+				// Put texture in this array
+				VTTable->PutTextureInTable(TextureResource, Location);
+				PhysicPageTextures[Location] = PageIndex;
+
+				// Remember this page is in array
+				PhysicPagesMap[PageIndex] = Location;
+
+				// Remove this avaible location
+				AvailbleLocations.erase(AvailbleLocations.begin());
+
+				// Remember this in indirect texture
+				Color.R = float(Location);
+				IndirectTextureData->SetPixel(PageX, PageY, Color);
 			}
+
+			TI_TODO("Create texture from TImage.");
+
+			NewPages.clear();
+			FillAvailbleLocations();
 
 			IndirectTextureDirty = false;
 		}

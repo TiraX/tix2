@@ -50,6 +50,7 @@ namespace tix
 		struct FPhysicPageTexture
 		{
 			TTexturePtr Texture;
+			FTexturePtr TextureResource;
 			vector2du16 PhysicPagePosition;
 		};
 		void UpdatePhysicPage_RenderThread(FPhysicPageTexture& PhysicPageTexture);
@@ -81,17 +82,19 @@ namespace tix
 			}
 		};
 		void GetPageInfoByPosition(const vector2di& InPosition, FPageInfo& OutInfo);
-		void MarkPageAsLoaded(uint32 RegionIndex, bool Loaded);
 
 		void OutputDebugInfo();
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
 		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
+		void FillAvailbleLocations();
 
 	private:
 		static const bool Enabled;
 		static FVTSystem * VTSystem;
+
+		FVTTaskThread * VTTaskThread;
 
 		TRegion VTRegion;
 		struct FRegionInfo
@@ -125,10 +128,27 @@ namespace tix
 		// Texture loaded, Key is offset in RegionData
 		THMap<uint32, FTextureInfo> TexturesInVT;
 
-		TVector<FTexturePtr> PhysicPageTextures;
-		FRenderResourceTablePtr PhysicPageResource[FRHIConfig::FrameBufferNum];
-		bool IndirectTextureDirty;
 
-		FVTTaskThread * VTTaskThread;
+		// Physic texture page array, stores the page index in virtual texture
+		TVector<uint32> PhysicPageTextures;
+
+		// Physic page's location in PhysicPageTextures
+		// Key is the page index in virtual texture, Value is the index in Physic pages array
+		THMap<uint32, uint32> PhysicPagesMap;
+
+		// Avaible location in PhysicPageTextures in this frame;
+		THMap<uint32, uint32> AvailbleLocations;
+
+		// New pages in this frame
+		THMap<uint32, FTexturePtr> NewPages;
+		
+		// Physic pages array render resource
+		FRenderResourceTablePtr PhysicPageResource[FRHIConfig::FrameBufferNum];
+
+		// Indirect texture data
+		TImagePtr IndirectTextureData;
+
+		// Dirty flag, only update physic texture array and indirect texture when flag is dirty.
+		bool IndirectTextureDirty;
 	};
 }
