@@ -27,10 +27,6 @@ namespace tix
 		// Prepare frame view uniform buffer
 		Scene->PrepareViewUniforms();
 
-		// Prepare virtual texture system indirect texture
-		if (FVTSystem::Get()->IsEnabled())
-			FVTSystem::Get()->PrepareVTIndirectTexture();
-
 		// Prepare frame primitive uniform buffers
 		for (int32 List = 0; List < LIST_COUNT; ++List)
 		{

@@ -11,7 +11,7 @@ namespace tix
 {
 	// Refs:
 	// Adaptive Virtual Texture Rendering in Far Cry 4
-	class FVTTaskThread;
+	class FVTAnalysisThread;
 	class FVTSystem
 	{
 	public:
@@ -39,32 +39,30 @@ namespace tix
 		FVTSystem();
 		~FVTSystem();
 
-		TI_API FVTTaskThread * GetVTTaskThread()
+		FVTAnalysisThread * GetAnalysisThread()
 		{
-			return VTTaskThread;
+			return VTAnalysisThread;
 		}
 
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
-		struct FPhysicPageTexture
-		{
-			TTexturePtr Texture;
-			FTexturePtr TextureResource;
-			vector2du16 PhysicPagePosition;
-		};
-		void UpdatePhysicPage_RenderThread(FPhysicPageTexture& PhysicPageTexture);
-		void PrepareVTIndirectTexture();
+		void UpdateLoadedPages(const TVector<uint32>& PageIndex, const TVector<FTexturePtr>& TextureResource, const TVector<TTexturePtr>& TextureData);
+		TI_API void PrepareVTIndirectTexture();
 
-		struct FPageInfo
+		struct FPageLoadInfo
 		{
 			TString TextureName;
-			vector2du16 TextureSize;
+			vector2du16 TextureSize;	// No use of this Size, can be removed.
 			vector2du16 PageStart;
-			vector2du16 PhysicPage;
 			uint32 PageIndex;
+			FTexturePtr TargetTexture;
+			
+			FPageLoadInfo()
+				: PageIndex(uint32(-1))
+			{}
 
-			bool operator < (const FPageInfo& Other) const
+			bool operator < (const FPageLoadInfo& Other) const
 			{
 				if (TextureName != Other.TextureName)
 				{
@@ -81,20 +79,30 @@ namespace tix
 				return true;
 			}
 		};
-		void GetPageInfoByPosition(const vector2di& InPosition, FPageInfo& OutInfo);
+		void GetPageLoadInfoByPosition(const vector2di& InPosition, FPageLoadInfo& OutInfo);
+
+		struct FPhyPageInfo
+		{
+			FTexturePtr Texture;
+			uint32 PageIndex;
+
+			FPhyPageInfo()
+				: PageIndex(uint32(-1))
+			{}
+		};
 
 		void OutputDebugInfo();
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
 		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
-		void FillAvailbleLocations();
+		void InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& AvailbleLocations);
 
 	private:
 		static const bool Enabled;
 		static FVTSystem * VTSystem;
 
-		FVTTaskThread * VTTaskThread;
+		FVTAnalysisThread * VTAnalysisThread;
 
 		TRegion VTRegion;
 		struct FRegionInfo
@@ -135,20 +143,11 @@ namespace tix
 		// Physic page's location in PhysicPageTextures
 		// Key is the page index in virtual texture, Value is the index in Physic pages array
 		THMap<uint32, uint32> PhysicPagesMap;
-
-		// Avaible location in PhysicPageTextures in this frame;
-		THMap<uint32, uint32> AvailbleLocations;
-
-		// New pages in this frame
-		THMap<uint32, FTexturePtr> NewPages;
 		
 		// Physic pages array render resource
 		FRenderResourceTablePtr PhysicPageResource[FRHIConfig::FrameBufferNum];
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;
-
-		// Dirty flag, only update physic texture array and indirect texture when flag is dirty.
-		bool IndirectTextureDirty;
 	};
 }

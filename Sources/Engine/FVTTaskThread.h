@@ -7,35 +7,81 @@
 
 namespace tix
 {
-	class FVTTaskThread : public TThread
+	class FVTLoadingThread;
+	class FVTAnalysisThread: public TThread
 	{
 	public:
-		FVTTaskThread();
-		virtual ~FVTTaskThread();
+		typedef TList<uint32> FVTTaskOrderList;
+		typedef THMap<uint32, FVTSystem::FPageLoadInfo> FVTLoadTaskMap;
+
+		FVTAnalysisThread();
+		virtual ~FVTAnalysisThread();
 
 		TI_API void AddUVBuffer(TStreamPtr Buffer);
-		virtual void OnThreadStart() override;
 		virtual void Run() override;
+		virtual void Stop() override;
 
+		TI_API void WaitForAnalysisFinished();
+
+		const TVector<FVTSystem::FPhyPageInfo>& GetPhysicPages() const
+		{
+			return PagesInThisFrame;
+		}
 	protected:
 		void AnalysisBuffer();
-		void DoLoadingTask();
-		void OutputDebugTasks();
+		void OutputDebugTasks(FVTTaskOrderList& VTTaskOrder, FVTLoadTaskMap& VTLoadTasks);
 
 	private:
-		TMutex BufferMutex;
+		// Analysis thread begin TCond signal
+		TMutex TaskBeginMutex;
+		TCond TaskBeginCond;
+
+		// Analysis thread finished TCond signal
+		TMutex TaskFinishedMutex;
+		TCond TaskFinishedCond;
 
 		// VT UV Buffers of 1/8 x 1/8 screen, send from Render Thread
 		TList<TStreamPtr> Buffers;
-
-		// Task execute order, point to VTLoadTasks
-		TList<uint32> VTTaskOrder;
-
-		// The actual load task, Key is Page Index, Value is Page Load Info
-		THMap<uint32, FVTSystem::FPageInfo> VTLoadTasks;
+		TMutex BufferMutex;
 
 		// Cached textures, Key is Page Index, Value is FTexture
 		THMap<uint32, FTexturePtr> CachedTextures;
+
+		// Physic pages need in this frame
+		TVector<FVTSystem::FPhyPageInfo> PagesInThisFrame;
+
+		FVTLoadingThread * VTLoadingThread;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+
+	class FVTLoadingThread : public TThread
+	{
+	public:
+		FVTLoadingThread();
+		~FVTLoadingThread();
+
+		virtual void OnThreadStart() override;
+		virtual void Run() override;
+
+		void AddLoadingTasks(FVTAnalysisThread::FVTTaskOrderList* VTTaskOrder, FVTAnalysisThread::FVTLoadTaskMap* InVTLoadTasks);
+
+	private:
+		void CollectTasks();
+		void DoLoadingTasks();
+
+	private:
+		TVector<FVTAnalysisThread::FVTTaskOrderList*> VTTaskOrders;
+		TVector<FVTAnalysisThread::FVTLoadTaskMap*> VTLoadTaskInfos;
+		TMutex TaskMutex;
+
+		struct FVTLoadingTask
+		{
+			TString Name;
+			TVector<vector2du16> PageStart;
+			TVector<uint32> PageIndex;
+			TVector<FTexturePtr> TextureResource;
+		};
+		TList<FVTLoadingTask> VTLoadingTasks;
+	};
 }

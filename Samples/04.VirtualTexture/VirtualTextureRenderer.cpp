@@ -129,9 +129,15 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
 	if (UVBuffer != nullptr)
 	{
-		FVTSystem::Get()->GetVTTaskThread()->AddUVBuffer(UVBuffer);
+		FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
 	}
 
+
+	if (UVBuffer != nullptr)
+	{
+		// Prepare virtual texture system indirect texture
+		FVTSystem::Get()->PrepareVTIndirectTexture();
+	}
 	// Render Base Pass
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");

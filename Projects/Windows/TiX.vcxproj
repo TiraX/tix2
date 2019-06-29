@@ -95,13 +95,13 @@
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\TTextureLoader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TInput.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThreadIO.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThreadLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TVTTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h" />
@@ -204,7 +204,6 @@
     <ClInclude Include="..\..\Sources\Engine\TStringExt.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TTexture.h" />
-    <ClInclude Include="..\..\Sources\Engine\TTextureLoader.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TStream.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
@@ -225,6 +224,7 @@
     <ClInclude Include="..\..\Sources\Engine\TUtils.h" />
     <ClInclude Include="..\..\Sources\Engine\TVersion.h" />
     <ClInclude Include="..\..\Sources\Engine\TiX.h" />
+    <ClInclude Include="..\..\Sources\Engine\TVTTextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">

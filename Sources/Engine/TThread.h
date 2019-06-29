@@ -18,11 +18,11 @@ namespace tix
 
 		static void IndicateGameThread();
 		static void IndicateRenderThread();
-		static void IndicateVTTaskThread();
+		static void IndicateVTLoadingThread();
 
 		static bool IsGameThread();
 		static bool IsRenderThread();
-		static bool IsVTTaskThread();
+		static bool IsVTLoadingThread();
 		
 		virtual void Start();
 		virtual void Stop();
@@ -48,7 +48,7 @@ namespace tix
 
 		static TThreadId GameThreadId;
 		static TThreadId RenderThreadId;
-		static TThreadId VTTaskThreadId;
+		static TThreadId VTLoadingThreadId;
 	};
 
 	inline bool IsGameThread()
