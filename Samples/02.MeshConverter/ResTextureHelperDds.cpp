@@ -826,7 +826,7 @@ namespace tix
 					if (i >= (uint32)LodBias)
 					{
 						// Set data
-						TImage::TImageSurfaceData& Surface = Image->GetMipmap(i - LodBias);
+						TImage::TSurfaceData& Surface = Image->GetMipmap(i - LodBias);
 						TI_ASSERT(NumBytes == Surface.Data.GetBufferSize());
 						memcpy(Surface.Data.GetBuffer(), SrcData, NumBytes);
 					}
@@ -863,8 +863,8 @@ namespace tix
 					Image = F16Image;
 					for (int32 Mip = 0 ; Mip < F32Image->GetMipmapCount() ; ++ Mip)
 					{
-						TImage::TImageSurfaceData& F32Data = F32Image->GetMipmap(Mip);
-						TImage::TImageSurfaceData& F16Data = F16Image->GetMipmap(Mip);
+						TImage::TSurfaceData& F32Data = F32Image->GetMipmap(Mip);
+						TImage::TSurfaceData& F16Data = F16Image->GetMipmap(Mip);
 						F16Data.Data.Reset();
 
 						const int32 DataNum = F32Data.Data.GetLength() / sizeof(float);
@@ -1082,8 +1082,8 @@ namespace tix
 
 			for (int32 Mip = 0 ; Mip < DxtImage->GetMipmapCount(); ++ Mip)
 			{
-				const TImage::TImageSurfaceData& SrcData = TgaImage->GetMipmap(Mip);
-				TImage::TImageSurfaceData& DstData = DxtImage->GetMipmap(Mip);
+				const TImage::TSurfaceData& SrcData = TgaImage->GetMipmap(Mip);
+				TImage::TSurfaceData& DstData = DxtImage->GetMipmap(Mip);
 
 				rgba_surface Surface;
 				Surface.ptr = (uint8_t*)SrcData.Data.GetBuffer();

@@ -26,14 +26,14 @@ namespace tix
 		void FlipY();
 		void ClearMipmaps();
 
-		struct TImageSurfaceData
+		struct TSurfaceData
 		{
 			int32 W, H;
 			int32 RowPitch;
 			int32 BlockSize;
 			TStream Data;
 
-			TImageSurfaceData()
+			TSurfaceData()
 				: W(0)
 				, H(0)
 				, RowPitch(0)
@@ -77,12 +77,12 @@ namespace tix
 			return (int32)Mipmaps.size();
 		}
 
-		const TImageSurfaceData& GetMipmap(int32 MipLevel) const
+		const TSurfaceData& GetMipmap(int32 MipLevel) const
 		{
 			return Mipmaps[MipLevel];
 		}
 
-		TImageSurfaceData& GetMipmap(int32 MipLevel)
+		TSurfaceData& GetMipmap(int32 MipLevel)
 		{
 			return Mipmaps[MipLevel];
 		}
@@ -92,7 +92,7 @@ namespace tix
 	protected:
 		E_PIXEL_FORMAT PixelFormat;
 
-		typedef TVector<TImageSurfaceData> VecMipmapImages;
+		typedef TVector<TSurfaceData> VecMipmapImages;
 		VecMipmapImages Mipmaps;
 	};
 }

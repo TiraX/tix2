@@ -142,7 +142,7 @@ namespace tix
 			{
 				for (uint32 Mip = 0; Mip < Define->Desc.Mips; ++Mip)
 				{
-					const TImage::TImageSurfaceData& Surface = Surfaces[Face]->GetMipmap(Mip);
+					const TImage::TSurfaceData& Surface = Surfaces[Face]->GetMipmap(Mip);
 					int32 DataLength = ti_align4(Surface.Data.GetLength());
 					DataStream.Put(&Surface.W, sizeof(int32));
 					DataStream.Put(&Surface.H, sizeof(int32));
@@ -274,8 +274,8 @@ namespace tix
 			TgaImageWithBias->AllocEmptyMipmaps();
 			for (int32 Mip = SrcInfo.LodBias ; Mip < TgaImage->GetMipmapCount(); ++ Mip)
 			{
-				const TImage::TImageSurfaceData& SrcMipData = TgaImage->GetMipmap(Mip);
-				TImage::TImageSurfaceData& DestMipData = TgaImageWithBias->GetMipmap(Mip - SrcInfo.LodBias);
+				const TImage::TSurfaceData& SrcMipData = TgaImage->GetMipmap(Mip);
+				TImage::TSurfaceData& DestMipData = TgaImageWithBias->GetMipmap(Mip - SrcInfo.LodBias);
 
 				TI_ASSERT(DestMipData.Data.GetBufferSize() == SrcMipData.Data.GetLength());
 				memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());

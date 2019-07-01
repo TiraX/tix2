@@ -157,8 +157,8 @@ namespace tix
 	TImage::TImage(E_PIXEL_FORMAT InPixelFormat, int32 Width, int32 Height)
 		: PixelFormat(InPixelFormat)
 	{
-		Mipmaps.push_back(TImageSurfaceData());
-		TImageSurfaceData& Mip0 = Mipmaps[0];
+		Mipmaps.push_back(TSurfaceData());
+		TSurfaceData& Mip0 = Mipmaps[0];
 		Mip0.W = Width;
 		Mip0.H = Height;
 		if (IsCompressedFormat(InPixelFormat))
@@ -444,7 +444,7 @@ namespace tix
 
 		for (int32 Mip = 0; Mip < MipCount; ++Mip)
 		{
-			TImageSurfaceData* MipData = &Mipmaps[Mip];
+			TSurfaceData* MipData = &Mipmaps[Mip];
 
 			if (Mip > 0)
 			{

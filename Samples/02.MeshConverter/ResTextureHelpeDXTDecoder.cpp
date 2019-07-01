@@ -273,7 +273,7 @@ namespace tix
 			int32 H = Texture->Desc.Height;
 			for (uint32 mip = 0; mip < Texture->Desc.Mips; ++mip)
 			{
-				const TImage::TImageSurfaceData& MipData = Texture->ImageSurfaces[0]->GetMipmap(mip);
+				const TImage::TSurfaceData& MipData = Texture->ImageSurfaces[0]->GetMipmap(mip);
 				Result = ti_new TImage(EPF_A8, W, H);
 				TI_ASSERT(W * H == MipData.Data.GetLength());
 				memcpy(Result->Lock(), MipData.Data.GetBuffer(), W * H);

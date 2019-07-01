@@ -139,7 +139,7 @@ namespace tix
 				TI_ASSERT(W == Width && H == Height);
 
 				const uint8* SrcData = (const uint8*)FileBuffer->GetBuffer() + sizeof(TASTCHeader);
-				TImage::TImageSurfaceData& Surface = Image->GetMipmap(Mips);
+				TImage::TSurfaceData& Surface = Image->GetMipmap(Mips);
 				Surface.W = W;
 				Surface.H = H;
 				TI_ASSERT(0); // Calc ASTC Row Pitch size;
