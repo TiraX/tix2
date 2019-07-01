@@ -144,8 +144,8 @@ namespace tix
 		// Key is the page index in virtual texture, Value is the index in Physic pages array
 		THMap<uint32, uint32> PhysicPagesMap;
 		
-		// Physic pages array render resource
-		FRenderResourceTablePtr PhysicPageResource[FRHIConfig::FrameBufferNum];
+		// Physic pages array render resource, slot 0 always be the indirect texture
+		FRenderResourceTablePtr PhysicPageResource;
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;

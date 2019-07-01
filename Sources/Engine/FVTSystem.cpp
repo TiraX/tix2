@@ -34,14 +34,12 @@ namespace tix
 		memset(RegionData.data(), -1, ITSize * ITSize * sizeof(int32));
 
 		// Init render resources
-		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
-		{
-			PhysicPageResource[i] = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
-		}
+		PhysicPageResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
 		PhysicPageTextures.resize(PPCount);
-		for (int32 i = 0; i < PPCount; ++i)
+		for (int32 i = 1; i < PPCount; ++i)
 		{
 			PhysicPageTextures[i] = uint32(-1);
+			PhysicPageResource->PutTextureInTable(TEngineResources::EmptyTextureWhite->TextureResource, i);
 		}
 		IndirectTextureData = ti_new TImage(EPF_R16F, ITSize, ITSize);
 
@@ -54,6 +52,7 @@ namespace tix
 		Desc.SRGB = 0;
 		Desc.Mips = 1;
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
+		PhysicPageResource->PutTextureInTable(IndirectTexture, 0);
 	}
 
 	FVTSystem::~FVTSystem()
@@ -65,10 +64,7 @@ namespace tix
 		VTAnalysisThread = nullptr;
 
 		PhysicPageTextures.clear();
-		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
-		{
-			PhysicPageResource[i] = nullptr;
-		}
+		PhysicPageResource = nullptr;
 		//IndirectTextureData = nullptr;
 	}
 
@@ -278,8 +274,8 @@ namespace tix
 		THMap<uint32, FTexturePtr> NewPages;	// New pages in this frame
 		THMap<uint32, uint32> AvailbleLocations;	// Avaible location in PhysicPageTextures in this frame;
 
-		// Fill available positions
-		for (uint32 i = 0 ; i < PPCount ; ++ i)
+		// Fill available positions, slot 0 always be the indirect texture
+		for (uint32 i = 1 ; i < PPCount ; ++ i)
 		{
 			AvailbleLocations[i] = 0;
 		}
@@ -297,7 +293,7 @@ namespace tix
 		// Put new pages in this frame to texture array, and update indirect texture
 		if (NewPages.size() > 0)
 		{
-			FRenderResourceTablePtr VTTable = PhysicPageResource[FRHI::Get()->GetCurrentEncodingFrameIndex()];
+			FRenderResourceTablePtr VTTable = PhysicPageResource;
 
 			// Fill new pages into Physic Page Array
 			SColorf Color;
@@ -344,6 +340,7 @@ namespace tix
 			}
 
 			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
+			PhysicPageResource->PutTextureInTable(IndirectTexture, 0);
 		}
 	}
 
@@ -352,7 +349,7 @@ namespace tix
 		TI_ASSERT(InPageIndex.size() == InTextureResource.size() && InPageIndex.size() == InTextureData.size());
 		const int32 Pages = (int32)InPageIndex.size();
 
-		FRenderResourceTablePtr VTTable = PhysicPageResource[FRHI::Get()->GetCurrentEncodingFrameIndex()];
+		FRenderResourceTablePtr VTTable = PhysicPageResource;
 		for (int32 i = 0 ; i < Pages ; ++ i)
 		{
 			uint32 PageIndex = InPageIndex[i];
@@ -364,10 +361,7 @@ namespace tix
 			if (PhysicPagesMap.find(PageIndex) != PhysicPagesMap.end())
 			{
 				uint32 Location = PhysicPagesMap[PageIndex];
-				for (int32 f = 0 ; f < FRHIConfig::FrameBufferNum ; ++ f)
-				{
-					PhysicPageResource[f]->PutTextureInTable(TextureResource, Location);
-				}
+				PhysicPageResource->PutTextureInTable(TextureResource, Location);
 			}
 		}
 	}
