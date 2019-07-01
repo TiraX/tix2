@@ -51,6 +51,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) override;
+		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) override;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) override;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;

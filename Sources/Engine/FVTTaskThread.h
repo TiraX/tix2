@@ -36,6 +36,8 @@ namespace tix
 		TMutex TaskBeginMutex;
 		TCond TaskBeginCond;
 
+		bool AnalysisDone;
+
 		// Analysis thread finished TCond signal
 		TMutex TaskFinishedMutex;
 		TCond TaskFinishedCond;

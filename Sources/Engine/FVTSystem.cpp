@@ -44,6 +44,16 @@ namespace tix
 			PhysicPageTextures[i] = uint32(-1);
 		}
 		IndirectTextureData = ti_new TImage(EPF_R16F, ITSize, ITSize);
+
+		TTextureDesc Desc;
+		Desc.Type = ETT_TEXTURE_2D;
+		Desc.Format = EPF_R16F;
+		Desc.Width = ITSize;
+		Desc.Height = ITSize;
+		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
+		Desc.SRGB = 0;
+		Desc.Mips = 1;
+		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
 	}
 
 	FVTSystem::~FVTSystem()
@@ -312,7 +322,14 @@ namespace tix
 				}
 
 				// Put texture in this array
-				VTTable->PutTextureInTable(TextureResource, Location);
+				if (TextureResource->HasTextureFlag(ETF_RENDER_RESOURCE_UPDATED))
+				{
+					VTTable->PutTextureInTable(TextureResource, Location);
+				}
+				else
+				{
+					VTTable->PutTextureInTable(TEngineResources::EmptyTextureWhite->TextureResource, Location);
+				}
 				PhysicPageTextures[Location] = PageIndex;
 
 				// Remember this page is in array
@@ -326,8 +343,7 @@ namespace tix
 				IndirectTextureData->SetPixel(PageX, PageY, Color);
 			}
 
-			TI_TODO("Create texture from TImage.");
-			TI_ASSERT(0);
+			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
 		}
 	}
 
@@ -342,6 +358,7 @@ namespace tix
 			uint32 PageIndex = InPageIndex[i];
 			FTexturePtr TextureResource = InTextureResource[i];
 			TTexturePtr TextureData = InTextureData[i];
+			TI_ASSERT(!TextureResource->HasTextureFlag(ETF_RENDER_RESOURCE_UPDATED));
 			FRHI::Get()->UpdateHardwareResourceTexture(TextureResource, TextureData);
 
 			if (PhysicPagesMap.find(PageIndex) != PhysicPagesMap.end())

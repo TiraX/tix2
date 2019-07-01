@@ -149,5 +149,8 @@ namespace tix
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;
+
+		// Indirect texture
+		FTexturePtr IndirectTexture;
 	};
 }

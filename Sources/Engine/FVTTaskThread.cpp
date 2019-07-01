@@ -12,6 +12,7 @@ namespace tix
 {
 	FVTAnalysisThread::FVTAnalysisThread()
 		: TThread("VTAnalysisThread")
+		, AnalysisDone(false)
 		, VTLoadingThread(nullptr)
 	{
 		PagesInThisFrame.reserve(64);
@@ -60,6 +61,7 @@ namespace tix
 		{
 			// notify finished signal
 			unique_lock<TMutex> CLock(TaskFinishedMutex);
+			AnalysisDone = true;
 			TaskFinishedCond.notify_one();
 		}
 	}
@@ -67,12 +69,13 @@ namespace tix
 	void FVTAnalysisThread::WaitForAnalysisFinished()
 	{
 		unique_lock<TMutex> TaskLock(TaskFinishedMutex);
-		TaskFinishedCond.wait(TaskLock);
+		TaskFinishedCond.wait(TaskLock, [this] {return AnalysisDone; });
 	}
 
 	void FVTAnalysisThread::AddUVBuffer(TStreamPtr InBuffer)
 	{
 		unique_lock<TMutex> CLock(TaskBeginMutex);
+		AnalysisDone = false;
 		TaskBeginCond.notify_one();
 
 		BufferMutex.lock();
@@ -113,6 +116,7 @@ namespace tix
 		FVTLoadTaskMap* VTLoadTasks = ti_new FVTLoadTaskMap();
 
 		PagesInThisFrame.clear();
+		THMap<uint32, uint32> PagesAlreadyRecorded;
 		for (int32 i = 0 ; i < DataCount ; ++ i)
 		{
 			const FFloat4& Data = DataPtr[i];
@@ -147,10 +151,15 @@ namespace tix
 					PhysicPage = CachedTextures[PageLoadInfo.PageIndex];
 				}
 
-				FVTSystem::FPhyPageInfo PhyPageInfo;
-				PhyPageInfo.Texture = PhysicPage;
-				PhyPageInfo.PageIndex = PageLoadInfo.PageIndex;
-				PagesInThisFrame.push_back(PhyPageInfo);
+				if (PagesAlreadyRecorded.find(PageLoadInfo.PageIndex) == PagesAlreadyRecorded.end())
+				{
+					FVTSystem::FPhyPageInfo PhyPageInfo;
+					PhyPageInfo.Texture = PhysicPage;
+					PhyPageInfo.PageIndex = PageLoadInfo.PageIndex;
+					PagesInThisFrame.push_back(PhyPageInfo);
+
+					PagesAlreadyRecorded[PageLoadInfo.PageIndex] = 1;
+				}
 			}
 			TI_TODO("Remove tasks in the queue if it is not in this frame.");
 		}
