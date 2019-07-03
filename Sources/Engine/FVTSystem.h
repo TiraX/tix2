@@ -96,7 +96,8 @@ namespace tix
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
 		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
-		void InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& AvailbleLocations);
+		void InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& UsedLocations);
+		int32 FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations);
 
 	private:
 		static const bool Enabled;
@@ -143,6 +144,9 @@ namespace tix
 		// Physic page's location in PhysicPageTextures
 		// Key is the page index in virtual texture, Value is the index in Physic pages array
 		THMap<uint32, uint32> PhysicPagesMap;
+
+		// Next availble location;
+		int32 SearchedLocation;
 		
 		// Physic pages array render resource, slot 0 always be the indirect texture
 		FRenderResourceTablePtr PhysicPageResource;

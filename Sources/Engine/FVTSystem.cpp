@@ -21,6 +21,7 @@ namespace tix
 	FVTSystem::FVTSystem()
 		: VTAnalysisThread(nullptr)
 		, VTRegion(VTSize, PPSize)
+		, SearchedLocation(0)
 	{
 		TI_ASSERT(IsRenderThread());
 		VTSystem = this;
@@ -36,10 +37,9 @@ namespace tix
 		// Init render resources
 		PhysicPageResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
 		PhysicPageTextures.resize(PPCount);
-		for (int32 i = 1; i < PPCount; ++i)
+		for (int32 i = 0; i < PPCount; ++i)
 		{
 			PhysicPageTextures[i] = uint32(-1);
-			PhysicPageResource->PutTextureInTable(TEngineResources::EmptyTextureWhite->TextureResource, i);
 		}
 		IndirectTextureData = ti_new TImage(EPF_R16F, ITSize, ITSize);
 
@@ -244,7 +244,7 @@ namespace tix
 #endif
 	}
 
-	void FVTSystem::InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& AvailbleLocations)
+	void FVTSystem::InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& UsedLocations)
 	{
 		FTexturePtr TextureResource = PhysicPageTexture.Texture;
 		uint32 PageIndex = PhysicPageTexture.PageIndex;
@@ -259,12 +259,26 @@ namespace tix
 		else
 		{
 			// Already in PhysicPageTextures, remove this location from AvailbleLocations
-			TI_ASSERT(AvailbleLocations.find(PhysicPagesMap[PageIndex]) != AvailbleLocations.end());
-			AvailbleLocations.erase(PhysicPagesMap[PageIndex]);
+			TI_ASSERT(UsedLocations.find(PhysicPagesMap[PageIndex]) == UsedLocations.end());
+			UsedLocations[PhysicPagesMap[PageIndex]] = 1;
 		}
 		
 		// Pages updated in one frame can not exceed PPCount(1024)
 		TI_ASSERT(NewPages.size() < PPCount);
+	}
+
+	int32 FVTSystem::FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations)
+	{
+		int32 Loop = 0;
+		while (UsedLocations.find(SearchedLocation) != UsedLocations.end())
+		{
+			SearchedLocation = (SearchedLocation + 1) % PPCount;
+			++Loop;
+			TI_ASSERT(Loop < PPCount);
+		}
+		int32 Result = SearchedLocation;
+		SearchedLocation = (SearchedLocation + 1) % PPCount;
+		return Result;
 	}
 
 	void FVTSystem::PrepareVTIndirectTexture()
@@ -273,22 +287,16 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 
 		THMap<uint32, FTexturePtr> NewPages;	// New pages in this frame
-		THMap<uint32, uint32> AvailbleLocations;	// Avaible location in PhysicPageTextures in this frame;
-
-		// Fill available positions, slot 0 always be the indirect texture
-		for (uint32 i = 1 ; i < PPCount ; ++ i)
-		{
-			AvailbleLocations[i] = 0;
-		}
+		THMap<uint32, uint32> UsedLocations;	// Avaible location in PhysicPageTextures in this frame;
 
 		// Wait until analysis finished
 		VTAnalysisThread->WaitForAnalysisFinished();
 
-		// Find new pages and available slots
+		// Find new pages and used slots
 		const TVector<FPhyPageInfo>& PhysicPages = VTAnalysisThread->GetPhysicPages();
 		for (const auto& Page : PhysicPages)
 		{
-			InsertPhysicPage(Page, NewPages, AvailbleLocations);
+			InsertPhysicPage(Page, NewPages, UsedLocations);
 		}
 
 		// Put new pages in this frame to texture array, and update indirect texture
@@ -308,8 +316,7 @@ namespace tix
 				int32 PageY = PageIndex / ITSize;
 
 				// Find a location in PhysicPageTextures
-				TI_ASSERT(AvailbleLocations.size() > 0);
-				uint32 Location = AvailbleLocations.begin()->first;
+				uint32 Location = FindAvailbleLocation(UsedLocations);
 
 				// Remove old texture info from PhysicPagesMap
 				if (PhysicPageTextures[Location] != uint32(-1))
@@ -331,9 +338,6 @@ namespace tix
 
 				// Remember this page is in array
 				PhysicPagesMap[PageIndex] = Location;
-
-				// Remove this available location
-				AvailbleLocations.erase(AvailbleLocations.begin());
 
 				// Remember this in indirect texture
 				Color.R = float(Location);

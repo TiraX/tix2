@@ -1124,27 +1124,34 @@ namespace tix
 		ComPtr<ID3D12Resource> TextureUploadHeap;
 		const int32 ArraySize = IsCubeMap ? 6 : 1;
 
-		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-		// Describe and create a Texture2D.
-		D3D12_RESOURCE_DESC TextureDx12Desc = {};
-		TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		TextureDx12Desc.Alignment = 0;
-		TextureDx12Desc.Width = Desc.Width;
-		TextureDx12Desc.Height = Desc.Height;
-		TextureDx12Desc.DepthOrArraySize = ArraySize;
-		TextureDx12Desc.MipLevels = Desc.Mips;
-		TextureDx12Desc.Format = DxgiFormat;
-		TextureDx12Desc.SampleDesc.Count = 1;
-		TextureDx12Desc.SampleDesc.Quality = 0;
-		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		if (!TexDx12->TextureResource.IsInited())
+		{
+			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+			// Describe and create a Texture2D.
+			D3D12_RESOURCE_DESC TextureDx12Desc = {};
+			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			TextureDx12Desc.Alignment = 0;
+			TextureDx12Desc.Width = Desc.Width;
+			TextureDx12Desc.Height = Desc.Height;
+			TextureDx12Desc.DepthOrArraySize = ArraySize;
+			TextureDx12Desc.MipLevels = Desc.Mips;
+			TextureDx12Desc.Format = DxgiFormat;
+			TextureDx12Desc.SampleDesc.Count = 1;
+			TextureDx12Desc.SampleDesc.Quality = 0;
+			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		TexDx12->TextureResource.CreateResource(
-			D3dDevice.Get(),
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&TextureDx12Desc,
-			D3D12_RESOURCE_STATE_COPY_DEST);
+			TexDx12->TextureResource.CreateResource(
+				D3dDevice.Get(),
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&TextureDx12Desc,
+				D3D12_RESOURCE_STATE_COPY_DEST);
+		}
+		else
+		{
+			TI_ASSERT(Desc.Width == InTexData->GetDesc().Width && Desc.Height == InTexData->GetDesc().Height);
+		}
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
 		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
@@ -1206,27 +1213,34 @@ namespace tix
 		ComPtr<ID3D12Resource> TextureUploadHeap;
 		const int32 ArraySize = 1;
 
-		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-		// Describe and create a Texture2D.
-		D3D12_RESOURCE_DESC TextureDx12Desc = {};
-		TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		TextureDx12Desc.Alignment = 0;
-		TextureDx12Desc.Width = Desc.Width;
-		TextureDx12Desc.Height = Desc.Height;
-		TextureDx12Desc.DepthOrArraySize = ArraySize;
-		TextureDx12Desc.MipLevels = Desc.Mips;
-		TextureDx12Desc.Format = DxgiFormat;
-		TextureDx12Desc.SampleDesc.Count = 1;
-		TextureDx12Desc.SampleDesc.Quality = 0;
-		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		if (!TexDx12->TextureResource.IsInited())
+		{
+			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+			// Describe and create a Texture2D.
+			D3D12_RESOURCE_DESC TextureDx12Desc = {};
+			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			TextureDx12Desc.Alignment = 0;
+			TextureDx12Desc.Width = Desc.Width;
+			TextureDx12Desc.Height = Desc.Height;
+			TextureDx12Desc.DepthOrArraySize = ArraySize;
+			TextureDx12Desc.MipLevels = Desc.Mips;
+			TextureDx12Desc.Format = DxgiFormat;
+			TextureDx12Desc.SampleDesc.Count = 1;
+			TextureDx12Desc.SampleDesc.Quality = 0;
+			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		TexDx12->TextureResource.CreateResource(
-			D3dDevice.Get(),
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&TextureDx12Desc,
-			D3D12_RESOURCE_STATE_COPY_DEST);
+			TexDx12->TextureResource.CreateResource(
+				D3dDevice.Get(),
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&TextureDx12Desc,
+				D3D12_RESOURCE_STATE_COPY_DEST);
+		}
+		else
+		{
+			TI_ASSERT(Desc.Width == InImageData->GetWidth() && Desc.Height == InImageData->GetHeight());
+		}
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
 		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
