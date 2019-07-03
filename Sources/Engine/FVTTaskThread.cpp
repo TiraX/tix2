@@ -12,10 +12,15 @@ namespace tix
 {
 	FVTAnalysisThread::FVTAnalysisThread()
 		: TThread("VTAnalysisThread")
-		, AnalysisDone(false)
+		, SearchedLocation(0)
 		, VTLoadingThread(nullptr)
 	{
-		PagesInThisFrame.reserve(64);
+		// Init Physic pages slots
+		PhysicPageTextures.resize(FVTSystem::PPCount);
+		for (int32 i = 0; i < FVTSystem::PPCount; ++i)
+		{
+			PhysicPageTextures[i] = uint32(-1);
+		}
 
 		// Start loading thread
 		VTLoadingThread = ti_new FVTLoadingThread;
@@ -57,25 +62,11 @@ namespace tix
 			AnalysisBuffer();
 			TI_TODO("Analysis time consume");
 		}
-
-		{
-			// notify finished signal
-			unique_lock<TMutex> CLock(TaskFinishedMutex);
-			AnalysisDone = true;
-			TaskFinishedCond.notify_one();
-		}
-	}
-
-	void FVTAnalysisThread::WaitForAnalysisFinished()
-	{
-		unique_lock<TMutex> TaskLock(TaskFinishedMutex);
-		TaskFinishedCond.wait(TaskLock, [this] {return AnalysisDone; });
 	}
 
 	void FVTAnalysisThread::AddUVBuffer(TStreamPtr InBuffer)
 	{
 		unique_lock<TMutex> CLock(TaskBeginMutex);
-		AnalysisDone = false;
 		TaskBeginCond.notify_one();
 
 		BufferMutex.lock();
@@ -100,23 +91,21 @@ namespace tix
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
 		TStreamPtr Buffer;
-		BufferMutex.lock();
-		Buffer = Buffers.front();
-		Buffers.pop_front();
-		BufferMutex.unlock();
+		{
+			BufferMutex.lock();
+			Buffer = Buffers.front();
+			Buffers.pop_front();
+			BufferMutex.unlock();
+		}
 
 		FVTSystem * VTSystem = FVTSystem::Get();
 		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
 
-		// Task execute order, point to VTLoadTasks, will be used in VTLoadingThread
-		FVTTaskOrderList* VTTaskOrder = ti_new FVTTaskOrderList();
+		THMap<uint32, uint32> NewPages;	// New pages in this frame
+		THMap<uint32, uint32> UsedLocations;	// Used locations in PhysicPageTextures in this frame;
 
-		// The actual load task, Key is Page Index, Value is Page Load Info, will be used in VTLoadingThread
-		FVTLoadTaskMap* VTLoadTasks = ti_new FVTLoadTaskMap();
-
-		PagesInThisFrame.clear();
-		THMap<uint32, uint32> PagesAlreadyRecorded;
+		// Go through every pixel
 		for (int32 i = 0 ; i < DataCount ; ++ i)
 		{
 			const FFloat4& Data = DataPtr[i];
@@ -126,45 +115,78 @@ namespace tix
 				Position.X = (int32)(Data.X * FVTSystem::VTSize);
 				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
 
-				FVTSystem::FPageLoadInfo PageLoadInfo;
-				VTSystem->GetPageLoadInfoByPosition(Position, PageLoadInfo);
+				int32 PageX = Position.X / FVTSystem::PPSize;
+				int32 PageY = Position.Y / FVTSystem::PPSize;
+				TI_ASSERT(PageX >= 0 && PageY >= 0);
+				uint32 PageIndex = PageY * FVTSystem::ITSize + PageX;
 
-				FTexturePtr PhysicPage;
-				if (CachedTextures.find(PageLoadInfo.PageIndex) == CachedTextures.end())
+				if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
 				{
-					// Send a dummy texture
-					PhysicPage = FRHI::Get()->CreateTexture();
-					CachedTextures[PageLoadInfo.PageIndex] = PhysicPage;
-					PageLoadInfo.TargetTexture = PhysicPage;
-
-					// Not in cache, add a task to load it.
-					TI_ASSERT(VTLoadTasks->find(PageLoadInfo.PageIndex) == VTLoadTasks->end());
-					{
-						// Not in loading queue, add to it
-						VTTaskOrder->push_back(PageLoadInfo.PageIndex);
-						(*VTLoadTasks)[PageLoadInfo.PageIndex] = PageLoadInfo;
-					}
+					// This is a page not in Slots, remember it
+					NewPages[PageIndex] = 1;
 				}
 				else
 				{
-					// Already in cache, send to render thread directly.
-					PhysicPage = CachedTextures[PageLoadInfo.PageIndex];
-				}
-
-				if (PagesAlreadyRecorded.find(PageLoadInfo.PageIndex) == PagesAlreadyRecorded.end())
-				{
-					FVTSystem::FPhyPageInfo PhyPageInfo;
-					PhyPageInfo.Texture = PhysicPage;
-					PhyPageInfo.PageIndex = PageLoadInfo.PageIndex;
-					PagesInThisFrame.push_back(PhyPageInfo);
-
-					PagesAlreadyRecorded[PageLoadInfo.PageIndex] = 1;
+					// Remember this location is used in this frame
+					UsedLocations[PhysicPagesMap[PageIndex]] = 1;
 				}
 			}
-			TI_TODO("Remove tasks in the queue if it is not in this frame.");
+		}
+		// Pages updated in one frame can not exceed PPCount(1024)
+		TI_ASSERT(NewPages.size() + UsedLocations.size() < FVTSystem::PPCount);
+
+		// Insert new pages to Physic Page Slots, and get load info, send Load task
+		FVTTaskOrderList* VTTaskOrder = ti_new FVTTaskOrderList();	// Task execute order, point to VTLoadTasks, will be used in VTLoadingThread
+		FVTLoadTaskMap* VTLoadTasks = ti_new FVTLoadTaskMap();	// The actual load task, Key is Page Index, Value is Page Load Info, will be used in VTLoadingThread
+
+		for (const auto& Page : NewPages)
+		{
+			uint32 PageIndex = Page.first;
+
+			// Find a location in PhysicPageTextures
+			uint32 Location = FindAvailbleLocation(UsedLocations);
+
+			// Remove old texture info from PhysicPagesMap
+			if (PhysicPageTextures[Location] != uint32(-1))
+			{
+				TI_ASSERT(PhysicPagesMap.find(PhysicPageTextures[Location]) != PhysicPagesMap.end());
+				PhysicPagesMap.erase(PhysicPageTextures[Location]);
+			}
+
+			// Get Texture load info, add to load task
+			TI_ASSERT(VTLoadTasks->find(PageIndex) == VTLoadTasks->end());
+			FVTSystem::FPageLoadInfo PageLoadInfo;
+			PageLoadInfo.AtlasLocation = Location;
+			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
+			VTTaskOrder->push_back(PageIndex);
+			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
+
+			// Remember this location's page
+			PhysicPageTextures[Location] = PageIndex;
+
+			// Remember this page's location in array
+			PhysicPagesMap[PageIndex] = Location;
 		}
 
+		// Sort, make IO more efficient
 		VTTaskOrder->sort(FSortTask(*VTLoadTasks));
+
+		// Send to Loading thread
+		VTLoadingThread->AddLoadingTasks(VTTaskOrder, VTLoadTasks);
+	}
+
+	int32 FVTAnalysisThread::FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations)
+	{
+		int32 Loop = 0;
+		while (UsedLocations.find(SearchedLocation) != UsedLocations.end())
+		{
+			SearchedLocation = (SearchedLocation + 1) % FVTSystem::PPCount;
+			++Loop;
+			TI_ASSERT(Loop < FVTSystem::PPCount);
+		}
+		int32 Result = SearchedLocation;
+		SearchedLocation = (SearchedLocation + 1) % FVTSystem::PPCount;
+		return Result;
 	}
 
 	void FVTAnalysisThread::OutputDebugTasks(FVTTaskOrderList& VTTaskOrder, FVTLoadTaskMap& VTLoadTasks)
@@ -250,7 +272,7 @@ namespace tix
 
 				Task.PageIndex.push_back(Info.PageIndex);
 				Task.PageStart.push_back(Info.PageStart);
-				Task.TextureResource.push_back(Info.TargetTexture);
+				Task.AtlasLocation.push_back(Info.AtlasLocation);
 			}
 			VTLoadingTasks.push_back(Task);
 
@@ -267,26 +289,25 @@ namespace tix
 
 		const int32 Pages = (int32)Task.PageIndex.size();
 
-		TVector<TTexturePtr> TextureLoaded;
-		TextureLoaded.reserve(Pages);
 		TVTTextureLoader Loader(Task.Name);
 		
 		for (int32 i = 0 ; i < Pages; ++ i)
 		{
+			FVTSystem::FPageLoadResult Result;
 			// Load texture region
 			int32 StartX = Task.PageStart[i].X * FVTSystem::PPSize;
 			int32 StartY = Task.PageStart[i].Y * FVTSystem::PPSize;
 			TTexturePtr Texture = Loader.LoadTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
-			TextureLoaded.push_back(Texture);
-		}
 
-		// Send to render thread to init render resource of this texture
-		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTLoadingUpdateTexture,
-			TVector<uint32>, PageIndex, Task.PageIndex,
-			TVector<FTexturePtr>, TextureResource, Task.TextureResource,
-			TVector<TTexturePtr>, TextureData, TextureLoaded,
-			{
-				FVTSystem::Get()->UpdateLoadedPages(PageIndex, TextureResource, TextureData);
-			});
+			// Send to render thread to init render resource of this texture
+			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTLoadedPages,
+				uint32, PageIndex, Task.PageIndex[i],
+				uint32, AtlasLocation, Task.AtlasLocation[i],
+				TTexturePtr, TextureData, Texture,
+				{
+					//FVTSystem::Get()->UpdateLoadedPages(PageIndex, TextureResource, TextureData);
+				});
+		}
+		
 	}
 }

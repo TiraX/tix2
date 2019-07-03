@@ -21,14 +21,9 @@ namespace tix
 		virtual void Run() override;
 		virtual void Stop() override;
 
-		TI_API void WaitForAnalysisFinished();
-
-		const TVector<FVTSystem::FPhyPageInfo>& GetPhysicPages() const
-		{
-			return PagesInThisFrame;
-		}
 	protected:
 		void AnalysisBuffer();
+		int32 FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations);
 		void OutputDebugTasks(FVTTaskOrderList& VTTaskOrder, FVTLoadTaskMap& VTLoadTasks);
 
 	private:
@@ -36,21 +31,19 @@ namespace tix
 		TMutex TaskBeginMutex;
 		TCond TaskBeginCond;
 
-		bool AnalysisDone;
-
-		// Analysis thread finished TCond signal
-		TMutex TaskFinishedMutex;
-		TCond TaskFinishedCond;
-
 		// VT UV Buffers of 1/8 x 1/8 screen, send from Render Thread
 		TList<TStreamPtr> Buffers;
 		TMutex BufferMutex;
 
-		// Cached textures, Key is Page Index, Value is FTexture
-		THMap<uint32, FTexturePtr> CachedTextures;
+		// Physic texture page array, stores the page index in virtual texture
+		TVector<uint32> PhysicPageTextures;
 
-		// Physic pages need in this frame
-		TVector<FVTSystem::FPhyPageInfo> PagesInThisFrame;
+		// Physic page's location in PhysicPageTextures
+		// Key is the page index in virtual texture, Value is the index in Physic pages array
+		THMap<uint32, uint32> PhysicPagesMap;
+
+		// Next availble location;
+		int32 SearchedLocation;
 
 		FVTLoadingThread * VTLoadingThread;
 	};
@@ -82,7 +75,7 @@ namespace tix
 			TString Name;
 			TVector<vector2du16> PageStart;
 			TVector<uint32> PageIndex;
-			TVector<FTexturePtr> TextureResource;
+			TVector<uint32> AtlasLocation;
 		};
 		TList<FVTLoadingTask> VTLoadingTasks;
 	};

@@ -96,6 +96,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) = 0;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) = 0;
+		virtual bool UpdateHardwareResourceTextureRegion(FTexturePtr Texture, TTexturePtr InTexData, const recti& InRegion) = 0;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) = 0;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;

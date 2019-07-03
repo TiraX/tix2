@@ -21,7 +21,6 @@ namespace tix
 	FVTSystem::FVTSystem()
 		: VTAnalysisThread(nullptr)
 		, VTRegion(VTSize, PPSize)
-		, SearchedLocation(0)
 	{
 		TI_ASSERT(IsRenderThread());
 		VTSystem = this;
@@ -35,24 +34,29 @@ namespace tix
 		memset(RegionData.data(), -1, ITSize * ITSize * sizeof(int32));
 
 		// Init render resources
-		PhysicPageResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
-		PhysicPageTextures.resize(PPCount);
-		for (int32 i = 0; i < PPCount; ++i)
-		{
-			PhysicPageTextures[i] = uint32(-1);
-		}
-		IndirectTextureData = ti_new TImage(EPF_R16F, ITSize, ITSize);
+		VTResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
 
+		// Create indirect texture
+		IndirectTextureData = ti_new TImage(EPF_RGBA8, ITSize, ITSize);
 		TTextureDesc Desc;
 		Desc.Type = ETT_TEXTURE_2D;
-		Desc.Format = EPF_R16F;
+		Desc.Format = EPF_RGBA8;
 		Desc.Width = ITSize;
 		Desc.Height = ITSize;
 		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
 		Desc.SRGB = 0;
 		Desc.Mips = 1;
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
-		PhysicPageResource->PutTextureInTable(IndirectTexture, 0);
+
+		// Create physic texture atlas
+		Desc.Format = EPF_DDS_DXT5;
+		Desc.Width = PhysicAtlasSize * PPSize;
+		Desc.Height = PhysicAtlasSize * PPSize;
+		Desc.SRGB = 1;
+		PhysicPageAtlas = FRHI::Get()->CreateTexture(Desc);
+		FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageAtlas);
+		VTResource->PutTextureInTable(IndirectTexture, 0);
+		VTResource->PutTextureInTable(PhysicPageAtlas, 1);
 	}
 
 	FVTSystem::~FVTSystem()
@@ -63,9 +67,10 @@ namespace tix
 		ti_delete VTAnalysisThread;
 		VTAnalysisThread = nullptr;
 
-		PhysicPageTextures.clear();
-		PhysicPageResource = nullptr;
-		//IndirectTextureData = nullptr;
+		IndirectTexture = nullptr;
+		PhysicPageAtlas = nullptr;
+		VTResource = nullptr;
+		IndirectTextureData = nullptr;
 	}
 
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)
@@ -171,12 +176,11 @@ namespace tix
 		}
 	}
 
-	void FVTSystem::GetPageLoadInfoByPosition(const vector2di& InPosition, FPageLoadInfo& OutInfo)
+	void FVTSystem::GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo)
 	{
-		int32 PageX = InPosition.X / PPSize;
-		int32 PageY = InPosition.Y / PPSize;
-		TI_ASSERT(PageX >= 0 && PageY >= 0);
-		uint32 PageIndex = PageY * ITSize + PageX;
+		int32 PageX = PageIndex % FVTSystem::ITSize;
+		int32 PageY = PageIndex / FVTSystem::ITSize;
+		TI_ASSERT(PageX >= 0 && PageY >= 0 && PageY < FVTSystem::ITSize);
 #ifdef DEBUG_IT_INFO
 		if (RegionData[PageIndex] == -1)
 		{
@@ -199,7 +203,7 @@ namespace tix
 
 		FTextureInfo& TextureInfo = TexturesInVT[RegionIndex];
 		OutInfo.TextureName = TextureInfo.TextureName;
-		OutInfo.TextureSize = TextureInfo.TextureSize;
+		//OutInfo.TextureSize = TextureInfo.TextureSize;
 		OutInfo.PageStart.X = PageX - RegionCellStartX;
 		OutInfo.PageStart.Y = PageY - RegionCellStartY;
 		OutInfo.PageIndex = PageIndex;
@@ -244,130 +248,15 @@ namespace tix
 #endif
 	}
 
-	void FVTSystem::InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& UsedLocations)
-	{
-		FTexturePtr TextureResource = PhysicPageTexture.Texture;
-		uint32 PageIndex = PhysicPageTexture.PageIndex;
-
-		// Check which textures should be add to texture array
-		if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
-		{
-			// Not in PhysicPageTextures, remember it, add it later in PrepareVTIndirectTexture()
-			TI_ASSERT(NewPages.find(PageIndex) == NewPages.end());
-			NewPages[PageIndex] = TextureResource;
-		}
-		else
-		{
-			// Already in PhysicPageTextures, remove this location from AvailbleLocations
-			TI_ASSERT(UsedLocations.find(PhysicPagesMap[PageIndex]) == UsedLocations.end());
-			UsedLocations[PhysicPagesMap[PageIndex]] = 1;
-		}
-		
-		// Pages updated in one frame can not exceed PPCount(1024)
-		TI_ASSERT(NewPages.size() < PPCount);
-	}
-
-	int32 FVTSystem::FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations)
-	{
-		int32 Loop = 0;
-		while (UsedLocations.find(SearchedLocation) != UsedLocations.end())
-		{
-			SearchedLocation = (SearchedLocation + 1) % PPCount;
-			++Loop;
-			TI_ASSERT(Loop < PPCount);
-		}
-		int32 Result = SearchedLocation;
-		SearchedLocation = (SearchedLocation + 1) % PPCount;
-		return Result;
-	}
-
 	void FVTSystem::PrepareVTIndirectTexture()
 	{
-		TI_TODO("Use all of the page slots is more effcient.");
 		TI_ASSERT(IsRenderThread());
 
-		THMap<uint32, FTexturePtr> NewPages;	// New pages in this frame
-		THMap<uint32, uint32> UsedLocations;	// Avaible location in PhysicPageTextures in this frame;
+		TI_ASSERT(0);
 
-		// Wait until analysis finished
-		VTAnalysisThread->WaitForAnalysisFinished();
+		// Update indirect texture
+	
+		// Update Physic page atlas regions
 
-		// Find new pages and used slots
-		const TVector<FPhyPageInfo>& PhysicPages = VTAnalysisThread->GetPhysicPages();
-		for (const auto& Page : PhysicPages)
-		{
-			InsertPhysicPage(Page, NewPages, UsedLocations);
-		}
-
-		// Put new pages in this frame to texture array, and update indirect texture
-		if (NewPages.size() > 0)
-		{
-			FRenderResourceTablePtr VTTable = PhysicPageResource;
-
-			// Fill new pages into Physic Page Array
-			SColorf Color;
-			for (auto& P : NewPages)
-			{
-				uint32 PageIndex = P.first;
-				FTexturePtr TextureResource = P.second;
-
-				// Page position
-				int32 PageX = PageIndex % ITSize;
-				int32 PageY = PageIndex / ITSize;
-
-				// Find a location in PhysicPageTextures
-				uint32 Location = FindAvailbleLocation(UsedLocations);
-
-				// Remove old texture info from PhysicPagesMap
-				if (PhysicPageTextures[Location] != uint32(-1))
-				{
-					TI_ASSERT(PhysicPagesMap.find(PhysicPageTextures[Location]) != PhysicPagesMap.end());
-					PhysicPagesMap.erase(PhysicPageTextures[Location]);
-				}
-
-				// Put texture in this array
-				if (TextureResource->HasTextureFlag(ETF_RENDER_RESOURCE_UPDATED))
-				{
-					VTTable->PutTextureInTable(TextureResource, Location);
-				}
-				else
-				{
-					VTTable->PutTextureInTable(TEngineResources::EmptyTextureWhite->TextureResource, Location);
-				}
-				PhysicPageTextures[Location] = PageIndex;
-
-				// Remember this page is in array
-				PhysicPagesMap[PageIndex] = Location;
-
-				// Remember this in indirect texture
-				Color.R = float(Location);
-				IndirectTextureData->SetPixel(PageX, PageY, Color);
-			}
-
-			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
-			PhysicPageResource->PutTextureInTable(IndirectTexture, 0);
-		}
-	}
-
-	void FVTSystem::UpdateLoadedPages(const TVector<uint32>& InPageIndex, const TVector<FTexturePtr>& InTextureResource, const TVector<TTexturePtr>& InTextureData)
-	{
-		TI_ASSERT(InPageIndex.size() == InTextureResource.size() && InPageIndex.size() == InTextureData.size());
-		const int32 Pages = (int32)InPageIndex.size();
-
-		FRenderResourceTablePtr VTTable = PhysicPageResource;
-		for (int32 i = 0 ; i < Pages ; ++ i)
-		{
-			uint32 PageIndex = InPageIndex[i];
-			FTexturePtr TextureResource = InTextureResource[i];
-			TTexturePtr TextureData = InTextureData[i];
-			TI_ASSERT(!TextureResource->HasTextureFlag(ETF_RENDER_RESOURCE_UPDATED));
-			FRHI::Get()->UpdateHardwareResourceTexture(TextureResource, TextureData);
-
-			if (PhysicPagesMap.find(PageIndex) != PhysicPagesMap.end())
-			{
-				uint32 Location = PhysicPagesMap[PageIndex];
-				PhysicPageResource->PutTextureInTable(TextureResource, Location);
-			}
-		}
 	}
 }

@@ -22,8 +22,9 @@ namespace tix
 		// Indirection texture size
 		static const int32 ITSize = VTSize / PPSize;
 
+		static const int32 PhysicAtlasSize = 32;
 		// Physical page count
-		static const int32 PPCount = 32 * 32;
+		static const int32 PPCount = PhysicAtlasSize * PhysicAtlasSize;
 
 		static const float UVInv;
 
@@ -47,19 +48,19 @@ namespace tix
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
-		void UpdateLoadedPages(const TVector<uint32>& PageIndex, const TVector<FTexturePtr>& TextureResource, const TVector<TTexturePtr>& TextureData);
 		TI_API void PrepareVTIndirectTexture();
 
 		struct FPageLoadInfo
 		{
 			TString TextureName;
-			vector2du16 TextureSize;	// No use of this Size, can be removed.
+			//vector2du16 TextureSize;	// No use of this Size, can be removed.
 			vector2du16 PageStart;
-			uint32 PageIndex;
-			FTexturePtr TargetTexture;
+			uint32 PageIndex;	// Index in virtual texture
+			uint32 AtlasLocation;	// Location in physic page atlas
 			
 			FPageLoadInfo()
 				: PageIndex(uint32(-1))
+				, AtlasLocation(uint32(-1))
 			{}
 
 			bool operator < (const FPageLoadInfo& Other) const
@@ -79,25 +80,19 @@ namespace tix
 				return true;
 			}
 		};
-		void GetPageLoadInfoByPosition(const vector2di& InPosition, FPageLoadInfo& OutInfo);
 
-		struct FPhyPageInfo
+		struct FPageLoadResult
 		{
-			FTexturePtr Texture;
-			uint32 PageIndex;
-
-			FPhyPageInfo()
-				: PageIndex(uint32(-1))
-			{}
+			uint32 PageIndex;	// Index in virtual texture
+			uint32 AtlasLocation;	// Location in physic page atlas
+			TTexturePtr TextureData;	// Data loaded
 		};
-
+		void GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo);
 		void OutputDebugInfo();
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
 		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
-		void InsertPhysicPage(const FPhyPageInfo& PhysicPageTexture, THMap<uint32, FTexturePtr>& NewPages, THMap<uint32, uint32>& UsedLocations);
-		int32 FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations);
 
 	private:
 		static const bool Enabled;
@@ -136,25 +131,17 @@ namespace tix
 		};
 		// Texture loaded, Key is offset in RegionData
 		THMap<uint32, FTextureInfo> TexturesInVT;
-
-
-		// Physic texture page array, stores the page index in virtual texture
-		TVector<uint32> PhysicPageTextures;
-
-		// Physic page's location in PhysicPageTextures
-		// Key is the page index in virtual texture, Value is the index in Physic pages array
-		THMap<uint32, uint32> PhysicPagesMap;
-
-		// Next availble location;
-		int32 SearchedLocation;
 		
-		// Physic pages array render resource, slot 0 always be the indirect texture
-		FRenderResourceTablePtr PhysicPageResource;
+		// Virtual texture resource, 0 is indirect texture; 1 is physic page atlas
+		FRenderResourceTablePtr VTResource;
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;
 
 		// Indirect texture
 		FTexturePtr IndirectTexture;
+
+		// Physic pages atlas
+		FTexturePtr PhysicPageAtlas;
 	};
 }

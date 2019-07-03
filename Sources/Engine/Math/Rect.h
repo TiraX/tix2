@@ -359,7 +359,7 @@ namespace tix
 	};
 
 	typedef rect<float32> rectf;
-	typedef rect<int> recti;
+	typedef rect<int32> recti;
 } // end namespace ti
 
 #endif
