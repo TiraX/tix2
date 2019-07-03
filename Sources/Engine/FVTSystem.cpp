@@ -269,6 +269,7 @@ namespace tix
 
 	void FVTSystem::PrepareVTIndirectTexture()
 	{
+		TI_TODO("Use all of the page slots is more effcient.");
 		TI_ASSERT(IsRenderThread());
 
 		THMap<uint32, FTexturePtr> NewPages;	// New pages in this frame
