@@ -1072,13 +1072,19 @@ namespace tix
 
 		ClearValue.Format = DxgiFormat;
 
+		D3D12_CLEAR_VALUE *pOptimizedClearValue = nullptr;
+		if ((TextureDx12Desc.Flags & (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) != 0)
+		{
+			pOptimizedClearValue = &ClearValue;
+		}
+
 		TexDx12->TextureResource.CreateResource(
 			D3dDevice.Get(),
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&TextureDx12Desc,
 			D3D12_RESOURCE_STATE_COMMON,
-			&ClearValue
+			pOptimizedClearValue
 		);
 		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
 

@@ -83,11 +83,23 @@ namespace tix
 
 		struct FPageLoadResult
 		{
+			FPageLoadResult()
+				: PageIndex(uint32(-1))
+				, AtlasLocation(uint32(-1))
+			{}
+
+			FPageLoadResult(uint32 InPageIndex, uint32 InAtlasLocation, TTexturePtr InTextureData)
+				: PageIndex(InPageIndex)
+				, AtlasLocation(InAtlasLocation)
+				, TextureData(InTextureData)
+			{}
+
 			uint32 PageIndex;	// Index in virtual texture
 			uint32 AtlasLocation;	// Location in physic page atlas
 			TTexturePtr TextureData;	// Data loaded
 		};
 		void GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo);
+		void AddVTPageData(uint32 PageIndex, uint32 AtlasLocation, TTexturePtr TextureData);
 		void OutputDebugInfo();
 
 	private:
@@ -143,5 +155,8 @@ namespace tix
 
 		// Physic pages atlas
 		FTexturePtr PhysicPageAtlas;
+
+		// Loaded Physic pages Data
+		TVector<FPageLoadResult> LoadedPages;
 	};
 }

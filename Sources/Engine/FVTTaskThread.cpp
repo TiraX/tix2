@@ -168,11 +168,19 @@ namespace tix
 			PhysicPagesMap[PageIndex] = Location;
 		}
 
-		// Sort, make IO more efficient
-		VTTaskOrder->sort(FSortTask(*VTLoadTasks));
+		if (VTTaskOrder->size() > 0)
+		{
+			// Sort, make IO more efficient
+			VTTaskOrder->sort(FSortTask(*VTLoadTasks));
 
-		// Send to Loading thread
-		VTLoadingThread->AddLoadingTasks(VTTaskOrder, VTLoadTasks);
+			// Send to Loading thread
+			VTLoadingThread->AddLoadingTasks(VTTaskOrder, VTLoadTasks);
+		}
+		else
+		{
+			ti_delete VTTaskOrder;
+			ti_delete VTLoadTasks;
+		}
 	}
 
 	int32 FVTAnalysisThread::FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations)
@@ -276,6 +284,9 @@ namespace tix
 			}
 			VTLoadingTasks.push_back(Task);
 
+			// Has duplicated tasks.
+			TI_ASSERT(0);
+
 			ti_delete TaskList;
 			ti_delete TaskMap;
 		}
@@ -300,12 +311,12 @@ namespace tix
 			TTexturePtr Texture = Loader.LoadTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
 
 			// Send to render thread to init render resource of this texture
-			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTLoadedPages,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTAddLoadedPages,
 				uint32, PageIndex, Task.PageIndex[i],
 				uint32, AtlasLocation, Task.AtlasLocation[i],
 				TTexturePtr, TextureData, Texture,
 				{
-					//FVTSystem::Get()->UpdateLoadedPages(PageIndex, TextureResource, TextureData);
+					FVTSystem::Get()->AddVTPageData(PageIndex, AtlasLocation, TextureData);
 				});
 		}
 		

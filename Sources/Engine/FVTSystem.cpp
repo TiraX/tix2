@@ -248,15 +248,39 @@ namespace tix
 #endif
 	}
 
+	void FVTSystem::AddVTPageData(uint32 PageIndex, uint32 AtlasLocation, TTexturePtr TextureData)
+	{
+		TI_ASSERT(IsRenderThread());
+		LoadedPages.push_back(FPageLoadResult(PageIndex, AtlasLocation, TextureData));
+	}
+
 	void FVTSystem::PrepareVTIndirectTexture()
 	{
 		TI_ASSERT(IsRenderThread());
 
-		TI_ASSERT(0);
+		SColor IndirectData;
+		for (const auto& Page : LoadedPages)
+		{
+			int32 PageX = Page.PageIndex % ITSize;
+			int32 PageY = Page.PageIndex / ITSize;
 
-		// Update indirect texture
-	
-		// Update Physic page atlas regions
+			int32 AtlasX = Page.AtlasLocation % PhysicAtlasSize;
+			int32 AtlasY = Page.AtlasLocation / PhysicAtlasSize;
+			TI_ASSERT(AtlasY < PhysicAtlasSize);
+
+			// Update indirect texture
+			IndirectData.R = AtlasX;
+			IndirectData.G = AtlasY;
+			IndirectTextureData->SetPixel(PageX, PageY, IndirectData);
+			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
+
+			// Update Physic page atlas regions
+			int32 RegionStartX = AtlasX * PPSize;
+			int32 RegionStartY = AtlasY * PPSize;
+			recti TargetRegion(RegionStartX, RegionStartY, RegionStartX + PPSize, RegionStartY + PPSize);
+			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, Page.TextureData, TargetRegion);
+		}
+		LoadedPages.clear();
 
 	}
 }
