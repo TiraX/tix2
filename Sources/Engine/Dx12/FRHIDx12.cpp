@@ -1294,6 +1294,7 @@ namespace tix
 	{
 		TI_ASSERT(0);
 		TI_ASSERT(InTexData != nullptr);
+		TI_ASSERT(InTexData->GetDesc().Width == InRegion.getWidth() && InTexData->GetDesc().Height == InRegion.getHeight());
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 		const TTextureDesc& Desc = TexDx12->GetDesc();
 		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);

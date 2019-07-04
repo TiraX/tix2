@@ -76,6 +76,13 @@ namespace tix
 			TVector<vector2du16> PageStart;
 			TVector<uint32> PageIndex;
 			TVector<uint32> AtlasLocation;
+
+			void Clear()
+			{
+				PageStart.clear();
+				PageIndex.clear();
+				AtlasLocation.clear();
+			}
 		};
 		TList<FVTLoadingTask> VTLoadingTasks;
 	};

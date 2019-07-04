@@ -274,6 +274,7 @@ namespace tix
 					if (!Task.Name.empty())
 					{
 						VTLoadingTasks.push_back(Task);
+						Task.Clear();
 					}
 					Task.Name = Info.TextureName;
 				}
@@ -283,9 +284,6 @@ namespace tix
 				Task.AtlasLocation.push_back(Info.AtlasLocation);
 			}
 			VTLoadingTasks.push_back(Task);
-
-			// Has duplicated tasks.
-			TI_ASSERT(0);
 
 			ti_delete TaskList;
 			ti_delete TaskMap;
