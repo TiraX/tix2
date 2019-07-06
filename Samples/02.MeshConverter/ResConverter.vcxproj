@@ -23,7 +23,7 @@
     <ProjectGuid>{0C0C8AF9-DC50-4197-ACD1-9D6A885F3E7D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MeshConverter</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>02.ResConverter</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

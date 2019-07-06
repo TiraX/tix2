@@ -1042,11 +1042,13 @@ namespace tix
 
 		if (SrcFormat == EPF_RGB8)
 		{
+			printf("Error: Tga will never be EGB8 format.\n");
+			TI_ASSERT(0);
 			DstFormat = EPF_DDS_DXT1;
 		}
 		else if (SrcFormat == EPF_RGBA8)
 		{
-			if (SrcImage->TGASourcePixelDepth == 24)
+			if (SrcImage->TGASourcePixelDepth == 24 && !TResSettings::GlobalSettings.ForceAlphaChannel)
 			{
 				DstFormat = EPF_DDS_DXT1;
 			}

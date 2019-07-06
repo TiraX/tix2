@@ -248,7 +248,7 @@
     <ProjectGuid>{35BBC1C9-B035-492D-BED1-E952A99069BC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TiX</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

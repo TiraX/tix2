@@ -87,6 +87,9 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 				key = param;
 			}
 
+			tolower(key);
+			tolower(value);
+
 			if (key == "example")
 			{
 				bShowExample = true;
@@ -94,6 +97,10 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			else if (key == "ispccompress")
 			{
 				TResSettings::GlobalSettings.ISPCCompress = (value == "0") ? false : true;
+			}
+			else if (key == "forcealphachannel")
+			{
+				TResSettings::GlobalSettings.ForceAlphaChannel = (value == "0") ? false : true;
 			}
 
 			//if (key == "texture_path")

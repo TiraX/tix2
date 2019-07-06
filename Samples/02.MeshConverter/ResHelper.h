@@ -19,6 +19,12 @@ namespace tix
 		return text;
 	}
 
+	inline TString& tolower(TString& text)
+	{
+		transform(text.begin(), text.end(), text.begin(), ::tolower);
+		return text;
+	}
+
 	inline TVector<float> ReadFloatArray(const char* float_array_str, const char seperator = ' ')
 	{
 		TVector<float> Result;

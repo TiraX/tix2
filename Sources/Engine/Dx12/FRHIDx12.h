@@ -52,7 +52,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) override;
-		virtual bool UpdateHardwareResourceTextureRegion(FTexturePtr Texture, TTexturePtr InTexData, const recti& InRegion) override;
+		virtual bool UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion) override;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) override;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;

@@ -66,6 +66,7 @@ namespace tix
 		TTextureDesc PageDesc = TextureDesc;
 		PageDesc.Width = EndX - StartX;
 		PageDesc.Height = EndY - StartY;
+		PageDesc.Mips = 1;
 
 		TTexturePtr Texture = ti_new TTexture(PageDesc);
 		int32 DataOffset = 0;

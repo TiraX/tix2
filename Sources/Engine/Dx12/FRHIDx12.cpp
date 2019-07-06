@@ -901,6 +901,7 @@ namespace tix
 	//------------------------------------------------------------------------------------------------
 	// Returns required size of a buffer to be used for data upload
 	inline uint64 GetRequiredIntermediateSize(
+		_In_ ID3D12Device* D3dDevice,
 		_In_ ID3D12Resource* pDestinationResource,
 		_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
 		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources)
@@ -912,6 +913,24 @@ namespace tix
 		pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
 		pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &RequiredSize);
 		pDevice->Release();
+
+#if defined (TIX_DEBUG)
+		uint64 CompareSize;
+		D3dDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &CompareSize);
+		TI_ASSERT(CompareSize == RequiredSize);
+#endif
+
+		return RequiredSize;
+	}
+
+	inline uint64 GetRequiredIntermediateSize(
+		_In_ ID3D12Device* D3dDevice,
+		const D3D12_RESOURCE_DESC& Desc,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources)
+	{
+		uint64 RequiredSize = 0;
+		D3dDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &RequiredSize);
 
 		return RequiredSize;
 	}
@@ -1160,7 +1179,7 @@ namespace tix
 		}
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(D3dDevice.Get(), TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
 
 		// Create the GPU upload buffer.
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -1249,7 +1268,7 @@ namespace tix
 		}
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
+		const uint64 uploadBufferSize = GetRequiredIntermediateSize(D3dDevice.Get(), TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
 
 		// Create the GPU upload buffer.
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -1290,96 +1309,35 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResourceTextureRegion(FTexturePtr Texture, TTexturePtr InTexData, const recti& InRegion)
+	bool FRHIDx12::UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion)
 	{
-		TI_ASSERT(0);
-		TI_ASSERT(InTexData != nullptr);
-		TI_ASSERT(InTexData->GetDesc().Width == InRegion.getWidth() && InTexData->GetDesc().Height == InRegion.getHeight());
-		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-		const TTextureDesc& Desc = TexDx12->GetDesc();
-		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
-		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
+		TI_ASSERT(SrcTexture != nullptr);
+		TI_ASSERT(SrcTexture->GetDesc().Width == InRegion.getWidth() && SrcTexture->GetDesc().Height == InRegion.getHeight());
+		FTextureDx12 * DstTexDx12 = static_cast<FTextureDx12*>(DestTexture.get());
+		FTextureDx12 * SrcTexDx12 = static_cast<FTextureDx12*>(SrcTexture.get());
+		TI_ASSERT(DstTexDx12->GetDesc().Type == ETT_TEXTURE_2D && SrcTexDx12->GetDesc().Type == ETT_TEXTURE_2D);
+		TI_ASSERT(InRegion.getWidth() == SrcTexture->GetDesc().Width && InRegion.getHeight() == SrcTexture->GetDesc().Height);
+		TI_ASSERT(DestTexture->GetDesc().Format == SrcTexture->GetDesc().Format);
 
-		// Create texture resource and fill with texture data.
-#if defined (TIX_DEBUG)
-		Texture->SetResourceName(InTexData->GetResourceName());
-#endif
-
-		// Note: ComPtr's are CPU objects but this resource needs to stay in scope until
-		// the command list that references it has finished executing on the GPU.
-		// We will flush the GPU at the end of this method to ensure the resource is not
-		// prematurely destroyed.
-		ComPtr<ID3D12Resource> TextureUploadHeap;
-		const int32 ArraySize = IsCubeMap ? 6 : 1;
-
-		if (!TexDx12->TextureResource.IsInited())
-		{
-			TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-			// Describe and create a Texture2D.
-			D3D12_RESOURCE_DESC TextureDx12Desc = {};
-			TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			TextureDx12Desc.Alignment = 0;
-			TextureDx12Desc.Width = Desc.Width;
-			TextureDx12Desc.Height = Desc.Height;
-			TextureDx12Desc.DepthOrArraySize = ArraySize;
-			TextureDx12Desc.MipLevels = Desc.Mips;
-			TextureDx12Desc.Format = DxgiFormat;
-			TextureDx12Desc.SampleDesc.Count = 1;
-			TextureDx12Desc.SampleDesc.Quality = 0;
-			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-			TexDx12->TextureResource.CreateResource(
-				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAG_NONE,
-				&TextureDx12Desc,
-				D3D12_RESOURCE_STATE_COPY_DEST);
-		}
-		else
-		{
-			TI_ASSERT(Desc.Width == InTexData->GetDesc().Width && Desc.Height == InTexData->GetDesc().Height);
-		}
-
-		const int32 SubResourceNum = ArraySize * Desc.Mips;
-		const uint64 uploadBufferSize = GetRequiredIntermediateSize(TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
-
-		// Create the GPU upload buffer.
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&TextureUploadHeap)));
-
-		// Copy data to the intermediate upload heap and then schedule a copy 
-		// from the upload heap to the Texture2D.
-
-		D3D12_SUBRESOURCE_DATA* TextureDatas = ti_new D3D12_SUBRESOURCE_DATA[SubResourceNum];
-		const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
-		TI_ASSERT(SubResourceNum == TextureSurfaces.size());
-		for (int32 s = 0; s < SubResourceNum; ++s)
-		{
-			D3D12_SUBRESOURCE_DATA& texData = TextureDatas[s];
-			const TTexture::TSurface* Surface = TextureSurfaces[s];
-			texData.pData = Surface->Data;
-			texData.RowPitch = Surface->RowPitch;
-			texData.SlicePitch = Surface->DataSize;
-		}
-
-		UpdateSubresources(CurrentWorkingCommandList.Get(), TexDx12->TextureResource.GetResource().Get(), TextureUploadHeap.Get(), 0, 0, SubResourceNum, TextureDatas);
-		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		DX_SETNAME(TexDx12->TextureResource.GetResource().Get(), Texture->GetResourceName());
-
-		ti_delete[] TextureDatas;
-
-		Texture->SetTextureFlag(ETF_RENDER_RESOURCE_UPDATED, true);
-
+		DstTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXDst");
+		SrcTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXSrc");
+		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+
+		D3D12_BOX SrcBox;
+		SrcBox.left = 0;
+		SrcBox.top = 0;
+		SrcBox.front = 0;
+		SrcBox.right = InRegion.getWidth();
+		SrcBox.bottom = InRegion.getHeight();
+		SrcBox.back = 1;
+		CD3DX12_TEXTURE_COPY_LOCATION Dst(DstTexDx12->TextureResource.GetResource().Get(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION Src(SrcTexDx12->TextureResource.GetResource().Get(), 0);
+		CurrentWorkingCommandList->CopyTextureRegion(&Dst, InRegion.Left, InRegion.Upper, 0, &Src, &SrcBox);
+
 		// Hold resources used here
-		HoldResourceReference(Texture);
-		HoldResourceReference(TextureUploadHeap);
+		HoldResourceReference(DestTexture);
+		HoldResourceReference(SrcTexture);
 
 		return true;
 	}

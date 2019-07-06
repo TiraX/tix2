@@ -49,7 +49,7 @@ namespace tix
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
 
 		// Create physic texture atlas
-		Desc.Format = EPF_DDS_DXT5;
+		Desc.Format = EPF_DDS_DXT5_SRGB;
 		Desc.Width = PhysicAtlasSize * PPSize;
 		Desc.Height = PhysicAtlasSize * PPSize;
 		Desc.SRGB = 1;
@@ -259,7 +259,7 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 
 		SColor IndirectData;
-		for (const auto& Page : LoadedPages)
+		for (auto& Page : LoadedPages)
 		{
 			int32 PageX = Page.PageIndex % ITSize;
 			int32 PageY = Page.PageIndex / ITSize;
@@ -278,7 +278,11 @@ namespace tix
 			int32 RegionStartX = AtlasX * PPSize;
 			int32 RegionStartY = AtlasY * PPSize;
 			recti TargetRegion(RegionStartX, RegionStartY, RegionStartX + PPSize, RegionStartY + PPSize);
-			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, Page.TextureData, TargetRegion);
+			TTexturePtr PhysicPage = Page.TextureData;
+			TI_ASSERT(PhysicPage->TextureResource == nullptr);
+			PhysicPage->TextureResource = FRHI::Get()->CreateTexture(PhysicPage->GetDesc());
+			FRHI::Get()->UpdateHardwareResourceTexture(PhysicPage->TextureResource, PhysicPage);
+			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, PhysicPage->TextureResource, TargetRegion);
 		}
 		LoadedPages.clear();
 

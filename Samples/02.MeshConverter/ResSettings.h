@@ -11,9 +11,11 @@ public:
 	static TResSettings GlobalSettings;
 	TResSettings()
 		: ISPCCompress(true)
+		, ForceAlphaChannel(false)
 	{}
 
 	TString SrcPath;
 	TString SrcName;
 	bool ISPCCompress;
+	bool ForceAlphaChannel;
 };
