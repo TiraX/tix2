@@ -20,6 +20,6 @@ namespace tix
 
 		void HoldReference(FRenderResourcePtr InResource);
 	private:
-		TVector<FRenderResourcePtr> Resources;
+		TList<FRenderResourcePtr> Resources;
 	};
 }

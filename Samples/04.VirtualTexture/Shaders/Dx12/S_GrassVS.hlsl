@@ -1,5 +1,6 @@
-#include "S_GrassRS.hlsli"
+#include "Common.hlsli"
 #include "VS_Instanced.hlsli"
+#include "S_GrassRS.hlsli"
 
 [RootSignature(Grass_RootSig)]
 VSOutput main(VSInput vsInput)

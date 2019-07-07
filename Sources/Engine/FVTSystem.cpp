@@ -47,6 +47,7 @@ namespace tix
 		Desc.SRGB = 0;
 		Desc.Mips = 1;
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
+		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture);
 
 		// Create physic texture atlas
 		Desc.Format = EPF_DDS_DXT5_SRGB;

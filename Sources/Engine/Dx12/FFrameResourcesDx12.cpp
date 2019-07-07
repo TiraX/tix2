@@ -12,7 +12,7 @@ namespace tix
 {
 	FFrameResourcesDx12::FFrameResourcesDx12()
 	{
-		D3d12Resources.reserve(FFrameResources::DefaultReserveCount);
+		//D3d12Resources.reserve(FFrameResources::DefaultReserveCount);
 	}
 
 	FFrameResourcesDx12::~FFrameResourcesDx12()

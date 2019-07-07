@@ -11,7 +11,7 @@ namespace tix
 {
 	FFrameResources::FFrameResources()
 	{
-		Resources.reserve(DefaultReserveCount);
+		//Resources.reserve(DefaultReserveCount);
 	}
 
 	FFrameResources::~FFrameResources()

@@ -92,7 +92,6 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	const int32 ViewWidth = 1600;
 	const int32 ViewHeight = TEngine::AppInfo.Height * ViewWidth / TEngine::AppInfo.Width;
 
-	ComputeUVDiscard = ti_new FComputeUVDiscard(ViewWidth, ViewHeight);
 
 	TStreamPtr ArgumentValues = ti_new TStream;
 	TVector<FTexturePtr> ArgumentTextures;
@@ -120,21 +119,29 @@ void FVirtualTextureRenderer::InitInRenderThread()
 		RHI->UpdateHardwareResourceAB(AB_Result, ArgumentValues, ArgumentTextures);
 	}
 
-	ComputeUVDiscard->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
-	ComputeUVDiscard->Finalize();
+	if (FVTSystem::IsEnabled())
+	{
+		ComputeUVDiscard = ti_new FComputeUVDiscard(ViewWidth, ViewHeight);
+		ComputeUVDiscard->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
+		ComputeUVDiscard->Finalize();
+	}
 }
 
 void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
-	if (UVBuffer != nullptr)
+	if (FVTSystem::IsEnabled())
 	{
-		FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
+		TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
+		if (UVBuffer != nullptr)
+		{
+			FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
+		}
+
+
+		// Prepare virtual texture system indirect texture
+		FVTSystem::Get()->PrepareVTIndirectTexture();
 	}
 
-
-	// Prepare virtual texture system indirect texture
-	FVTSystem::Get()->PrepareVTIndirectTexture();
 	// Render Base Pass
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
@@ -144,13 +151,16 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->EndPopulateCommandList();
 
 	// Do UV discard check, only check when camera moved or primitives changed
-	if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+	if (FVTSystem::IsEnabled())
 	{
-		RHI->BeginPopulateCommandList(EPL_COMPUTE);
-		ComputeUVDiscard->Run(RHI);
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		{
+			RHI->BeginPopulateCommandList(EPL_COMPUTE);
+			ComputeUVDiscard->Run(RHI);
 
-		ComputeUVDiscard->PrepareDataForCPU(RHI);
-		RHI->EndPopulateCommandList();
+			ComputeUVDiscard->PrepareDataForCPU(RHI);
+			RHI->EndPopulateCommandList();
+		}
 	}
 
 	RHI->BeginPopulateCommandList(EPL_GRAPHICS);

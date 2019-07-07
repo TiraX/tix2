@@ -22,7 +22,7 @@ namespace tix
 
 	private:
 		// Hold some temp resources used in this frame
-		TVector< ComPtr<ID3D12Resource> > D3d12Resources;
+		TList< ComPtr<ID3D12Resource> > D3d12Resources;
 	};
 }
 

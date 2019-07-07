@@ -16,13 +16,13 @@ namespace tix
 	{
 	public:
 		// Virtual texture size
-		static const int32 VTSize = 256 * 1024;
+		static const int32 VTSize = 64 * 1024;
 		// Physical page size
 		static const int32 PPSize = 256;
 		// Indirection texture size
 		static const int32 ITSize = VTSize / PPSize;
 
-		static const int32 PhysicAtlasSize = 32;
+		static const int32 PhysicAtlasSize = 20;
 		// Physical page count
 		static const int32 PPCount = PhysicAtlasSize * PhysicAtlasSize;
 
@@ -49,6 +49,11 @@ namespace tix
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
 		TI_API void PrepareVTIndirectTexture();
+
+		FRenderResourceTablePtr GetVTResource()
+		{
+			return VTResource;
+		}
 
 		struct FPageLoadInfo
 		{

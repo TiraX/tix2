@@ -80,6 +80,9 @@ namespace tix
 		case ARGUMENT_EB_LIGHTS:
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
 			break;
+		case ARGUMENT_EB_INDIRECTTEXTURE:
+			RHI->SetRenderResourceTable(Argument.BindingIndex, FVTSystem::Get()->GetVTResource());
+			break;
 		case ARGUMENT_MI_BUFFER:
 		case ARGUMENT_MI_TEXTURE:
 			break;

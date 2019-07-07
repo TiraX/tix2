@@ -182,6 +182,7 @@ copy $(ProjectDir)\..\..\Projects\Windows\x64\Release\*.cso $(ProjectDir)\Conten
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Dx12\Common.hlsli" />
     <None Include="Shaders\Dx12\PS_Common.hlsli" />
     <None Include="Shaders\Dx12\PS_VT.hlsli" />
     <None Include="Shaders\Dx12\S_BasePassRS.hlsli" />

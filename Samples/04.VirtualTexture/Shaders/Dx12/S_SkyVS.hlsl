@@ -1,3 +1,4 @@
+#include "Common.hlsli"
 #include "S_SkyRS.hlsli"
 #include "VS_Instanced.hlsli"
 

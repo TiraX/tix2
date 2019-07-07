@@ -40,6 +40,9 @@ namespace tix
 					return ARGUMENT_EB_PRIMITIVE;
 				if (BufferName == "Lights")
 					return ARGUMENT_EB_LIGHTS;
+				if (BufferName == "IndirectTexture")
+					return ARGUMENT_EB_INDIRECTTEXTURE;
+				TI_ASSERT(0);
 			}
 		}
 

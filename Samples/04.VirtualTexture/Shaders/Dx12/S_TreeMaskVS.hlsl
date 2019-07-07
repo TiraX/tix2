@@ -1,3 +1,4 @@
+#include "Common.hlsli"
 #include "S_BasePassRS.hlsli"
 #include "VS_Instanced.hlsli"
 
