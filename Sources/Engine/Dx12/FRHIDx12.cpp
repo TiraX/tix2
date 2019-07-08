@@ -1266,6 +1266,8 @@ namespace tix
 		{
 			TI_ASSERT(Desc.Width == InImageData->GetWidth() && Desc.Height == InImageData->GetHeight());
 		}
+		Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		const int32 SubResourceNum = ArraySize * Desc.Mips;
 		const uint64 uploadBufferSize = GetRequiredIntermediateSize(D3dDevice.Get(), TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
@@ -1321,6 +1323,7 @@ namespace tix
 
 		DstTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXDst");
 		SrcTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXSrc");
+		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
 		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
