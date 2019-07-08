@@ -273,7 +273,6 @@ namespace tix
 			IndirectData.R = AtlasX;
 			IndirectData.G = AtlasY;
 			IndirectTextureData->SetPixel(PageX, PageY, IndirectData);
-			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
 
 			// Update Physic page atlas regions
 			int32 RegionStartX = AtlasX * PPSize;
@@ -285,6 +284,7 @@ namespace tix
 			FRHI::Get()->UpdateHardwareResourceTexture(PhysicPage->TextureResource, PhysicPage);
 			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, PhysicPage->TextureResource, TargetRegion);
 		}
+		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
 		LoadedPages.clear();
 
 	}
