@@ -21,6 +21,7 @@ namespace tix
 		static int32 CalcMipCount(int32 Width, int32 Height);
 
 		static TImage* LoadImageTGA(TFile& FileInput, int32* PixelDepth = nullptr);
+		static vector2di LoadImageTGADimension(const TString& TgaName);
 		bool SaveToTga(const char* filename, int32 MipIndex = 0);
 
 		void FlipY();

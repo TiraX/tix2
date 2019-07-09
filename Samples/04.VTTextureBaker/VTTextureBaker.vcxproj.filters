@@ -10,6 +10,21 @@
     <ClCompile Include="VTTextureBaker.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Baker.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TFile.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TImage.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TRegion.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -21,10 +36,25 @@
     <ClInclude Include="VTTextureBaker.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="Baker.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TFile.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TImage.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TRegion.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
       <UniqueIdentifier>{ce57429a-3086-4483-b599-da8e1d6ec2cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\TiX2">
+      <UniqueIdentifier>{6d511d69-28b6-4685-8a94-df06b20d0c60}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

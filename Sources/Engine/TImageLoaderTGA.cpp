@@ -272,6 +272,18 @@ namespace tix
 		return Image;
 	}
 
+	vector2di TImage::LoadImageTGADimension(const TString& TgaName)
+	{
+		TFile ImageFile;
+		if (ImageFile.Open(TgaName, EFA_READ))
+		{
+			STGAHeader header;
+			ImageFile.Read(&header, sizeof(STGAHeader), sizeof(STGAHeader));
+			return vector2di(header.ImageWidth, header.ImageHeight);
+		}
+		return vector2di();
+	}
+
 	bool TImage::SaveToTga(const char* filename, int32 MipIndex)
 	{
 		int32 Width = Mipmaps[MipIndex].W;
