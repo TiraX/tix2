@@ -8,11 +8,14 @@
 
 namespace tix
 {
-	TRegion::TRegion(int32 InRegionSize, int32 InCellSize)
-		: RegionSize(InRegionSize)
-		, CellSize(InCellSize)
+	TRegion::TRegion()
+		: RegionSize(0)
+		, CellSize(0)
 	{
-		Reset();
+	}
+	TRegion::TRegion(int32 InRegionSize, int32 InCellSize)
+	{
+		Reset(InRegionSize, InCellSize);
 	}
 
 	TRegion::~TRegion()
@@ -154,8 +157,11 @@ namespace tix
 		Height = ti_max(Height, CellSize);
 	}
 
-	void TRegion::Reset()
+	void TRegion::Reset(int32 InRegionSize, int32 InCellSize)
 	{
+		RegionSize = InRegionSize;
+		CellSize = InCellSize;
+
 		AvailableRegions.clear();
 
 		// init 1st region with whole surface

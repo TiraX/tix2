@@ -10,6 +10,7 @@ namespace tix
 	class TRegion
 	{
 	public:
+		TRegion();
 		TRegion(int32 InRegionSize, int32 InCellSize);
 		~TRegion();
 
@@ -19,7 +20,7 @@ namespace tix
 			int16 YCount;
 		};
 
-		void Reset();
+		void Reset(int32 InRegionSize, int32 InCellSize);
 		TRegionDesc* FindAvailbleRegion(int32 Width, int32 Height, uint32* OutRegionIndex = nullptr);
 		TRegionDesc* GetRegionByIndex(uint32 RegionIndex);
 		void GetRegionSizeRequirement(int32& Width, int32& Height);

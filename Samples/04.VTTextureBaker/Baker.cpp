@@ -9,12 +9,21 @@
 namespace tix
 {
 	TVTTextureBaker::TVTTextureBaker()
-		: VTRegion(VTSize, PPSize)
 	{
 	}
 
 	TVTTextureBaker::~TVTTextureBaker()
 	{
+	}
+
+	inline int32 PickSize(double MinLength)
+	{
+		int32 Result = 1024;
+		while (Result < (int32)MinLength)
+		{
+			Result *= 2;
+		}
+		return Result;
 	}
 
 	void TVTTextureBaker::LoadTextureFiles(const TString& SceneFileName)
@@ -82,13 +91,33 @@ namespace tix
 			TextureInfos.push_back(Info);
 		}
 
+		// Calc total area of all textures to estimate the area of virtual texture
+		int32 Area = 0;
+		for (const auto& Info : TextureInfos)
+		{
+			Area += Info.Size.X * Info.Size.Y;
+		}
+		double MinLength = sqrt(Area);
+		int32 VTSize = PickSize(MinLength);
+		int32 ITSize = VTSize / PPSize;
+
+		// Init regions
+		VTRegion.Reset(VTSize, PPSize);
+
+		TextureInVT.reserve(TextureInfos.size());
 		for (const auto& Info : TextureInfos)
 		{
 			uint32 RegionIndex;
 			TRegion::TRegionDesc* Region = VTRegion.FindAvailbleRegion(Info.Size.X, Info.Size.Y, &RegionIndex);
+			if (Region == nullptr)
+			{
+				printf("Error: out of regions. \n");
+				return;
+			}
 
-			//int32 x = RegionIndex % ITSize;
-			//int32 y = RegionIndex / ITSize;
+			int32 x = RegionIndex % ITSize;
+			int32 y = RegionIndex / ITSize;
+			TextureInVT.push_back(vector4di(x, y, Region->XCount, Region->YCount));
 			//InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
 		}
 	}
