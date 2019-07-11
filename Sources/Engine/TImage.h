@@ -26,6 +26,7 @@ namespace tix
 
 		void FlipY();
 		void ClearMipmaps();
+		bool CopyRegionTo(TImage* DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip);
 
 		struct TSurfaceData
 		{
@@ -52,6 +53,9 @@ namespace tix
 
 		virtual uint8* Lock(int32 MipIndex = 0);
 		virtual void Unlock();
+
+		void AllocEmptyMipmaps();
+		void GenerateMipmaps(int32 TargetMips = 0);
 
 		virtual int32 GetPitch() const
 		{
@@ -87,9 +91,6 @@ namespace tix
 		{
 			return Mipmaps[MipLevel];
 		}
-
-		void AllocEmptyMipmaps();
-		void GenerateMipmaps();
 	protected:
 		E_PIXEL_FORMAT PixelFormat;
 

@@ -25,6 +25,16 @@ namespace tix
 		TRegionDesc* GetRegionByIndex(uint32 RegionIndex);
 		void GetRegionSizeRequirement(int32& Width, int32& Height);
 
+		int32 GetRegionSize() const
+		{
+			return RegionSize;
+		}
+
+		int32 GetCellSize() const
+		{
+			return CellSize;
+		}
+
 	protected:
 		void SubDivideRegion(uint32 MatchRegionId, int32 NewXCount, int32 NewYCount);
 

@@ -25,6 +25,18 @@
     <ClCompile Include="..\..\Sources\Engine\TRegion.cpp">
       <Filter>Sources\TiX2</Filter>
     </ClCompile>
+    <ClCompile Include="..\02.MeshConverter\PlatformUtils.cpp">
+      <Filter>Sources\ResConverter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\02.MeshConverter\ResMultiThreadTask.cpp">
+      <Filter>Sources\ResConverter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TThread.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TTimer.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -48,6 +60,18 @@
     <ClInclude Include="..\..\Sources\Engine\TRegion.h">
       <Filter>Sources\TiX2</Filter>
     </ClInclude>
+    <ClInclude Include="..\02.MeshConverter\PlatformUtils.h">
+      <Filter>Sources\ResConverter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\02.MeshConverter\ResMultiThreadTask.h">
+      <Filter>Sources\ResConverter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TThread.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTimer.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -55,6 +79,9 @@
     </Filter>
     <Filter Include="Sources\TiX2">
       <UniqueIdentifier>{6d511d69-28b6-4685-8a94-df06b20d0c60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\ResConverter">
+      <UniqueIdentifier>{c74dc8ca-486a-496d-809a-9d5b5ffe0ea1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -79,6 +79,7 @@ namespace tix
 		int32 ExecuteState;
 		int32 RunningThreads;
 		TMutex RunningThreadsMutex;
+		THMap<int32, int32> UsedThreads;
 		friend class TResTaskThread;
 	};
 }

@@ -118,6 +118,7 @@ namespace tix
 	{
 		TI_ASSERT(ExecuteState == STATE_NONE);
 		Threads[TaskThreadIndex]->AddTask(Task);
+		UsedThreads[TaskThreadIndex] = 1;
 		TaskThreadIndex = (TaskThreadIndex + 1) % MaxThreadCount;
 	}
 
@@ -126,9 +127,10 @@ namespace tix
 		ExecuteState = STATE_EXECUTING;
 		TaskThreadIndex = 0;
 		RunningThreadsMutex.lock();
-		RunningThreads = MaxThreadCount;
+		int32 TotalThreads = (int32)UsedThreads.size();
+		RunningThreads = TotalThreads;
 		RunningThreadsMutex.unlock();
-		for (int32 i = 0; i < MaxThreadCount; ++i)
+		for (int32 i = 0; i < TotalThreads; ++i)
 		{
 			Threads[i]->StartExecute();
 		}
@@ -148,5 +150,8 @@ namespace tix
 		{
 			TThread::ThreadSleep(10);
 		}
+		ExecuteState = STATE_NONE;
+		TaskThreadIndex = 0;
+		UsedThreads.clear();
 	}
 }

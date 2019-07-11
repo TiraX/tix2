@@ -469,7 +469,7 @@ namespace tix
 		}
 	}
 
-	void TImage::GenerateMipmaps()
+	void TImage::GenerateMipmaps(int32 TargetMips)
 	{
 		TI_ASSERT(Mipmaps.size() > 0);
 		int32 W = Mipmaps[0].W;
@@ -479,7 +479,16 @@ namespace tix
 		{
 			return;
 		}
-		int32 MipCount = CalcMipCount(W, H);
+		int32 MipCount;
+		if (TargetMips > 0)
+		{
+			MipCount = TargetMips;
+		}
+		else
+		{
+			MipCount = CalcMipCount(W, H);
+		}
+
 		if (Mipmaps.size() < MipCount)
 		{
 			AllocEmptyMipmaps();
@@ -555,6 +564,57 @@ namespace tix
 				memcpy(Data + y1, tmp, Pitch);
 			}
 			ti_delete[] tmp;
+		}
+	}
+
+	bool TImage::CopyRegionTo(TImage* DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip)
+	{
+		if (DstImage->GetFormat() != PixelFormat)
+		{
+			return false;
+		}
+		if (SrcRegion.Right > GetMipmap(SrcMip).W || SrcRegion.Lower > GetMipmap(SrcMip).H)
+		{
+			return false;
+		}
+		if (DstRegion.Right > DstImage->GetMipmap(DstMip).W || DstRegion.Lower > DstImage->GetMipmap(DstMip).H)
+		{
+			return false;
+		}
+		if (IsCompressedFormat(PixelFormat))
+		{
+			// Compress format NOT support for now, CAN BE supported in future.
+			return false;
+		}
+		if (DstRegion.getWidth() != SrcRegion.getWidth() || DstRegion.getHeight() != SrcRegion.getHeight())
+		{
+			// Size mismatch NOT support for now.
+			TI_ASSERT(0);
+			return false;
+		}
+		else
+		{
+			// Src.Size == Dst.Size
+			const int32 PixelSizeInBytes = GetPixelSizeInBytes(PixelFormat);
+
+			uint8* DstBuffer = DstImage->Lock();
+			int32 DstPitch = DstImage->GetMipmap(DstMip).RowPitch;
+			DstBuffer += DstRegion.Upper * DstPitch + DstRegion.Left * PixelSizeInBytes;
+			int32 DstRowLength = DstRegion.getWidth() * PixelSizeInBytes;
+
+			uint8* SrcBuffer = Lock(SrcMip);
+			int32 SrcPitch = GetMipmap(SrcMip).RowPitch;
+			SrcBuffer += SrcRegion.Upper * SrcPitch + SrcRegion.Left * PixelSizeInBytes;
+			for (int32 y = 0 ; y < DstRegion.getHeight() ; ++ y)
+			{
+				memcpy(DstBuffer, SrcBuffer, DstRowLength);
+				DstBuffer += DstPitch;
+				SrcBuffer += SrcPitch;
+			}
+			DstImage->Unlock();
+			Unlock();
+
+			return true;
 		}
 	}
 }

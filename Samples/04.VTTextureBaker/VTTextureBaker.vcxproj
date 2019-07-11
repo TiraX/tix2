@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TI_LINK_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp;../02.MeshConverter</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -145,7 +145,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TI_LINK_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Sources/Engine;../../Sources/Externals;../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp;../02.MeshConverter</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,6 +163,10 @@
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TRegion.h" />
+    <ClInclude Include="..\..\Sources\Engine\TThread.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
+    <ClInclude Include="..\02.MeshConverter\PlatformUtils.h" />
+    <ClInclude Include="..\02.MeshConverter\ResMultiThreadTask.h" />
     <ClInclude Include="Baker.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -173,6 +177,10 @@
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TRegion.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
+    <ClCompile Include="..\02.MeshConverter\PlatformUtils.cpp" />
+    <ClCompile Include="..\02.MeshConverter\ResMultiThreadTask.cpp" />
     <ClCompile Include="Baker.cpp" />
     <ClCompile Include="MainWin32.cpp" />
     <ClCompile Include="stdafx.cpp">

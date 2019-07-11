@@ -5,15 +5,19 @@
 
 #include "stdafx.h"
 #include "Baker.h"
+#include "ResMultiThreadTask.h"
 
 namespace tix
 {
 	TVTTextureBaker::TVTTextureBaker()
 	{
+		TResMTTaskExecuter::Create();
 	}
 
 	TVTTextureBaker::~TVTTextureBaker()
 	{
+		TResMTTaskExecuter::Destroy();
+		ClearAllTextures();
 	}
 
 	inline int32 PickSize(double MinLength)
@@ -28,6 +32,7 @@ namespace tix
 
 	void TVTTextureBaker::LoadTextureFiles(const TString& SceneFileName)
 	{
+		printf("Loading Textures...\n");
 		TFile f;
 		if (!f.Open(SceneFileName, EFA_READ))
 		{
@@ -89,8 +94,22 @@ namespace tix
 
 			Info.Size = TImage::LoadImageTGADimension(Info.Name);
 			TextureInfos.push_back(Info);
+			printf(" - Loaded %s...\n", Info.Name.c_str());
 		}
 
+		AddTexturesToVTRegion();
+
+		TList<int32> TextureOrders;
+		SortTextures(TextureOrders);
+		SplitTextures(TextureOrders);
+		BakeMipmapsMT();
+
+		OutputAllTextures();
+	}
+
+	void TVTTextureBaker::AddTexturesToVTRegion()
+	{
+		printf("Add textures to virtual texture...\n");
 		// Calc total area of all textures to estimate the area of virtual texture
 		int32 Area = 0;
 		for (const auto& Info : TextureInfos)
@@ -104,11 +123,13 @@ namespace tix
 		// Init regions
 		VTRegion.Reset(VTSize, PPSize);
 
-		TextureInVT.reserve(TextureInfos.size());
+		TextureRegionInVT.reserve(TextureInfos.size());
 		for (const auto& Info : TextureInfos)
 		{
 			uint32 RegionIndex;
-			TRegion::TRegionDesc* Region = VTRegion.FindAvailbleRegion(Info.Size.X, Info.Size.Y, &RegionIndex);
+			int32 SizeX = Info.Size.X >> Info.LodBias;
+			int32 SizeY = Info.Size.Y >> Info.LodBias;
+			TRegion::TRegionDesc* Region = VTRegion.FindAvailbleRegion(SizeX, SizeY, &RegionIndex);
 			if (Region == nullptr)
 			{
 				printf("Error: out of regions. \n");
@@ -117,8 +138,371 @@ namespace tix
 
 			int32 x = RegionIndex % ITSize;
 			int32 y = RegionIndex / ITSize;
-			TextureInVT.push_back(vector4di(x, y, Region->XCount, Region->YCount));
+			TextureRegionInVT.push_back(vector4di(x, y, Region->XCount, Region->YCount));
 			//InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
+		}
+	}
+
+	struct TSortByPositionInVT
+	{
+		TSortByPositionInVT(const TVector<vector4di>& InTextureRegions)
+			: TextureRegions(InTextureRegions)
+		{}
+
+		const TVector<vector4di>& TextureRegions;
+
+		bool operator()(int32 A, int32 B)
+		{
+			const vector4di& PA = TextureRegions[A];
+			const vector4di& PB = TextureRegions[B];
+			if (PA.Y != PB.Y)
+			{
+				return PA.Y < PB.Y;
+			}
+			else if (PA.X != PB.X)
+			{
+				return PA.X < PB.X;
+			}
+			return false;
+		}
+	};
+
+	void TVTTextureBaker::SortTextures(TList<int32>& OrderArray)
+	{
+		OrderArray.clear();
+		for (size_t i = 0 ; i < TextureInfos.size() ; ++ i)
+		{
+			OrderArray.push_back((int32)i);
+		}
+
+		OrderArray.sort(TSortByPositionInVT(TextureRegionInVT));
+	}
+
+	inline int32 CalcMips(int32 RegionSize, int32 MinSize)
+	{
+		int32 Mips = 1;
+		while (RegionSize > MinSize)
+		{
+			++Mips;
+			RegionSize /= 2;
+		}
+		return Mips;
+	}
+
+	void TVTTextureBaker::SplitTextures(const TList<int32>& OrderArray)
+	{
+		printf("Split textures...\n");
+		const int32 TotalMips = CalcMips(VTRegion.GetRegionSize(), VTRegion.GetCellSize());
+		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+
+		MipPages.clear();
+		MipPages.resize(TotalMips);
+		
+		int32 Size = RegionSize;
+		for (int32 M = 0 ; M < (int32)MipPages.size(); ++ M)
+		{
+			for (int32 S = 0; S < Size * Size; ++ S)
+			{
+				MipPages[M][S] = nullptr;
+			}
+			Size /= 2;
+		}
+
+		THMap<int32, TImage*>& SplitedTextures = MipPages[0];
+
+		for (const auto& Index : OrderArray)
+		{
+			const TVTTextureBasicInfo& Info = TextureInfos[Index];
+			const vector4di& Region = TextureRegionInVT[Index];
+
+			int32 SizeX = Info.Size.X >> Info.LodBias;
+			int32 SizeY = Info.Size.Y >> Info.LodBias;
+
+			TI_ASSERT(Region.Z == SizeX / PPSize && Region.W == SizeY / PPSize);
+			
+			TFile TgaFile;
+			if (!TgaFile.Open(Info.Name, EFA_READ))
+			{
+				printf("Error: failed to open tga file %s\n", Info.Name.c_str());
+				continue;
+			}
+			TImage * TgaImage = TImage::LoadImageTGA(TgaFile);
+			if (Info.LodBias > 0)
+			{
+				TgaImage->GenerateMipmaps(Info.LodBias + 1);
+				
+				TImage * TargetMipImage = ti_new TImage(TgaImage->GetFormat(), SizeX, SizeY);
+				TgaImage->CopyRegionTo(TargetMipImage, recti(0, 0, SizeX, SizeY), 0, recti(0, 0, SizeX, SizeY), 1);
+				
+				ti_delete TgaImage;
+				TgaImage = TargetMipImage;
+			}
+
+			int32 XCount = Region.Z;
+			int32 YCount = Region.W;
+
+			for (int32 y = 0 ; y < YCount ; ++ y)
+			{
+				for (int32 x = 0 ; x < XCount ; ++ x)
+				{
+					TImage * PageImage = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
+
+					vector2di Pos;
+					Pos.X = Region.X + x;
+					Pos.Y = Region.Y + y;
+					TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(x * PPSize, y * PPSize, (x + 1) * PPSize, (y + 1) * PPSize), 0);
+
+					int32 PageIndex = Pos.Y * RegionSize + Pos.X;
+					TI_ASSERT(SplitedTextures[PageIndex] == nullptr);
+					SplitedTextures[PageIndex] = PageImage;
+				}
+			}
+			ti_delete TgaImage;
+		}
+	}
+
+	static TImage* DownSamplePages(THMap<int32, TImage*>& ParentPages, int32 x, int32 y, int32 MipSize, int32 PPSize)
+	{
+		E_PIXEL_FORMAT Format = EPF_UNKNOWN;
+
+		TImage* i00 = ParentPages[y * MipSize + x];
+		TImage* i10 = ParentPages[y * MipSize + x + 1];
+		TImage* i01 = ParentPages[(y + 1) * MipSize + x];
+		TImage* i11 = ParentPages[(y + 1) * MipSize + x + 1];
+
+		if (i00 != nullptr)
+		{
+			i00->GenerateMipmaps(2);
+			Format = i00->GetFormat();
+		}
+		if (i10 != nullptr)
+		{
+			i10->GenerateMipmaps(2);
+			Format = i10->GetFormat();
+		}
+		if (i01 != nullptr)
+		{
+			i01->GenerateMipmaps(2);
+			Format = i01->GetFormat();
+		}
+		if (i11 != nullptr)
+		{
+			i11->GenerateMipmaps(2);
+			Format = i11->GetFormat();
+		}
+
+		if (Format == EPF_UNKNOWN)
+		{
+			return nullptr;
+		}
+
+		recti SrcRect(0, 0, PPSize / 2, PPSize / 2);
+
+		TImage* PageImage = ti_new TImage(Format, PPSize, PPSize);
+		if (i00 != nullptr)
+		{
+			i00->CopyRegionTo(PageImage, recti(0, 0, PPSize / 2, PPSize / 2), 0, SrcRect, 1);
+		}
+		if (i10 != nullptr)
+		{
+			i10->CopyRegionTo(PageImage, recti(PPSize / 2, 0, PPSize, PPSize / 2), 0, SrcRect, 1);
+		}
+		if (i01 != nullptr)
+		{
+			i01->CopyRegionTo(PageImage, recti(0, PPSize / 2, PPSize / 2, PPSize), 0, SrcRect, 1);
+		}
+		if (i11 != nullptr)
+		{
+			i11->CopyRegionTo(PageImage, recti(PPSize / 2, PPSize / 2, PPSize, PPSize), 0, SrcRect, 1);
+		}
+
+		return PageImage;
+	}
+
+	void TVTTextureBaker::BakeMipmaps()
+	{
+		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+
+		int32 MipSize = RegionSize;
+		for (int32 Mip = 1 ; Mip < (int32)MipPages.size() ; ++ Mip)
+		{
+			THMap<int32, TImage*>& ParentPages = MipPages[Mip - 1];
+			THMap<int32, TImage*>& CurrentPages = MipPages[Mip];
+
+			int32 CurrMipSize = MipSize / 2;
+			for (int32 y = 0; y < MipSize; y += 2)
+			{
+				for (int32 x = 0; x < MipSize; x += 2)
+				{
+					TImage* PageImage = DownSamplePages(ParentPages, x, y, MipSize, PPSize);
+
+					if (PageImage == nullptr)
+					{
+						continue;
+					}
+
+					int32 PageIndex = (y / 2 * CurrMipSize) + x / 2;
+					CurrentPages[PageIndex] = PageImage;
+				}
+			}
+
+			MipSize /= 2;
+		}
+	}
+
+	class TBakePageMipmapTask : public TResMTTask
+	{
+	public:
+		TBakePageMipmapTask(THMap<int32, TImage*>* InParentPages, int32 InX, int32 InY, int32 InMipSize, int32 InPPSize)
+			: ParentPages(InParentPages)
+			, X(InX)
+			, Y(InY)
+			, MipSize(InMipSize)
+			, PPSize(InPPSize)
+			, ResultImage(nullptr)
+		{}
+
+		THMap<int32, TImage*>* ParentPages;
+		int32 X, Y;
+		int32 MipSize;
+		int32 PPSize;
+
+		TImage* ResultImage;
+
+		virtual void Exec() override
+		{
+			ResultImage = DownSamplePages(*ParentPages, X, Y, MipSize, PPSize);
+		}
+	};
+
+	void TVTTextureBaker::BakeMipmapsMT()
+	{
+		printf("Bake mips...\n");
+		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
+
+		int32 MipSize = RegionSize;
+		for (int32 Mip = 1; Mip < (int32)MipPages.size(); ++Mip)
+		{
+			THMap<int32, TImage*>& ParentPages = MipPages[Mip - 1];
+			THMap<int32, TImage*>& CurrentPages = MipPages[Mip];
+
+			TVector<TBakePageMipmapTask*> Tasks;
+			Tasks.reserve(MipPages[Mip].size() / MaxThreads);
+
+			int32 CurrMipSize = MipSize / 2;
+			// Send tasks
+			for (int32 y = 0; y < MipSize; y += 2)
+			{
+				for (int32 x = 0; x < MipSize; x += 2)
+				{
+					TBakePageMipmapTask * Task = ti_new TBakePageMipmapTask(&ParentPages, x, y, MipSize, PPSize);
+					TResMTTaskExecuter::Get()->AddTask(Task);
+					Tasks.push_back(Task);
+
+				}
+			}
+			// Execute in parallel
+			TResMTTaskExecuter::Get()->StartTasks();
+			TResMTTaskExecuter::Get()->WaitUntilFinished();
+			for (auto Task : Tasks)
+			{
+				int32 x = Task->X;
+				int32 y = Task->Y;
+				int32 PageIndex = (y / 2 * CurrMipSize) + x / 2;
+				CurrentPages[PageIndex] = Task->ResultImage;
+
+				ti_delete Task;
+			}
+			Tasks.clear();
+
+			MipSize /= 2;
+		}
+	}
+
+	void TVTTextureBaker::ClearAllTextures()
+	{
+		for (int32 M = 0; M < (int32)MipPages.size(); ++M)
+		{
+			THMap<int32, TImage*>& Pages = MipPages[M];
+
+			for (auto& Page : Pages)
+			{
+				if (Page.second != nullptr)
+				{
+					ti_delete Page.second;
+				}
+			}
+		}
+		MipPages.clear();
+	}
+
+	void TVTTextureBaker::OutputAllTextures()
+	{
+		bool DebugOutputAllPages = !true;
+		bool DebugOutputVTMips = !true;
+
+		if (DebugOutputAllPages)
+		{
+			printf("Dump all pages...\n");
+			int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+
+			for (int32 M = 0; M < (int32)MipPages.size(); ++M)
+			{
+				THMap<int32, TImage*>& Pages = MipPages[M];
+
+				for (auto& Page : Pages)
+				{
+					if (Page.second != nullptr)
+					{
+						int32 PageX = Page.first % RegionSize;
+						int32 PageY = Page.first / RegionSize;
+
+						char name[256];
+						sprintf_s(name, 256, "page_%02d_%03d_%03d.tga", M, PageX, PageY);
+						Page.second->SaveToTga(name, 0);
+					}
+				}
+
+				RegionSize /= 2;
+			}
+		}
+
+		if (DebugOutputVTMips)
+		{
+			printf("Dump virtual textures...\n");
+			int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+
+			for (int32 M = 0; M < (int32)MipPages.size(); ++M)
+			{
+				if (false && M < 2)
+				{
+					RegionSize /= 2;
+					continue;
+				}
+				TImage * VTMip = ti_new TImage(EPF_RGBA8, RegionSize * PPSize, RegionSize * PPSize);
+
+				THMap<int32, TImage*>& Pages = MipPages[M];
+
+				for (auto& Page : Pages)
+				{
+					if (Page.second != nullptr)
+					{
+						int32 PageX = Page.first % RegionSize;
+						int32 PageY = Page.first / RegionSize;
+
+						Page.second->CopyRegionTo(VTMip, recti(PageX * PPSize, PageY * PPSize, PageX * PPSize + PPSize, PageY * PPSize + PPSize), 0, recti(0, 0, PPSize, PPSize), 0);
+					}
+				}
+
+				char name[128];
+				sprintf_s(name, 128, "vt_%d.tga", M);
+				VTMip->SaveToTga(name);
+
+				ti_delete VTMip;
+
+				RegionSize /= 2;
+			}
 		}
 	}
 }

@@ -58,9 +58,17 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 		ShowUsage();
 		return 0;
 	}
-
+	uint64 TimeStart = TTimer::GetCurrentTimeMillis();
 	TVTTextureBaker Baker;
 	Baker.LoadTextureFiles(SceneNameSrc);
+
+	uint64 TimeFinish = TTimer::GetCurrentTimeMillis();
+
+	uint64 Diff = TimeFinish - TimeStart;
+	uint32 ms = (uint32)(Diff % 1000);
+	uint32 s = (uint32)((Diff / 1000) % 60);
+	uint32 m = (uint32)((Diff / 1000) / 60);
+	printf("TotalTime : %dm%ds%d\n", m, s, ms);
 
     return 0;
 }
