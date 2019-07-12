@@ -9,6 +9,8 @@
 
 namespace tix
 {
+	static const bool bAddBorder = true;
+	static const int32 BorderWidth = 1;
 	TVTTextureBaker::TVTTextureBaker()
 	{
 		TResMTTaskExecuter::Create();
@@ -189,6 +191,122 @@ namespace tix
 		return Mips;
 	}
 
+	static TImage* ProcessBorders(TImage * TgaImage, const recti& SrcRegion, const TVTTextureBaker::TVTTextureBasicInfo& Info, int32 PPSize)
+	{
+		const int32 PPSizeWithBorder = PPSize + BorderWidth * 2;
+		int32 SizeX = Info.Size.X >> Info.LodBias;
+		int32 SizeY = Info.Size.Y >> Info.LodBias;
+
+		TImage * PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSizeWithBorder, PPSizeWithBorder);
+
+		// Copy original image to center
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
+
+		// Left border
+		if (SrcRegion.Left == 0)
+		{
+			// select border by Address mode
+			if (Info.AddressMode == ETC_REPEAT)
+			{
+				recti SrcBorderRegion = SrcRegion;
+				SrcBorderRegion.Left = SizeX - 1;
+				SrcBorderRegion.Right = SizeX;
+				TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+			}
+			else
+			{
+				TI_ASSERT(0);
+				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+			}
+		}
+		else
+		{
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Left = SrcRegion.Left - 1;
+			SrcBorderRegion.Right = SrcRegion.Left;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+		}
+
+		// Right border
+		if (SrcRegion.Right == SizeX)
+		{
+			// select border by Address mode
+			if (Info.AddressMode == ETC_REPEAT)
+			{
+				recti SrcBorderRegion = SrcRegion;
+				SrcBorderRegion.Left = 0;
+				SrcBorderRegion.Right = 1;
+				TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+			}
+			else
+			{
+				TI_ASSERT(0);
+				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+			}
+		}
+		else
+		{
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Left = SrcRegion.Right;
+			SrcBorderRegion.Right = SrcRegion.Right + 1;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+		}
+
+		// Top border
+		if (SrcRegion.Upper == 0)
+		{
+			// select border by Address mode
+			if (Info.AddressMode == ETC_REPEAT)
+			{
+				recti SrcBorderRegion = SrcRegion;
+				SrcBorderRegion.Upper = SrcRegion.Lower - 1;
+				SrcBorderRegion.Lower = SrcRegion.Lower;
+				TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
+			}
+			else
+			{
+				TI_ASSERT(0);
+				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+			}
+		}
+		else
+		{
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Upper = SrcRegion.Upper - 1;
+			SrcBorderRegion.Lower = SrcRegion.Upper;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
+		}
+
+		// Bottom border
+		if (SrcRegion.Lower == SizeY)
+		{
+			// select border by Address mode
+			if (Info.AddressMode == ETC_REPEAT)
+			{
+				recti SrcBorderRegion = SrcRegion;
+				SrcBorderRegion.Upper = 0;
+				SrcBorderRegion.Lower = 1;
+				TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
+			}
+			else
+			{
+				TI_ASSERT(0);
+				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+			}
+		}
+		else
+		{
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Upper = SrcRegion.Lower;
+			SrcBorderRegion.Lower = SrcRegion.Lower + 1;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
+		}
+
+		// corners
+
+		return PageImageWithBorder;
+	}
+
 	void TVTTextureBaker::SplitTextures(const TList<int32>& OrderArray)
 	{
 		printf("Split textures...\n");
@@ -245,12 +363,32 @@ namespace tix
 			{
 				for (int32 x = 0 ; x < XCount ; ++ x)
 				{
+					recti SrcRegion(x * PPSize, y * PPSize, (x + 1) * PPSize, (y + 1) * PPSize);
+
 					TImage * PageImage = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
+					if (bAddBorder)
+					{
+						TImage * PageImageWithBorder = ProcessBorders(TgaImage, SrcRegion, Info, PPSize);
+						PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
+
+						// debug
+						if (Region.X + x == 0 && Region.Y + y == 2)
+						{
+							char name0[128], name1[128];
+							sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + x, Region.Y + y);
+							sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + x, Region.Y + y);
+							PageImageWithBorder->SaveToTga(name0);
+							PageImage->SaveToTga(name1);
+						}
+					}
+					else
+					{
+						TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
+					}
 
 					vector2di Pos;
 					Pos.X = Region.X + x;
 					Pos.Y = Region.Y + y;
-					TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(x * PPSize, y * PPSize, (x + 1) * PPSize, (y + 1) * PPSize), 0);
 
 					int32 PageIndex = Pos.Y * RegionSize + Pos.X;
 					TI_ASSERT(SplitedTextures[PageIndex] == nullptr);
@@ -321,6 +459,7 @@ namespace tix
 
 	void TVTTextureBaker::BakeMipmaps()
 	{
+		printf("Bake mips...\n");
 		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
 		int32 MipSize = RegionSize;
@@ -377,7 +516,7 @@ namespace tix
 
 	void TVTTextureBaker::BakeMipmapsMT()
 	{
-		printf("Bake mips...\n");
+		printf("Bake mips multi threads...\n");
 		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
 

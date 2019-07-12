@@ -22,10 +22,29 @@ namespace tix
 		vector4d() : X(0), Y(0), Z(0), W(0) {}
 		//! Constructor with three different values
 		vector4d(T nx, T ny, T nz, T nw) : X(nx), Y(ny), Z(nz), W(nw) {}
+		//! Constructor with SColor
+		vector4d(const SColor& C) : X(C.R), Y(C.G), Z(C.B), W(C.A) {}
 
 		//! Copy constructor
 		vector4d(const vector4d<T>& other) : X(other.X), Y(other.Y), Z(other.Z), W(other.W) {}
+
 		// operators
+
+		vector4d<T> operator+(const vector4d<T>& other) const { return vector4d<T>(X + other.X, Y + other.Y, Z + other.Z, W + other.W); }
+		vector4d<T>& operator+=(const vector4d<T>& other) { X += other.X; Y += other.Y; Z += other.Z; W += other.W;  return *this; }
+
+		vector4d<T> operator-(const vector4d<T>& other) const { return vector4d<T>(X - other.X, Y - other.Y, Z - other.Z, W - other.W); }
+		vector4d<T>& operator-=(const vector4d<T>& other) { X -= other.X; Y -= other.Y; Z -= other.Z; W -= other.W; return *this; }
+
+		vector4d<T> operator*(const vector4d<T>& other) const { return vector4d<T>(X * other.X, Y * other.Y, Z * other.Z, W * other.W); }
+		vector4d<T>& operator*=(const vector4d<T>& other) { X *= other.X; Y *= other.Y; Z *= other.Z; W *= other.W; return *this; }
+		vector4d<T> operator*(const T v) const { return vector4d<T>(X * v, Y * v, Z * v, W * v); }
+		vector4d<T>& operator*=(const T v) { X *= v; Y *= v; Z *= v; W *= v; return *this; }
+
+		vector4d<T> operator/(const vector4d<T>& other) const { return vector4d<T>(X / other.X, Y / other.Y, Z / other.Z, W / other.W); }
+		vector4d<T>& operator/=(const vector4d<T>& other) { X /= other.X; Y /= other.Y; Z /= other.Z; W /= other.W; return *this; }
+		vector4d<T> operator/(const T v) const { T i = (T)1.0 / v; return vector4d<T>(X * i, Y * i, Z * i, W * i); }
+		vector4d<T>& operator/=(const T v) { T i = (T)1.0 / v; X *= i; Y *= i; Z *= i; W *= i; return *this; }
 
 		T X, Y, Z, W;
 	};
@@ -33,7 +52,7 @@ namespace tix
 	//! Typedef for a float32 4d vector.
 	typedef vector4d<float32> vector4df;
 	//! Typedef for an integer 4d vector.
-	typedef vector4d<int> vector4di;
+	typedef vector4d<int32> vector4di;
 
 } // end namespace ti
 

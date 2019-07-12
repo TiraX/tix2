@@ -48,8 +48,10 @@ namespace tix
 		void SetPixel(int32 x, int32 y, const SColorf& c, int32 MipIndex = 0);
 		SColor GetPixel(int32 x, int32 y, int32 MipIndex = 0);
 		SColor GetPixel(float x, float y, int32 MipIndex = 0);
+		SColor GetPixelBicubic(float x, float y, int32 MipIndex = 0);
 		SColorf GetPixelFloat(int32 x, int32 y, int32 MipIndex = 0);
 		SColorf GetPixelFloat(float x, float y, int32 MipIndex = 0);
+		SColorf GetPixelFloatBicubic(float x, float y, int32 MipIndex = 0);
 
 		virtual uint8* Lock(int32 MipIndex = 0);
 		virtual void Unlock();
