@@ -344,6 +344,21 @@ namespace tix
 		return color;
 	}
 
+	inline float BSpline(float x)
+	{
+		float f = ti_abs(x);
+
+		if (f >= 0.f &&  f <= 1.f)
+		{
+			return (2.f / 3.f) + (0.5f) * (f * f * f) - (f * f);
+		}
+		else if (f > 1.f && f <= 2.f)
+		{
+			return (1.f / 6.f) * pow((2.f - f), 3.f);
+		}
+		return 1.f;
+	}
+
 	SColor TImage::GetPixelBicubic(float x, float y, int32 MipIndex)
 	{
 		int32 xi = (int32)(x);
@@ -352,49 +367,27 @@ namespace tix
 		float dx = x - xi;
 		float dy = y - yi;
 
-		vector4df C[4];
-		for (int32 i = 0 ; i < 4; ++ i)
+		float Bmdx;	// Bspline m-dx 
+		float Bndy;	// Bspline dy-n    
+
+		vector4df Result;
+		for (int32 m = -1; m <= 2; m++)
 		{
-			SColor c0, c1, c2, c3;
-			c0 = GetPixel(xi, yi - 1 + i);
-			c1 = GetPixel(xi - 1, yi - 1 + i);
-			c2 = GetPixel(xi + 1, yi - 1 + i);
-			c3 = GetPixel(xi + 2, yi - 1 + i);
+			Bmdx = BSpline(m - dx);
+			for (int32 n = -1; n <= 2; n++)
+			{
+				Bndy = BSpline(dy - n);
 
-			vector4df s0, s1, s2, s3;
-			s0 = vector4df(c0.R, c0.G, c0.B, c0.A);
-			s1 = vector4df(c1.R, c1.G, c1.B, c1.A);
-			s2 = vector4df(c2.R, c2.G, c2.B, c2.A);
-			s3 = vector4df(c3.R, c3.G, c3.B, c3.A);
-
-			vector4df d0, d2, d3, a0, a1, a2, a3;
-			d0 = s1 - s0;
-			d2 = s2 - s0;
-			d3 = s3 - s0;
-			a0 = s0;
-
-			a1 = d0 * (-1.f / 3.f) + d2 + d3 * (-1.f / 6.f);
-			a2 = d0 * (1.f / 2.f) + d2 * (1.f / 2.f);
-			a3 = d0 * (-1.f / 6.f) + d2 * (-1.f / 2.f) + d3 * (-1.f / 6.f);
-
-			C[i] = a0 + a1 * dx + a2 * (dx * dx) + a3 * (dx * dx * dx);
+				SColor c = GetPixel(xi + m, yi + n);
+				vector4df r(c.R, c.G, c.B, c.A);
+				Result += r * Bmdx * Bndy;
+			}
 		}
-
-		vector4df r0, r2, r3, a0, a1, a2, a3;
-		r0 = C[0] - C[1];
-		r2 = C[2] - C[1];
-		r3 = C[3] - C[1];
-		a0 = C[1];
-		a1 = r0 * (-1.f / 3.f) + r2 + r3 * (-1.f / 6.f);
-		a2 = r0 * (1.f / 2.f) + r2 * (1.f / 2.f);
-		a3 = r0 * (-1.f / 6.f) + r2 * (-1.f / 2.f) + r3 * (1.f / 6.f);
-
-		vector4df rc = a0 + a1 * dy + a2 * (dy * dy) + a3 * (dy * dy * dy);
 		SColor Color;
-		Color.R = (uint8)ti_round(rc.X);
-		Color.G = (uint8)ti_round(rc.Y);
-		Color.B = (uint8)ti_round(rc.Z);
-		Color.A = (uint8)ti_round(rc.W);
+		Color.R = (uint8)ti_round(Result.X);
+		Color.G = (uint8)ti_round(Result.Y);
+		Color.B = (uint8)ti_round(Result.Z);
+		Color.A = (uint8)ti_round(Result.W);
 
 		return Color;
 	}
@@ -475,49 +468,27 @@ namespace tix
 		float dx = x - xi;
 		float dy = y - yi;
 
-		vector4df C[4];
-		for (int32 i = 0; i < 4; ++i)
+		float Bmdx;	// Bspline m-dx 
+		float Bndy;	// Bspline dy-n    
+
+		vector4df Result;
+		for (int32 m = -1; m <= 2; m++)
 		{
-			SColorf c0, c1, c2, c3;
-			c0 = GetPixelFloat(xi, yi - 1 + i);
-			c1 = GetPixelFloat(xi - 1, yi - 1 + i);
-			c2 = GetPixelFloat(xi + 1, yi - 1 + i);
-			c3 = GetPixelFloat(xi + 2, yi - 1 + i);
+			Bmdx = BSpline(m - dx);
+			for (int32 n = -1; n <= 2; n++)
+			{
+				Bndy = BSpline(dy - n);
 
-			vector4df s0, s1, s2, s3;
-			s0 = vector4df(c0.R, c0.G, c0.B, c0.A);
-			s1 = vector4df(c1.R, c1.G, c1.B, c1.A);
-			s2 = vector4df(c2.R, c2.G, c2.B, c2.A);
-			s3 = vector4df(c3.R, c3.G, c3.B, c3.A);
-
-			vector4df d0, d2, d3, a0, a1, a2, a3;
-			d0 = s1 - s0;
-			d2 = s2 - s0;
-			d3 = s3 - s0;
-			a0 = s0;
-
-			a1 = d0 * (-1.f / 3.f) + d2 + d3 * (-1.f / 6.f);
-			a2 = d0 * (1.f / 2.f) + d2 * (1.f / 2.f);
-			a3 = d0 * (-1.f / 6.f) + d2 * (-1.f / 2.f) + d3 * (-1.f / 6.f);
-
-			C[i] = a0 + a1 * dx + a2 * (dx * dx) + a3 * (dx * dx * dx);
+				SColorf c = GetPixelFloat(yi + n, xi + m);
+				vector4df r(c.R, c.G, c.B, c.A);
+				Result += r * Bmdx * Bndy;
+			}
 		}
-
-		vector4df r0, r2, r3, a0, a1, a2, a3;
-		r0 = C[0] - C[1];
-		r2 = C[2] - C[1];
-		r3 = C[3] - C[1];
-		a0 = C[1];
-		a1 = r0 * (-1.f / 3.f) + r2 + r3 * (-1.f / 6.f);
-		a2 = r0 * (1.f / 2.f) + r2 * (1.f / 2.f);
-		a3 = r0 * (-1.f / 6.f) + r2 * (-1.f / 2.f) + r3 * (1.f / 6.f);
-
-		vector4df rc = a0 + a1 * dy + a2 * (dy * dy) + a3 * (dy * dy * dy);
 		SColorf Color;
-		Color.R = rc.X;
-		Color.G = rc.Y;
-		Color.B = rc.Z;
-		Color.A = rc.W;
+		Color.R = (Result.X);
+		Color.G = (Result.Y);
+		Color.B = (Result.Z);
+		Color.A = (Result.W);
 
 		return Color;
 	}
