@@ -40,7 +40,6 @@ namespace tix
 		void AddTexturesToVTRegion();
 		void SortTextures(TList<int32>& OrderArray);
 		void SplitTextures(const TList<int32>& OrderArray);
-		void BakeMipmaps();
 		void BakeMipmapsMT();
 
 		void ClearAllTextures();

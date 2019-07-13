@@ -116,7 +116,7 @@ namespace tix
 
 	void TVTTextureBaker::AddTexturesToVTRegion()
 	{
-		TIMER_RECORDER("Add Textures to vr region");
+		TIMER_RECORDER("Add Textures to VT region");
 		// Calc total area of all textures to estimate the area of virtual texture
 		int32 Area = 0;
 		for (const auto& Info : TextureInfos)
@@ -329,6 +329,73 @@ namespace tix
 		return PageImageWithBorder;
 	}
 
+	class TBakeSplitTextureTask : public TResMTTask
+	{
+	public:
+		TBakeSplitTextureTask(
+			const TVTTextureBaker::TVTTextureBasicInfo& InInfo, 
+			const vector4di& InRegion, 
+			TImage * InTgaImage, 
+			const recti& InSrcRegion,
+			int32 InPPSize, 
+			int32 InX, int32 InY)
+			: Info(InInfo)
+			, Region(InRegion)
+			, TgaImage(InTgaImage)
+			, SrcRegion(InSrcRegion)
+			, PPSize(InPPSize)
+			, X(InX)
+			, Y(InY)
+			, PageImage(nullptr)
+		{}
+
+		const TVTTextureBaker::TVTTextureBasicInfo& Info;
+		const vector4di& Region;
+		TImage * TgaImage;
+		recti SrcRegion;
+		int32 PPSize;
+		int32 X, Y;
+
+		TImage* PageImage;
+
+		virtual void Exec() override
+		{
+			PageImage = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
+			if (bAddBorder)
+			{
+				TImage * PageImageWithBorder = ProcessBorders(TgaImage, SrcRegion, Info, PPSize);
+				if (Info.Srgb)
+				{
+					PageImageWithBorder->ConvertToLinearSpace();
+				}
+				PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
+				if (Info.Srgb)
+				{
+					PageImage->ConvertToSrgbSpace();
+				}
+
+				//debug
+				//if (Region.X + X == 0 && (Region.Y + Y == 2 || Region.Y + Y == 6))
+				//{
+				//	if (Info.Srgb)
+				//	{
+				//		PageImageWithBorder->ConvertToSrgbSpace();
+				//	}
+				//	char name0[128], name1[128];
+				//	sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + X, Region.Y + Y);
+				//	sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + X, Region.Y + Y);
+				//	PageImageWithBorder->SaveToTga(name0);
+				//	PageImage->SaveToTga(name1);
+				//}
+				ti_delete PageImageWithBorder;
+			}
+			else
+			{
+				TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
+			}
+		}
+	};
+
 	void TVTTextureBaker::SplitTextures(const TList<int32>& OrderArray)
 	{
 		TIMER_RECORDER("Split textures");
@@ -349,6 +416,10 @@ namespace tix
 		}
 
 		THMap<int32, TImage*>& SplitedTextures = MipPages[0];
+		//CurrentPages = MipPages[Mip];
+
+		TVector<TBakeSplitTextureTask*> Tasks;
+		TVector<TImage*> TgaImages;
 
 		for (const auto& Index : OrderArray)
 		{
@@ -377,6 +448,7 @@ namespace tix
 				ti_delete TgaImage;
 				TgaImage = TargetMipImage;
 			}
+			TgaImages.push_back(TgaImage);
 
 			int32 XCount = Region.Z;
 			int32 YCount = Region.W;
@@ -387,50 +459,32 @@ namespace tix
 				{
 					recti SrcRegion(x * PPSize, y * PPSize, (x + 1) * PPSize, (y + 1) * PPSize);
 
-					TImage * PageImage = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
-					if (bAddBorder)
-					{
-						TImage * PageImageWithBorder = ProcessBorders(TgaImage, SrcRegion, Info, PPSize);
-						if (Info.Srgb)
-						{
-							PageImageWithBorder->ConvertToLinearSpace();
-						}
-						PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
-						if (Info.Srgb)
-						{
-							PageImage->ConvertToSrgbSpace();
-						}
-
-						// debug
-						//if (Region.X + x == 0 && (Region.Y + y == 2 || Region.Y + y == 6))
-						//{
-						//	if (Info.Srgb)
-						//	{
-						//		PageImageWithBorder->ConvertToSrgbSpace();
-						//	}
-						//	char name0[128], name1[128];
-						//	sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + x, Region.Y + y);
-						//	sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + x, Region.Y + y);
-						//	PageImageWithBorder->SaveToTga(name0);
-						//	PageImage->SaveToTga(name1);
-						//}
-						ti_delete PageImageWithBorder;
-					}
-					else
-					{
-						TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
-					}
-
-					vector2di Pos;
-					Pos.X = Region.X + x;
-					Pos.Y = Region.Y + y;
-
-					int32 PageIndex = Pos.Y * RegionSize + Pos.X;
-					TI_ASSERT(SplitedTextures[PageIndex] == nullptr);
-					SplitedTextures[PageIndex] = PageImage;
+					TBakeSplitTextureTask * Task = ti_new TBakeSplitTextureTask(Info, Region, TgaImage, SrcRegion, PPSize, x, y);
+					TResMTTaskExecuter::Get()->AddTask(Task);
+					Tasks.push_back(Task);
 				}
 			}
-			ti_delete TgaImage;
+		}
+
+		TResMTTaskExecuter::Get()->StartTasks();
+		TResMTTaskExecuter::Get()->WaitUntilFinished();
+
+		for (auto Task : Tasks)
+		{
+			vector2di Pos;
+			Pos.X = Task->Region.X + Task->X;
+			Pos.Y = Task->Region.Y + Task->Y;
+
+			int32 PageIndex = Pos.Y * RegionSize + Pos.X;
+			TI_ASSERT(SplitedTextures[PageIndex] == nullptr);
+			SplitedTextures[PageIndex] = Task->PageImage;
+
+			ti_delete Task;
+		}
+
+		for (auto Img : TgaImages)
+		{
+			ti_delete Img;
 		}
 	}
 
@@ -490,38 +544,6 @@ namespace tix
 		}
 
 		return PageImage;
-	}
-
-	void TVTTextureBaker::BakeMipmaps()
-	{
-		TIMER_RECORDER("Bake mipmaps");
-		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
-
-		int32 MipSize = RegionSize;
-		for (int32 Mip = 1 ; Mip < (int32)MipPages.size() ; ++ Mip)
-		{
-			THMap<int32, TImage*>& ParentPages = MipPages[Mip - 1];
-			THMap<int32, TImage*>& CurrentPages = MipPages[Mip];
-
-			int32 CurrMipSize = MipSize / 2;
-			for (int32 y = 0; y < MipSize; y += 2)
-			{
-				for (int32 x = 0; x < MipSize; x += 2)
-				{
-					TImage* PageImage = DownSamplePages(ParentPages, x, y, MipSize, PPSize);
-
-					if (PageImage == nullptr)
-					{
-						continue;
-					}
-
-					int32 PageIndex = (y / 2 * CurrMipSize) + x / 2;
-					CurrentPages[PageIndex] = PageImage;
-				}
-			}
-
-			MipSize /= 2;
-		}
 	}
 
 	class TBakePageMipmapTask : public TResMTTask
