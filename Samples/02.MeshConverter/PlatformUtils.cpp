@@ -79,7 +79,7 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		if (!CreateDirectory(Dir.c_str(), nullptr))
 		{
-			printf("Failed to create directory : %s.\n", Dir.c_str());
+			_LOG(Error, "Failed to create directory : %s.\n", Dir.c_str());
 		}
 #else
 		TI_ASSERT(0);

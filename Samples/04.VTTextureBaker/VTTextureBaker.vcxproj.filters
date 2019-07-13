@@ -37,6 +37,9 @@
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp">
       <Filter>Sources\TiX2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TLog.cpp">
+      <Filter>Sources\TiX2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -70,6 +73,9 @@
       <Filter>Sources\TiX2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TTimer.h">
+      <Filter>Sources\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TLog.h">
       <Filter>Sources\TiX2</Filter>
     </ClInclude>
   </ItemGroup>

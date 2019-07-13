@@ -32,13 +32,28 @@ namespace tix
 		return Result;
 	}
 
+	void TVTTextureBaker::Bake(const TString& SceneFileName)
+	{
+		TIMER_RECORDER("Bake total time");
+		LoadTextureFiles(SceneFileName);
+
+		AddTexturesToVTRegion();
+
+		TList<int32> TextureOrders;
+		SortTextures(TextureOrders);
+		SplitTextures(TextureOrders);
+		BakeMipmapsMT();
+
+		OutputAllTextures();
+	}
+
 	void TVTTextureBaker::LoadTextureFiles(const TString& SceneFileName)
 	{
-		printf("Loading Textures...\n");
+		TIMER_RECORDER("Load texture files");
 		TFile f;
 		if (!f.Open(SceneFileName, EFA_READ))
 		{
-			printf("Error : Failed to open file : %s\n", SceneFileName.c_str());
+			_LOG(Error, "Failed to open file : %s\n", SceneFileName.c_str());
 			return;
 		}
 
@@ -73,7 +88,7 @@ namespace tix
 			TFile TexTjsFile;
 			if (!TexTjsFile.Open(TJSName, EFA_READ))
 			{
-				printf("Error: Failed to open %s\n", TJSName.c_str());
+				_LOG(Error, "Failed to open %s\n", TJSName.c_str());
 				continue;
 			}
 
@@ -96,22 +111,12 @@ namespace tix
 
 			Info.Size = TImage::LoadImageTGADimension(Info.Name);
 			TextureInfos.push_back(Info);
-			printf(" - Loaded %s...\n", Info.Name.c_str());
 		}
-
-		AddTexturesToVTRegion();
-
-		TList<int32> TextureOrders;
-		SortTextures(TextureOrders);
-		SplitTextures(TextureOrders);
-		BakeMipmapsMT();
-
-		OutputAllTextures();
 	}
 
 	void TVTTextureBaker::AddTexturesToVTRegion()
 	{
-		printf("Add textures to virtual texture...\n");
+		TIMER_RECORDER("Add Textures to vr region");
 		// Calc total area of all textures to estimate the area of virtual texture
 		int32 Area = 0;
 		for (const auto& Info : TextureInfos)
@@ -134,7 +139,7 @@ namespace tix
 			TRegion::TRegionDesc* Region = VTRegion.FindAvailbleRegion(SizeX, SizeY, &RegionIndex);
 			if (Region == nullptr)
 			{
-				printf("Error: out of regions. \n");
+				_LOG(Error, "out of regions. \n");
 				return;
 			}
 
@@ -171,6 +176,7 @@ namespace tix
 
 	void TVTTextureBaker::SortTextures(TList<int32>& OrderArray)
 	{
+		TIMER_RECORDER("Sort textures");
 		OrderArray.clear();
 		for (size_t i = 0 ; i < TextureInfos.size() ; ++ i)
 		{
@@ -205,7 +211,7 @@ namespace tix
 		if (Info.AddressMode != ETC_REPEAT)
 		{
 			TI_ASSERT(0);
-			printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+			_LOG(Error, "unsupported address mode for VT. %s\n", Info.Name.c_str());
 		}
 
 		// Left border
@@ -325,7 +331,7 @@ namespace tix
 
 	void TVTTextureBaker::SplitTextures(const TList<int32>& OrderArray)
 	{
-		printf("Split textures...\n");
+		TIMER_RECORDER("Split textures");
 		const int32 TotalMips = CalcMips(VTRegion.GetRegionSize(), VTRegion.GetCellSize());
 		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
@@ -357,7 +363,7 @@ namespace tix
 			TFile TgaFile;
 			if (!TgaFile.Open(Info.Name, EFA_READ))
 			{
-				printf("Error: failed to open tga file %s\n", Info.Name.c_str());
+				_LOG(Error, "failed to open tga file %s\n", Info.Name.c_str());
 				continue;
 			}
 			TImage * TgaImage = TImage::LoadImageTGA(TgaFile);
@@ -488,7 +494,7 @@ namespace tix
 
 	void TVTTextureBaker::BakeMipmaps()
 	{
-		printf("Bake mips...\n");
+		TIMER_RECORDER("Bake mipmaps");
 		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
 		int32 MipSize = RegionSize;
@@ -545,7 +551,7 @@ namespace tix
 
 	void TVTTextureBaker::BakeMipmapsMT()
 	{
-		printf("Bake mips multi threads...\n");
+		TIMER_RECORDER("Bake mipmaps MT");
 		const int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
 
@@ -607,12 +613,12 @@ namespace tix
 
 	void TVTTextureBaker::OutputAllTextures()
 	{
+		TIMER_RECORDER("Output debug textures");
 		bool DebugOutputAllPages = !true;
 		bool DebugOutputVTMips = !true;
 
 		if (DebugOutputAllPages)
 		{
-			printf("Dump all pages...\n");
 			int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
 			for (int32 M = 0; M < (int32)MipPages.size(); ++M)
@@ -638,7 +644,7 @@ namespace tix
 
 		if (DebugOutputVTMips)
 		{
-			printf("Dump virtual textures...\n");
+			_LOG(Log, "Dump virtual textures...\n");
 			int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
 			for (int32 M = 0; M < (int32)MipPages.size(); ++M)

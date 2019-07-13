@@ -10,6 +10,10 @@
 #	define TIX_DEBUG
 #endif
 
+#if defined (SHIPPING)
+#	define TIX_SHIPPING
+#endif
+
 #if defined (TI_PLATFORM_WIN32)
 // overload operator new to debug.
 #   define DEBUG_OPERATOR_NEW 0

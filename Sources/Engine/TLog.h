@@ -27,8 +27,8 @@ namespace tix
 	};
 }
 
-#ifdef TIX_DEBUG
-#	define _LOG(LogLevel, Format, ...)	TLog::DoLog(LogLevel, Format, ##__VA_ARGS__)
+#ifdef TIX_SHIPPING
+#	define _LOG(LogLevel, Format, ...)
 #else
 #	define _LOG(LogLevel, Format, ...)	TLog::DoLog(LogLevel, Format, ##__VA_ARGS__)
 #endif

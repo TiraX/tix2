@@ -115,13 +115,13 @@ namespace tix
 		TI_ASSERT(BlockSize != 0);
 		if (BlockSize == 0)
 		{
-			printf("Error: Invalid block size.\n");
+			_LOG(Error, "Invalid block size.\n");
 			return nullptr;
 		}
 
 		if (Texture->Desc.Type != ETT_TEXTURE_2D)
 		{
-			printf("Error: Not support DXT1 format other than Texture2D.");
+			_LOG(Error, "Not support DXT1 format other than Texture2D.");
 			return nullptr;
 		}
 
@@ -184,13 +184,13 @@ namespace tix
 		TI_ASSERT(BlockSize != 0);
 		if (BlockSize == 0)
 		{
-			printf("Error: Invalid block size.\n");
+			_LOG(Error, "Invalid block size.\n");
 			return nullptr;
 		}
 
 		if (Texture->Desc.Type != ETT_TEXTURE_2D)
 		{
-			printf("Error: Not support DXT5 format other than Texture2D.");
+			_LOG(Error, "Not support DXT5 format other than Texture2D.");
 			return nullptr;
 		}
 
@@ -265,7 +265,7 @@ namespace tix
 		{
 			if (Texture->Desc.Type != ETT_TEXTURE_2D)
 			{
-				printf("Error: Not support EPF_A8 format other than Texture2D.");
+				_LOG(Error, "Not support EPF_A8 format other than Texture2D.");
 				return nullptr;
 			}
 			// Copy pixel data to TImage directly
@@ -406,7 +406,7 @@ namespace tix
 		else
 		{
 			TI_ASSERT(0);
-			printf("Error: Unsupported dds format.\n");
+			_LOG(Error, "Unsupported dds format.\n");
 		}
 
 		if (Result != nullptr)

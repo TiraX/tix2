@@ -231,4 +231,43 @@ namespace tix
 			return _d1 + _d2 + _d3;
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	TTimeRecorder::TTimeRecorder()
+	{
+		Start();
+	}
+
+	TTimeRecorder::TTimeRecorder(const TString& InName)
+		: Name(InName)
+	{
+		Start();
+	}
+
+	TTimeRecorder::~TTimeRecorder()
+	{
+		LogTimeUsed();
+	}
+
+	void TTimeRecorder::Start()
+	{
+		StartTime = TTimer::GetCurrentTimeMillis();
+	}
+
+	void TTimeRecorder::End()
+	{
+		EndTime = TTimer::GetCurrentTimeMillis();
+	}
+
+	void TTimeRecorder::LogTimeUsed()
+	{
+		End();
+
+		uint64 Diff = EndTime - StartTime;
+		uint32 ms = (uint32)(Diff % 1000);
+		uint32 s = (uint32)((Diff / 1000) % 60);
+		uint32 m = (uint32)((Diff / 1000) / 60);
+		_LOG(Log, "%s : %dm%ds%d\n", Name.c_str(), m, s, ms);
+	}
 }

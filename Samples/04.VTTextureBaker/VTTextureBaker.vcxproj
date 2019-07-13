@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\TFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TImage.h" />
+    <ClInclude Include="..\..\Sources\Engine\TLog.h" />
     <ClInclude Include="..\..\Sources\Engine\TRegion.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TRegion.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />

@@ -92,7 +92,7 @@ namespace tix
 		Texture->Desc.Format = GetASTCFormatByDimension(BlockDimX, BlockDimY, false);
 		if (Texture->Desc.Format == EPF_UNKNOWN)
 		{
-			printf("Error: unknown texture pixel format.\n");
+			_LOG(Error, "unknown texture pixel format.\n");
 			TI_ASSERT(0);
 		}
 
@@ -162,7 +162,7 @@ namespace tix
 			{
 				return DDSTexture;
 			}
-			printf("Do not support convert to Target format yet.\n");
+			_LOG(Error, "Do not support convert to Target format yet.\n");
 			TI_ASSERT(0);
 		}
 
@@ -177,7 +177,7 @@ namespace tix
 
 		if (DecodeResult == nullptr)
 		{
-			printf("Error: Failed to decode dds to tga. [%s]\n", Filename.c_str());
+			_LOG(Error, "Failed to decode dds to tga. [%s]\n", Filename.c_str());
 			return nullptr;
 		}
 		// Find ASTC converter and do convert for LDR image
@@ -188,7 +188,7 @@ namespace tix
 		const TString ConvertParam = " 6x6 -medium -silentmode";
 		ASTCConverter += TempTGAName + " ";
 		ASTCConverter += TempASTCName + ConvertParam;
-		printf("Converting [%s] to ASTC:\n  %s\n", Filename.c_str(), ASTCConverter.c_str());
+		_LOG(Log, "Converting [%s] to ASTC:\n  %s\n", Filename.c_str(), ASTCConverter.c_str());
 
 		TVector<TStreamPtr> AstcFileBuffers;
 		int32 Faces = 1;
@@ -211,7 +211,7 @@ namespace tix
 					TFile f;
 					if (!f.Open(TempASTCName, EFA_READ))
 					{
-						printf("Error: failed to read converted astc file.\n");
+						_LOG(Error, "failed to read converted astc file.\n");
 						break;
 					}
 
@@ -229,7 +229,7 @@ namespace tix
 				}
 				else
 				{
-					printf("Error: failed to convert astc file.\n");
+					_LOG(Error, "failed to convert astc file.\n");
 				}
 
 				W /= 2;
@@ -257,7 +257,7 @@ namespace tix
 		TI_ASSERT(0);
 		if (Images.size() == 0)
 		{
-			printf("Error: Failed to decode dds to tga. [%s]\n", SrcInfo.TextureSource.c_str());
+			_LOG(Error, "Failed to decode dds to tga. [%s]\n", SrcInfo.TextureSource.c_str());
 			return nullptr;
 		}
 		return nullptr;
@@ -269,7 +269,7 @@ namespace tix
 		//	{
 		//		return TGATexture;
 		//	}
-		//	printf("Do not support convert to Target format yet.\n");
+		//	_LOG(Error, "Do not support convert to Target format yet.\n");
 		//	TI_ASSERT(0);
 		//}
 
@@ -281,7 +281,7 @@ namespace tix
 		//const TString ConvertParam = " 6x6 -medium -silentmode";
 		//ASTCConverter += TempTGAName + " ";
 		//ASTCConverter += TempASTCName + ConvertParam;
-		//printf("Converting : [%s] to ASTC.\n", Filename.c_str());
+		//_LOG(Log, "Converting : [%s] to ASTC.\n", Filename.c_str());
 
 		TVector<TStreamPtr> AstcFileBuffers;
 		int32 Faces = 1;
@@ -308,7 +308,7 @@ namespace tix
 		//			TFile f;
 		//			if (!f.Open(TempASTCName, EFA_READ))
 		//			{
-		//				printf("Error: failed to read converted astc file.\n");
+		//				_LOG(Error, "failed to read converted astc file.\n");
 		//				break;
 		//			}
 
@@ -326,7 +326,7 @@ namespace tix
 		//		}
 		//		else
 		//		{
-		//			printf("Error: failed to convert astc file.\n");
+		//			_LOG(Error, "failed to convert astc file.\n");
 		//		}
 
 		//		W /= 2;

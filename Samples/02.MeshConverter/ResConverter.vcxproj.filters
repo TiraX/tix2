@@ -70,6 +70,9 @@
     <ClInclude Include="..\..\Sources\Engine\TImage.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TLog.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -139,6 +142,9 @@
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp">
+      <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TLog.cpp">
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
   </ItemGroup>

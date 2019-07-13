@@ -33,9 +33,10 @@ namespace tix
 		TVTTextureBaker();
 		~TVTTextureBaker();
 
-		void LoadTextureFiles(const TString& SceneFileName);
+		void Bake(const TString& SceneFileName);
 
 	private:
+		void LoadTextureFiles(const TString& SceneFileName);
 		void AddTexturesToVTRegion();
 		void SortTextures(TList<int32>& OrderArray);
 		void SplitTextures(const TList<int32>& OrderArray);

@@ -24,4 +24,31 @@ namespace tix
 		TI_API static int				DayInYear(int y, int m, int d);
 		TI_API static int				DayBetweenDates(int y1, int m1, int d1, int y2, int m2, int d2);
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+
+	class TI_API TTimeRecorder
+	{
+	public:
+		TTimeRecorder();
+		TTimeRecorder(const TString& InName);
+		~TTimeRecorder();
+
+		void LogTimeUsed();
+	private:
+		void Start();
+		void End();
+
+	private:
+		TString Name;
+		uint64 StartTime;
+		uint64 EndTime;
+	};
+
+#ifdef TIX_SHIPPING
+#	define TIMER_RECORDER(name)
+#else
+#	define TIMER_RECORDER(name) TTimeRecorder Rec(name)
+#endif // TIX_SHIPPING
+
 }

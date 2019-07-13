@@ -72,7 +72,7 @@ namespace tix
 
 			case 24:
 				// No 24bpp DXGI formats aka D3DFMT_R8G8B8
-				printf("Error: No 24bpp DXGI formats aka D3DFMT_R8G8B8.\n");
+				_LOG(Error, "No 24bpp DXGI formats aka D3DFMT_R8G8B8.\n");
 				TI_ASSERT(0);
 				break;
 
@@ -626,13 +626,13 @@ namespace tix
 			case DXGI_FORMAT_IA44:
 			case DXGI_FORMAT_P8:
 			case DXGI_FORMAT_A8P8:
-				printf("DDS Loader: Unsupported dxgi Format: %d.\n", d3d10ext->dxgiFormat);
+				_LOG(Error, "DDS Loader: Unsupported dxgi Format: %d.\n", d3d10ext->dxgiFormat);
 				return nullptr;
 
 			default:
 				if (BitsPerPixel(d3d10ext->dxgiFormat) == 0)
 				{
-					printf("DDS Loader: Unsupported dxgi Format: %d.\n", d3d10ext->dxgiFormat);
+					_LOG(Error, "DDS Loader: Unsupported dxgi Format: %d.\n", d3d10ext->dxgiFormat);
 					return nullptr;
 				}
 			}
@@ -645,7 +645,7 @@ namespace tix
 				// D3DX writes 1D textures with a fixed Height of 1
 				if ((header->flags & DDS_HEIGHT) && height != 1)
 				{
-					printf("DDS Loader: Invalid 1D texture with height: %d.\n", height);
+					_LOG(Error, "DDS Loader: Invalid 1D texture with height: %d.\n", height);
 					return nullptr;
 				}
 				height = depth = 1;
@@ -663,19 +663,19 @@ namespace tix
 			case D3D12_RESOURCE_DIMENSION_TEXTURE3D:
 				if (!(header->flags & DDS_HEADER_FLAGS_VOLUME))
 				{
-					printf("DDS Loader: Invalid texture 3D.\n");
+					_LOG(Error, "DDS Loader: Invalid texture 3D.\n");
 					return nullptr;
 				}
 
 				if (arraySize > 1)
 				{
-					printf("DDS Loader: Not supported texture 3D.\n");
+					_LOG(Error, "DDS Loader: Not supported texture 3D.\n");
 					return nullptr;
 				}
 				break;
 
 			default:
-				printf("DDS Loader: Not supported texture Dimension.\n");
+				_LOG(Error, "DDS Loader: Not supported texture Dimension.\n");
 				return nullptr;
 			}
 
@@ -687,7 +687,7 @@ namespace tix
 
 			if (format == DXGI_FORMAT_UNKNOWN)
 			{
-				printf("DDS Loader: Unknown format.\n");
+				_LOG(Error, "DDS Loader: Unknown format.\n");
 				return nullptr;
 			}
 
@@ -702,7 +702,7 @@ namespace tix
 					// We require all six faces to be defined
 					if ((header->caps2 & DDS_CUBEMAP_ALLFACES) != DDS_CUBEMAP_ALLFACES)
 					{
-						printf("DDS Loader: Invalid cube map faces.\n");
+						_LOG(Error, "DDS Loader: Invalid cube map faces.\n");
 						return nullptr;
 					}
 
@@ -722,7 +722,7 @@ namespace tix
 		// Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
 		if (mipCount > D3D12_REQ_MIP_LEVELS)
 		{
-			printf("DDS Loader: Mip level out of range. Mips: %d.\n", mipCount);
+			_LOG(Error, "DDS Loader: Mip level out of range. Mips: %d.\n", mipCount);
 			return nullptr;
 		}
 
@@ -732,7 +732,7 @@ namespace tix
 			if ((arraySize > D3D12_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION) ||
 				(width > D3D12_REQ_TEXTURE1D_U_DIMENSION))
 			{
-				printf("DDS Loader: Invalid dimension of texture 1D. ArraySize: %d; Width: %d.\n", arraySize, width);
+				_LOG(Error, "DDS Loader: Invalid dimension of texture 1D. ArraySize: %d; Width: %d.\n", arraySize, width);
 				return nullptr;
 			}
 			break;
@@ -745,7 +745,7 @@ namespace tix
 					(width > D3D12_REQ_TEXTURECUBE_DIMENSION) ||
 					(height > D3D12_REQ_TEXTURECUBE_DIMENSION))
 				{
-					printf("DDS Loader: Invalid dimension of texture Cube. ArraySize: %d; Width: %d; Height %d.\n", arraySize, width, height);
+					_LOG(Error, "DDS Loader: Invalid dimension of texture Cube. ArraySize: %d; Width: %d; Height %d.\n", arraySize, width, height);
 					return nullptr;
 				}
 			}
@@ -753,7 +753,7 @@ namespace tix
 				(width > D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION) ||
 				(height > D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION))
 			{
-				printf("DDS Loader: Invalid dimension of texture 2D. ArraySize: %d; Width: %d; Height %d.\n", arraySize, width, height);
+				_LOG(Error, "DDS Loader: Invalid dimension of texture 2D. ArraySize: %d; Width: %d; Height %d.\n", arraySize, width, height);
 				return nullptr;
 			}
 			break;
@@ -764,13 +764,13 @@ namespace tix
 				(height > D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION) ||
 				(depth > D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION))
 			{
-				printf("DDS Loader: Invalid dimension of texture 3D. ArraySize: %d; Width: %d; Height %d; Depth: %d.\n", arraySize, width, height, depth);
+				_LOG(Error, "DDS Loader: Invalid dimension of texture 3D. ArraySize: %d; Width: %d; Height %d; Depth: %d.\n", arraySize, width, height, depth);
 				return nullptr;
 			}
 			break;
 
 		default:
-			printf("DDS Loader: unknown dimension .\n");
+			_LOG(Error, "DDS Loader: unknown dimension .\n");
 			return nullptr;
 		}
 
@@ -780,13 +780,13 @@ namespace tix
 			Texture->Desc.Type = GetTixTypeFromDdsType(resDim, (header->caps2 & DDS_CUBEMAP) != 0);
 			if (Texture->Desc.Type == ETT_TEXTURE_UNKNOWN)
 			{
-				printf("Error: unknown texture type.\n");
+				_LOG(Error, "unknown texture type.\n");
 				TI_ASSERT(0);
 			}
 			Texture->Desc.Format = GetTixFormatFromDXGIFormat(format);
 			if (Texture->Desc.Format == EPF_UNKNOWN)
 			{
-				printf("Error: unknown texture pixel format.\n");
+				_LOG(Error, "unknown texture pixel format.\n");
 				TI_ASSERT(0);
 			}
 			Texture->Desc.Width = width >> LodBias;
@@ -977,7 +977,7 @@ namespace tix
 				TargetFormatStr = "DXT5";
 				break;
 			default:
-				printf("Error : un-supported ImageFormat : %d.\n", ImageFormat);
+				_LOG(Error, "un-supported ImageFormat : %d.\n", ImageFormat);
 				TI_ASSERT(0);
 				break;
 			}
@@ -993,7 +993,7 @@ namespace tix
 				TargetFormatStr = "R8G8B8A8_UNORM";
 				break;
 			default:
-				printf("Error : un-supported TargetFormat : %d.\n", SrcInfo.TargetFormat);
+				_LOG(Error, "un-supported TargetFormat : %d.\n", SrcInfo.TargetFormat);
 				TI_ASSERT(0);
 				break;
 			}
@@ -1016,12 +1016,12 @@ namespace tix
 			CommandLineStr = ExePath + CmdSS.str();
 			DebugCommandLineStr = CmdSS.str();
 		}
-		printf("  Cmd : %s\n", DebugCommandLineStr.c_str());
+		_LOG(Log, "  Cmd : %s\n", DebugCommandLineStr.c_str());
 		// Convert to DXT
 		int ret = system(CommandLineStr.c_str());
 		if (ret != 0)
 		{
-			printf("Error: failed to convert DXT file.\n");
+			_LOG(Error, "failed to convert DXT file.\n");
 			return nullptr;
 		}
 
@@ -1042,7 +1042,7 @@ namespace tix
 
 		if (SrcFormat == EPF_RGB8)
 		{
-			printf("Error: Tga will never be EGB8 format.\n");
+			_LOG(Error, "Tga will never be EGB8 format.\n");
 			TI_ASSERT(0);
 			DstFormat = EPF_DDS_DXT1;
 		}

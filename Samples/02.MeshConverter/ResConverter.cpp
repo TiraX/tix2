@@ -22,48 +22,48 @@ TResSettings TResSettings::GlobalSettings;
 
 void ShowUsage()
 {
-	printf("ResConverter src_filename dst_filename\n");
+	_LOG(Log, "ResConverter src_filename dst_filename\n");
 }
 
 bool bShowExample = false;
 void ShowExample()
 {
-	printf("{\n");
-	printf("\t\"name\": \"M_AddSpecular\",\n");
-	printf("\t\"type\": \"material\",\n");
-	printf("\t\"version\": 1,\n");
-	printf("\t\"desc\": \"\",\n");
-	printf("\t\"shaders\": [\n");
-	printf("\t\t\"S_AddSpecularVS\",\n");
-	printf("\t\t\"S_AddSpecularPS\",\n");
-	printf("\t\t\"\",\n");
-	printf("\t\t\"\",\n");
-	printf("\t\t\"\"\n");
-	printf("\t],\n");
-	printf("\t\"vs_format\": [\n");
-	printf("\t\t\"EVSSEG_POSITION\",\n");
-	printf("\t\t\"EVSSEG_TEXCOORD0\"\n");
-	printf("\t],\n");
-	printf("\t\"rt_colors\": [\n");
-	printf("\t\t\"EPF_RGBA16F\"\n");
-	printf("\t],\n");
-	printf("\t\"rt_depth\": \"EPF_DEPTH24_STENCIL8\",\n");
-	printf("\t\"blend_mode\": \"BLEND_MODE_OPAQUE\",\n");
-	printf("\t\"depth_write\": false,\n");
-	printf("\t\"depth_test\": false,\n");
-	printf("\t\"two_sides\": false,\n");
-	printf("\t\"stencil_enable\": true,\n");
-	printf("\t\"stencil_read_mask\": 1,\n");
-	printf("\t\"stencil_write_mask\": 1,\n");
-	printf("\t\"front_stencil_fail\": \"ESO_KEEP\",\n");
-	printf("\t\"front_stencil_depth_fail\": \"ESO_KEEP\",\n");
-	printf("\t\"front_stencil_pass\": \"ESO_KEEP\",\n");
-	printf("\t\"front_stencil_func\": \"ECF_EQUAL\",\n");
-	printf("\t\"back_stencil_fail\": \"ESO_KEEP\",\n");
-	printf("\t\"back_stencil_depth_fail\": \"ESO_KEEP\",\n");
-	printf("\t\"back_stencil_pass\": \"ESO_KEEP\",\n");
-	printf("\t\"back_stencil_func\": \"ECF_NEVER\"\n");
-	printf("}\n");
+	_LOG(Log, "{\n");
+	_LOG(Log, "\t\"name\": \"M_AddSpecular\",\n");
+	_LOG(Log, "\t\"type\": \"material\",\n");
+	_LOG(Log, "\t\"version\": 1,\n");
+	_LOG(Log, "\t\"desc\": \"\",\n");
+	_LOG(Log, "\t\"shaders\": [\n");
+	_LOG(Log, "\t\t\"S_AddSpecularVS\",\n");
+	_LOG(Log, "\t\t\"S_AddSpecularPS\",\n");
+	_LOG(Log, "\t\t\"\",\n");
+	_LOG(Log, "\t\t\"\",\n");
+	_LOG(Log, "\t\t\"\"\n");
+	_LOG(Log, "\t],\n");
+	_LOG(Log, "\t\"vs_format\": [\n");
+	_LOG(Log, "\t\t\"EVSSEG_POSITION\",\n");
+	_LOG(Log, "\t\t\"EVSSEG_TEXCOORD0\"\n");
+	_LOG(Log, "\t],\n");
+	_LOG(Log, "\t\"rt_colors\": [\n");
+	_LOG(Log, "\t\t\"EPF_RGBA16F\"\n");
+	_LOG(Log, "\t],\n");
+	_LOG(Log, "\t\"rt_depth\": \"EPF_DEPTH24_STENCIL8\",\n");
+	_LOG(Log, "\t\"blend_mode\": \"BLEND_MODE_OPAQUE\",\n");
+	_LOG(Log, "\t\"depth_write\": false,\n");
+	_LOG(Log, "\t\"depth_test\": false,\n");
+	_LOG(Log, "\t\"two_sides\": false,\n");
+	_LOG(Log, "\t\"stencil_enable\": true,\n");
+	_LOG(Log, "\t\"stencil_read_mask\": 1,\n");
+	_LOG(Log, "\t\"stencil_write_mask\": 1,\n");
+	_LOG(Log, "\t\"front_stencil_fail\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"front_stencil_depth_fail\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"front_stencil_pass\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"front_stencil_func\": \"ECF_EQUAL\",\n");
+	_LOG(Log, "\t\"back_stencil_fail\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"back_stencil_depth_fail\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"back_stencil_pass\": \"ESO_KEEP\",\n");
+	_LOG(Log, "\t\"back_stencil_func\": \"ECF_NEVER\"\n");
+	_LOG(Log, "}\n");
 }
 
 bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
@@ -204,13 +204,13 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 			}
 			else
 			{
-				printf("Error: Unknown asset type - %s.\n", type);
+				_LOG(Error, "Unknown asset type - %s.\n", type);
 			}
 			ti_delete[] content;
 		}
 		else
 		{
-			printf("Error: Failed to open file : %s.\n", FilenameSrc.c_str());
+			_LOG(Error, "Failed to open file : %s.\n", FilenameSrc.c_str());
 		}
 	}
 
@@ -226,7 +226,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 
 	if (!Resfile.SaveFile(FilenameDst))
 	{
-		printf("Failed to save resfile : %s\n", FilenameDst.c_str());
+		_LOG(Error, "Failed to save resfile : %s\n", FilenameDst.c_str());
 	}
 	TResMTTaskExecuter::Destroy();
 

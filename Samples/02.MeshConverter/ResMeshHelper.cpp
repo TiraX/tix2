@@ -226,7 +226,7 @@ namespace tix
 			TI_ASSERT((VertexEnd - VertexStart) % 4 == 0);
             if ((VertexEnd - VertexStart) % 4 != 0)
             {
-                printf("Error: Not aligned vertices.\n");
+				_LOG(Error, "Not aligned vertices.\n");
             }
 			FillZero4(DataStream);
 

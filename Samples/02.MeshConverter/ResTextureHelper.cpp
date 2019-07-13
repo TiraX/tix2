@@ -59,7 +59,7 @@ namespace tix
 		}
 		else
 		{
-			printf("Error : Unknown texture format : %s\n", SrcInfo.TextureSource.c_str());
+			_LOG(Error, "Unknown texture format : %s\n", SrcInfo.TextureSource.c_str());
 			return false;
 		}
 
@@ -96,7 +96,7 @@ namespace tix
 		}
 		else
 		{
-			printf("Can not load texture : %s.\n", SrcInfo.TextureSource.c_str());
+			_LOG(Error, "Can not load texture : %s.\n", SrcInfo.TextureSource.c_str());
 			return false;
 		}
 	}
