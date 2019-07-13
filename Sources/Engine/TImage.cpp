@@ -344,19 +344,41 @@ namespace tix
 		return color;
 	}
 
-	inline float BSpline(float x)
+	inline float Cubic(float x)
 	{
+		// from http://entropymine.com/imageworsener/bicubic/
+		// B-spline (blurry)
+		//const float B = 1.0f;
+		//const float C = 0.f;
+
+		// Mitchell
+		//const float B = 1.f / 3.f;
+		//const float C = 1.f / 3.f;
+
+		// Catmull-Rom
+		//const float B = 0.f;
+		//const float C = 1.f / 2.f;
+
+		// Custom 1  (match photoshop the best)
+		const float B = 0.f;
+		const float C = 0.75f;
+
+		// Custom 2
+		//const float B = 0.f;
+		//const float C = 1.f;
+		
+		
 		float f = ti_abs(x);
 
 		if (f >= 0.f &&  f <= 1.f)
 		{
-			return (2.f / 3.f) + (0.5f) * (f * f * f) - (f * f);
+			return (2.f - 1.5f * B - C) * (f * f * f) + (-3.f + 2.f * B + C) * (f * f) + (1.f - 1.f / 3.f * B);
 		}
 		else if (f > 1.f && f <= 2.f)
 		{
-			return (1.f / 6.f) * pow((2.f - f), 3.f);
+			return (-1.f / 6.f * B - C) * (f * f * f) + (B + 5.f * C) * (f * f) + (-2.f * B - 8.f * C) * f + (4.f / 3.f * B + 4.f * C);
 		}
-		return 1.f;
+		return 0.f;
 	}
 
 	SColor TImage::GetPixelBicubic(float x, float y, int32 MipIndex)
@@ -373,16 +395,26 @@ namespace tix
 		vector4df Result;
 		for (int32 m = -1; m <= 2; m++)
 		{
-			Bmdx = BSpline(m - dx);
+			Bmdx = Cubic(m - dx);
 			for (int32 n = -1; n <= 2; n++)
 			{
-				Bndy = BSpline(dy - n);
+				Bndy = Cubic(dy - n);
 
 				SColor c = GetPixel(xi + m, yi + n);
 				vector4df r(c.R, c.G, c.B, c.A);
 				Result += r * Bmdx * Bndy;
 			}
 		}
+
+		Result.X = ti_max(0.f, Result.X);
+		Result.Y = ti_max(0.f, Result.Y);
+		Result.Z = ti_max(0.f, Result.Z);
+		Result.W = ti_max(0.f, Result.W);
+		Result.X = ti_min(255.f, Result.X);
+		Result.Y = ti_min(255.f, Result.Y);
+		Result.Z = ti_min(255.f, Result.Z);
+		Result.W = ti_min(255.f, Result.W);
+
 		SColor Color;
 		Color.R = (uint8)ti_round(Result.X);
 		Color.G = (uint8)ti_round(Result.Y);
@@ -474,16 +506,17 @@ namespace tix
 		vector4df Result;
 		for (int32 m = -1; m <= 2; m++)
 		{
-			Bmdx = BSpline(m - dx);
+			Bmdx = Cubic(m - dx);
 			for (int32 n = -1; n <= 2; n++)
 			{
-				Bndy = BSpline(dy - n);
+				Bndy = Cubic(dy - n);
 
-				SColorf c = GetPixelFloat(yi + n, xi + m);
+				SColorf c = GetPixelFloat(xi + m, yi + n);
 				vector4df r(c.R, c.G, c.B, c.A);
 				Result += r * Bmdx * Bndy;
 			}
 		}
+		
 		SColorf Color;
 		Color.R = (Result.X);
 		Color.G = (Result.Y);
@@ -711,6 +744,65 @@ namespace tix
 			Unlock();
 
 			return true;
+		}
+	}
+
+	void TImage::ConvertToLinearSpace()
+	{
+		if (IsCompressedFormat(GetFormat()))
+		{
+			printf("Convert to linear space, not support compress format.\n");
+			return;
+		}
+		for (int32 y = 0 ; y < GetWidth() ; ++ y)
+		{
+			for (int32 x = 0 ; x < GetHeight() ; ++ x)
+			{
+				static const float S = 255.f;
+				static const float SInv = 1.f / S;
+				static const float Gamma = 2.2f;
+				SColor C = GetPixel(x, y);
+				vector4df R(C.R * SInv, C.G * SInv, C.B * SInv, C.A * SInv);
+				R.X = pow(R.X, Gamma);
+				R.Y = pow(R.Y, Gamma);
+				R.Z = pow(R.Z, Gamma);
+
+				C.R = (uint8)ti_round(R.X * S);
+				C.G = (uint8)ti_round(R.Y * S);
+				C.B = (uint8)ti_round(R.Z * S);
+				C.A = (uint8)ti_round(R.W * S);
+				SetPixel(x, y, C);
+			}
+		}
+	}
+
+	void TImage::ConvertToSrgbSpace()
+	{
+		if (IsCompressedFormat(GetFormat()))
+		{
+			printf("Convert to srgb space, not support compress format.\n");
+			return;
+		}
+		for (int32 y = 0; y < GetWidth(); ++y)
+		{
+			for (int32 x = 0; x < GetHeight(); ++x)
+			{
+				static const float S = 255.f;
+				static const float SInv = 1.f / S;
+				static const float Gamma = 2.2f;
+				static const float GammaInv = 1.f / Gamma;
+				SColor C = GetPixel(x, y);
+				vector4df R(C.R * SInv, C.G * SInv, C.B * SInv, C.A * SInv);
+				R.X = pow(R.X, GammaInv);
+				R.Y = pow(R.Y, GammaInv);
+				R.Z = pow(R.Z, GammaInv);
+
+				C.R = (uint8)ti_round(R.X * S);
+				C.G = (uint8)ti_round(R.Y * S);
+				C.B = (uint8)ti_round(R.Z * S);
+				C.A = (uint8)ti_round(R.W * S);
+				SetPixel(x, y, C);
+			}
 		}
 	}
 }

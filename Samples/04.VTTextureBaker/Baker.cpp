@@ -385,17 +385,30 @@ namespace tix
 					if (bAddBorder)
 					{
 						TImage * PageImageWithBorder = ProcessBorders(TgaImage, SrcRegion, Info, PPSize);
+						if (Info.Srgb)
+						{
+							PageImageWithBorder->ConvertToLinearSpace();
+						}
 						PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
+						if (Info.Srgb)
+						{
+							PageImage->ConvertToSrgbSpace();
+						}
 
 						// debug
-						if (Region.X + x == 0 && (Region.Y + y == 2 || Region.Y + y == 3))
-						{
-							char name0[128], name1[128];
-							sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + x, Region.Y + y);
-							sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + x, Region.Y + y);
-							PageImageWithBorder->SaveToTga(name0);
-							PageImage->SaveToTga(name1);
-						}
+						//if (Region.X + x == 0 && (Region.Y + y == 2 || Region.Y + y == 6))
+						//{
+						//	if (Info.Srgb)
+						//	{
+						//		PageImageWithBorder->ConvertToSrgbSpace();
+						//	}
+						//	char name0[128], name1[128];
+						//	sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + x, Region.Y + y);
+						//	sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + x, Region.Y + y);
+						//	PageImageWithBorder->SaveToTga(name0);
+						//	PageImage->SaveToTga(name1);
+						//}
+						ti_delete PageImageWithBorder;
 					}
 					else
 					{

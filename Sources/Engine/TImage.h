@@ -28,6 +28,9 @@ namespace tix
 		void ClearMipmaps();
 		bool CopyRegionTo(TImage* DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip);
 
+		void ConvertToLinearSpace();
+		void ConvertToSrgbSpace();
+
 		struct TSurfaceData
 		{
 			int32 W, H;
