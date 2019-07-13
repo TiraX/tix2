@@ -33,7 +33,7 @@ namespace tix
 		TVTTextureBaker();
 		~TVTTextureBaker();
 
-		void Bake(const TString& SceneFileName);
+		void Bake(const TString& SceneFileName, const TString& OutputPath);
 
 	private:
 		void LoadTextureFiles(const TString& SceneFileName);
@@ -41,7 +41,7 @@ namespace tix
 		void SortTextures(TList<int32>& OrderArray);
 		void SplitTextures(const TList<int32>& OrderArray);
 		void BakeMipmapsMT();
-		void CompressTextures();
+		void CompressTextures(const TString& SceneName, const TString& OutputPath);
 
 		void ClearAllTextures();
 

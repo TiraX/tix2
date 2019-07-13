@@ -7,6 +7,7 @@
 #include "Baker.h"
 #include "ResMultiThreadTask.h"
 #include "ispc_texcomp.h"
+#include "PlatformUtils.h"
 
 namespace tix
 {
@@ -33,7 +34,7 @@ namespace tix
 		return Result;
 	}
 
-	void TVTTextureBaker::Bake(const TString& SceneFileName)
+	void TVTTextureBaker::Bake(const TString& SceneFileName, const TString& OutputPath)
 	{
 		TIMER_RECORDER("Bake total time");
 		LoadTextureFiles(SceneFileName);
@@ -44,7 +45,10 @@ namespace tix
 		SortTextures(TextureOrders);
 		SplitTextures(TextureOrders);
 		BakeMipmapsMT();
-		CompressTextures();
+
+		size_t Pos = SceneFileName.rfind('.');
+		TString SceneName = SceneFileName.substr(0, Pos);
+		CompressTextures(SceneName, OutputPath);
 
 		OutputAllTextures();
 	}
@@ -638,16 +642,18 @@ namespace tix
 	class TComporessTextureTask : public TResMTTask
 	{
 	public:
-		TComporessTextureTask(TImage * InTgaPage, int32 InMip, int32 InPageX, int32 InPageY)
+		TComporessTextureTask(TImage * InTgaPage, int32 InMip, int32 InPageX, int32 InPageY, const TString& InPath)
 			: TgaPage(InTgaPage)
 			, Mip(InMip)
 			, PageX(InPageX)
 			, PageY(InPageY)
+			, OutputPath(InPath)
 		{}
 
 		TImage * TgaPage;
 		int32 Mip;
 		int32 PageX, PageY;
+		TString OutputPath;
 
 		virtual void Exec() override
 		{
@@ -680,7 +686,7 @@ namespace tix
 
 			// Write raw data
 			char name[128];
-			sprintf_s(name, 128, "%02d_%02d_%02d.page", Mip, PageX, PageY);
+			sprintf_s(name, 128, "%s/%02d_%02d_%02d.page", OutputPath.c_str(), Mip, PageX, PageY);
 			TFile PageFile;
 			if (PageFile.Open(name, EFA_CREATEWRITE))
 			{
@@ -690,9 +696,20 @@ namespace tix
 		}
 	};
 
-	void TVTTextureBaker::CompressTextures()
+	void TVTTextureBaker::CompressTextures(const TString& SceneName, const TString& OutputPath)
 	{
 		TIMER_RECORDER("Compress textures");
+		char EndChar = OutputPath.at(OutputPath.length() - 1);
+		TString OutputFullPath;
+		if (EndChar == '/')
+		{
+			OutputFullPath = OutputPath + SceneName + "_vt";
+		}
+		else
+		{
+			OutputFullPath = OutputPath + "/" + SceneName + "_vt";
+		}
+		CreateDirectoryIfNotExist(OutputFullPath);
 
 		int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
 
@@ -709,7 +726,7 @@ namespace tix
 					int32 PageX = Page.first % RegionSize;
 					int32 PageY = Page.first / RegionSize;
 
-					TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY);
+					TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
 					TResMTTaskExecuter::Get()->AddTask(Task);
 					Tasks.push_back(Task);
 				}

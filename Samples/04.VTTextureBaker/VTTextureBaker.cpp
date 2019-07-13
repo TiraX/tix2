@@ -7,6 +7,7 @@
 #include "Baker.h"
 
 TString SceneNameSrc;
+TString OutputPath;
 
 void ShowUsage()
 {
@@ -46,6 +47,10 @@ bool ParseParams(int argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 			SceneNameSrc = argv[i];
 			//GetPathAndName(FilenameSrc, TResSettings::GlobalSettings.SrcPath, TResSettings::GlobalSettings.SrcName);
 		}
+		else if (OutputPath == (""))
+		{
+			OutputPath = argv[i];
+		}
 	}
 	return true;
 }
@@ -59,7 +64,7 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 	}
 	{
 		TVTTextureBaker Baker;
-		Baker.Bake(SceneNameSrc);
+		Baker.Bake(SceneNameSrc, OutputPath);
 	}
 
     return 0;
