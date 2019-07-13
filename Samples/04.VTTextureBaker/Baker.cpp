@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "Baker.h"
 #include "ResMultiThreadTask.h"
+#include "ispc_texcomp.h"
 
 namespace tix
 {
@@ -43,6 +44,7 @@ namespace tix
 		SortTextures(TextureOrders);
 		SplitTextures(TextureOrders);
 		BakeMipmapsMT();
+		CompressTextures();
 
 		OutputAllTextures();
 	}
@@ -631,6 +633,98 @@ namespace tix
 			}
 		}
 		MipPages.clear();
+	}
+
+	class TComporessTextureTask : public TResMTTask
+	{
+	public:
+		TComporessTextureTask(TImage * InTgaPage, int32 InMip, int32 InPageX, int32 InPageY)
+			: TgaPage(InTgaPage)
+			, Mip(InMip)
+			, PageX(InPageX)
+			, PageY(InPageY)
+		{}
+
+		TImage * TgaPage;
+		int32 Mip;
+		int32 PageX, PageY;
+
+		virtual void Exec() override
+		{
+			E_PIXEL_FORMAT SrcFormat = TgaPage->GetFormat();
+			E_PIXEL_FORMAT DstFormat = EPF_UNKNOWN;
+
+			if (SrcFormat == EPF_RGBA8)
+			{
+				DstFormat = EPF_DDS_DXT5;
+			}
+			else
+			{
+				_LOG(Error, "Un-expected format when compress texture. Mip: %d; PageX: %d; PageY: %d\n", Mip, PageX, PageY);
+				return;
+			}
+			TImage * DxtImage = ti_new TImage(DstFormat, TgaPage->GetWidth(), TgaPage->GetHeight());
+			const TImage::TSurfaceData& MipData = TgaPage->GetMipmap(0);
+			rgba_surface Surface;
+			Surface.ptr = (uint8_t*)MipData.Data.GetBuffer();
+			Surface.width = MipData.W;
+			Surface.height = MipData.H;
+			Surface.stride = MipData.RowPitch;
+
+			uint8_t* Dst = (uint8_t*)DxtImage->GetMipmap(0).Data.GetBuffer();
+			// Call ISPC function to convert
+			if (DstFormat == EPF_DDS_DXT5)
+			{
+				CompressBlocksBC3(&Surface, Dst);
+			}
+
+			// Write raw data
+			char name[128];
+			sprintf_s(name, 128, "%02d_%02d_%02d.page", Mip, PageX, PageY);
+			TFile PageFile;
+			if (PageFile.Open(name, EFA_CREATEWRITE))
+			{
+				PageFile.Write(DxtImage->GetMipmap(0).Data.GetBuffer(), DxtImage->GetMipmap(0).Data.GetLength());
+			}
+			//_LOG(Log, " - Output page: %s\n", name);
+		}
+	};
+
+	void TVTTextureBaker::CompressTextures()
+	{
+		TIMER_RECORDER("Compress textures");
+
+		int32 RegionSize = VTRegion.GetRegionSize() / VTRegion.GetCellSize();
+
+		TVector<TComporessTextureTask*> Tasks;
+
+		for (int32 M = 0; M < (int32)MipPages.size(); ++M)
+		{
+			THMap<int32, TImage*>& Pages = MipPages[M];
+
+			for (auto& Page : Pages)
+			{
+				if (Page.second != nullptr)
+				{
+					int32 PageX = Page.first % RegionSize;
+					int32 PageY = Page.first / RegionSize;
+
+					TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY);
+					TResMTTaskExecuter::Get()->AddTask(Task);
+					Tasks.push_back(Task);
+				}
+			}
+
+			RegionSize /= 2;
+		}
+
+		TResMTTaskExecuter::Get()->StartTasks();
+		TResMTTaskExecuter::Get()->WaitUntilFinished();
+
+		for (auto T : Tasks)
+		{
+			ti_delete T;
+		}
 	}
 
 	void TVTTextureBaker::OutputAllTextures()

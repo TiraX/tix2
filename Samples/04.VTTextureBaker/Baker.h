@@ -41,6 +41,7 @@ namespace tix
 		void SortTextures(TList<int32>& OrderArray);
 		void SplitTextures(const TList<int32>& OrderArray);
 		void BakeMipmapsMT();
+		void CompressTextures();
 
 		void ClearAllTextures();
 
