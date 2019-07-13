@@ -202,22 +202,19 @@ namespace tix
 		// Copy original image to center
 		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
 
+		if (Info.AddressMode != ETC_REPEAT)
+		{
+			TI_ASSERT(0);
+			printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
+		}
+
 		// Left border
 		if (SrcRegion.Left == 0)
 		{
-			// select border by Address mode
-			if (Info.AddressMode == ETC_REPEAT)
-			{
-				recti SrcBorderRegion = SrcRegion;
-				SrcBorderRegion.Left = SizeX - 1;
-				SrcBorderRegion.Right = SizeX;
-				TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-			}
-			else
-			{
-				TI_ASSERT(0);
-				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
-			}
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Left = SizeX - 1;
+			SrcBorderRegion.Right = SizeX;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
 		}
 		else
 		{
@@ -230,19 +227,10 @@ namespace tix
 		// Right border
 		if (SrcRegion.Right == SizeX)
 		{
-			// select border by Address mode
-			if (Info.AddressMode == ETC_REPEAT)
-			{
-				recti SrcBorderRegion = SrcRegion;
-				SrcBorderRegion.Left = 0;
-				SrcBorderRegion.Right = 1;
-				TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-			}
-			else
-			{
-				TI_ASSERT(0);
-				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
-			}
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Left = 0;
+			SrcBorderRegion.Right = 1;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
 		}
 		else
 		{
@@ -255,19 +243,10 @@ namespace tix
 		// Top border
 		if (SrcRegion.Upper == 0)
 		{
-			// select border by Address mode
-			if (Info.AddressMode == ETC_REPEAT)
-			{
-				recti SrcBorderRegion = SrcRegion;
-				SrcBorderRegion.Upper = SrcRegion.Lower - 1;
-				SrcBorderRegion.Lower = SrcRegion.Lower;
-				TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
-			}
-			else
-			{
-				TI_ASSERT(0);
-				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
-			}
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Upper = SizeY - 1;
+			SrcBorderRegion.Lower = SizeY;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
 		}
 		else
 		{
@@ -280,19 +259,10 @@ namespace tix
 		// Bottom border
 		if (SrcRegion.Lower == SizeY)
 		{
-			// select border by Address mode
-			if (Info.AddressMode == ETC_REPEAT)
-			{
-				recti SrcBorderRegion = SrcRegion;
-				SrcBorderRegion.Upper = 0;
-				SrcBorderRegion.Lower = 1;
-				TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
-			}
-			else
-			{
-				TI_ASSERT(0);
-				printf("Error : unsupported address mode for VT. %s\n", Info.Name.c_str());
-			}
+			recti SrcBorderRegion = SrcRegion;
+			SrcBorderRegion.Upper = 0;
+			SrcBorderRegion.Lower = 1;
+			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
 		}
 		else
 		{
@@ -303,6 +273,52 @@ namespace tix
 		}
 
 		// corners
+		int32 SrcX, SrcY;
+		SColor SrcC;
+		{
+			// top left
+			SrcX = SrcRegion.Left - 1;
+			SrcY = SrcRegion.Upper - 1;
+			if (SrcRegion.Left == 0)
+				SrcX = SizeX - 1;
+			if (SrcRegion.Upper == 0)
+				SrcY = SizeY - 1;
+			SrcC = TgaImage->GetPixel(SrcX, SrcY);
+			PageImageWithBorder->SetPixel(0, 0, SrcC);
+		}
+		{
+			// top right
+			SrcX = SrcRegion.Right;
+			SrcY = SrcRegion.Upper - 1;
+			if (SrcRegion.Right == SizeX)
+				SrcX = 0;
+			if (SrcRegion.Upper == 0)
+				SrcY = SizeY - 1;
+			SrcC = TgaImage->GetPixel(SrcX, SrcY);
+			PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, 0, SrcC);
+		}
+		{
+			// bottom left
+			SrcX = SrcRegion.Left - 1;
+			SrcY = SrcRegion.Lower;
+			if (SrcRegion.Left == 0)
+				SrcX = SizeX - 1;
+			if (SrcRegion.Lower == SizeY)
+				SrcY = 0;
+			SrcC = TgaImage->GetPixel(SrcX, SrcY);
+			PageImageWithBorder->SetPixel(0, PPSizeWithBorder - 1, SrcC);
+		}
+		{
+			// bottom right
+			SrcX = SrcRegion.Right;
+			SrcY = SrcRegion.Lower;
+			if (SrcRegion.Right == SizeX)
+				SrcX = 0;
+			if (SrcRegion.Lower == SizeY)
+				SrcY = 0;
+			SrcC = TgaImage->GetPixel(SrcX, SrcY);
+			PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, PPSizeWithBorder - 1, SrcC);
+		}
 
 		return PageImageWithBorder;
 	}
@@ -372,7 +388,7 @@ namespace tix
 						PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
 
 						// debug
-						if (Region.X + x == 0 && Region.Y + y == 2)
+						if (Region.X + x == 0 && (Region.Y + y == 2 || Region.Y + y == 3))
 						{
 							char name0[128], name1[128];
 							sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + x, Region.Y + y);
