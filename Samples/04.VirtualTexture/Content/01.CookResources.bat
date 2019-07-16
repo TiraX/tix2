@@ -22,7 +22,7 @@ for /r . %%i in (*.tjs) do (
   set Source=!B:%CD%\=!
   set Target=!Source:~0,-4!
   echo converting - !Source!
-  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel=1
+  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel
 )
 
 echo copy Config

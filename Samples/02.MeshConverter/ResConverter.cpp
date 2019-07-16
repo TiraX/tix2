@@ -96,11 +96,19 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			}
 			else if (key == "ispccompress")
 			{
-				TResSettings::GlobalSettings.ISPCCompress = (value == "0") ? false : true;
+				TResSettings::GlobalSettings.ISPCCompress = true;
 			}
 			else if (key == "forcealphachannel")
 			{
-				TResSettings::GlobalSettings.ForceAlphaChannel = (value == "0") ? false : true;
+				TResSettings::GlobalSettings.ForceAlphaChannel = true;
+			}
+			else if (key == "ignoretexture")
+			{
+				TResSettings::GlobalSettings.IgnoreTexture = true;
+			}
+			else if (key == "vtinfo")
+			{
+				TResSettings::GlobalSettings.VTInfoFile = value;
 			}
 
 			//if (key == "texture_path")
@@ -174,6 +182,11 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 			}
 			else if (strcmp(type, "texture") == 0)
 			{
+				if (TResSettings::GlobalSettings.IgnoreTexture)
+				{
+					TResMTTaskExecuter::Destroy();
+					return 0;
+				}
 				// Texture
 				TStream& TextureStream = Resfile.GetChunk(ECL_TEXTURES);
 				TResTextureHelper::LoadTextureFile(JsonDoc, TextureStream, Resfile.Strings);

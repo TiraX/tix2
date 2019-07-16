@@ -13,6 +13,8 @@ using namespace rapidjson;
 namespace tix
 {
 	TResSceneHelper::TResSceneHelper()
+		: VTSize(0)
+		, PageSize(0)
 	{
 	}
 
@@ -55,6 +57,41 @@ namespace tix
 			}
 		}
 
+		// Load VT region info
+		if (!TResSettings::GlobalSettings.VTInfoFile.empty())
+		{
+			TFile f;
+			if (f.Open(TResSettings::GlobalSettings.VTInfoFile, EFA_READ))
+			{
+				int8* content = ti_new int8[f.GetSize() + 1];
+				f.Read(content, f.GetSize(), f.GetSize());
+				content[f.GetSize()] = 0;
+				f.Close();
+
+				TJSON JsonDoc;
+				JsonDoc.Parse(content);
+
+				Helper.VTSize = JsonDoc["vt_size"].GetInt();
+				Helper.PageSize = JsonDoc["page_size"].GetInt();
+
+				TJSONNode JRegions = JsonDoc["regions"];
+
+				for (int32 i = 0; i < JRegions.Size(); ++i)
+				{
+					TJSONNode JRegionObject = JRegions[i];
+					TString TextureName = JRegionObject["name"].GetString();
+
+					TJSONNode JRegion = JRegionObject["region"];
+					TVTRegionInfo Info;
+					Info.X = JRegion[0].GetInt();
+					Info.Y = JRegion[1].GetInt();
+					Info.W = JRegion[2].GetInt();
+					Info.H = JRegion[3].GetInt();
+					Helper.VTRegionInfo[TextureName] = Info;
+				}
+			}
+		}
+
 		// Load asset list
 		{
 			TJSONNode JAssetList = Doc["dependency"];
@@ -70,6 +107,8 @@ namespace tix
 				TJSONNode JTexture = JAssetTextures[i];
 				Helper.AssetTextures.push_back(JTexture.GetString());
 			}
+			TI_ASSERT(Helper.AssetTextures.size() == Helper.VTRegionInfo.size());
+
 			Helper.AssetMaterials.reserve(JAssetMaterials.Size());
 			for (int32 i = 0; i < JAssetMaterials.Size(); ++i)
 			{
@@ -136,6 +175,13 @@ namespace tix
 			{
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : AssetTextures)
+			{
+				TI_ASSERT(VTRegionInfo.find(A) != VTRegionInfo.end());
+				const TVTRegionInfo& Info = VTRegionInfo[A];
+				uint32 InfoValue = Info.Value;
+				DataStream.Put(&InfoValue, sizeof(uint32));
 			}
 			for (const auto& A : AssetMaterials)
 			{

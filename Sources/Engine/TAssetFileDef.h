@@ -231,6 +231,26 @@ namespace tix
 		int32 NumMaterialInstances;
 		int32 NumMeshes;
 		int32 NumInstances;
+
+		// VT Info
+		int32 VTSize;
+		int32 PageSize;
+	};
+
+	struct TVTRegionInfo
+	{
+		union
+		{
+			struct 
+			{
+				int32 X : 10;
+				int32 Y : 10;
+				int32 W : 6;
+				int32 H : 6;
+
+			};
+			uint32 Value;
+		};
 	};
 
 	struct THeaderCameraInfo

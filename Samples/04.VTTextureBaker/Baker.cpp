@@ -176,10 +176,12 @@ namespace tix
 			size_t TgaPos = Info.Name.find(".tga");
 			if (TgaPos != TString::npos)
 			{
+				TexName = TexName.substr(0, TgaPos);
+				TexName += ".tasset";
 			}
 
 			ss_json << "\t\t{\n";
-			ss_json << "\t\t\t\"name\" : \"" << Info.Name << "\",\n";
+			ss_json << "\t\t\t\"name\" : \"" << TexName << "\",\n";
 			ss_json << "\t\t\t\"region\" : [" << Region.X << ", " << Region.Y << ", " << Region.X + Region.Z << ", " << Region.Y + Region.W << "]\n";
 			ss_json << "\t\t}";
 			if (i != TotalTex - 1)

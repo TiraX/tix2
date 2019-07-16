@@ -502,7 +502,8 @@ namespace tix
 
 			// Load assets names
 			const int32* AssetsTextures = (const int32*)(SceneDataStart + sizeof(THeaderCameraInfo) * Header->NumCameras);
-			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
+			const uint32* TextureVTInfos = (const uint32*)(AssetsTextures + Header->NumTextures);
+			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures * 2;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
 			const int32* AssetsInstances = AssetsMeshes + Header->NumMeshes;

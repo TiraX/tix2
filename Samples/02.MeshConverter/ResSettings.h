@@ -12,10 +12,13 @@ public:
 	TResSettings()
 		: ISPCCompress(true)
 		, ForceAlphaChannel(false)
+		, IgnoreTexture(false)
 	{}
 
 	TString SrcPath;
 	TString SrcName;
 	bool ISPCCompress;
 	bool ForceAlphaChannel;
+	bool IgnoreTexture;
+	TString VTInfoFile;
 };

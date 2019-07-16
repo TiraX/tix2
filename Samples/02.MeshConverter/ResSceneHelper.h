@@ -57,10 +57,14 @@ namespace tix
 		TSceneEnvironment Environment;
 		TVector<THeaderCameraInfo> Cameras;
 
+		int32 VTSize;
+		int32 PageSize;
+
 		TVector<TString> AssetTextures;
 		TVector<TString> AssetMaterialInstances;
 		TVector<TString> AssetMaterials;
 		TVector<TString> AssetMeshes;
 		TVector<TString> AssetInstances;
+		THMap<TString, TVTRegionInfo> VTRegionInfo;
 	};
 }
