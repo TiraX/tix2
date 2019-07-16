@@ -34,10 +34,15 @@ namespace tix
 		return Result;
 	}
 
-	void TVTTextureBaker::Bake(const TString& SceneFileName, const TString& OutputPath)
+	void TVTTextureBaker::Bake(const TString& InSceneFileName, const TString& InOutputPath)
 	{
 		TIMER_RECORDER("Bake total time");
-		LoadTextureFiles(SceneFileName);
+
+		size_t Pos = InSceneFileName.rfind('.');
+		SceneFileName = InSceneFileName.substr(0, Pos);
+		OutputPath = InOutputPath;
+
+		LoadTextureFiles(InSceneFileName);
 
 		AddTexturesToVTRegion();
 
@@ -46,11 +51,9 @@ namespace tix
 		SplitTextures(TextureOrders);
 		BakeMipmapsMT();
 
-		size_t Pos = SceneFileName.rfind('.');
-		TString SceneName = SceneFileName.substr(0, Pos);
-		CompressTextures(SceneName, OutputPath);
+		CompressTextures();
 
-		OutputAllTextures();
+		OutputDebugTextures();
 	}
 
 	void TVTTextureBaker::LoadTextureFiles(const TString& SceneFileName)
@@ -153,6 +156,49 @@ namespace tix
 			int32 y = RegionIndex / ITSize;
 			TextureRegionInVT.push_back(vector4di(x, y, Region->XCount, Region->YCount));
 			//InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
+		}
+
+		// Export region info to json
+		stringstream ss_json;
+		ss_json << "{\n";
+		ss_json << "\t\"scene_name\": \"" << SceneFileName << "\", \n";
+		ss_json << "\t\"type\": \"scene_vt_regions\", \n";
+		ss_json << "\t\"vt_size\": " << VTSize << ", \n";
+		ss_json << "\t\"page_size\": " << PPSize << ", \n";
+		ss_json << "\t\"regions\": [\n";
+		const int32 TotalTex = (int32)TextureInfos.size();
+		for (int32 i = 0 ; i < TotalTex ; ++ i)
+		{
+			const TVTTextureBasicInfo& Info = TextureInfos[i];
+			const vector4di& Region = TextureRegionInVT[i];
+
+			TString TexName = Info.Name;
+			size_t TgaPos = Info.Name.find(".tga");
+			if (TgaPos != TString::npos)
+			{
+			}
+
+			ss_json << "\t\t{\n";
+			ss_json << "\t\t\t\"name\" : \"" << Info.Name << "\",\n";
+			ss_json << "\t\t\t\"region\" : [" << Region.X << ", " << Region.Y << ", " << Region.X + Region.Z << ", " << Region.Y + Region.W << "]\n";
+			ss_json << "\t\t}";
+			if (i != TotalTex - 1)
+				ss_json << ",\n";
+			else
+				ss_json << "\n";
+		}
+		ss_json << "\t]\n";
+		ss_json << "}";
+
+		// Save json file
+		{
+			TString JsonFileName = SceneFileName + "_vt.tjs";
+			TString JsonContent = ss_json.str();
+			TFile FileJson;
+			if (FileJson.Open(JsonFileName, EFA_CREATEWRITE))
+			{
+				FileJson.Write(JsonContent.c_str(), (int32)JsonContent.size());
+			}
 		}
 	}
 
@@ -696,18 +742,18 @@ namespace tix
 		}
 	};
 
-	void TVTTextureBaker::CompressTextures(const TString& SceneName, const TString& OutputPath)
+	void TVTTextureBaker::CompressTextures()
 	{
 		TIMER_RECORDER("Compress textures");
 		char EndChar = OutputPath.at(OutputPath.length() - 1);
 		TString OutputFullPath;
 		if (EndChar == '/')
 		{
-			OutputFullPath = OutputPath + SceneName + "_vt";
+			OutputFullPath = OutputPath + SceneFileName + "_vt";
 		}
 		else
 		{
-			OutputFullPath = OutputPath + "/" + SceneName + "_vt";
+			OutputFullPath = OutputPath + "/" + SceneFileName + "_vt";
 		}
 		CreateDirectoryIfNotExist(OutputFullPath);
 
@@ -744,7 +790,7 @@ namespace tix
 		}
 	}
 
-	void TVTTextureBaker::OutputAllTextures()
+	void TVTTextureBaker::OutputDebugTextures()
 	{
 		TIMER_RECORDER("Output debug textures");
 		bool DebugOutputAllPages = !true;

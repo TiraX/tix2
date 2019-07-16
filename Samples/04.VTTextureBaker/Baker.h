@@ -33,7 +33,7 @@ namespace tix
 		TVTTextureBaker();
 		~TVTTextureBaker();
 
-		void Bake(const TString& SceneFileName, const TString& OutputPath);
+		void Bake(const TString& InSceneFileName, const TString& InOutputPath);
 
 	private:
 		void LoadTextureFiles(const TString& SceneFileName);
@@ -41,11 +41,11 @@ namespace tix
 		void SortTextures(TList<int32>& OrderArray);
 		void SplitTextures(const TList<int32>& OrderArray);
 		void BakeMipmapsMT();
-		void CompressTextures(const TString& SceneName, const TString& OutputPath);
+		void CompressTextures();
 
 		void ClearAllTextures();
 
-		void OutputAllTextures();
+		void OutputDebugTextures();
 
 	private:
 		TRegion VTRegion;
@@ -53,5 +53,8 @@ namespace tix
 		TVector<TVTTextureBasicInfo> TextureInfos;
 		TVector<vector4di> TextureRegionInVT;
 		TVector<THMap<int32, TImage*> > MipPages;
+
+		TString SceneFileName;
+		TString OutputPath;
 	};
 }
