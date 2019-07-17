@@ -11,6 +11,8 @@ TString OutputPath;
 
 bool bDumpAllPages = false;
 bool bDumpAllVTs = false;
+int32 InputVTSize = -1;
+int32 InputPPSize = -1;
 
 void ShowUsage()
 {
@@ -48,6 +50,14 @@ bool ParseParams(int argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 			{
 				bDumpAllVTs = true;
 			}
+			else if (key == "VTSize")
+			{
+				InputVTSize = atoi(value.c_str());
+			}
+			else if (key == "PPSize")
+			{
+				InputPPSize = atoi(value.c_str());
+			}
 		}
 		else if (SceneNameSrc == (""))
 		{
@@ -73,6 +83,14 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 		TVTTextureBaker Baker;
 		Baker.bDumpAllPages = bDumpAllPages;
 		Baker.bDumpAllVTs = bDumpAllVTs;
+		if (InputVTSize > 0)
+		{
+			Baker.VTSize = InputVTSize;
+		}
+		if (InputPPSize > 0)
+		{
+			Baker.PPSize = InputPPSize;
+		}
 		Baker.Bake(SceneNameSrc, OutputPath);
 	}
 

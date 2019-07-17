@@ -16,6 +16,8 @@ namespace tix
 	TVTTextureBaker::TVTTextureBaker()
 		: bDumpAllPages(false)
 		, bDumpAllVTs(false)
+		, VTSize(16 * 1024)
+		, PPSize(256)
 	{
 		TResMTTaskExecuter::Create();
 	}
@@ -135,7 +137,8 @@ namespace tix
 			Area += Info.Size.X * Info.Size.Y;
 		}
 		double MinLength = sqrt(Area);
-		int32 VTSize = PickSize(MinLength);
+		int32 SuggestVTSize = PickSize(MinLength);
+		_LOG(Log, "Suitable VT Size : %d; Actual VT Size %d\n", SuggestVTSize, VTSize);
 		int32 ITSize = VTSize / PPSize;
 
 		// Init regions

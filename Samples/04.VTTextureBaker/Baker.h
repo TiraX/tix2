@@ -10,16 +10,15 @@ namespace tix
 	class TVTTextureBaker
 	{
 	public:
+		bool bDumpAllPages;
+		bool bDumpAllVTs;
+
 		// Virtual texture size
-		//static const int32 VTSize = 64 * 1024;
+		int32 VTSize;
 		// Physical page size
-		static const int32 PPSize = 256;
+		int32 PPSize;
 		// Indirection texture size
 		//static const int32 ITSize = VTSize / PPSize;
-
-		static const int32 PhysicAtlasSize = 20;
-		// Physical page count
-		static const int32 PPCount = PhysicAtlasSize * PhysicAtlasSize;
 
 		struct TVTTextureBasicInfo
 		{
@@ -34,10 +33,6 @@ namespace tix
 		~TVTTextureBaker();
 
 		void Bake(const TString& InSceneFileName, const TString& InOutputPath);
-
-	public:
-		bool bDumpAllPages;
-		bool bDumpAllVTs;
 
 	private:
 		void LoadTextureFiles(const TString& SceneFileName);

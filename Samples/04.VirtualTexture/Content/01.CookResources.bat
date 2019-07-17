@@ -23,13 +23,13 @@ for /r . %%i in (*.tjs) do (
   set Source=!B:%CD%\=!
   set Target=!Source:~0,-4!
   echo converting - !Source!
-  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel -IgnoreTexture
+  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel
 )
 
-rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllPages
-%VTBaker% showcase_01.tjs Cooked/Windows
+rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllPages -VTSize=16384 -PPSize=256
+%VTBaker% showcase_03.tjs Cooked/Windows -DumpAllVTs 
 rem Convert scene file again with vt_info
-%Converter% showcase_01.tjs Cooked\Windows\showcase_01.tasset -VTInfo=showcase_01_vt.tjs
+%Converter% showcase_03.tjs Cooked\Windows\showcase_03.tasset -VTInfo=showcase_03_vt.tjs
 
 echo copy Config
 pushd "Cooked\Windows"
