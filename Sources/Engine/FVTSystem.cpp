@@ -50,7 +50,7 @@ namespace tix
 		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture);
 
 		// Create physic texture atlas
-		Desc.Format = EPF_DDS_DXT5_SRGB;
+		Desc.Format = PageFormat;
 		Desc.Width = PhysicAtlasSize * PPSize;
 		Desc.Height = PhysicAtlasSize * PPSize;
 		Desc.SRGB = 1;
@@ -74,6 +74,13 @@ namespace tix
 		IndirectTextureData = nullptr;
 	}
 
+#if VT_PRELOADED_REGIONS
+	void FVTSystem::InitLoadedTextureRegion(const TString& TextureName, const vector4di& Region)
+	{
+		LoadedRegionInfos[TextureName] = Region;
+	}
+#endif
+
 	uint32 FVTSystem::GetPrimitiveTextureHash(FPrimitivePtr InPrimitive)
 	{
 		const TVector<TString>& TextureNames = InPrimitive->GetArgumentBuffer()->GetTextureNames();
@@ -95,6 +102,7 @@ namespace tix
 		if (TextureSizes.size() == 0)
 			return;
 
+#if !(VT_PRELOADED_REGIONS)
 		uint32 TexturesHash = GetPrimitiveTextureHash(InPrimitive);
 		uint32 RegionIndex = uint32(-1);
 		TRegion::TRegionDesc* Region = nullptr;
@@ -128,26 +136,46 @@ namespace tix
 			TexturesInVT[RegionIndex] = FTextureInfo(TextureNames[0], vector2du16(TextureSizes[0].X, TextureSizes[0].Y));
 
 			// Mark texture info in this region
-			MarkRegion(RegionIndex, Region);
+			MarkRegion(RegionIndex, Region->XCount, Region->YCount);
 		}
 
 		TI_ASSERT(RegionIndex != uint32(-1));
 
-		int32 x = RegionIndex % ITSize;
-		int32 y = RegionIndex / ITSize;
-		InPrimitive->SetUVTransform(x * UVInv, y * UVInv, Region->XCount * UVInv, Region->YCount * UVInv);
-		InPrimitive->SetVTDebugInfo((float)x, (float)y + 1.f, (float)Region->XCount, (float)Region->YCount);
+		int32 X = RegionIndex % ITSize;
+		int32 Y = RegionIndex / ITSize;
+		int32 W = Region->XCount;
+		int32 H = Region->YCount;
+#else
+		TI_ASSERT(LoadedRegionInfos.find(TextureNames[0]) != LoadedRegionInfos.end());
+		const vector4di& LoadedRegion = LoadedRegionInfos[TextureNames[0]];
+		int32 X = LoadedRegion.X;
+		int32 Y = LoadedRegion.Y;
+		int32 W = LoadedRegion.Z;
+		int32 H = LoadedRegion.W;
+		TI_ASSERT(W >= 0 && W <= 8 && H >= 0 && H <= 8);
+		TI_TODO("RegionData and TexturesInVT is debug info in VT_PRELOADED_REGIONS mode. remove them.");
+		int32 RegionIndex = Y * ITSize + X;
+		MarkRegion(RegionIndex, W, H);
+		// Add texture info
+		if (TexturesInVT.find(RegionIndex) == TexturesInVT.end())
+		{
+			TexturesInVT[RegionIndex] = FTextureInfo(TextureNames[0], vector2du16(TextureSizes[0].X, TextureSizes[0].Y));
+		}
+#endif
+
+		InPrimitive->SetUVTransform(X * UVInv, Y * UVInv, W * UVInv, H * UVInv);
+		InPrimitive->SetVTDebugInfo((float)X, (float)Y + 1.f, (float)W, (float)H);
 		//InPrimitive->SetVTDebugInfo(0.f, 1.f, 0.f, 0.f);
 	}
 
-	void FVTSystem::MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion)
+	void FVTSystem::MarkRegion(uint32 InRegionIndex, int32 W, int32 H)
 	{
 		int32 Index = InRegionIndex;
-		for (int32 y = 0 ; y < InRegion->YCount ; ++ y)
+		for (int32 y = 0 ; y < H ; ++ y)
 		{
-			for (int32 x = 0 ; x < InRegion->XCount ; ++ x)
+			for (int32 x = 0 ; x < W ; ++ x)
 			{
-				TI_ASSERT(RegionData[Index + x] < 0);
+				TI_ASSERT(RegionData[Index + x] < 0 || RegionData[Index + x] == InRegionIndex);
 				RegionData[Index + x] = (int32)InRegionIndex;
 			}
 			Index += ITSize;

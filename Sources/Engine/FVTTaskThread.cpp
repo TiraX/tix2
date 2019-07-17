@@ -74,6 +74,7 @@ namespace tix
 		BufferMutex.unlock();
 	}
 
+#if !VT_PRELOADED_REGIONS
 	struct FSortTask
 	{
 		FSortTask(THMap<uint32, FVTSystem::FPageLoadInfo>& InTasks)
@@ -87,6 +88,7 @@ namespace tix
 			return LoadTasks[A] < LoadTasks[B];
 		}
 	};
+#endif
 
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
@@ -155,11 +157,19 @@ namespace tix
 
 			// Get Texture load info, add to load task
 			TI_ASSERT(VTLoadTasks->find(PageIndex) == VTLoadTasks->end());
+#if VT_PRELOADED_REGIONS
+			FVTSystem::FPageLoadInfo PageLoadInfo;
+			PageLoadInfo.PageIndex = PageIndex;
+			PageLoadInfo.AtlasLocation = Location;
+			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
+			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
+#else
 			FVTSystem::FPageLoadInfo PageLoadInfo;
 			PageLoadInfo.AtlasLocation = Location;
 			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
 			VTTaskOrder->push_back(PageIndex);
 			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
+#endif
 
 			// Remember this location's page
 			PhysicPageTextures[Location] = PageIndex;
@@ -168,10 +178,12 @@ namespace tix
 			PhysicPagesMap[PageIndex] = Location;
 		}
 
-		if (VTTaskOrder->size() > 0)
+		if (VTLoadTasks->size() > 0)
 		{
+#if !VT_PRELOADED_REGIONS
 			// Sort, make IO more efficient
 			VTTaskOrder->sort(FSortTask(*VTLoadTasks));
+#endif
 
 			// Send to Loading thread
 			VTLoadingThread->AddLoadingTasks(VTTaskOrder, VTLoadTasks);
@@ -195,14 +207,6 @@ namespace tix
 		int32 Result = SearchedLocation;
 		SearchedLocation = (SearchedLocation + 1) % FVTSystem::PPCount;
 		return Result;
-	}
-
-	void FVTAnalysisThread::OutputDebugTasks(FVTTaskOrderList& VTTaskOrder, FVTLoadTaskMap& VTLoadTasks)
-	{
-		for (auto& i : VTTaskOrder)
-		{
-			_LOG(Log, "[%4d, %4d] %s.\n", VTLoadTasks[i].PageStart.X, VTLoadTasks[i].PageStart.Y, VTLoadTasks[i].TextureName.c_str());
-		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -259,8 +263,25 @@ namespace tix
 			TaskMutex.unlock();
 		}
 
-		const int32 Size = (int32)VTTaskOrdersCopy.size();
+#if VT_PRELOADED_REGIONS
+		const int32 Size = (int32)VTLoadTaskInfosCopy.size();
+		for (int32 i = 0; i < Size; ++i)
+		{
+			FVTAnalysisThread::FVTTaskOrderList* TaskList = VTTaskOrdersCopy[i];
+			FVTAnalysisThread::FVTLoadTaskMap* TaskMap = VTLoadTaskInfosCopy[i];
+			for (auto& t : *TaskMap)
+			{
+				FVTLoadingTask Task;
+				Task.PageIndex = t.first;
+				Task.AtlasLocation = t.second.AtlasLocation;
+				VTLoadingTasks.push_back(Task);
+			}
+			ti_delete TaskList;
+			ti_delete TaskMap;
+		}
+#else
 		FVTLoadingTask Task;
+		const int32 Size = (int32)VTLoadTaskInfosCopy.size();
 		for (int32 i = 0; i < Size; ++i)
 		{
 			FVTAnalysisThread::FVTTaskOrderList* TaskList = VTTaskOrdersCopy[i];
@@ -288,11 +309,29 @@ namespace tix
 			ti_delete TaskList;
 			ti_delete TaskMap;
 		}
+#endif
 		_LOG(Log, "%d VT Task collected.\n", VTLoadingTasks.size());
 	}
 
 	void FVTLoadingThread::DoLoadingTasks()
 	{
+#if VT_PRELOADED_REGIONS
+		FVTLoadingTask Task = VTLoadingTasks.front();
+		VTLoadingTasks.pop_front();
+
+		int32 PageX = Task.PageIndex % FVTSystem::ITSize;
+		int32 PageY = Task.PageIndex / FVTSystem::ITSize;
+
+		TTexturePtr Texture = TVTTextureLoader::LoadBakedVTPages(0, PageX, PageY);
+		// Send to render thread to init render resource of this texture
+		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTAddLoadedPages,
+			uint32, PageIndex, Task.PageIndex,
+			uint32, AtlasLocation, Task.AtlasLocation,
+			TTexturePtr, TextureData, Texture,
+			{
+				FVTSystem::Get()->AddVTPageData(PageIndex, AtlasLocation, TextureData);
+			});
+#else
 		FVTLoadingTask Task = VTLoadingTasks.front();
 		VTLoadingTasks.pop_front();
 
@@ -317,6 +356,6 @@ namespace tix
 					FVTSystem::Get()->AddVTPageData(PageIndex, AtlasLocation, TextureData);
 				});
 		}
-		
+#endif
 	}
 }

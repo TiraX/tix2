@@ -85,3 +85,7 @@ void * operator new (std::size_t count);
 #	define TI_API
 #endif
 
+
+// FOR DEBUGS
+
+#define VT_PRELOADED_REGIONS (1)

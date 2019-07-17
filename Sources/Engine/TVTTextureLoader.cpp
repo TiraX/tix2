@@ -110,4 +110,41 @@ namespace tix
 		}
 		return Texture;
 	}
+
+	TTexturePtr TVTTextureLoader::LoadBakedVTPages(int32 Mip, int32 PageX, int32 PageY)
+	{
+		TTextureDesc TextureDesc;
+		TextureDesc.Type = ETT_TEXTURE_2D;
+		TextureDesc.Format = FVTSystem::PageFormat;
+		TextureDesc.Width = FVTSystem::PPSize;
+		TextureDesc.Height = FVTSystem::PPSize;
+		TextureDesc.AddressMode = ETC_REPEAT;
+		TextureDesc.SRGB = 1;
+		TextureDesc.Mips = 1;
+
+		int8 TextureName[128];
+		sprintf_s(TextureName, 128, "vt_pages/%02d_%02d_%02d.page", Mip, PageX, PageY);
+		TFile F;
+		if (F.Open(TextureName, EFA_READ))
+		{
+			TTexturePtr Texture = ti_new TTexture(TextureDesc);
+			
+			int32 Size = TImage::GetDataSize(FVTSystem::PageFormat, FVTSystem::PPSize, FVTSystem::PPSize);
+			int32 RowPitch = TImage::GetRowPitch(FVTSystem::PageFormat, FVTSystem::PPSize);
+			TI_ASSERT(Size == F.GetSize());
+
+			uint8* Buffer = ti_new uint8[Size];
+			F.Read(Buffer, Size, Size);
+			Texture->AddSurface(FVTSystem::PPSize, FVTSystem::PPSize, Buffer, RowPitch, Size);
+			ti_delete Buffer;
+
+			return Texture;
+		}
+		else
+		{
+			_LOG(Error, "Failed to load Page : %s\n", TextureName);
+			TI_ASSERT(0);
+			return nullptr;
+		}
+	}
 }

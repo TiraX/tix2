@@ -9,6 +9,9 @@
 TString SceneNameSrc;
 TString OutputPath;
 
+bool bDumpAllPages = false;
+bool bDumpAllVTs = false;
+
 void ShowUsage()
 {
 }
@@ -37,10 +40,14 @@ bool ParseParams(int argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 			//tolower(key);
 			//tolower(value);
 
-			//if (key == "texture_path")
-			//{
-			//	_config.TexturePath = value;
-			//}
+			if (key == "DumpAllPages")
+			{
+				bDumpAllPages = true;
+			}
+			else if (key == "DumpAllVTs")
+			{
+				bDumpAllVTs = true;
+			}
 		}
 		else if (SceneNameSrc == (""))
 		{
@@ -64,6 +71,8 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 	}
 	{
 		TVTTextureBaker Baker;
+		Baker.bDumpAllPages = bDumpAllPages;
+		Baker.bDumpAllVTs = bDumpAllVTs;
 		Baker.Bake(SceneNameSrc, OutputPath);
 	}
 

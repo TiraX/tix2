@@ -94,10 +94,6 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			{
 				bShowExample = true;
 			}
-			else if (key == "ispccompress")
-			{
-				TResSettings::GlobalSettings.ISPCCompress = true;
-			}
 			else if (key == "forcealphachannel")
 			{
 				TResSettings::GlobalSettings.ForceAlphaChannel = true;

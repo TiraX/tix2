@@ -178,9 +178,12 @@ namespace tix
 			}
 			for (const auto& A : AssetTextures)
 			{
-				TI_ASSERT(VTRegionInfo.find(A) != VTRegionInfo.end());
-				const TVTRegionInfo& Info = VTRegionInfo[A];
-				uint32 InfoValue = Info.Value;
+				uint32 InfoValue = 0;
+				if (VTRegionInfo.find(A) != VTRegionInfo.end())
+				{
+					const TVTRegionInfo& Info = VTRegionInfo[A];
+					InfoValue = Info.Value;
+				}
 				DataStream.Put(&InfoValue, sizeof(uint32));
 			}
 			for (const auto& A : AssetMaterials)

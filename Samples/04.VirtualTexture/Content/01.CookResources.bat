@@ -6,6 +6,7 @@ set CurrPath=%CD%
 set BinaryPath=%CurrPath%\..\..\..\Binary\Windows
 set path=%path%;%BinaryPath%
 set Converter=%BinaryPath%\02.ResConverter.exe
+set VTBaker=%BinaryPath%\04.VTTextureBaker.exe
 
 if not exist "Cooked" (
 	mkdir Cooked
@@ -22,8 +23,13 @@ for /r . %%i in (*.tjs) do (
   set Source=!B:%CD%\=!
   set Target=!Source:~0,-4!
   echo converting - !Source!
-  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel
+  %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel -IgnoreTexture
 )
+
+rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllPages
+%VTBaker% showcase_01.tjs Cooked/Windows
+rem Convert scene file again with vt_info
+%Converter% showcase_01.tjs Cooked\Windows\showcase_01.tasset -VTInfo=showcase_01_vt.tjs
 
 echo copy Config
 pushd "Cooked\Windows"

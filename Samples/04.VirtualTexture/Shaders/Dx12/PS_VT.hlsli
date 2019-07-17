@@ -23,9 +23,9 @@ SamplerState LinearSampler : register(s1);
 
 float4 GetBaseColor(in float2 texcoord)
 {
-	const int VTSize = 64 * 1024;
+	const int VTSize = 16 * 1024;
 	const int PPSize = 256;
-	const int PhysicAtlasSize = 20;
+	const int PhysicAtlasSize = 32;
 	const float PAInv = 1.0 / PhysicAtlasSize;
 
 	float2 VTCoord = frac(texcoord) * VTUVTransform.zw + VTUVTransform.xy;

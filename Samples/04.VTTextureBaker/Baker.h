@@ -35,6 +35,10 @@ namespace tix
 
 		void Bake(const TString& InSceneFileName, const TString& InOutputPath);
 
+	public:
+		bool bDumpAllPages;
+		bool bDumpAllVTs;
+
 	private:
 		void LoadTextureFiles(const TString& SceneFileName);
 		void AddTexturesToVTRegion();

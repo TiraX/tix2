@@ -14,6 +14,8 @@ namespace tix
 	static const bool bAddBorder = true;
 	static const int32 BorderWidth = 1;
 	TVTTextureBaker::TVTTextureBaker()
+		: bDumpAllPages(false)
+		, bDumpAllVTs(false)
 	{
 		TResMTTaskExecuter::Create();
 	}
@@ -182,7 +184,7 @@ namespace tix
 
 			ss_json << "\t\t{\n";
 			ss_json << "\t\t\t\"name\" : \"" << TexName << "\",\n";
-			ss_json << "\t\t\t\"region\" : [" << Region.X << ", " << Region.Y << ", " << Region.X + Region.Z << ", " << Region.Y + Region.W << "]\n";
+			ss_json << "\t\t\t\"region\" : [" << Region.X << ", " << Region.Y << ", " << Region.Z << ", " << Region.W << "]\n";
 			ss_json << "\t\t}";
 			if (i != TotalTex - 1)
 				ss_json << ",\n";
@@ -751,11 +753,11 @@ namespace tix
 		TString OutputFullPath;
 		if (EndChar == '/')
 		{
-			OutputFullPath = OutputPath + SceneFileName + "_vt";
+			OutputFullPath = OutputPath + "vt_pages";
 		}
 		else
 		{
-			OutputFullPath = OutputPath + "/" + SceneFileName + "_vt";
+			OutputFullPath = OutputPath + "/" + "vt_pages";
 		}
 		CreateDirectoryIfNotExist(OutputFullPath);
 
@@ -795,8 +797,8 @@ namespace tix
 	void TVTTextureBaker::OutputDebugTextures()
 	{
 		TIMER_RECORDER("Output debug textures");
-		bool DebugOutputAllPages = !true;
-		bool DebugOutputVTMips = !true;
+		bool DebugOutputAllPages = bDumpAllPages;
+		bool DebugOutputVTMips = bDumpAllVTs;
 
 		if (DebugOutputAllPages)
 		{
@@ -845,6 +847,20 @@ namespace tix
 					{
 						int32 PageX = Page.first % RegionSize;
 						int32 PageY = Page.first / RegionSize;
+
+						// Add Border to page image
+						SColor PinkC(255, 255, 0, 255);
+						for (int32 i = 0 ; i < PPSize ; ++ i)
+						{
+							Page.second->SetPixel(i, 0, PinkC);
+							Page.second->SetPixel(i, PPSize - 1, PinkC);
+							Page.second->SetPixel(i, 1, PinkC);
+							Page.second->SetPixel(i, PPSize - 2, PinkC);
+							Page.second->SetPixel(0, i, PinkC);
+							Page.second->SetPixel(PPSize - 1, i, PinkC);
+							Page.second->SetPixel(1, i, PinkC);
+							Page.second->SetPixel(PPSize - 2, i, PinkC);
+						}
 
 						Page.second->CopyRegionTo(VTMip, recti(PageX * PPSize, PageY * PPSize, PageX * PPSize + PPSize, PageY * PPSize + PPSize), 0, recti(0, 0, PPSize, PPSize), 0);
 					}

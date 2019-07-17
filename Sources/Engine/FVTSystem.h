@@ -16,17 +16,24 @@ namespace tix
 	{
 	public:
 		// Virtual texture size
-		static const int32 VTSize = 64 * 1024;
+		static const int32 VTSize = 16 * 1024;
 		// Physical page size
 		static const int32 PPSize = 256;
 		// Indirection texture size
 		static const int32 ITSize = VTSize / PPSize;
 
-		static const int32 PhysicAtlasSize = 20;
+		static const int32 PhysicAtlasSize = 32;
 		// Physical page count
 		static const int32 PPCount = PhysicAtlasSize * PhysicAtlasSize;
 
 		static const float UVInv;
+#if defined (TI_PLATFORM_WIN32)
+		static const E_PIXEL_FORMAT PageFormat = EPF_DDS_DXT5_SRGB;
+#elif defined (TI_PLATFORM_IOS)
+		static const E_PIXEL_FORMAT PageFormat = EPF_ASTC4x4;
+#else
+#error("do not support other platforms yet.")
+#endif
 
 		static TI_API bool IsEnabled()
 		{
@@ -45,6 +52,10 @@ namespace tix
 			return VTAnalysisThread;
 		}
 
+#if VT_PRELOADED_REGIONS
+		void InitLoadedTextureRegion(const TString& TextureName, const vector4di& Region);
+#endif
+
 		void AllocatePositionForPrimitive(FPrimitivePtr InPrimitive);
 		void RemovePositionForPrimitive(FPrimitivePtr InPrimitive);
 
@@ -60,6 +71,7 @@ namespace tix
 			TString TextureName;
 			//vector2du16 TextureSize;	// No use of this Size, can be removed.
 			vector2du16 PageStart;
+
 			uint32 PageIndex;	// Index in virtual texture
 			uint32 AtlasLocation;	// Location in physic page atlas
 			
@@ -103,19 +115,24 @@ namespace tix
 			uint32 AtlasLocation;	// Location in physic page atlas
 			TTexturePtr TextureData;	// Data loaded
 		};
+
 		void GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo);
 		void AddVTPageData(uint32 PageIndex, uint32 AtlasLocation, TTexturePtr TextureData);
 		void OutputDebugInfo();
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
-		void MarkRegion(uint32 InRegionIndex, TRegion::TRegionDesc * InRegion);
+		void MarkRegion(uint32 InRegionIndex, int32 W, int32 H);
 
 	private:
 		static const bool Enabled;
 		static FVTSystem * VTSystem;
 
 		FVTAnalysisThread * VTAnalysisThread;
+
+#if VT_PRELOADED_REGIONS
+		THMap<TString, vector4di> LoadedRegionInfos;
+#endif
 
 		TRegion VTRegion;
 		struct FRegionInfo

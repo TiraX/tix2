@@ -511,7 +511,22 @@ namespace tix
 			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
 			// Textures
-			if (!FVTSystem::IsEnabled())
+			if (FVTSystem::IsEnabled())
+			{
+#if VT_PRELOADED_REGIONS
+				// Load VT Info
+				for (int32 t = 0; t < Header->NumTextures; ++t)
+				{
+					TString TextureName = GetString(AssetsTextures[t]);
+					//AssetLib->LoadAssetAysc(TextureName);
+
+					TVTRegionInfo Info;
+					Info.Value = TextureVTInfos[t];
+					FVTSystem::Get()->InitLoadedTextureRegion(TextureName, vector4di(Info.X, Info.Y, Info.W, Info.H));
+				}
+#endif
+			}
+			else
 			{
 				// Virtual texture delay load texture
 				for (int32 t = 0; t < Header->NumTextures; ++t)

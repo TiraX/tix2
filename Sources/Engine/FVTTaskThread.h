@@ -24,7 +24,6 @@ namespace tix
 	protected:
 		void AnalysisBuffer();
 		int32 FindAvailbleLocation(const THMap<uint32, uint32>& UsedLocations);
-		void OutputDebugTasks(FVTTaskOrderList& VTTaskOrder, FVTLoadTaskMap& VTLoadTasks);
 
 	private:
 		// Analysis thread begin TCond signal
@@ -72,6 +71,10 @@ namespace tix
 
 		struct FVTLoadingTask
 		{
+#if VT_PRELOADED_REGIONS
+			uint32 PageIndex;
+			uint32 AtlasLocation;
+#else
 			TString Name;
 			TVector<vector2du16> PageStart;
 			TVector<uint32> PageIndex;
@@ -83,6 +86,7 @@ namespace tix
 				PageIndex.clear();
 				AtlasLocation.clear();
 			}
+#endif
 		};
 		TList<FVTLoadingTask> VTLoadingTasks;
 	};

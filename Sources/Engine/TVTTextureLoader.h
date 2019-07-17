@@ -15,6 +15,7 @@ namespace tix
 		TVTTextureLoader(const TString& InFileName);
 
 		TTexturePtr LoadTextureWithRegion(int32 Mip, int32 StartX, int32 StartY, int32 EndX, int32 EndY);
+		static TTexturePtr LoadBakedVTPages(int32 Mip, int32 PageX, int32 PageY);
 
 	private:
 		TFile TextureFile;
