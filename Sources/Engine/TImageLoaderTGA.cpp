@@ -34,6 +34,16 @@ namespace tix
 		uint16 ImageWidth;
 		uint16 ImageHeight;
 		uint8 PixelDepth;
+
+		// Bits 5 & 4: These bits are used to indicate the order in which
+		// pixel data is transferred from the file to the screen.
+		// Bit 4 is for left - to - right ordering and bit 5 is for
+		// top - to - bottom ordering as shown below
+		// |--------------| bit 5 | bit 4 |
+		// | bottom left  |   0   |   0   |
+		// | bottom right |   0   |   1   |
+		// |   top left   |   1   |   0   |
+		// |   top right  |   1   |   1   |
 		uint8 ImageDescriptor;
 	} ;
 
@@ -269,6 +279,12 @@ namespace tix
 			Image->Unlock();
 		}
 
+		if ((header.ImageDescriptor & 0x20) == 0)
+		{
+			// origin is bottom-left, flip Y
+			Image->FlipY();
+		}
+
 		return Image;
 	}
 
@@ -308,7 +324,7 @@ namespace tix
 		header.ImageWidth = Width;
 		header.ImageHeight = Height;
 		header.PixelDepth = BitsPerPixel;
-		header.ImageDescriptor = 8;
+		header.ImageDescriptor = 8 | 0x20;	// make it top-left
 
 		fwrite( &header, sizeof(STGAHeader) , 1, fp);
 

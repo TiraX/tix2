@@ -27,7 +27,7 @@ for /r . %%i in (*.tjs) do (
 )
 
 rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllPages -VTSize=16384 -PPSize=256
-%VTBaker% showcase_03.tjs Cooked/Windows -DumpAllVTs 
+%VTBaker% showcase_03.tjs Cooked/Windows
 rem Convert scene file again with vt_info
 %Converter% showcase_03.tjs Cooked\Windows\showcase_03.tasset -VTInfo=showcase_03_vt.tjs
 

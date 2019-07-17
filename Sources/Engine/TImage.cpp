@@ -660,6 +660,10 @@ namespace tix
 
 	void TImage::FlipY()
 	{
+		if (IsCompressedFormat(GetFormat()))
+		{
+			return;
+		}
 		for (int32 Mip = 0 ; Mip < (int32)Mipmaps.size() ; ++ Mip)
 		{
 			int32 Width = Mipmaps[Mip].W;
