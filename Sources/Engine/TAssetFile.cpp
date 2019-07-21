@@ -605,6 +605,7 @@ namespace tix
 				matrix4 MatInstanceTrans;
 				Instance.Rotation.getMatrix(MatInstanceTrans);
 				MatInstanceTrans.postScale(Instance.Scale);
+				MatInstanceTrans = MatInstanceTrans.getTransposed();
 				FMatrix Mat = MatInstanceTrans;
 				FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
 				FHalf4 RotScaleMat[3];

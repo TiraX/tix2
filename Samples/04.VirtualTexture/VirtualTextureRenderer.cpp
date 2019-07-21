@@ -89,15 +89,15 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	RHI->InitCommandLists(GraphicsCount, ComputeCount);
 	FSRender.InitCommonResources(RHI);
 
-	const int32 ViewWidth = 1600;
-	const int32 ViewHeight = TEngine::AppInfo.Height * ViewWidth / TEngine::AppInfo.Width;
+	const int32 RTWidth = 1600;
+	const int32 RTHeight = TEngine::AppInfo.Height * RTWidth / TEngine::AppInfo.Width;
 
 
 	TStreamPtr ArgumentValues = ti_new TStream;
 	TVector<FTexturePtr> ArgumentTextures;
 
 	// Setup base pass render target
-	RT_BasePass = FRenderTarget::Create(ViewWidth, ViewHeight);
+	RT_BasePass = FRenderTarget::Create(RTWidth, RTHeight);
 #if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("BasePass");
 #endif
@@ -121,7 +121,7 @@ void FVirtualTextureRenderer::InitInRenderThread()
 
 	if (FVTSystem::IsEnabled())
 	{
-		ComputeUVDiscard = ti_new FComputeUVDiscard(ViewWidth, ViewHeight);
+		ComputeUVDiscard = ti_new FComputeUVDiscard(RTWidth, RTHeight);
 		ComputeUVDiscard->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
 		ComputeUVDiscard->Finalize();
 	}
