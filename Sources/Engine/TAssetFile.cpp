@@ -497,7 +497,8 @@ namespace tix
 				TNodeCamera * Camera = TEngine::Get()->GetScene()->GetActiveCamera();
 				Camera->SetPosition(CamInfo.Location);
 				Camera->SetTarget(CamInfo.Target);
-				Camera->SetFOV(DEG_TO_RAD(CamInfo.FOV));
+				// UE4 exported fov in horizontal direction.
+				Camera->SetFOVX(DEG_TO_RAD(CamInfo.FOV));
 			}
 
 			// Load assets names

@@ -110,8 +110,11 @@ namespace tix
 		//! Sets the aspect ratio (default: 4.0f / 3.0f)
 		virtual void SetAspectRatio(float32 aspect);
 
-		//! Sets the field of view (Default: PI / 3.5f)
+		//! Sets the field of view in vertical (Default: PI / 3.5f)
 		virtual void SetFOV(float32 fovy);
+
+		//! Sets the field of view in X
+		virtual void SetFOVX(float32 fovy);
 
 		//! Returns the view area. Sometimes needed by bsp or lod render nodes.
 		virtual const SViewFrustum* GetViewFrustum() const;

@@ -171,6 +171,12 @@ namespace tix
 		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;
 	}
 
+	void TNodeCamera::SetFOVX(float32 f)
+	{
+		Fovy = f / Aspect;
+		CameraFlags |= ECAMF_MAT_PROJECTION_DIRTY;
+	}
+
 	void TNodeCamera::RecalculateViewMatrix()
 	{
 		vector3df pos = GetAbsolutePosition();
