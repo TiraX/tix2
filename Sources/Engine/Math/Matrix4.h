@@ -1818,10 +1818,14 @@ namespace tix
 		vector3d<T> zaxis = target - position;
 		zaxis.normalize();
 
-		vector3d<T> xaxis = upVector.crossProduct(zaxis);
+		// Keep the same look at matrix with UE4
+		//vector3d<T> xaxis = upVector.crossProduct(zaxis);
+		vector3d<T> xaxis = zaxis.crossProduct(upVector);
 		xaxis.normalize();
 
-		vector3d<T> yaxis = zaxis.crossProduct(xaxis);
+		//vector3d<T> yaxis = zaxis.crossProduct(xaxis);
+		vector3d<T> yaxis = xaxis.crossProduct(zaxis);
+		yaxis.normalize();
 
 		CMatrix4<T> m(CMatrix4<T>::EM4CONST_NOTHING);
 

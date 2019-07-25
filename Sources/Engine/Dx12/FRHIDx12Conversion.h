@@ -189,7 +189,7 @@ namespace tix
 	{
 		RasterizerDesc.FillMode = k_FILL_MODE_MAP[Desc.RasterizerDesc.FillMode];
 		RasterizerDesc.CullMode = k_CULL_MODE_MAP[Desc.RasterizerDesc.CullMode];
-		RasterizerDesc.FrontCounterClockwise = FALSE;
+		RasterizerDesc.FrontCounterClockwise = TRUE;
 		RasterizerDesc.DepthBias = Desc.RasterizerDesc.DepthBias;
 		RasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
 		RasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;

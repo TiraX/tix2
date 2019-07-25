@@ -60,6 +60,10 @@ namespace tix
 		//! \param pos Look at target of the camera.
 		virtual void SetTarget(const vector3df& pos);
 
+		//! sets the Rotator of camera in radian
+		//! \param rotator include Pitch Yaw Roll in Radian.
+		virtual void SetRotator(const vector3df& rotator);
+
 		//! Gets the current look at target of the camera
 		//! \return Returns the current look at target of the camera
 		virtual const vector3df& GetTarget() const;
@@ -147,6 +151,7 @@ namespace tix
 
 		vector3df Target;
 		vector3df UpVector;
+		vector3df Rotator;
 
 		vector3df CamDir;
 		vector3df HorVector;

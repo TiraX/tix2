@@ -106,6 +106,14 @@ namespace tix
 		CameraFlags |= ECAMF_MAT_VIEW_DIRTY;
 	}
 
+	//! sets the Rotator of camera in radian
+	//! \param rotator include Pitch Yaw Roll in Radian.
+	void TNodeCamera::SetRotator(const vector3df& rotator)
+	{
+		Rotator = rotator;
+		CameraFlags |= ECAMF_MAT_VIEW_DIRTY;
+	}
+
 	//! Gets the current look at tarGet of the camera
 	//! \return Returns the current look at tarGet of the camera
 	const vector3df& TNodeCamera::GetTarget() const

@@ -52,7 +52,9 @@ namespace tix
 				THeaderCameraInfo Cam;
 				Cam.Location = TJSONUtil::JsonArrayToVector3df(JCam["location"]);
 				Cam.Target = TJSONUtil::JsonArrayToVector3df(JCam["target"]);
+				Cam.Rotate = TJSONUtil::JsonArrayToVector3df(JCam["rotator"]);
 				Cam.FOV = JCam["fov"].GetFloat();
+				Cam.Aspect = JCam["aspect"].GetFloat();
 				Helper.Cameras.push_back(Cam);
 			}
 		}

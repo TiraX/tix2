@@ -499,6 +499,8 @@ namespace tix
 				Camera->SetTarget(CamInfo.Target);
 				// UE4 exported fov in horizontal direction.
 				Camera->SetFOVX(DEG_TO_RAD(CamInfo.FOV));
+				Camera->SetAspectRatio(CamInfo.Aspect);
+				Camera->SetRotator(vector3df(DEG_TO_RAD(CamInfo.Rotate.X), DEG_TO_RAD(CamInfo.Rotate.Y), DEG_TO_RAD(CamInfo.Rotate.Z)));
 			}
 
 			// Load assets names

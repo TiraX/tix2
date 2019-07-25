@@ -258,6 +258,8 @@ namespace tix
 		vector3df Location;
 		vector3df Target;
 		float FOV;
+		vector3df Rotate;	// Pitch, Yaw, Roll in degrees
+		float Aspect;
 	};
 
 	struct THeaderInstances
