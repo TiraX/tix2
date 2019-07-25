@@ -33,7 +33,8 @@ float4 GetBaseColor(in float2 texcoord)
 	float4 Indirect = EB_IndirectTexture.Sample(PointSampler, VTCoord);
 	// coord in virtual texture - 
 	float2 VTPos = VTCoord * VTSize / PPSize;
-	float2 Coord = frac(VTPos);
+	float2 Coord = frac(VTPos) * 256 / 258 + 1.0 / 258;
+	//float2 Coord = frac(VTPos);
 	float2 PPCoord = (Indirect.xy * 256 + Coord) * PAInv;
 
 	float4 Color = EB_PhysicPageAtlas.Sample(LinearSampler, PPCoord);
