@@ -15,5 +15,9 @@ SamplerState g_sampler : register(s0);
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	//return float4(input.uv, 0.0, 1.0);
-	return g_texture.Sample(g_sampler, input.uv);
+	float4 color = g_texture.Sample(g_sampler, input.uv);
+	
+	// Do gamma
+	color.rgb = sqrt(color.rgb);
+	return color;
 }
