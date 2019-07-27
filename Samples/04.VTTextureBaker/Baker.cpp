@@ -11,7 +11,8 @@
 
 namespace tix
 {
-	static const bool bAddBorder = true;
+	static bool bAddBorder = true;
+	static bool bDebugBorder = false;
 	static const int32 BorderWidth = 1;
 	TVTTextureBaker::TVTTextureBaker()
 		: bDumpAllPages(false)
@@ -41,6 +42,9 @@ namespace tix
 	void TVTTextureBaker::Bake(const TString& InSceneFileName, const TString& InOutputPath)
 	{
 		TIMER_RECORDER("Bake total time");
+
+		bAddBorder = !bIgnoreBorders;
+		bDebugBorder = bDebugBorders;
 
 		size_t Pos = InSceneFileName.rfind('.');
 		SceneFileName = InSceneFileName.substr(0, Pos);
@@ -271,6 +275,19 @@ namespace tix
 		{
 			TI_ASSERT(0);
 			_LOG(Error, "unsupported address mode for VT. %s\n", Info.Name.c_str());
+		}
+
+		if (bDebugBorder)
+		{
+			SColor DebugColor(255, 0, 255, 0);
+			for (int32 i = 0 ; i < PPSizeWithBorder ; ++ i)
+			{
+				PageImageWithBorder->SetPixel(i, 0, DebugColor);
+				PageImageWithBorder->SetPixel(i, PPSizeWithBorder - 1, DebugColor);
+				PageImageWithBorder->SetPixel(0, i, DebugColor);
+				PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, i, DebugColor);
+			}
+			return PageImageWithBorder;
 		}
 
 		// Left border

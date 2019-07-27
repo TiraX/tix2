@@ -12,6 +12,8 @@ namespace tix
 	public:
 		bool bDumpAllPages;
 		bool bDumpAllVTs;
+		bool bIgnoreBorders;
+		bool bDebugBorders;
 
 		// Virtual texture size
 		int32 VTSize;

@@ -11,6 +11,8 @@ TString OutputPath;
 
 bool bDumpAllPages = false;
 bool bDumpAllVTs = false;
+bool bIgnoreBorders = false;
+bool bDebugBorders = false;
 int32 InputVTSize = -1;
 int32 InputPPSize = -1;
 
@@ -50,6 +52,14 @@ bool ParseParams(int argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 			{
 				bDumpAllVTs = true;
 			}
+			else if (key == "IgnoreBorders")
+			{
+				bIgnoreBorders = true;
+			}
+			else if (key == "DebugBorders")
+			{
+				bDebugBorders = true;
+			}
 			else if (key == "VTSize")
 			{
 				InputVTSize = atoi(value.c_str());
@@ -83,6 +93,8 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 		TVTTextureBaker Baker;
 		Baker.bDumpAllPages = bDumpAllPages;
 		Baker.bDumpAllVTs = bDumpAllVTs;
+		Baker.bIgnoreBorders = bIgnoreBorders;
+		Baker.bDebugBorders = bDebugBorders;
 		if (InputVTSize > 0)
 		{
 			Baker.VTSize = InputVTSize;
