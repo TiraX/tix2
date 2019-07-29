@@ -15,6 +15,7 @@ namespace tix
 {
 	const bool FVTSystem::Enabled = true;
 	FVTSystem * FVTSystem::VTSystem = nullptr;
+	TVector<int32> FVTSystem::VTMipsOffset;
 
 	const float FVTSystem::UVInv = (float)PPSize / (float)VTSize;
 
@@ -24,6 +25,18 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 		VTSystem = this;
+
+		// Init mip offset array
+		TI_ASSERT(VTMipsOffset.size() == 0);
+		int32 TotalPages = 0;
+		int32 MipSize = VTSize;
+		while (MipSize >= PPSize)
+		{
+			int32 Rows = MipSize / PPSize;
+			TotalPages += Rows * Rows;
+			VTMipsOffset.push_back(TotalPages);
+			MipSize /= 2;
+		}
 
 		// Start task thread
 		VTAnalysisThread = ti_new FVTAnalysisThread;
@@ -38,6 +51,7 @@ namespace tix
 
 		// Create indirect texture
 		IndirectTextureData = ti_new TImage(EPF_RGBA8, ITSize, ITSize);
+		IndirectTextureData->AllocEmptyMipmaps();
 		TTextureDesc Desc;
 		Desc.Type = ETT_TEXTURE_2D;
 		Desc.Format = EPF_RGBA8;
@@ -45,7 +59,7 @@ namespace tix
 		Desc.Height = ITSize;
 		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
 		Desc.SRGB = 0;
-		Desc.Mips = 1;
+		Desc.Mips = (uint32)VTMipsOffset.size();
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
 		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture);
 
@@ -277,10 +291,10 @@ namespace tix
 #endif
 	}
 
-	void FVTSystem::AddVTPageData(uint32 PageIndex, uint32 AtlasLocation, TTexturePtr TextureData)
+	void FVTSystem::AddVTPageData(uint32 PageIndex, uint32 MipLevel, uint32 AtlasLocation, TTexturePtr TextureData)
 	{
 		TI_ASSERT(IsRenderThread());
-		LoadedPages.push_back(FPageLoadResult(PageIndex, AtlasLocation, TextureData));
+		LoadedPages.push_back(FPageLoadResult(PageIndex, MipLevel, AtlasLocation, TextureData));
 	}
 
 	void FVTSystem::PrepareVTIndirectTexture()
@@ -290,8 +304,12 @@ namespace tix
 		SColor IndirectData;
 		for (auto& Page : LoadedPages)
 		{
-			int32 PageX = Page.PageIndex % ITSize;
-			int32 PageY = Page.PageIndex / ITSize;
+			uint32 MipLevel = Page.MipLevel;
+			int32 MipITSize = ITSize >> MipLevel;
+
+			int32 PageX = Page.PageIndex % MipITSize;
+			int32 PageY = Page.PageIndex / MipITSize;
+			TI_ASSERT(PageX < MipITSize && PageY < MipITSize);
 
 			int32 AtlasX = Page.AtlasLocation % PhysicAtlasSize;
 			int32 AtlasY = Page.AtlasLocation / PhysicAtlasSize;
@@ -300,7 +318,7 @@ namespace tix
 			// Update indirect texture
 			IndirectData.R = AtlasX;
 			IndirectData.G = AtlasY;
-			IndirectTextureData->SetPixel(PageX, PageY, IndirectData);
+			IndirectTextureData->SetPixel(PageX, PageY, IndirectData, MipLevel);
 
 			// Update Physic page atlas regions
 			int32 RegionStartX = AtlasX * PPSize;

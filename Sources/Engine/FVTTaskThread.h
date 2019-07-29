@@ -73,17 +73,20 @@ namespace tix
 		{
 #if VT_PRELOADED_REGIONS
 			uint32 PageIndex;
+			uint32 MipLevel;
 			uint32 AtlasLocation;
 #else
 			TString Name;
 			TVector<vector2du16> PageStart;
 			TVector<uint32> PageIndex;
+			TVector<uint32> MipLevel;
 			TVector<uint32> AtlasLocation;
 
 			void Clear()
 			{
 				PageStart.clear();
 				PageIndex.clear();
+				MipLevel.clear();
 				AtlasLocation.clear();
 			}
 #endif

@@ -104,7 +104,7 @@ namespace tix
 		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
 
-		THMap<uint32, uint32> NewPages;	// New pages in this frame
+		THMap<uint32, int32> NewPages;	// New pages in this frame. Key is PageIndex, Value is MipLevel
 		THMap<uint32, uint32> UsedLocations;	// Used locations in PhysicPageTextures in this frame;
 
 		// Go through every pixel
@@ -113,19 +113,25 @@ namespace tix
 			const FFloat4& Data = DataPtr[i];
 			if (Data.W > 0.f)
 			{
+				int32 MipLevel = (int32)Data.Z;
+				int32 VTSize = FVTSystem::VTSize >> MipLevel;
+				int32 ITSize = FVTSystem::ITSize >> MipLevel;
+				int32 MipPageOffset = FVTSystem::GetVTMipPagesOffset(MipLevel);
+
 				vector2di Position;
-				Position.X = (int32)(Data.X * FVTSystem::VTSize);
-				Position.Y = (int32)(Data.Y * FVTSystem::VTSize);
+				Position.X = (int32)(Data.X * VTSize);
+				Position.Y = (int32)(Data.Y * VTSize);
 
 				int32 PageX = Position.X / FVTSystem::PPSize;
 				int32 PageY = Position.Y / FVTSystem::PPSize;
 				TI_ASSERT(PageX >= 0 && PageY >= 0);
-				uint32 PageIndex = PageY * FVTSystem::ITSize + PageX;
+				uint32 PageIndex = PageY * ITSize + PageX + MipPageOffset;
 
 				if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
 				{
 					// This is a page not in Slots, remember it
-					NewPages[PageIndex] = 1;
+					TI_ASSERT(NewPages.find(PageIndex) == NewPages.end() || NewPages[PageIndex] == MipLevel);
+					NewPages[PageIndex] = MipLevel;
 				}
 				else
 				{
@@ -144,6 +150,7 @@ namespace tix
 		for (const auto& Page : NewPages)
 		{
 			uint32 PageIndex = Page.first;
+			int32 MipLevel = Page.second;
 
 			// Find a location in PhysicPageTextures
 			uint32 Location = FindAvailbleLocation(UsedLocations);
@@ -160,12 +167,14 @@ namespace tix
 #if VT_PRELOADED_REGIONS
 			FVTSystem::FPageLoadInfo PageLoadInfo;
 			PageLoadInfo.PageIndex = PageIndex;
+			PageLoadInfo.MipLevel = (uint32)MipLevel;
 			PageLoadInfo.AtlasLocation = Location;
-			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
+			//VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
 			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
 #else
 			FVTSystem::FPageLoadInfo PageLoadInfo;
 			PageLoadInfo.AtlasLocation = Location;
+			PageLoadInfo.MipLevel = (uint32)MipLevel;
 			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
 			VTTaskOrder->push_back(PageIndex);
 			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
@@ -273,6 +282,7 @@ namespace tix
 			{
 				FVTLoadingTask Task;
 				Task.PageIndex = t.first;
+				Task.MipLevel = t.second.MipLevel;
 				Task.AtlasLocation = t.second.AtlasLocation;
 				VTLoadingTasks.push_back(Task);
 			}
@@ -319,17 +329,22 @@ namespace tix
 		FVTLoadingTask Task = VTLoadingTasks.front();
 		VTLoadingTasks.pop_front();
 
-		int32 PageX = Task.PageIndex % FVTSystem::ITSize;
-		int32 PageY = Task.PageIndex / FVTSystem::ITSize;
+		uint32 MipLevel = Task.MipLevel;
+		int32 PageIndex = Task.PageIndex - FVTSystem::GetVTMipPagesOffset(MipLevel);
+		int32 ITSize = FVTSystem::ITSize >> MipLevel;
 
-		TTexturePtr Texture = TVTTextureLoader::LoadBakedVTPages(0, PageX, PageY);
+		int32 PageX = PageIndex % ITSize;
+		int32 PageY = PageIndex / ITSize;
+
+		TTexturePtr Texture = TVTTextureLoader::LoadBakedVTPages(MipLevel, PageX, PageY);
 		// Send to render thread to init render resource of this texture
-		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTAddLoadedPages,
-			uint32, PageIndex, Task.PageIndex,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(VTAddLoadedPages,
+			uint32, PageIndex, PageIndex,
+			uint32, MipLevel, MipLevel,
 			uint32, AtlasLocation, Task.AtlasLocation,
 			TTexturePtr, TextureData, Texture,
 			{
-				FVTSystem::Get()->AddVTPageData(PageIndex, AtlasLocation, TextureData);
+				FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, TextureData);
 			});
 #else
 		FVTLoadingTask Task = VTLoadingTasks.front();

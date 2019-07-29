@@ -83,6 +83,24 @@ namespace tix
 	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2, ParamValue3); \
 	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
 
+	// Four parameters
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
+	class FRTTask_##TypeName : public TTask \
+	{ \
+	public: \
+		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3, ParamType4 In##ParamName4) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3), ParamName4(In##ParamName4) {SET_TASK_NAME(#TypeName);} \
+		RENDERTHREAD_TASK_FUNCTION(Code) \
+	private: \
+		ParamType1 ParamName1; \
+		ParamType2 ParamName2; \
+		ParamType3 ParamName3; \
+		ParamType4 ParamName4; \
+	};
+
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4) \
+	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2, ParamValue3, ParamValue4); \
+	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
+
 /* Add a task to run in Render thread with ONE parameter.
  * RenderThread is built in parameter.
  * RHI is built in parameter.
@@ -102,6 +120,10 @@ namespace tix
 #define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
 	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3)
+
+#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
+	ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4)
 
 	struct FRenderFrame
 	{

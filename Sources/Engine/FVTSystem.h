@@ -44,6 +44,11 @@ namespace tix
 			return VTSystem;
 		}
 
+		static int32 GetVTMipPagesOffset(int32 MipLevel)
+		{
+			return VTMipsOffset[MipLevel];
+		}
+
 		FVTSystem();
 		~FVTSystem();
 
@@ -73,6 +78,7 @@ namespace tix
 			vector2du16 PageStart;
 
 			uint32 PageIndex;	// Index in virtual texture
+			uint32 MipLevel;	// Mipmap level in virtual texture
 			uint32 AtlasLocation;	// Location in physic page atlas
 			
 			FPageLoadInfo()
@@ -102,22 +108,25 @@ namespace tix
 		{
 			FPageLoadResult()
 				: PageIndex(uint32(-1))
+				, MipLevel(uint32(-1))
 				, AtlasLocation(uint32(-1))
 			{}
 
-			FPageLoadResult(uint32 InPageIndex, uint32 InAtlasLocation, TTexturePtr InTextureData)
+			FPageLoadResult(uint32 InPageIndex, uint32 InMipLevel, uint32 InAtlasLocation, TTexturePtr InTextureData)
 				: PageIndex(InPageIndex)
+				, MipLevel(InMipLevel)
 				, AtlasLocation(InAtlasLocation)
 				, TextureData(InTextureData)
 			{}
 
 			uint32 PageIndex;	// Index in virtual texture
+			uint32 MipLevel;	// Mipmap level in virtual texture
 			uint32 AtlasLocation;	// Location in physic page atlas
 			TTexturePtr TextureData;	// Data loaded
 		};
 
 		void GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo);
-		void AddVTPageData(uint32 PageIndex, uint32 AtlasLocation, TTexturePtr TextureData);
+		void AddVTPageData(uint32 PageIndex, uint32 MipLevel, uint32 AtlasLocation, TTexturePtr TextureData);
 		void OutputDebugInfo();
 
 	private:
@@ -127,6 +136,7 @@ namespace tix
 	private:
 		static const bool Enabled;
 		static FVTSystem * VTSystem;
+		static TVector<int32> VTMipsOffset;
 
 		FVTAnalysisThread * VTAnalysisThread;
 
