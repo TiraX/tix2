@@ -30,17 +30,19 @@ SamplerState LinearSampler : register(s1);
 float4 GetBaseColor(in float2 texcoord)
 {
 	float2 VTCoord = frac(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
+	float MipLevel = floor(mip_map_level(VTCoord, VTSize));
 
-	float4 Indirect = EB_IndirectTexture.Sample(PointSampler, VTCoord);
+	float4 Indirect = EB_IndirectTexture.SampleLevel(PointSampler, VTCoord, MipLevel);
 	// coord in virtual texture - 
-	float2 VTPos = VTCoord * VTSize / PPSize;
+	int VTMipSize = VTSize / pow(2, int(MipLevel));
+	float2 VTPos = VTCoord * VTMipSize / PPSize;
 	float2 Coord = frac(VTPos) *256 / 258 + 1.0 / 258;
 	//float2 Coord = frac(VTPos);
 	float2 PPCoord = (floor(Indirect.xy * 256) + Coord) * PAInv;
 
 	float4 Color = EB_PhysicPageAtlas.Sample(LinearSampler, PPCoord);
 	return Color;
-	//return Indirect.xyxy;
+	//return PPCoord.xyxy;
 }
 #else	// VT_ENABLED
 

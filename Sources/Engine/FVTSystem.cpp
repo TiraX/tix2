@@ -68,6 +68,7 @@ namespace tix
 		Desc.Width = PhysicAtlasSize * PPSize;
 		Desc.Height = PhysicAtlasSize * PPSize;
 		Desc.SRGB = 1;
+		Desc.Mips = 1;
 		PhysicPageAtlas = FRHI::Get()->CreateTexture(Desc);
 		FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageAtlas);
 		VTResource->PutTextureInTable(IndirectTexture, 0);
