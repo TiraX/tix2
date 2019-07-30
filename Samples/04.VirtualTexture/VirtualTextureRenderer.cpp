@@ -153,7 +153,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Do UV discard check, only check when camera moved or primitives changed
 	if (FVTSystem::IsEnabled())
 	{
-		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		//if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
 			RHI->BeginPopulateCommandList(EPL_COMPUTE);
 			ComputeUVDiscard->Run(RHI);

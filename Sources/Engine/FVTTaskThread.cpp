@@ -337,6 +337,7 @@ namespace tix
 		int32 PageY = PageIndex / ITSize;
 
 		TTexturePtr Texture = TVTTextureLoader::LoadBakedVTPages(MipLevel, PageX, PageY);
+		_LOG(Log, " - VT Load Page : %d - %d - %d\n", MipLevel, PageX, PageY);
 		// Send to render thread to init render resource of this texture
 		ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(VTAddLoadedPages,
 			uint32, PageIndex, PageIndex,
