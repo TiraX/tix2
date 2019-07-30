@@ -32,9 +32,9 @@ namespace tix
 		int32 MipSize = VTSize;
 		while (MipSize >= PPSize)
 		{
+			VTMipsOffset.push_back(TotalPages);
 			int32 Rows = MipSize / PPSize;
 			TotalPages += Rows * Rows;
-			VTMipsOffset.push_back(TotalPages);
 			MipSize /= 2;
 		}
 
