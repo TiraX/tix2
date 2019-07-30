@@ -9,6 +9,7 @@
 #include "ResTextureHelper.h"
 #include "TImage.h"
 #include "PlatformUtils.h"
+#include "ispc_texcomp.h"
 
 namespace tix
 {
@@ -349,8 +350,95 @@ namespace tix
 
 	TResTextureDefine* TResTextureHelper::ConvertToAstc(TResTextureDefine* SrcImage)
 	{
+		E_PIXEL_FORMAT SrcFormat = SrcImage->ImageSurfaces[0]->GetFormat();
+		E_PIXEL_FORMAT DstFormat = EPF_UNKNOWN;
+		int32 BlockSize = 4;
 
-		TI_ASSERT(0);
-		return nullptr;
+		switch (TResSettings::GlobalSettings.AstcQuality)
+		{
+		case TResSettings::Astc_Quality_High:
+			DstFormat = EPF_ASTC4x4;
+			BlockSize = 4;
+			break;
+		case TResSettings::Astc_Quality_Mid:
+			DstFormat = EPF_ASTC6x6;
+			BlockSize = 6;
+			break;
+		default:
+			DstFormat = EPF_ASTC8x8;
+			BlockSize = 8;
+			break;
+		}
+
+		bool bHasAlpha;
+		if (SrcFormat == EPF_RGB8)
+		{
+			_LOG(Error, "Tga will never be RGB8 format.\n");
+			TI_ASSERT(0);
+			DstFormat = EPF_ASTC8x8;
+		}
+		else if (SrcFormat == EPF_RGBA8)
+		{
+			if (SrcImage->TGASourcePixelDepth == 24 && !TResSettings::GlobalSettings.ForceAlphaChannel)
+			{
+				bHasAlpha = false;
+			}
+			else
+			{
+				bHasAlpha = true;
+			}
+		}
+		else
+		{
+			// Do not need compress
+			return SrcImage;
+		}
+
+		astc_enc_settings AstcEncSetting;
+		if (bHasAlpha)
+		{
+			GetProfile_astc_alpha_fast(&AstcEncSetting, BlockSize, BlockSize);
+		}
+		else
+		{
+			GetProfile_astc_fast(&AstcEncSetting, BlockSize, BlockSize);
+		}
+
+		TResTextureDefine* DstImage = ti_new TResTextureDefine;
+		DstImage->Name = SrcImage->Name;
+		DstImage->Path = SrcImage->Path;
+		DstImage->LodBias = SrcImage->LodBias;
+		DstImage->Desc = SrcImage->Desc;
+		DstImage->Desc.Format = DstFormat;
+
+		DstImage->ImageSurfaces.resize(SrcImage->ImageSurfaces.size());
+
+		for (int32 i = 0; i < (int32)SrcImage->ImageSurfaces.size(); ++i)
+		{
+			TImage * TgaImage = SrcImage->ImageSurfaces[i];
+			TImage * DxtImage = ti_new TImage(DstFormat, TgaImage->GetWidth(), TgaImage->GetHeight());
+			DstImage->ImageSurfaces[i] = DxtImage;
+			if (TgaImage->GetMipmapCount() > 1)
+			{
+				DxtImage->AllocEmptyMipmaps();
+			}
+
+			for (int32 Mip = 0; Mip < DxtImage->GetMipmapCount(); ++Mip)
+			{
+				const TImage::TSurfaceData& SrcData = TgaImage->GetMipmap(Mip);
+				TImage::TSurfaceData& DstData = DxtImage->GetMipmap(Mip);
+
+				rgba_surface Surface;
+				Surface.ptr = (uint8_t*)SrcData.Data.GetBuffer();
+				Surface.width = SrcData.W;
+				Surface.height = SrcData.H;
+				Surface.stride = SrcData.RowPitch;
+
+				uint8_t* Dst = (uint8_t*)DstData.Data.GetBuffer();
+				// Call ISPC function to convert
+				CompressBlocksASTC(&Surface, Dst, &AstcEncSetting);
+			}
+		}
+		return DstImage;
 	}
 }

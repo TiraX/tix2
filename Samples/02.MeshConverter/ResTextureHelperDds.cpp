@@ -1042,7 +1042,7 @@ namespace tix
 
 		if (SrcFormat == EPF_RGB8)
 		{
-			_LOG(Error, "Tga will never be EGB8 format.\n");
+			_LOG(Error, "Tga will never be RGB8 format.\n");
 			TI_ASSERT(0);
 			DstFormat = EPF_DDS_DXT1;
 		}

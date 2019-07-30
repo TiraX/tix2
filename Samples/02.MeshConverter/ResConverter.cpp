@@ -106,6 +106,21 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			{
 				TResSettings::GlobalSettings.VTInfoFile = value;
 			}
+			else if (key == "astc_quality")
+			{
+				if (value == "high")
+				{
+					TResSettings::GlobalSettings.AstcQuality = TResSettings::Astc_Quality_High;
+				}
+				else if (value == "mid")
+				{
+					TResSettings::GlobalSettings.AstcQuality = TResSettings::Astc_Quality_Mid;
+				}
+				else
+				{
+					TResSettings::GlobalSettings.AstcQuality = TResSettings::Astc_Quality_Low;
+				}
+			}
 
 			//if (key == "texture_path")
 			//{

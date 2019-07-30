@@ -77,7 +77,16 @@ namespace tix
 		}
 #elif defined (TI_PLATFORM_IOS)
 		// iOS Platform need ASTC texture
-		TextureOutput = TResTextureHelper::ConvertToAstc(SrcImage);
+		if (SrcImageType == "DDS")
+		{
+			_LOG(Error, "DDS to ASTC not implemented yet.\n");
+			return false;
+		}
+		else
+		{
+			TextureOutput = TResTextureHelper::ConvertToAstc(SrcImage);
+			ti_delete SrcImage;
+		}
 #endif
 
 		if (TextureOutput != nullptr)
