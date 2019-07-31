@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		270C459922F1D53000DA8872 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C459822F1D53000DA8872 /* AppDelegate.m */; };
+		270C459C22F1D53000DA8872 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C459B22F1D53000DA8872 /* ViewController.m */; };
+		270C45A122F1D53100DA8872 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 270C45A022F1D53100DA8872 /* Assets.xcassets */; };
+		270C45A722F1D53100DA8872 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C45A622F1D53100DA8872 /* main.m */; };
+		27FE11E822F1D88B00CEB9F1 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11E522F1D88B00CEB9F1 /* stdafx.cpp */; };
+		27FE11E922F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11E622F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp */; };
+		27FE11EE22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11EB22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp */; };
+		27FE122322F1E0B800CEB9F1 /* libTiX2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27934AA022F1D70A002E1D36 /* libTiX2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		27934A9F22F1D70A002E1D36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27934A9B22F1D70A002E1D36 /* TiX2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 27D47F5421CA9B8E00109AB5;
+			remoteInfo = TiX2;
+		};
+		27FE11EF22F1D97800CEB9F1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27934A9B22F1D70A002E1D36 /* TiX2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 27D47F5321CA9B8E00109AB5;
+			remoteInfo = TiX2;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		270C459422F1D53000DA8872 /* VirtualTexture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTexture.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		270C459722F1D53000DA8872 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		270C459822F1D53000DA8872 /* AppDelegate.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = AppDelegate.m; sourceTree = "<group>"; };
+		270C459A22F1D53000DA8872 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		270C459B22F1D53000DA8872 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		270C45A022F1D53100DA8872 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		270C45A522F1D53100DA8872 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		270C45A622F1D53100DA8872 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		27934A9A22F1D6D8002E1D36 /* VirtualTexture-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VirtualTexture-Prefix.pch"; sourceTree = "<group>"; };
+		27934A9B22F1D70A002E1D36 /* TiX2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = TiX2.xcodeproj; path = ../../Projects/iOS/TiX2.xcodeproj; sourceTree = "<group>"; };
+		27FE11E422F1D88B00CEB9F1 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		27FE11E522F1D88B00CEB9F1 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		27FE11E622F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualTextureRenderer.cpp; sourceTree = "<group>"; };
+		27FE11E722F1D88B00CEB9F1 /* VirtualTextureRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualTextureRenderer.h; sourceTree = "<group>"; };
+		27FE11EB22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualTextureTicker.cpp; sourceTree = "<group>"; };
+		27FE11EC22F1D89A00CEB9F1 /* VirtualTextureTicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualTextureTicker.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		270C459122F1D53000DA8872 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				27FE122322F1E0B800CEB9F1 /* libTiX2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		270C458B22F1D53000DA8872 = {
+			isa = PBXGroup;
+			children = (
+				27934A9B22F1D70A002E1D36 /* TiX2.xcodeproj */,
+				270C459622F1D53000DA8872 /* VirtualTexture */,
+				270C459522F1D53000DA8872 /* Products */,
+				27FE122222F1E0B800CEB9F1 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		270C459522F1D53000DA8872 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				270C459422F1D53000DA8872 /* VirtualTexture.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		270C459622F1D53000DA8872 /* VirtualTexture */ = {
+			isa = PBXGroup;
+			children = (
+				27934A9822F1D627002E1D36 /* VT */,
+				270C459722F1D53000DA8872 /* AppDelegate.h */,
+				270C459822F1D53000DA8872 /* AppDelegate.m */,
+				270C45A022F1D53100DA8872 /* Assets.xcassets */,
+				270C45A522F1D53100DA8872 /* Info.plist */,
+				270C45A622F1D53100DA8872 /* main.m */,
+				270C459A22F1D53000DA8872 /* ViewController.h */,
+				270C459B22F1D53000DA8872 /* ViewController.m */,
+				27934A9A22F1D6D8002E1D36 /* VirtualTexture-Prefix.pch */,
+			);
+			name = VirtualTexture;
+			sourceTree = "<group>";
+		};
+		27934A9822F1D627002E1D36 /* VT */ = {
+			isa = PBXGroup;
+			children = (
+				27FE11E522F1D88B00CEB9F1 /* stdafx.cpp */,
+				27FE11E422F1D88B00CEB9F1 /* stdafx.h */,
+				27FE11E622F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp */,
+				27FE11E722F1D88B00CEB9F1 /* VirtualTextureRenderer.h */,
+				27FE11EB22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp */,
+				27FE11EC22F1D89A00CEB9F1 /* VirtualTextureTicker.h */,
+			);
+			name = VT;
+			sourceTree = "<group>";
+		};
+		27934A9C22F1D70A002E1D36 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				27934AA022F1D70A002E1D36 /* libTiX2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		27FE122222F1E0B800CEB9F1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		270C459322F1D53000DA8872 /* VirtualTexture */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 270C45AA22F1D53100DA8872 /* Build configuration list for PBXNativeTarget "VirtualTexture" */;
+			buildPhases = (
+				270C459022F1D53000DA8872 /* Sources */,
+				270C459122F1D53000DA8872 /* Frameworks */,
+				270C459222F1D53000DA8872 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				27FE11F022F1D97800CEB9F1 /* PBXTargetDependency */,
+			);
+			name = VirtualTexture;
+			productName = VirtualTexture;
+			productReference = 270C459422F1D53000DA8872 /* VirtualTexture.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		270C458C22F1D53000DA8872 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = zhaoshuai;
+				TargetAttributes = {
+					270C459322F1D53000DA8872 = {
+						CreatedOnToolsVersion = 10.3;
+					};
+				};
+			};
+			buildConfigurationList = 270C458F22F1D53000DA8872 /* Build configuration list for PBXProject "VirtualTexture" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 270C458B22F1D53000DA8872;
+			productRefGroup = 270C459522F1D53000DA8872 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 27934A9C22F1D70A002E1D36 /* Products */;
+					ProjectRef = 27934A9B22F1D70A002E1D36 /* TiX2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				270C459322F1D53000DA8872 /* VirtualTexture */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		27934AA022F1D70A002E1D36 /* libTiX2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libTiX2.a;
+			remoteRef = 27934A9F22F1D70A002E1D36 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		270C459222F1D53000DA8872 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				270C45A122F1D53100DA8872 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		270C459022F1D53000DA8872 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				270C459C22F1D53000DA8872 /* ViewController.m in Sources */,
+				27FE11E922F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp in Sources */,
+				27FE11E822F1D88B00CEB9F1 /* stdafx.cpp in Sources */,
+				270C45A722F1D53100DA8872 /* main.m in Sources */,
+				27FE11EE22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp in Sources */,
+				270C459922F1D53000DA8872 /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		27FE11F022F1D97800CEB9F1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = TiX2;
+			targetProxy = 27FE11EF22F1D97800CEB9F1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		270C45A822F1D53100DA8872 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		270C45A922F1D53100DA8872 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		270C45AB22F1D53100DA8872 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PY586U82MR;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VirtualTexture-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					IPHONEOS,
+				);
+				HEADER_SEARCH_PATHS = ../../Sources/Engine;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tix2.VirtualTexture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e";
+			};
+			name = Debug;
+		};
+		270C45AC22F1D53100DA8872 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PY586U82MR;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VirtualTexture-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = IPHONEOS;
+				HEADER_SEARCH_PATHS = ../../Sources/Engine;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tix2.VirtualTexture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		270C458F22F1D53000DA8872 /* Build configuration list for PBXProject "VirtualTexture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				270C45A822F1D53100DA8872 /* Debug */,
+				270C45A922F1D53100DA8872 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		270C45AA22F1D53100DA8872 /* Build configuration list for PBXNativeTarget "VirtualTexture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				270C45AB22F1D53100DA8872 /* Debug */,
+				270C45AC22F1D53100DA8872 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 270C458C22F1D53000DA8872 /* Project object */;
+}

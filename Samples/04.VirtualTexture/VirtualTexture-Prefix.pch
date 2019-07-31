@@ -1,0 +1,21 @@
+//
+//  VirtualTexture-Prefix.pch
+//  VirtualTexture
+//
+//  Created by Tirax on 2019/7/31.
+//  Copyright © 2019 zhaoshuai. All rights reserved.
+//
+
+#ifndef VirtualTexture_Prefix_pch
+#define VirtualTexture_Prefix_pch
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __cplusplus
+#   include "TiX.h"
+#endif
+
+#endif /* VirtualTexture_Prefix_pch */

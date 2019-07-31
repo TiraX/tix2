@@ -100,7 +100,6 @@ namespace tix
 			BufferMutex.unlock();
 		}
 
-		FVTSystem * VTSystem = FVTSystem::Get();
 		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
 

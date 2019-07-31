@@ -12,7 +12,7 @@ namespace tix
 	class FUniformBufferMetal : public FUniformBuffer
 	{
 	public:
-		FUniformBufferMetal(uint32 InStructSize);
+		FUniformBufferMetal(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag);
 		virtual ~FUniformBufferMetal();
 	protected:
 

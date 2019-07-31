@@ -346,7 +346,7 @@ namespace tix
 			Material->SetRTColorBufferCount(RTNum);
 
 			// Load Shader code
-			int32 CodeOffset = 0;
+			//int32 CodeOffset = 0;
 			TShaderPtr Shader = ti_new TShader(ShaderNames);
 			if (Header->ShaderCodeLength[0] > 0)
 			{

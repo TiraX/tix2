@@ -17,6 +17,13 @@
    </Group>
    <Group
       location = "container:"
+      name = "04.VirtualTexture">
+      <FileRef
+         location = "group:../../Samples/04.VirtualTexture/VirtualTexture.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "container:"
       name = "TiX2">
       <FileRef
          location = "group:TiX2.xcodeproj">

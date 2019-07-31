@@ -159,9 +159,9 @@ namespace tix
         return ti_new FTextureMetal(Desc);
 	}
 
-	FUniformBufferPtr FRHIMetal::CreateUniformBuffer(uint32 InStructSize)
+	FUniformBufferPtr FRHIMetal::CreateUniformBuffer(uint32 InStructSizeInBytes, uint32 Elements, uint32 Flag)
 	{
-        return ti_new FUniformBufferMetal(InStructSize);
+        return ti_new FUniformBufferMetal(InStructSizeInBytes, Elements, Flag);
 	}
 
 	FMeshBufferPtr FRHIMetal::CreateMeshBuffer()
@@ -195,7 +195,7 @@ namespace tix
         TI_ASSERT(0);
 	}
 
-	bool FRHIMetal::UpdateHardwareResource(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
+	bool FRHIMetal::UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData)
 	{
 #if defined (TIX_DEBUG)
         MeshBuffer->SetResourceName(InMeshData->GetResourceName());
@@ -216,7 +216,7 @@ namespace tix
 	}
 
     
-	bool FRHIMetal::UpdateHardwareResource(FTexturePtr Texture)
+	bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture)
 	{
         FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
         if (TexMetal->Texture == nil)
@@ -238,7 +238,7 @@ namespace tix
         return true;
 	}
 
-	bool FRHIMetal::UpdateHardwareResource(FTexturePtr Texture, TTexturePtr InTexData)
+	bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData)
 	{
         FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
         TI_ASSERT(TexMetal->Texture == nil);
@@ -285,11 +285,12 @@ namespace tix
         return true;
 	}
 
-	bool FRHIMetal::UpdateHardwareResource(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
+	bool FRHIMetal::UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
     {
+        TI_ASSERT(0);
         FPipelineMetal * PipelineMetal = static_cast<FPipelineMetal*>(Pipeline.get());
         const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
-        Pipeline->SetDesc(Desc);
+        //Pipeline->SetDesc(Desc);
         
         MTLRenderPipelineDescriptor * PipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
 #if defined (TIX_DEBUG)
@@ -413,20 +414,21 @@ namespace tix
 		return true;
 	}
 
-	static const int32 UniformBufferAlignSize = 16;
-	bool FRHIMetal::UpdateHardwareResource(FUniformBufferPtr UniformBuffer, void* InData)
+	//static const int32 UniformBufferAlignSize = 16;
+	bool FRHIMetal::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData)
 	{
-        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
+        TI_ASSERT(0);
+        //FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
         
-        const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
-        TI_ASSERT(UBMetal->ConstantBuffer == nil);
-        UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
-        HoldResourceReference(UniformBuffer);
+        //const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
+        //TI_ASSERT(UBMetal->ConstantBuffer == nil);
+        //UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
+        //HoldResourceReference(UniformBuffer);
         
         return true;
 	}
     
-    bool FRHIMetal::UpdateHardwareResource(FRenderTargetPtr RenderTarget)
+    bool FRHIMetal::UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget)
     {
         FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RenderTarget.get());
         TI_ASSERT(RTMetal->RenderPassDesc == nil);
@@ -470,8 +472,9 @@ namespace tix
         return true;
     }
     
-    bool FRHIMetal::UpdateHardwareResource(FShaderPtr ShaderResource)
+    bool FRHIMetal::UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource)
     {
+        TI_ASSERT(0);
         // Load vertex function and pixel function
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ShaderResource.get());
         TI_ASSERT(!ShaderResource->GetShaderName(ESS_VERTEX_SHADER).empty());
@@ -496,7 +499,7 @@ namespace tix
         return true;
     }
     
-    bool FRHIMetal::UpdateHardwareResource(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
+    bool FRHIMetal::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
     {
         FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
         TI_ASSERT(ArgBufferMetal->ArgumentBindIndex < 0 && ArgBufferMetal->Buffers.size() == 0 && ArgBufferMetal->Textures.size() == 0);
@@ -547,7 +550,7 @@ namespace tix
         return true;
     }
     
-	void FRHIMetal::PutUniformBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	void FRHIMetal::PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
         TI_ASSERT(0);
 	}
@@ -567,21 +570,23 @@ namespace tix
         TI_ASSERT(0);
 	}
 
-	void FRHIMetal::SetPipeline(FPipelinePtr InPipeline)
+	void FRHIMetal::SetGraphicsPipeline(FPipelinePtr InPipeline)
 	{
+        TI_ASSERT(0);
         TI_TODO("Don't set pipeline duplicated.");
         FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
         
         [RenderEncoder setRenderPipelineState:PLMetal->PipelineState];
         [RenderEncoder setDepthStencilState:PLMetal->DepthState];
         
-        E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
-        [RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
-        [RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
+        //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
+        //[RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        //[RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
 	}
 
-	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer)
     {
+        TI_ASSERT(0);
         FMeshBufferMetal* MBMetal = static_cast<FMeshBufferMetal*>(InMeshBuffer.get());
         TI_ASSERT(RenderEncoder != nil);
         [RenderEncoder setVertexBuffer:MBMetal->VertexBuffer offset:0 atIndex:0];

@@ -18,7 +18,6 @@
 		2775A30A21CAA32F00E0AD35 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E621CAA32D00E0AD35 /* TLog.cpp */; };
 		2775A30B21CAA32F00E0AD35 /* TInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E721CAA32D00E0AD35 /* TInput.cpp */; };
 		2775A30C21CAA32F00E0AD35 /* TThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2E921CAA32D00E0AD35 /* TThread.cpp */; };
-		2775A30D21CAA32F00E0AD35 /* TResFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2EA21CAA32E00E0AD35 /* TResFile.cpp */; };
 		2775A30E21CAA32F00E0AD35 /* TConsoleVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2EE21CAA32E00E0AD35 /* TConsoleVariable.cpp */; };
 		2775A30F21CAA32F00E0AD35 /* TCVars.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2EF21CAA32E00E0AD35 /* TCVars.cpp */; };
 		2775A31021CAA32F00E0AD35 /* TFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A2F421CAA32E00E0AD35 /* TFile.cpp */; };
@@ -35,7 +34,6 @@
 		2775A36B21CAA4A300E0AD35 /* FRenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33321CAA4A100E0AD35 /* FRenderTarget.cpp */; };
 		2775A36C21CAA4A300E0AD35 /* FSceneLights.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33421CAA4A100E0AD35 /* FSceneLights.cpp */; };
 		2775A36D21CAA4A300E0AD35 /* FLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33621CAA4A100E0AD35 /* FLight.cpp */; };
-		2775A36E21CAA4A300E0AD35 /* TResourceLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33721CAA4A100E0AD35 /* TResourceLibrary.cpp */; };
 		2775A36F21CAA4A300E0AD35 /* FTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33B21CAA4A100E0AD35 /* FTexture.cpp */; };
 		2775A37021CAA4A300E0AD35 /* FDefaultRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33C21CAA4A100E0AD35 /* FDefaultRenderer.cpp */; };
 		2775A37121CAA4A300E0AD35 /* TPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2775A33D21CAA4A100E0AD35 /* TPipeline.cpp */; };
@@ -73,6 +71,22 @@
 		27F2B59A21E395E10026C0A2 /* FMeshBufferMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */; };
 		27F2B59F21E4F2490026C0A2 /* FRenderTargetMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59B21E4F2480026C0A2 /* FRenderTargetMetal.cpp */; };
 		27F2B5A021E4F2490026C0A2 /* FUniformBufferMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27F2B59C21E4F2480026C0A2 /* FUniformBufferMetal.cpp */; };
+		27FE120522F1DA3200CEB9F1 /* TAssetFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11F222F1DA3100CEB9F1 /* TAssetFile.cpp */; };
+		27FE120622F1DA3200CEB9F1 /* TAssetLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11F322F1DA3100CEB9F1 /* TAssetLibrary.cpp */; };
+		27FE120722F1DA3200CEB9F1 /* TEngineResources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11F422F1DA3100CEB9F1 /* TEngineResources.cpp */; };
+		27FE120822F1DA3200CEB9F1 /* TImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11F822F1DA3100CEB9F1 /* TImage.cpp */; };
+		27FE120922F1DA3200CEB9F1 /* TRegion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11FD22F1DA3100CEB9F1 /* TRegion.cpp */; };
+		27FE120A22F1DA3200CEB9F1 /* TThreadIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11FF22F1DA3100CEB9F1 /* TThreadIO.cpp */; };
+		27FE120B22F1DA3200CEB9F1 /* TThreadLoading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE120022F1DA3200CEB9F1 /* TThreadLoading.cpp */; };
+		27FE120C22F1DA3200CEB9F1 /* TAsset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE120222F1DA3200CEB9F1 /* TAsset.cpp */; };
+		27FE120D22F1DA3200CEB9F1 /* TImageLoaderTGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE120322F1DA3200CEB9F1 /* TImageLoaderTGA.cpp */; };
+		27FE121822F1DA9600CEB9F1 /* FPostProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121022F1DA9500CEB9F1 /* FPostProcess.cpp */; };
+		27FE121922F1DA9600CEB9F1 /* FVTTaskThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121122F1DA9600CEB9F1 /* FVTTaskThread.cpp */; };
+		27FE121A22F1DA9600CEB9F1 /* TVTTextureLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121222F1DA9600CEB9F1 /* TVTTextureLoader.cpp */; };
+		27FE121B22F1DA9600CEB9F1 /* FVTSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121322F1DA9600CEB9F1 /* FVTSystem.cpp */; };
+		27FE121C22F1DA9600CEB9F1 /* FComputeTask.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121722F1DA9600CEB9F1 /* FComputeTask.cpp */; };
+		27FE122022F1DACD00CEB9F1 /* TNodeEnvironment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121D22F1DACD00CEB9F1 /* TNodeEnvironment.cpp */; };
+		27FE122122F1DACD00CEB9F1 /* TSceneLoading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121F22F1DACD00CEB9F1 /* TSceneLoading.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -109,7 +123,6 @@
 		2775A2E721CAA32D00E0AD35 /* TInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TInput.cpp; path = ../../../Sources/Engine/TInput.cpp; sourceTree = "<group>"; };
 		2775A2E821CAA32D00E0AD35 /* TTicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTicker.h; path = ../../../Sources/Engine/TTicker.h; sourceTree = "<group>"; };
 		2775A2E921CAA32D00E0AD35 /* TThread.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TThread.cpp; path = ../../../Sources/Engine/TThread.cpp; sourceTree = "<group>"; };
-		2775A2EA21CAA32E00E0AD35 /* TResFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TResFile.cpp; path = ../../../Sources/Engine/TResFile.cpp; sourceTree = "<group>"; };
 		2775A2EB21CAA32E00E0AD35 /* TStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TStream.h; path = ../../../Sources/Engine/TStream.h; sourceTree = "<group>"; };
 		2775A2EC21CAA32E00E0AD35 /* TInputEventType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TInputEventType.h; path = ../../../Sources/Engine/TInputEventType.h; sourceTree = "<group>"; };
 		2775A2ED21CAA32E00E0AD35 /* TInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TInput.h; path = ../../../Sources/Engine/TInput.h; sourceTree = "<group>"; };
@@ -121,7 +134,6 @@
 		2775A2F321CAA32E00E0AD35 /* TTypeRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTypeRenderer.h; path = ../../../Sources/Engine/TTypeRenderer.h; sourceTree = "<group>"; };
 		2775A2F421CAA32E00E0AD35 /* TFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TFile.cpp; path = ../../../Sources/Engine/TFile.cpp; sourceTree = "<group>"; };
 		2775A2F521CAA32E00E0AD35 /* TTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTypes.h; path = ../../../Sources/Engine/TTypes.h; sourceTree = "<group>"; };
-		2775A2F621CAA32E00E0AD35 /* TResfileDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TResfileDef.h; path = ../../../Sources/Engine/TResfileDef.h; sourceTree = "<group>"; };
 		2775A2F721CAA32E00E0AD35 /* TINIParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TINIParser.h; path = ../../../Sources/Engine/TINIParser.h; sourceTree = "<group>"; };
 		2775A2F821CAA32E00E0AD35 /* TCrc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCrc.h; path = ../../../Sources/Engine/TCrc.h; sourceTree = "<group>"; };
 		2775A2F921CAA32E00E0AD35 /* TTaskThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TTaskThread.cpp; path = ../../../Sources/Engine/TTaskThread.cpp; sourceTree = "<group>"; };
@@ -136,7 +148,6 @@
 		2775A30221CAA32F00E0AD35 /* TQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TQueue.h; path = ../../../Sources/Engine/TQueue.h; sourceTree = "<group>"; };
 		2775A30321CAA32F00E0AD35 /* TTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTimer.h; path = ../../../Sources/Engine/TTimer.h; sourceTree = "<group>"; };
 		2775A30421CAA32F00E0AD35 /* TTypeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTypeNode.h; path = ../../../Sources/Engine/TTypeNode.h; sourceTree = "<group>"; };
-		2775A30521CAA32F00E0AD35 /* TResFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TResFile.h; path = ../../../Sources/Engine/TResFile.h; sourceTree = "<group>"; };
 		2775A30621CAA32F00E0AD35 /* TDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TDevice.h; path = ../../../Sources/Engine/TDevice.h; sourceTree = "<group>"; };
 		2775A30721CAA32F00E0AD35 /* TMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TMath.h; path = ../../../Sources/Engine/TMath.h; sourceTree = "<group>"; };
 		2775A31521CAA3B700E0AD35 /* Matrix3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Matrix3.h; path = ../../../Sources/Engine/math/Matrix3.h; sourceTree = "<group>"; };
@@ -169,7 +180,6 @@
 		2775A33421CAA4A100E0AD35 /* FSceneLights.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FSceneLights.cpp; path = ../../../Sources/Engine/FSceneLights.cpp; sourceTree = "<group>"; };
 		2775A33521CAA4A100E0AD35 /* FRenderResourceTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRenderResourceTable.h; path = ../../../Sources/Engine/FRenderResourceTable.h; sourceTree = "<group>"; };
 		2775A33621CAA4A100E0AD35 /* FLight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FLight.cpp; path = ../../../Sources/Engine/FLight.cpp; sourceTree = "<group>"; };
-		2775A33721CAA4A100E0AD35 /* TResourceLibrary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TResourceLibrary.cpp; path = ../../../Sources/Engine/TResourceLibrary.cpp; sourceTree = "<group>"; };
 		2775A33821CAA4A100E0AD35 /* FRenderTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRenderTarget.h; path = ../../../Sources/Engine/FRenderTarget.h; sourceTree = "<group>"; };
 		2775A33921CAA4A100E0AD35 /* FRenderThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRenderThread.h; path = ../../../Sources/Engine/FRenderThread.h; sourceTree = "<group>"; };
 		2775A33A21CAA4A100E0AD35 /* TMaterial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TMaterial.h; path = ../../../Sources/Engine/TMaterial.h; sourceTree = "<group>"; };
@@ -202,7 +212,6 @@
 		2775A35521CAA4A200E0AD35 /* TMaterial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TMaterial.cpp; path = ../../../Sources/Engine/TMaterial.cpp; sourceTree = "<group>"; };
 		2775A35621CAA4A300E0AD35 /* FShaderParamValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FShaderParamValue.cpp; path = ../../../Sources/Engine/FShaderParamValue.cpp; sourceTree = "<group>"; };
 		2775A35721CAA4A300E0AD35 /* FTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTexture.h; path = ../../../Sources/Engine/FTexture.h; sourceTree = "<group>"; };
-		2775A35821CAA4A300E0AD35 /* TResourceLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TResourceLibrary.h; path = ../../../Sources/Engine/TResourceLibrary.h; sourceTree = "<group>"; };
 		2775A35921CAA4A300E0AD35 /* FLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FLight.h; path = ../../../Sources/Engine/FLight.h; sourceTree = "<group>"; };
 		2775A35A21CAA4A300E0AD35 /* FFullScreenRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFullScreenRender.h; path = ../../../Sources/Engine/FFullScreenRender.h; sourceTree = "<group>"; };
 		2775A35B21CAA4A300E0AD35 /* FShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FShader.cpp; path = ../../../Sources/Engine/FShader.cpp; sourceTree = "<group>"; };
@@ -262,6 +271,39 @@
 		27F2B59C21E4F2480026C0A2 /* FUniformBufferMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = FUniformBufferMetal.cpp; path = ../../../Sources/Engine/Metal/FUniformBufferMetal.cpp; sourceTree = "<group>"; };
 		27F2B59D21E4F2480026C0A2 /* FUniformBufferMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FUniformBufferMetal.h; path = ../../../Sources/Engine/Metal/FUniformBufferMetal.h; sourceTree = "<group>"; };
 		27F2B59E21E4F2490026C0A2 /* FRenderTargetMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FRenderTargetMetal.h; path = ../../../Sources/Engine/Metal/FRenderTargetMetal.h; sourceTree = "<group>"; };
+		27FE11F122F1DA3000CEB9F1 /* TImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TImage.h; path = ../../../Sources/Engine/TImage.h; sourceTree = "<group>"; };
+		27FE11F222F1DA3100CEB9F1 /* TAssetFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TAssetFile.cpp; path = ../../../Sources/Engine/TAssetFile.cpp; sourceTree = "<group>"; };
+		27FE11F322F1DA3100CEB9F1 /* TAssetLibrary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TAssetLibrary.cpp; path = ../../../Sources/Engine/TAssetLibrary.cpp; sourceTree = "<group>"; };
+		27FE11F422F1DA3100CEB9F1 /* TEngineResources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TEngineResources.cpp; path = ../../../Sources/Engine/TEngineResources.cpp; sourceTree = "<group>"; };
+		27FE11F522F1DA3100CEB9F1 /* TThreadLoading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TThreadLoading.h; path = ../../../Sources/Engine/TThreadLoading.h; sourceTree = "<group>"; };
+		27FE11F622F1DA3100CEB9F1 /* TThreadIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TThreadIO.h; path = ../../../Sources/Engine/TThreadIO.h; sourceTree = "<group>"; };
+		27FE11F722F1DA3100CEB9F1 /* TAssetFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAssetFile.h; path = ../../../Sources/Engine/TAssetFile.h; sourceTree = "<group>"; };
+		27FE11F822F1DA3100CEB9F1 /* TImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TImage.cpp; path = ../../../Sources/Engine/TImage.cpp; sourceTree = "<group>"; };
+		27FE11F922F1DA3100CEB9F1 /* TAsset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAsset.h; path = ../../../Sources/Engine/TAsset.h; sourceTree = "<group>"; };
+		27FE11FA22F1DA3100CEB9F1 /* TAssetFileDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAssetFileDef.h; path = ../../../Sources/Engine/TAssetFileDef.h; sourceTree = "<group>"; };
+		27FE11FB22F1DA3100CEB9F1 /* TAssetLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TAssetLibrary.h; path = ../../../Sources/Engine/TAssetLibrary.h; sourceTree = "<group>"; };
+		27FE11FC22F1DA3100CEB9F1 /* TJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TJSON.h; path = ../../../Sources/Engine/TJSON.h; sourceTree = "<group>"; };
+		27FE11FD22F1DA3100CEB9F1 /* TRegion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TRegion.cpp; path = ../../../Sources/Engine/TRegion.cpp; sourceTree = "<group>"; };
+		27FE11FE22F1DA3100CEB9F1 /* TEngineResources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TEngineResources.h; path = ../../../Sources/Engine/TEngineResources.h; sourceTree = "<group>"; };
+		27FE11FF22F1DA3100CEB9F1 /* TThreadIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TThreadIO.cpp; path = ../../../Sources/Engine/TThreadIO.cpp; sourceTree = "<group>"; };
+		27FE120022F1DA3200CEB9F1 /* TThreadLoading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TThreadLoading.cpp; path = ../../../Sources/Engine/TThreadLoading.cpp; sourceTree = "<group>"; };
+		27FE120122F1DA3200CEB9F1 /* TTypeScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTypeScene.h; path = ../../../Sources/Engine/TTypeScene.h; sourceTree = "<group>"; };
+		27FE120222F1DA3200CEB9F1 /* TAsset.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TAsset.cpp; path = ../../../Sources/Engine/TAsset.cpp; sourceTree = "<group>"; };
+		27FE120322F1DA3200CEB9F1 /* TImageLoaderTGA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TImageLoaderTGA.cpp; path = ../../../Sources/Engine/TImageLoaderTGA.cpp; sourceTree = "<group>"; };
+		27FE120422F1DA3200CEB9F1 /* TRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TRegion.h; path = ../../../Sources/Engine/TRegion.h; sourceTree = "<group>"; };
+		27FE120E22F1DA9500CEB9F1 /* FComputeTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FComputeTask.h; path = ../../../Sources/Engine/FComputeTask.h; sourceTree = "<group>"; };
+		27FE120F22F1DA9500CEB9F1 /* FVTSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FVTSystem.h; path = ../../../Sources/Engine/FVTSystem.h; sourceTree = "<group>"; };
+		27FE121022F1DA9500CEB9F1 /* FPostProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FPostProcess.cpp; path = ../../../Sources/Engine/FPostProcess.cpp; sourceTree = "<group>"; };
+		27FE121122F1DA9600CEB9F1 /* FVTTaskThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FVTTaskThread.cpp; path = ../../../Sources/Engine/FVTTaskThread.cpp; sourceTree = "<group>"; };
+		27FE121222F1DA9600CEB9F1 /* TVTTextureLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TVTTextureLoader.cpp; path = ../../../Sources/Engine/TVTTextureLoader.cpp; sourceTree = "<group>"; };
+		27FE121322F1DA9600CEB9F1 /* FVTSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FVTSystem.cpp; path = ../../../Sources/Engine/FVTSystem.cpp; sourceTree = "<group>"; };
+		27FE121422F1DA9600CEB9F1 /* TVTTextureLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TVTTextureLoader.h; path = ../../../Sources/Engine/TVTTextureLoader.h; sourceTree = "<group>"; };
+		27FE121522F1DA9600CEB9F1 /* FPostProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FPostProcess.h; path = ../../../Sources/Engine/FPostProcess.h; sourceTree = "<group>"; };
+		27FE121622F1DA9600CEB9F1 /* FVTTaskThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FVTTaskThread.h; path = ../../../Sources/Engine/FVTTaskThread.h; sourceTree = "<group>"; };
+		27FE121722F1DA9600CEB9F1 /* FComputeTask.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FComputeTask.cpp; path = ../../../Sources/Engine/FComputeTask.cpp; sourceTree = "<group>"; };
+		27FE121D22F1DACD00CEB9F1 /* TNodeEnvironment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TNodeEnvironment.cpp; path = ../../../Sources/Engine/TNodeEnvironment.cpp; sourceTree = "<group>"; };
+		27FE121E22F1DACD00CEB9F1 /* TNodeEnvironment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNodeEnvironment.h; path = ../../../Sources/Engine/TNodeEnvironment.h; sourceTree = "<group>"; };
+		27FE121F22F1DACD00CEB9F1 /* TSceneLoading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TSceneLoading.cpp; path = ../../../Sources/Engine/TSceneLoading.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -303,6 +345,13 @@
 			children = (
 				2775A2E321CAA32D00E0AD35 /* IInstrusivePtr.hpp */,
 				2775A2F221CAA32E00E0AD35 /* IReferenceCounted.h */,
+				27FE120222F1DA3200CEB9F1 /* TAsset.cpp */,
+				27FE11F922F1DA3100CEB9F1 /* TAsset.h */,
+				27FE11F222F1DA3100CEB9F1 /* TAssetFile.cpp */,
+				27FE11F722F1DA3100CEB9F1 /* TAssetFile.h */,
+				27FE11FA22F1DA3100CEB9F1 /* TAssetFileDef.h */,
+				27FE11F322F1DA3100CEB9F1 /* TAssetLibrary.cpp */,
+				27FE11FB22F1DA3100CEB9F1 /* TAssetLibrary.h */,
 				2775A2EE21CAA32E00E0AD35 /* TConsoleVariable.cpp */,
 				2775A2FA21CAA32E00E0AD35 /* TConsoleVariable.h */,
 				2775A2FE21CAA32E00E0AD35 /* TCrc.cpp */,
@@ -314,26 +363,35 @@
 				2713373E21CCAFA5001BAE3A /* TDeviceIOS.h */,
 				27BE848421D5109000E1F9FA /* TDirectorCaller.h */,
 				27BE848521D5109000E1F9FA /* TDirectorCaller.mm */,
+				27FE11F422F1DA3100CEB9F1 /* TEngineResources.cpp */,
+				27FE11FE22F1DA3100CEB9F1 /* TEngineResources.h */,
 				2775A2F421CAA32E00E0AD35 /* TFile.cpp */,
 				2775A2E421CAA32D00E0AD35 /* TFile.h */,
+				27FE11F822F1DA3100CEB9F1 /* TImage.cpp */,
+				27FE11F122F1DA3000CEB9F1 /* TImage.h */,
+				27FE120322F1DA3200CEB9F1 /* TImageLoaderTGA.cpp */,
 				2775A2E121CAA32D00E0AD35 /* TINIParser.cpp */,
 				2775A2F721CAA32E00E0AD35 /* TINIParser.h */,
 				2775A2E721CAA32D00E0AD35 /* TInput.cpp */,
 				2775A2ED21CAA32E00E0AD35 /* TInput.h */,
 				2775A2EC21CAA32E00E0AD35 /* TInputEventType.h */,
+				27FE11FC22F1DA3100CEB9F1 /* TJSON.h */,
 				2775A2E621CAA32D00E0AD35 /* TLog.cpp */,
 				2775A30021CAA32F00E0AD35 /* TLog.h */,
 				2775A30721CAA32F00E0AD35 /* TMath.h */,
 				2775A30221CAA32F00E0AD35 /* TQueue.h */,
-				2775A2EA21CAA32E00E0AD35 /* TResFile.cpp */,
-				2775A30521CAA32F00E0AD35 /* TResFile.h */,
-				2775A2F621CAA32E00E0AD35 /* TResfileDef.h */,
+				27FE11FD22F1DA3100CEB9F1 /* TRegion.cpp */,
+				27FE120422F1DA3200CEB9F1 /* TRegion.h */,
 				2775A2EB21CAA32E00E0AD35 /* TStream.h */,
 				2775A2F021CAA32E00E0AD35 /* TStringExt.h */,
 				2775A2F921CAA32E00E0AD35 /* TTaskThread.cpp */,
 				2775A2FC21CAA32E00E0AD35 /* TTaskThread.h */,
 				2775A2E921CAA32D00E0AD35 /* TThread.cpp */,
 				2775A30121CAA32F00E0AD35 /* TThread.h */,
+				27FE11FF22F1DA3100CEB9F1 /* TThreadIO.cpp */,
+				27FE11F622F1DA3100CEB9F1 /* TThreadIO.h */,
+				27FE120022F1DA3200CEB9F1 /* TThreadLoading.cpp */,
+				27FE11F522F1DA3100CEB9F1 /* TThreadLoading.h */,
 				2775A2E821CAA32D00E0AD35 /* TTicker.h */,
 				2775A2FF21CAA32F00E0AD35 /* TTimer.cpp */,
 				2775A30321CAA32F00E0AD35 /* TTimer.h */,
@@ -343,6 +401,7 @@
 				2775A2F321CAA32E00E0AD35 /* TTypeRenderer.h */,
 				2775A2FD21CAA32E00E0AD35 /* TTypeRenderResource.h */,
 				2775A2F521CAA32E00E0AD35 /* TTypes.h */,
+				27FE120122F1DA3200CEB9F1 /* TTypeScene.h */,
 				2775A2E521CAA32D00E0AD35 /* TUtils.h */,
 				2713374C21CCB7D2001BAE3A /* TViewController.h */,
 				2713374D21CCB7D2001BAE3A /* TViewController.mm */,
@@ -380,6 +439,8 @@
 				2775A32721CAA3DF00E0AD35 /* Shaders */,
 				278FB9C121F773090031A5E3 /* FArgumentBuffer.cpp */,
 				278FB9C021F773090031A5E3 /* FArgumentBuffer.h */,
+				27FE121722F1DA9600CEB9F1 /* FComputeTask.cpp */,
+				27FE120E22F1DA9500CEB9F1 /* FComputeTask.h */,
 				2775A33C21CAA4A100E0AD35 /* FDefaultRenderer.cpp */,
 				2775A33F21CAA4A100E0AD35 /* FDefaultRenderer.h */,
 				2775A32B21CAA4A000E0AD35 /* FFrameResources.cpp */,
@@ -392,6 +453,8 @@
 				2775A35421CAA4A200E0AD35 /* FMeshBuffer.h */,
 				2775A35021CAA4A200E0AD35 /* FPipeline.cpp */,
 				2775A35F21CAA4A300E0AD35 /* FPipeline.h */,
+				27FE121022F1DA9500CEB9F1 /* FPostProcess.cpp */,
+				27FE121522F1DA9600CEB9F1 /* FPostProcess.h */,
 				2775A33021CAA4A000E0AD35 /* FPrimitive.cpp */,
 				2775A35D21CAA4A300E0AD35 /* FPrimitive.h */,
 				2775A32F21CAA4A000E0AD35 /* FRenderer.cpp */,
@@ -423,6 +486,10 @@
 				2775A34C21CAA4A200E0AD35 /* FUniformBuffer.h */,
 				2775A34121CAA4A100E0AD35 /* FUniformBufferView.h */,
 				2775A35C21CAA4A300E0AD35 /* FViewport.h */,
+				27FE121322F1DA9600CEB9F1 /* FVTSystem.cpp */,
+				27FE120F22F1DA9500CEB9F1 /* FVTSystem.h */,
+				27FE121122F1DA9600CEB9F1 /* FVTTaskThread.cpp */,
+				27FE121622F1DA9600CEB9F1 /* FVTTaskThread.h */,
 				2775A35521CAA4A200E0AD35 /* TMaterial.cpp */,
 				2775A33A21CAA4A100E0AD35 /* TMaterial.h */,
 				2775A33121CAA4A000E0AD35 /* TMaterialInstance.cpp */,
@@ -433,14 +500,14 @@
 				2775A34221CAA4A100E0AD35 /* TPipeline.h */,
 				2775A34621CAA4A200E0AD35 /* TResource.cpp */,
 				2775A33E21CAA4A100E0AD35 /* TResource.h */,
-				2775A33721CAA4A100E0AD35 /* TResourceLibrary.cpp */,
-				2775A35821CAA4A300E0AD35 /* TResourceLibrary.h */,
 				27219D3E21E4F31F00E690D2 /* TShader.cpp */,
 				27219D3F21E4F31F00E690D2 /* TShader.h */,
 				2775A36021CAA4A300E0AD35 /* TShaderBinding.cpp */,
 				2775A34B21CAA4A200E0AD35 /* TShaderBinding.h */,
 				2775A34D21CAA4A200E0AD35 /* TTexture.cpp */,
 				2775A35321CAA4A200E0AD35 /* TTexture.h */,
+				27FE121222F1DA9600CEB9F1 /* TVTTextureLoader.cpp */,
+				27FE121422F1DA9600CEB9F1 /* TVTTextureLoader.h */,
 			);
 			name = Render;
 			sourceTree = "<group>";
@@ -500,12 +567,15 @@
 				2775A38E21CAA4EF00E0AD35 /* TNodeCamera.h */,
 				2775A38A21CAA4EF00E0AD35 /* TNodeCameraNav.cpp */,
 				2775A38621CAA4EF00E0AD35 /* TNodeCameraNav.h */,
+				27FE121D22F1DACD00CEB9F1 /* TNodeEnvironment.cpp */,
+				27FE121E22F1DACD00CEB9F1 /* TNodeEnvironment.h */,
 				2775A38721CAA4EF00E0AD35 /* TNodeLight.cpp */,
 				2775A38C21CAA4EF00E0AD35 /* TNodeLight.h */,
 				2775A38821CAA4EF00E0AD35 /* TNodeStaticMesh.cpp */,
 				2775A38D21CAA4EF00E0AD35 /* TNodeStaticMesh.h */,
 				2775A38F21CAA4EF00E0AD35 /* TScene.cpp */,
 				2775A38221CAA4EF00E0AD35 /* TScene.h */,
+				27FE121F22F1DACD00CEB9F1 /* TSceneLoading.cpp */,
 			);
 			name = Scene;
 			sourceTree = "<group>";
@@ -591,9 +661,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27FE120522F1DA3200CEB9F1 /* TAssetFile.cpp in Sources */,
 				2775A31021CAA32F00E0AD35 /* TFile.cpp in Sources */,
-				2775A30D21CAA32F00E0AD35 /* TResFile.cpp in Sources */,
+				27FE120622F1DA3200CEB9F1 /* TAssetLibrary.cpp in Sources */,
 				2775A39121CAA4EF00E0AD35 /* TNode.cpp in Sources */,
+				27FE122022F1DACD00CEB9F1 /* TNodeEnvironment.cpp in Sources */,
 				27F2B5A021E4F2490026C0A2 /* FUniformBufferMetal.cpp in Sources */,
 				2713374A21CCB398001BAE3A /* FMetalView.mm in Sources */,
 				2775A37621CAA4A300E0AD35 /* TTexture.cpp in Sources */,
@@ -606,6 +678,7 @@
 				2775A37021CAA4A300E0AD35 /* FDefaultRenderer.cpp in Sources */,
 				2713373F21CCAFA5001BAE3A /* TDeviceIOS.cpp in Sources */,
 				2775A36D21CAA4A300E0AD35 /* FLight.cpp in Sources */,
+				27FE121822F1DA9600CEB9F1 /* FPostProcess.cpp in Sources */,
 				2775A30C21CAA32F00E0AD35 /* TThread.cpp in Sources */,
 				2775A37521CAA4A300E0AD35 /* FFullScreenRender.cpp in Sources */,
 				2775A39621CAA4EF00E0AD35 /* TScene.cpp in Sources */,
@@ -613,30 +686,38 @@
 				2775A39221CAA4EF00E0AD35 /* TNodeLight.cpp in Sources */,
 				2775A37321CAA4A300E0AD35 /* TResource.cpp in Sources */,
 				27F2B59121E392240026C0A2 /* FTextureMetal.cpp in Sources */,
+				27FE120D22F1DA3200CEB9F1 /* TImageLoaderTGA.cpp in Sources */,
+				27FE121B22F1DA9600CEB9F1 /* FVTSystem.cpp in Sources */,
 				2775A36921CAA4A300E0AD35 /* TMaterialInstance.cpp in Sources */,
 				2775A36F21CAA4A300E0AD35 /* FTexture.cpp in Sources */,
 				2775A36621CAA4A300E0AD35 /* FUniformBuffer.cpp in Sources */,
+				27FE120C22F1DA3200CEB9F1 /* TAsset.cpp in Sources */,
 				2775A30E21CAA32F00E0AD35 /* TConsoleVariable.cpp in Sources */,
 				2775A37821CAA4A300E0AD35 /* TMeshBuffer.cpp in Sources */,
+				27FE120922F1DA3200CEB9F1 /* TRegion.cpp in Sources */,
 				2775A30B21CAA32F00E0AD35 /* TInput.cpp in Sources */,
+				27FE120822F1DA3200CEB9F1 /* TImage.cpp in Sources */,
 				2775A39421CAA4EF00E0AD35 /* TNodeCamera.cpp in Sources */,
 				27219D4321E4F48800E690D2 /* FShaderMetal.cpp in Sources */,
 				27F2B59A21E395E10026C0A2 /* FMeshBufferMetal.cpp in Sources */,
+				27FE121922F1DA9600CEB9F1 /* FVTTaskThread.cpp in Sources */,
 				278FB9BF21F772F70031A5E3 /* FArgumentBufferMetal.cpp in Sources */,
 				2775A37721CAA4A300E0AD35 /* FShaderBinding.cpp in Sources */,
 				2775A36421CAA4A300E0AD35 /* FMeshBuffer.cpp in Sources */,
+				27FE120722F1DA3200CEB9F1 /* TEngineResources.cpp in Sources */,
 				27F2B59721E394F20026C0A2 /* FPipelineMetal.cpp in Sources */,
 				27A3DC9C21D1263A00CF52C1 /* FRHIMetal.cpp in Sources */,
+				27FE122122F1DACD00CEB9F1 /* TSceneLoading.cpp in Sources */,
 				27F2B59421E393890026C0A2 /* FShaderBindingMetal.cpp in Sources */,
 				27219D4021E4F32000E690D2 /* TShader.cpp in Sources */,
 				2775A39521CAA4EF00E0AD35 /* TNodeCameraNav.cpp in Sources */,
 				2775A37C21CAA4A300E0AD35 /* FShaderParamValue.cpp in Sources */,
 				2775A36A21CAA4A300E0AD35 /* FRenderResourceHeap.cpp in Sources */,
 				2775A36C21CAA4A300E0AD35 /* FSceneLights.cpp in Sources */,
+				27FE121A22F1DA9600CEB9F1 /* TVTTextureLoader.cpp in Sources */,
 				2775A37221CAA4A300E0AD35 /* FRenderResource.cpp in Sources */,
 				2775A31121CAA32F00E0AD35 /* TTaskThread.cpp in Sources */,
 				2775A36821CAA4A300E0AD35 /* FPrimitive.cpp in Sources */,
-				2775A36E21CAA4A300E0AD35 /* TResourceLibrary.cpp in Sources */,
 				2775A30821CAA32F00E0AD35 /* TINIParser.cpp in Sources */,
 				2775A31321CAA32F00E0AD35 /* TTimer.cpp in Sources */,
 				2775A3A321CAA52500E0AD35 /* TEngine.cpp in Sources */,
@@ -644,8 +725,11 @@
 				2775A36721CAA4A300E0AD35 /* FRenderer.cpp in Sources */,
 				274275AE21F0D4D60031F4EE /* S_FullScreen.metal in Sources */,
 				2775A36521CAA4A300E0AD35 /* FFrameResources.cpp in Sources */,
+				27FE120A22F1DA3200CEB9F1 /* TThreadIO.cpp in Sources */,
 				2775A37921CAA4A300E0AD35 /* FPipeline.cpp in Sources */,
 				2775A37D21CAA4A300E0AD35 /* FShader.cpp in Sources */,
+				27FE121C22F1DA9600CEB9F1 /* FComputeTask.cpp in Sources */,
+				27FE120B22F1DA3200CEB9F1 /* TThreadLoading.cpp in Sources */,
 				2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */,
 				27F2B59F21E4F2490026C0A2 /* FRenderTargetMetal.cpp in Sources */,
 				2775A37E21CAA4A300E0AD35 /* TShaderBinding.cpp in Sources */,
@@ -792,7 +876,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "arm64 arm64e x86_64";
+				VALID_ARCHS = "arm64 arm64e";
 			};
 			name = Debug;
 		};
@@ -809,7 +893,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "arm64 arm64e x86_64";
+				VALID_ARCHS = "arm64 arm64e";
 			};
 			name = Release;
 		};

@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FUniformBufferMetal::FUniformBufferMetal(uint32 InStructSize)
-		: FUniformBuffer(InStructSize)
+	FUniformBufferMetal::FUniformBufferMetal(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag)
+		: FUniformBuffer(InStructureSizeInBytes, Elements, InFlag)
 	{
         ConstantBuffer = nil;
 	}

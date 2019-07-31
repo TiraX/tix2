@@ -123,7 +123,7 @@ namespace tix
 		TextureDesc.Mips = 1;
 
 		int8 TextureName[128];
-		sprintf_s(TextureName, 128, "vt_pages/%02d_%02d_%02d.page", Mip, PageX, PageY);
+		sprintf(TextureName, "vt_pages/%02d_%02d_%02d.page", Mip, PageX, PageY);
 		TFile F;
 		if (F.Open(TextureName, EFA_READ))
 		{
@@ -136,7 +136,7 @@ namespace tix
 			uint8* Buffer = ti_new uint8[Size];
 			F.Read(Buffer, Size, Size);
 			Texture->AddSurface(FVTSystem::PPSize, FVTSystem::PPSize, Buffer, RowPitch, Size);
-			ti_delete Buffer;
+			ti_delete[] Buffer;
 
 			return Texture;
 		}

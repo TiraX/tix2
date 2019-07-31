@@ -25,10 +25,8 @@ namespace tix
 #define DEBUG_REGIONS	0
 
 #if DEBUG_REGIONS
-#define DEBUG_REGION_PRINT	_LOG
 #define DEBUG_VERIFY_INTEGRITY() verify_integrity();
 #else
-#define DEBUG_REGION_PRINT
 #define DEBUG_VERIFY_INTEGRITY()
 #endif
 
@@ -43,12 +41,9 @@ namespace tix
 
 		TI_ASSERT(XCount > 0 && YCount > 0);
 
-		DEBUG_REGION_PRINT(Log, "find_available_region %dx%d (%dx%d)\n", Width, Height, XCount, YCount);
-
 		for (uint32 i = 0; i < AvailableRegions.size(); i++)
 		{
 			const TRegionDesc& AvailableRegionDesc = Regions[AvailableRegions[i]];
-			DEBUG_REGION_PRINT(Log, "\ttest TRegionDesc %d %dx%d\n", i, AvailableRegionDesc.XCount, AvailableRegionDesc.YCount);
 			if (AvailableRegionDesc.XCount >= XCount && AvailableRegionDesc.YCount >= YCount)
 			{
 				// better than current match?
@@ -66,8 +61,6 @@ namespace tix
 				}
 			}
 		}
-
-		DEBUG_REGION_PRINT(Log, "\tmatch=%d\n", Match);
 
 		if (Match != -1)
 		{
@@ -112,15 +105,12 @@ namespace tix
 
 		TI_ASSERT(NewXCount > 0 && NewYCount > 0);
 
-		DEBUG_REGION_PRINT(Log, "subdivide TRegionDesc %dx%d -> %dx%d\n", XCount, YCount, NewXCount, NewYCount);
-
 		// right residue?
 		if (XCount - NewXCount > 0)
 		{
 			TRegionDesc* Right = &Regions[Offset + NewXCount];
 			Right->XCount = XCount - NewXCount;
 			Right->YCount = NewYCount;
-			DEBUG_REGION_PRINT(Log, "\tright %dx%d\n", Right->XCount, Right->YCount);
 			AvailableRegions.push_back(Offset + NewXCount);
 
 			DEBUG_VERIFY_INTEGRITY();
@@ -132,7 +122,6 @@ namespace tix
 			TRegionDesc* Bottom = &Regions[Offset + Pitch * NewYCount];
 			Bottom->XCount = XCount;
 			Bottom->YCount = YCount - NewYCount;
-			DEBUG_REGION_PRINT(Log, "\tbottom %dx%d\n", Bottom->XCount, Bottom->YCount);
 			AvailableRegions.push_back(Offset + Pitch * NewYCount);
 
 			DEBUG_VERIFY_INTEGRITY();
