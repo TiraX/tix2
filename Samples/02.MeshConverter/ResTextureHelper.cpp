@@ -190,7 +190,7 @@ namespace tix
 			TI_ASSERT(SrcImage->GetMipmapCount() > 1);
 			int32 SrcMipLevel = Miplevel - 1;
 			int32 W = SrcImage->GetMipmap(SrcMipLevel).W;
-			int32 H = SrcImage->GetMipmap(SrcMipLevel).H;
+			//int32 H = SrcImage->GetMipmap(SrcMipLevel).H;
 
 			// Down sample to generate mips
 

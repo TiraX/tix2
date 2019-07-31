@@ -108,7 +108,7 @@ namespace tix
 		int8 ThreadName[128];
 		for (int32 i = 0 ; i < MaxThreadCount ; ++ i)
 		{
-			sprintf_s(ThreadName, 128, "ResTask%d", i);
+			sprintf(ThreadName, "ResTask%d", i);
 			Threads[i] = ti_new TResTaskThread(ThreadName, this, i);
 			Threads[i]->Start();
 		}

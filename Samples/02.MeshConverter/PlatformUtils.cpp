@@ -71,6 +71,7 @@ namespace tix
 			(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 #else
 		TI_ASSERT(0);
+        return false;
 #endif
 	}
 
@@ -139,6 +140,7 @@ namespace tix
 		return sysinfo.dwNumberOfProcessors;
 #else
 		TI_ASSERT(0);
+        return 0;
 #endif
 	}
 }

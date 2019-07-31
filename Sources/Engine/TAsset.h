@@ -10,6 +10,8 @@ namespace tix
 	class TAssetLoader
 	{
 	public:
+        TAssetLoader() {}
+        virtual ~TAssetLoader() {}
 		virtual void Load(TAssetPtr InAsset) = 0;
 	};
 

@@ -666,7 +666,7 @@ namespace tix
 		}
 		for (int32 Mip = 0 ; Mip < (int32)Mipmaps.size() ; ++ Mip)
 		{
-			int32 Width = Mipmaps[Mip].W;
+			//int32 Width = Mipmaps[Mip].W;
 			int32 Height = Mipmaps[Mip].H;
 			int32 Pitch = Mipmaps[Mip].RowPitch;
 			uint8* Data = (uint8*)Mipmaps[Mip].Data.GetBuffer();

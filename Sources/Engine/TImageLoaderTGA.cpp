@@ -304,7 +304,7 @@ namespace tix
 	{
 		int32 Width = Mipmaps[MipIndex].W;
 		int32 Height = Mipmaps[MipIndex].H;
-		int32 Pitch = Mipmaps[MipIndex].RowPitch;
+		//int32 Pitch = Mipmaps[MipIndex].RowPitch;
 		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
 
 		FILE *fp;

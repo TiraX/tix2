@@ -69,8 +69,8 @@ namespace tix
 		TThreadLoading();
 		virtual ~TThreadLoading();
 
-		virtual void Start();
-		virtual void Stop();
+		virtual void Start() override;
+		virtual void Stop() override;
 
 	protected:
 

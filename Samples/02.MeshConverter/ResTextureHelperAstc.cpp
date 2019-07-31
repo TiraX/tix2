@@ -284,8 +284,8 @@ namespace tix
 		//ASTCConverter += TempASTCName + ConvertParam;
 		//_LOG(Log, "Converting : [%s] to ASTC.\n", Filename.c_str());
 
-		TVector<TStreamPtr> AstcFileBuffers;
-		int32 Faces = 1;
+		//TVector<TStreamPtr> AstcFileBuffers;
+		//int32 Faces = 1;
 		// TGA do not support Cubemap
 		//if (DDSTexture->Desc.Type == ETT_TEXTURE_CUBE)
 		//	Faces = 6;
@@ -370,7 +370,7 @@ namespace tix
 			break;
 		}
 
-		bool bHasAlpha;
+		bool bHasAlpha = false;
 		if (SrcFormat == EPF_RGB8)
 		{
 			_LOG(Error, "Tga will never be RGB8 format.\n");

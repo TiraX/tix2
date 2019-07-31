@@ -7,9 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		274300CA22F1C5F600E11432 /* TImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300C222F1C5F500E11432 /* TImage.cpp */; };
+		274300CB22F1C5F600E11432 /* TThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300C422F1C5F500E11432 /* TThread.cpp */; };
+		274300CC22F1C5F600E11432 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300C822F1C5F600E11432 /* TLog.cpp */; };
+		274300CD22F1C5F600E11432 /* TImageLoaderTGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300C922F1C5F600E11432 /* TImageLoaderTGA.cpp */; };
+		274300D822F1C63F00E11432 /* ResInstancesHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300CF22F1C63F00E11432 /* ResInstancesHelper.cpp */; };
+		274300D922F1C63F00E11432 /* ResMultiThreadTask.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D022F1C63F00E11432 /* ResMultiThreadTask.cpp */; };
+		274300DA22F1C63F00E11432 /* ResTextureHelperTga.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D322F1C63F00E11432 /* ResTextureHelperTga.cpp */; };
+		274300DB22F1C63F00E11432 /* PlatformUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D522F1C63F00E11432 /* PlatformUtils.cpp */; };
+		274300DC22F1C63F00E11432 /* ResSceneHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D622F1C63F00E11432 /* ResSceneHelper.cpp */; };
 		274A654C21DB85BC00C08668 /* ResConverter in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D5252721DB628E0006D934 /* ResConverter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		276B5A6421DBC74800815317 /* TImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276B5A5F21DBC74800815317 /* TImage.cpp */; };
-		276B5A6521DBC74800815317 /* TImageLoaderTGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276B5A6021DBC74800815317 /* TImageLoaderTGA.cpp */; };
 		276B5A6621DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276B5A6321DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp */; };
 		27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */; };
 		27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */; };
@@ -25,6 +32,7 @@
 		27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */; };
 		277E9DF721DB818800F1C00B /* TCrc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF521DB818800F1C00B /* TCrc.cpp */; };
 		277E9DFA21DB819900F1C00B /* TFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF921DB819800F1C00B /* TFile.cpp */; };
+		27AF57B822F1CF3D0043AD71 /* libispc_texcomp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */; };
 		27D5252B21DB628E0006D934 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D5252A21DB628E0006D934 /* main.m */; };
 /* End PBXBuildFile section */
 
@@ -42,10 +50,25 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		276B5A5F21DBC74800815317 /* TImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TImage.cpp; sourceTree = SOURCE_ROOT; };
-		276B5A6021DBC74800815317 /* TImageLoaderTGA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TImageLoaderTGA.cpp; sourceTree = SOURCE_ROOT; };
+		274300C222F1C5F500E11432 /* TImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TImage.cpp; path = ../../../Sources/Engine/TImage.cpp; sourceTree = "<group>"; };
+		274300C322F1C5F500E11432 /* TLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TLog.h; path = ../../../Sources/Engine/TLog.h; sourceTree = "<group>"; };
+		274300C422F1C5F500E11432 /* TThread.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TThread.cpp; path = ../../../Sources/Engine/TThread.cpp; sourceTree = "<group>"; };
+		274300C522F1C5F500E11432 /* TImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TImage.h; path = ../../../Sources/Engine/TImage.h; sourceTree = "<group>"; };
+		274300C622F1C5F500E11432 /* TThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TThread.h; path = ../../../Sources/Engine/TThread.h; sourceTree = "<group>"; };
+		274300C722F1C5F500E11432 /* TJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TJSON.h; path = ../../../Sources/Engine/TJSON.h; sourceTree = "<group>"; };
+		274300C822F1C5F600E11432 /* TLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TLog.cpp; path = ../../../Sources/Engine/TLog.cpp; sourceTree = "<group>"; };
+		274300C922F1C5F600E11432 /* TImageLoaderTGA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TImageLoaderTGA.cpp; path = ../../../Sources/Engine/TImageLoaderTGA.cpp; sourceTree = "<group>"; };
+		274300CE22F1C63F00E11432 /* PlatformUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlatformUtils.h; sourceTree = SOURCE_ROOT; };
+		274300CF22F1C63F00E11432 /* ResInstancesHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResInstancesHelper.cpp; sourceTree = SOURCE_ROOT; };
+		274300D022F1C63F00E11432 /* ResMultiThreadTask.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResMultiThreadTask.cpp; sourceTree = SOURCE_ROOT; };
+		274300D122F1C63F00E11432 /* ResSceneHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResSceneHelper.h; sourceTree = SOURCE_ROOT; };
+		274300D222F1C63F00E11432 /* ResSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResSettings.h; sourceTree = SOURCE_ROOT; };
+		274300D322F1C63F00E11432 /* ResTextureHelperTga.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperTga.cpp; sourceTree = SOURCE_ROOT; };
+		274300D422F1C63F00E11432 /* ResInstancesHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResInstancesHelper.h; sourceTree = SOURCE_ROOT; };
+		274300D522F1C63F00E11432 /* PlatformUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformUtils.cpp; sourceTree = SOURCE_ROOT; };
+		274300D622F1C63F00E11432 /* ResSceneHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResSceneHelper.cpp; sourceTree = SOURCE_ROOT; };
+		274300D722F1C63F00E11432 /* ResMultiThreadTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMultiThreadTask.h; sourceTree = SOURCE_ROOT; };
 		276B5A6121DBC74800815317 /* dds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dds.h; sourceTree = SOURCE_ROOT; };
-		276B5A6221DBC74800815317 /* TImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TImage.h; sourceTree = SOURCE_ROOT; };
 		276B5A6321DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelpeDXTDecoder.cpp; sourceTree = SOURCE_ROOT; };
 		27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResShaderBindingHelper.cpp; sourceTree = SOURCE_ROOT; };
 		27745B2221DB68FB006CDD60 /* ResConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResConverter.h; sourceTree = SOURCE_ROOT; };
@@ -73,6 +96,7 @@
 		277E9DF621DB818800F1C00B /* TCrc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCrc.h; path = ../../../Sources/Engine/TCrc.h; sourceTree = "<group>"; };
 		277E9DF821DB819800F1C00B /* TFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TFile.h; path = ../../../Sources/Engine/TFile.h; sourceTree = "<group>"; };
 		277E9DF921DB819800F1C00B /* TFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TFile.cpp; path = ../../../Sources/Engine/TFile.cpp; sourceTree = "<group>"; };
+		27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libispc_texcomp.dylib; path = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx/libispc_texcomp.dylib"; sourceTree = "<group>"; };
 		27D5252721DB628E0006D934 /* ResConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResConverter; sourceTree = BUILT_PRODUCTS_DIR; };
 		27D5252A21DB628E0006D934 /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -82,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27AF57B822F1CF3D0043AD71 /* libispc_texcomp.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +116,7 @@
 		2718BADD21DB7106007E008B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -107,6 +133,14 @@
 		277E9DF421DB816E00F1C00B /* TiX2 */ = {
 			isa = PBXGroup;
 			children = (
+				274300C222F1C5F500E11432 /* TImage.cpp */,
+				274300C522F1C5F500E11432 /* TImage.h */,
+				274300C922F1C5F600E11432 /* TImageLoaderTGA.cpp */,
+				274300C722F1C5F500E11432 /* TJSON.h */,
+				274300C822F1C5F600E11432 /* TLog.cpp */,
+				274300C322F1C5F500E11432 /* TLog.h */,
+				274300C422F1C5F500E11432 /* TThread.cpp */,
+				274300C622F1C5F500E11432 /* TThread.h */,
 				277E9DF521DB818800F1C00B /* TCrc.cpp */,
 				277E9DF621DB818800F1C00B /* TCrc.h */,
 				277E9DF921DB819800F1C00B /* TFile.cpp */,
@@ -138,10 +172,14 @@
 				27745B2821DB68FB006CDD60 /* ResConverter */,
 				277E9DF421DB816E00F1C00B /* TiX2 */,
 				276B5A6121DBC74800815317 /* dds.h */,
+				274300D522F1C63F00E11432 /* PlatformUtils.cpp */,
+				274300CE22F1C63F00E11432 /* PlatformUtils.h */,
 				27745B2F21DB68FB006CDD60 /* ResConverter.cpp */,
 				27745B2221DB68FB006CDD60 /* ResConverter.h */,
 				27745B3221DB68FC006CDD60 /* ResHelper.cpp */,
 				27745B2B21DB68FB006CDD60 /* ResHelper.h */,
+				274300CF22F1C63F00E11432 /* ResInstancesHelper.cpp */,
+				274300D422F1C63F00E11432 /* ResInstancesHelper.h */,
 				27745B2621DB68FB006CDD60 /* ResMaterialHelper.cpp */,
 				27745B3021DB68FB006CDD60 /* ResMaterialHelper.h */,
 				27745B3421DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp */,
@@ -149,8 +187,13 @@
 				27745B2C21DB68FB006CDD60 /* ResMeshHelper.cpp */,
 				27745B2721DB68FB006CDD60 /* ResMeshHelper.h */,
 				27745B2521DB68FB006CDD60 /* ResMeshHelperObj.cpp */,
+				274300D022F1C63F00E11432 /* ResMultiThreadTask.cpp */,
+				274300D722F1C63F00E11432 /* ResMultiThreadTask.h */,
 				27745B3321DB68FC006CDD60 /* ResPipelineHelper.cpp */,
 				27745B3521DB68FC006CDD60 /* ResPipelineHelper.h */,
+				274300D622F1C63F00E11432 /* ResSceneHelper.cpp */,
+				274300D122F1C63F00E11432 /* ResSceneHelper.h */,
+				274300D222F1C63F00E11432 /* ResSettings.h */,
 				27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */,
 				27745B2421DB68FB006CDD60 /* ResShaderBindingHelper.h */,
 				276B5A6321DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp */,
@@ -158,11 +201,9 @@
 				27745B2A21DB68FB006CDD60 /* ResTextureHelper.h */,
 				27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */,
 				27745B3621DB68FC006CDD60 /* ResTextureHelperDds.cpp */,
+				274300D322F1C63F00E11432 /* ResTextureHelperTga.cpp */,
 				27745B3121DB68FC006CDD60 /* stdafx.cpp */,
 				27745B2D21DB68FB006CDD60 /* stdafx.h */,
-				276B5A5F21DBC74800815317 /* TImage.cpp */,
-				276B5A6221DBC74800815317 /* TImage.h */,
-				276B5A6021DBC74800815317 /* TImageLoaderTGA.cpp */,
 			);
 			path = ResConverter;
 			sourceTree = "<group>";
@@ -223,24 +264,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				274300DB22F1C63F00E11432 /* PlatformUtils.cpp in Sources */,
 				27745B3F21DB68FC006CDD60 /* ResHelper.cpp in Sources */,
+				274300DC22F1C63F00E11432 /* ResSceneHelper.cpp in Sources */,
+				274300CA22F1C5F600E11432 /* TImage.cpp in Sources */,
 				27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */,
-				276B5A6421DBC74800815317 /* TImage.cpp in Sources */,
 				27745B3E21DB68FC006CDD60 /* stdafx.cpp in Sources */,
 				27745B4021DB68FC006CDD60 /* ResPipelineHelper.cpp in Sources */,
+				274300DA22F1C63F00E11432 /* ResTextureHelperTga.cpp in Sources */,
 				27745B3C21DB68FC006CDD60 /* ResMeshHelper.cpp in Sources */,
-				276B5A6521DBC74800815317 /* TImageLoaderTGA.cpp in Sources */,
 				27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */,
+				274300CC22F1C5F600E11432 /* TLog.cpp in Sources */,
+				274300D822F1C63F00E11432 /* ResInstancesHelper.cpp in Sources */,
 				27D5252B21DB628E0006D934 /* main.m in Sources */,
 				276B5A6621DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp in Sources */,
 				277E9DF721DB818800F1C00B /* TCrc.cpp in Sources */,
+				274300CB22F1C5F600E11432 /* TThread.cpp in Sources */,
 				27745B4221DB68FC006CDD60 /* ResTextureHelperDds.cpp in Sources */,
 				27745B3D21DB68FC006CDD60 /* ResConverter.cpp in Sources */,
 				277E9DFA21DB819900F1C00B /* TFile.cpp in Sources */,
 				27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */,
+				274300CD22F1C5F600E11432 /* TImageLoaderTGA.cpp in Sources */,
 				27745B4121DB68FC006CDD60 /* ResMaterialInstanceHelper.cpp in Sources */,
 				27745B3921DB68FC006CDD60 /* ResMeshHelperObj.cpp in Sources */,
 				27745B3A21DB68FC006CDD60 /* ResMaterialHelper.cpp in Sources */,
+				274300D922F1C63F00E11432 /* ResMultiThreadTask.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,8 +421,10 @@
 				HEADER_SEARCH_PATHS = (
 					../../Sources/Engine,
 					../../Sources/Externals,
+					"../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp",
 				);
 				INSTALL_PATH = "$(PROJECT_DIR)/../../Binary/Mac";
+				LIBRARY_SEARCH_PATHS = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};
@@ -391,8 +441,10 @@
 				HEADER_SEARCH_PATHS = (
 					../../Sources/Engine,
 					../../Sources/Externals,
+					"../../Sources/Externals/ISPCTextureCompressor-master/ispc_texcomp",
 				);
 				INSTALL_PATH = "$(PROJECT_DIR)/../../Binary/Mac";
+				LIBRARY_SEARCH_PATHS = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = x86_64;
 			};
