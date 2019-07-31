@@ -331,8 +331,10 @@ namespace tix
 			FRHI::Get()->UpdateHardwareResourceTexture(PhysicPage->TextureResource, PhysicPage);
 			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, PhysicPage->TextureResource, TargetRegion);
 		}
-		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
-		LoadedPages.clear();
-
+		if (LoadedPages.size() > 0)
+		{
+			FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture, IndirectTextureData);
+			LoadedPages.clear();
+		}
 	}
 }

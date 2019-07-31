@@ -1321,8 +1321,6 @@ namespace tix
 		TI_ASSERT(InRegion.getWidth() == SrcTexture->GetDesc().Width && InRegion.getHeight() == SrcTexture->GetDesc().Height);
 		TI_ASSERT(DestTexture->GetDesc().Format == SrcTexture->GetDesc().Format);
 
-		DstTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXDst");
-		SrcTexDx12->TextureResource.GetResource().Get()->SetName(L"TiXSrc");
 		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
 		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
