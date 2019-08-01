@@ -58,9 +58,8 @@ namespace tix
 		}
 		
 		{
-			TI_ASSERT(Buffers.size() > 0);
+			TI_ASSERT(BufferToAnalysis != nullptr);
 			AnalysisBuffer();
-			TI_TODO("Analysis time consume");
 		}
 	}
 
@@ -70,7 +69,7 @@ namespace tix
 		TaskBeginCond.notify_one();
 
 		BufferMutex.lock();
-		Buffers.push_back(InBuffer);
+		BufferToAnalysis = InBuffer;
 		BufferMutex.unlock();
 	}
 
@@ -90,15 +89,19 @@ namespace tix
 	};
 #endif
 
+	static int32 AnalysisFrame = 0;
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
+		TIMER_RECORDER("Analysis Buffer");
 		TStreamPtr Buffer;
 		{
 			BufferMutex.lock();
-			Buffer = Buffers.front();
-			Buffers.pop_front();
+			Buffer = BufferToAnalysis;
+			BufferToAnalysis = nullptr;
 			BufferMutex.unlock();
 		}
+
+		++AnalysisFrame;
 
 		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
 		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
@@ -141,6 +144,7 @@ namespace tix
 		}
 		// Pages updated in one frame can not exceed PPCount(1024)
 		TI_ASSERT(NewPages.size() + UsedLocations.size() < FVTSystem::PPCount);
+		_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());
 
 		// Insert new pages to Physic Page Slots, and get load info, send Load task
 		FVTTaskOrderList* VTTaskOrder = ti_new FVTTaskOrderList();	// Task execute order, point to VTLoadTasks, will be used in VTLoadingThread

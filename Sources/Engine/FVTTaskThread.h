@@ -31,7 +31,7 @@ namespace tix
 		TCond TaskBeginCond;
 
 		// VT UV Buffers of 1/8 x 1/8 screen, send from Render Thread
-		TList<TStreamPtr> Buffers;
+		TStreamPtr BufferToAnalysis;
 		TMutex BufferMutex;
 
 		// Physic texture page array, stores the page index in virtual texture
