@@ -268,6 +268,6 @@ namespace tix
 		uint32 ms = (uint32)(Diff % 1000);
 		uint32 s = (uint32)((Diff / 1000) % 60);
 		uint32 m = (uint32)((Diff / 1000) / 60);
-		_LOG(Log, "%s : %dm%ds%d\n", Name.c_str(), m, s, ms);
+		_LOG(Log, "%s : %d'%d\"%d\n", Name.c_str(), m, s, ms);
 	}
 }

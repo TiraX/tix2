@@ -120,9 +120,16 @@ namespace tix
 				int32 ITSize = FVTSystem::ITSize >> MipLevel;
 				int32 MipPageOffset = FVTSystem::GetVTMipPagesOffset(MipLevel);
 
+				if (MipLevel == 6 && (Data.X >= 1.f || Data.Y >= 1.f))
+				{
+					int letsbreak = 0;
+				}
+				float U = ti_min(Data.X, 0.9999f);
+				float V = ti_min(Data.Y, 0.9999f);
+
 				vector2di Position;
-				Position.X = (int32)(Data.X * VTSize);
-				Position.Y = (int32)(Data.Y * VTSize);
+				Position.X = (int32)(U * VTSize);
+				Position.Y = (int32)(V * VTSize);
 
 				int32 PageX = Position.X / FVTSystem::PPSize;
 				int32 PageY = Position.Y / FVTSystem::PPSize;
@@ -144,7 +151,7 @@ namespace tix
 		}
 		// Pages updated in one frame can not exceed PPCount(1024)
 		TI_ASSERT(NewPages.size() + UsedLocations.size() < FVTSystem::PPCount);
-		_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());
+		//_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());
 
 		// Insert new pages to Physic Page Slots, and get load info, send Load task
 		FVTTaskOrderList* VTTaskOrder = ti_new FVTTaskOrderList();	// Task execute order, point to VTLoadTasks, will be used in VTLoadingThread
