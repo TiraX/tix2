@@ -47,8 +47,10 @@ namespace tix
 
 #ifdef TIX_SHIPPING
 #	define TIMER_RECORDER(name)
+#	define TIMER_RECORDER_FUNC()
 #else
 #	define TIMER_RECORDER(name) TTimeRecorder Rec(name)
+#	define TIMER_RECORDER_FUNC() TTimeRecorder Rec(__FUNCTION__)
 #endif // TIX_SHIPPING
 
 }

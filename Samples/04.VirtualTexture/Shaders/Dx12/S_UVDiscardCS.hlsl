@@ -28,6 +28,8 @@ RWStructuredBuffer<UVBuffer> outputUVs : register(u0);	// UAV: Processed indirec
 
 #define threadBlockSize 8
 
+static const float vt_mips[7] = { 64.f, 32.f, 16.f, 8.f, 4.f, 2.f, 1.f };
+
 [RootSignature(UVDiscard_RootSig)]
 [numthreads(threadBlockSize, threadBlockSize, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
@@ -38,7 +40,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		uint input_index = (groupId.y * threadBlockSize + threadIDInGroup.y) * threadBlockSize * GroupW + groupId.x * threadBlockSize + threadIDInGroup.x;
 		uint output_index = groupId.y * GroupW + groupId.x;
 
-		//outputUVs[output_index] = inputUVs[input_index];
-		outputUVs[output_index].color = inputUVs[dispatchThreadId.xy];
+		float4 result = inputUVs[dispatchThreadId.xy];
+		uint mip_level = uint(result.z);
+		result.xy = min(float2(0.999f, 0.999f), result.xy);
+		result.xy = result.xy * vt_mips[mip_level];
+
+		//outputUVs[output_index].color = inputUVs[dispatchThreadId.xy];
+		outputUVs[output_index].color = result;
 	}
 }

@@ -92,7 +92,7 @@ namespace tix
 	static int32 AnalysisFrame = 0;
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
-		TIMER_RECORDER("Analysis Buffer");
+		TIMER_RECORDER_FUNC();
 		TStreamPtr Buffer;
 		{
 			BufferMutex.lock();
@@ -116,16 +116,21 @@ namespace tix
 			if (Data.W > 0.f)
 			{
 				int32 MipLevel = (int32)Data.Z;
-				int32 VTSize = FVTSystem::VTSize >> MipLevel;
+				//int32 VTSize = FVTSystem::VTSize >> MipLevel;
 				int32 ITSize = FVTSystem::ITSize >> MipLevel;
 				int32 MipPageOffset = FVTSystem::GetVTMipPagesOffset(MipLevel);
 
-				vector2di Position;
-				Position.X = (int32)(Data.X * VTSize);
-				Position.Y = (int32)(Data.Y * VTSize);
+				//float U = ti_min(Data.X, 0.9999f);
+				//float V = ti_min(Data.Y, 0.9999f);
 
-				int32 PageX = Position.X / FVTSystem::PPSize;
-				int32 PageY = Position.Y / FVTSystem::PPSize;
+				//vector2di Position;
+				//Position.X = (int32)(U * VTSize);
+				//Position.Y = (int32)(V * VTSize);
+
+				//int32 PageX = Position.X / FVTSystem::PPSize;
+				//int32 PageY = Position.Y / FVTSystem::PPSize;
+				int32 PageX = (int32)Data.X;
+				int32 PageY = (int32)Data.Y;
 				TI_ASSERT(PageX >= 0 && PageY >= 0);
 				uint32 PageIndex = PageY * ITSize + PageX + MipPageOffset;
 
@@ -144,7 +149,7 @@ namespace tix
 		}
 		// Pages updated in one frame can not exceed PPCount(1024)
 		TI_ASSERT(NewPages.size() + UsedLocations.size() < FVTSystem::PPCount);
-		_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());
+		//_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());
 
 		// Insert new pages to Physic Page Slots, and get load info, send Load task
 		FVTTaskOrderList* VTTaskOrder = ti_new FVTTaskOrderList();	// Task execute order, point to VTLoadTasks, will be used in VTLoadingThread
