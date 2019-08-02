@@ -131,6 +131,7 @@ namespace tix
 
 	private:
 		static uint32 GetPrimitiveTextureHash(FPrimitivePtr InPrimitive);
+		void InitPhysicAtlasResources();
 		void MarkRegion(uint32 InRegionIndex, int32 W, int32 H);
 
 	private:

@@ -19,6 +19,19 @@ namespace tix
 
 	const float FVTSystem::UVInv = (float)PPSize / (float)VTSize;
 
+#if defined (TI_PLATFORM_WIN32)
+	// An empty 4x4 DXT5 block with color RGBA (0, 0, 0, 255)
+	static const int32 BlockLength = 16;
+	static const uint8 EmptyBlock[BlockLength] = {
+		0xff, 0xff, 0x49, 0x92, 0x24, 0x49, 0x92, 0x24,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+#elif defined (TI_PLATFORM_IOS)
+
+#else
+#error("do not support other platforms yet.")
+#endif
+
 	FVTSystem::FVTSystem()
 		: VTAnalysisThread(nullptr)
 		, VTRegion(VTSize, PPSize)
@@ -63,16 +76,6 @@ namespace tix
 		IndirectTexture = FRHI::Get()->CreateTexture(Desc);
 		FRHI::Get()->UpdateHardwareResourceTexture(IndirectTexture);
 
-		// Create physic texture atlas
-		Desc.Format = PageFormat;
-		Desc.Width = PhysicAtlasSize * PPSize;
-		Desc.Height = PhysicAtlasSize * PPSize;
-		Desc.SRGB = 1;
-		Desc.Mips = 1;
-		PhysicPageAtlas = FRHI::Get()->CreateTexture(Desc);
-		FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageAtlas);
-		VTResource->PutTextureInTable(IndirectTexture, 0);
-		VTResource->PutTextureInTable(PhysicPageAtlas, 1);
 	}
 
 	FVTSystem::~FVTSystem()
@@ -87,6 +90,39 @@ namespace tix
 		PhysicPageAtlas = nullptr;
 		VTResource = nullptr;
 		IndirectTextureData = nullptr;
+	}
+
+	void FVTSystem::InitPhysicAtlasResources()
+	{
+		if (PhysicPageAtlas != nullptr)
+			return;
+
+		// Create physic texture atlas
+		TTextureDesc Desc;
+		Desc.Type = ETT_TEXTURE_2D;
+		Desc.AddressMode = ETC_CLAMP_TO_EDGE;
+		Desc.Format = PageFormat;
+		Desc.Width = PhysicAtlasSize * PPSize;
+		Desc.Height = PhysicAtlasSize * PPSize;
+		Desc.SRGB = 1;
+		Desc.Mips = 1;
+
+		// Fill Physic Page Atlas with clear color (0, 0, 0, 255)
+		TImagePtr ImageInit = ti_new TImage(Desc.Format, Desc.Width, Desc.Height);
+		const int32 ImageDataLength = TImage::GetDataSize(Desc.Format, Desc.Width, Desc.Height);
+		uint8* ImageData = ImageInit->Lock();
+		for (int32 i = 0; i < ImageDataLength; i += BlockLength)
+		{
+			memcpy(ImageData + i, EmptyBlock, BlockLength);
+		}
+		ImageInit->Unlock();
+
+		PhysicPageAtlas = FRHI::Get()->CreateTexture(Desc);
+		FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageAtlas, ImageInit);
+		ImageInit = nullptr;
+
+		VTResource->PutTextureInTable(IndirectTexture, 0);
+		VTResource->PutTextureInTable(PhysicPageAtlas, 1);
 	}
 
 #if VT_PRELOADED_REGIONS
@@ -301,6 +337,7 @@ namespace tix
 	void FVTSystem::PrepareVTIndirectTexture()
 	{
 		TI_ASSERT(IsRenderThread());
+		InitPhysicAtlasResources();
 
 		SColor IndirectData;
 		for (auto& Page : LoadedPages)
