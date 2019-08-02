@@ -149,6 +149,21 @@ namespace tix
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
     }
 
+    void FRHIMetal::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::EndPopulateCommandList()
+    {
+        TI_ASSERT(0);
+    }
+    
 	FTexturePtr FRHIMetal::CreateTexture()
 	{
         return ti_new FTextureMetal;
@@ -168,6 +183,12 @@ namespace tix
 	{
         return ti_new FMeshBufferMetal;
 	}
+    
+    FInstanceBufferPtr FRHIMetal::CreateInstanceBuffer()
+    {
+        TI_ASSERT(0);
+        return nullptr;
+    }
 
 	FPipelinePtr FRHIMetal::CreatePipeline(FShaderPtr InShader)
 	{
@@ -184,9 +205,21 @@ namespace tix
         return ti_new FShaderMetal(ShaderNames);
     }
     
+    FShaderPtr FRHIMetal::CreateComputeShader(const TString& InComputeShaderName)
+    {
+        TI_ASSERT(0);
+        return nullptr;
+    }
+    
     FArgumentBufferPtr FRHIMetal::CreateArgumentBuffer(FShaderPtr InShader)
     {
         return ti_new FArgumentBufferMetal(InShader);
+    }
+    
+    int32 FRHIMetal::GetCurrentEncodingFrameIndex()
+    {
+        TI_ASSERT(0);
+        return 0;
     }
 
 	// Wait for pending GPU work to complete.
@@ -215,6 +248,11 @@ namespace tix
         return true;
 	}
 
+    bool FRHIMetal::UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
     
 	bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture)
 	{
@@ -284,6 +322,18 @@ namespace tix
         
         return true;
 	}
+    
+    bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
+    
+    bool FRHIMetal::UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
 
 	bool FRHIMetal::UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
     {
@@ -550,6 +600,11 @@ namespace tix
         return true;
     }
     
+    void FRHIMetal::PrepareDataForCPU(FUniformBufferPtr UniformBuffer)
+    {
+        TI_ASSERT(0);
+    }
+    
 	void FRHIMetal::PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
         TI_ASSERT(0);
@@ -559,6 +614,11 @@ namespace tix
 	{
         TI_ASSERT(0);
 	}
+    
+    void FRHIMetal::PutBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+    {
+        TI_ASSERT(0);
+    }
 
 	void FRHIMetal::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
 	{
@@ -635,6 +695,11 @@ namespace tix
                                   offset:0
                                  atIndex:ABMetal->ArgumentBindIndex];
     }
+    
+    void FRHIMetal::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
+    {
+        TI_ASSERT(0);
+    }
 
 	void FRHIMetal::SetStencilRef(uint32 InRefValue)
 	{
@@ -653,6 +718,36 @@ namespace tix
                                  indexBuffer:MBMetal->IndexBuffer
                            indexBufferOffset:0];
 	}
+    
+    void FRHIMetal::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::SetComputePipeline(FPipelinePtr InPipeline)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
+    {
+        TI_ASSERT(0);
+    }
 
 	void FRHIMetal::SetViewport(const FViewport& VP)
 	{

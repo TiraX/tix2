@@ -216,7 +216,7 @@ namespace tix
 		return ~CRC;
 	}
 
-	inline uint32 TCrc::StringHash(const int8* Data)
+	uint32 TCrc::StringHash(const int8* Data)
 	{
 		uint32 Hash = 0;
 		while (*Data)
