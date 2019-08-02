@@ -92,7 +92,7 @@ namespace tix
 	static int32 AnalysisFrame = 0;
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
-		TIMER_RECORDER("Analysis Buffer");
+		TIMER_RECORDER_FUNC();
 		TStreamPtr Buffer;
 		{
 			BufferMutex.lock();
@@ -116,23 +116,21 @@ namespace tix
 			if (Data.W > 0.f)
 			{
 				int32 MipLevel = (int32)Data.Z;
-				int32 VTSize = FVTSystem::VTSize >> MipLevel;
+				//int32 VTSize = FVTSystem::VTSize >> MipLevel;
 				int32 ITSize = FVTSystem::ITSize >> MipLevel;
 				int32 MipPageOffset = FVTSystem::GetVTMipPagesOffset(MipLevel);
 
-				if (MipLevel == 6 && (Data.X >= 1.f || Data.Y >= 1.f))
-				{
-					int letsbreak = 0;
-				}
-				float U = ti_min(Data.X, 0.9999f);
-				float V = ti_min(Data.Y, 0.9999f);
+				//float U = ti_min(Data.X, 0.9999f);
+				//float V = ti_min(Data.Y, 0.9999f);
 
-				vector2di Position;
-				Position.X = (int32)(U * VTSize);
-				Position.Y = (int32)(V * VTSize);
+				//vector2di Position;
+				//Position.X = (int32)(U * VTSize);
+				//Position.Y = (int32)(V * VTSize);
 
-				int32 PageX = Position.X / FVTSystem::PPSize;
-				int32 PageY = Position.Y / FVTSystem::PPSize;
+				//int32 PageX = Position.X / FVTSystem::PPSize;
+				//int32 PageY = Position.Y / FVTSystem::PPSize;
+				int32 PageX = (int32)Data.X;
+				int32 PageY = (int32)Data.Y;
 				TI_ASSERT(PageX >= 0 && PageY >= 0);
 				uint32 PageIndex = PageY * ITSize + PageX + MipPageOffset;
 
