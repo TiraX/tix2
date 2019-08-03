@@ -1,0 +1,21 @@
+//
+//  VTTextureBaker-prefix.pch
+//  VTTextureBaker
+//
+//  Created by Tirax on 2019/8/2.
+//  Copyright © 2019 zhaoshuai. All rights reserved.
+//
+
+#ifndef VTTextureBaker_prefix_pch
+#define VTTextureBaker_prefix_pch
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __cplusplus
+#include "TiX.h"
+#include "rapidjson/document.h"
+#endif
+
+#endif /* VTTextureBaker_prefix_pch */

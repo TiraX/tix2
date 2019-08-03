@@ -81,7 +81,7 @@ namespace tix
 
 		TJSON JsonDoc;
 		JsonDoc.Parse(content);
-		ti_delete content;
+		ti_delete[] content;
 
 		TJSONNode JAssetList = JsonDoc["dependency"];
 		TJSONNode JAssetTextures = JAssetList["textures"];
@@ -116,7 +116,7 @@ namespace tix
 
 			TJSON TexJsonDoc;
 			TexJsonDoc.Parse(TexJson);
-			ti_delete TexJson;
+			ti_delete[] TexJson;
 
 			TVTTextureBasicInfo Info;
 			Info.AddressMode = GetAddressMode(TexJsonDoc["address_mode"].GetString());
@@ -756,7 +756,7 @@ namespace tix
 
 			// Write raw data
 			char name[128];
-			sprintf_s(name, 128, "%s/%02d_%02d_%02d.page", OutputPath.c_str(), Mip, PageX, PageY);
+			sprintf(name, "%s/%02d_%02d_%02d.page", OutputPath.c_str(), Mip, PageX, PageY);
 			TFile PageFile;
 			if (PageFile.Open(name, EFA_CREATEWRITE))
 			{
@@ -836,7 +836,7 @@ namespace tix
 						int32 PageY = Page.first / RegionSize;
 
 						char name[256];
-						sprintf_s(name, 256, "page_%02d_%03d_%03d.tga", M, PageX, PageY);
+						sprintf(name, "page_%02d_%03d_%03d.tga", M, PageX, PageY);
 						Page.second->SaveToTga(name, 0);
 					}
 				}
@@ -852,11 +852,6 @@ namespace tix
 
 			for (int32 M = 0; M < (int32)MipPages.size(); ++M)
 			{
-				if (false && M < 2)
-				{
-					RegionSize /= 2;
-					continue;
-				}
 				TImage * VTMip = ti_new TImage(EPF_RGBA8, RegionSize * PPSize, RegionSize * PPSize);
 
 				THMap<int32, TImage*>& Pages = MipPages[M];
@@ -887,7 +882,7 @@ namespace tix
 				}
 
 				char name[128];
-				sprintf_s(name, 128, "vt_%d.tga", M);
+				sprintf(name, "vt_%d.tga", M);
 				VTMip->SaveToTga(name);
 
 				ti_delete VTMip;

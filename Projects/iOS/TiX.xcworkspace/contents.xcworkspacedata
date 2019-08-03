@@ -19,6 +19,9 @@
       location = "container:"
       name = "04.VirtualTexture">
       <FileRef
+         location = "group:../../Samples/04.VTTextureBaker/VTTextureBaker.xcodeproj">
+      </FileRef>
+      <FileRef
          location = "group:../../Samples/04.VirtualTexture/VirtualTexture.xcodeproj">
       </FileRef>
    </Group>
