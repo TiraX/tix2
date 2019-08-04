@@ -16,7 +16,6 @@
 		274300DA22F1C63F00E11432 /* ResTextureHelperTga.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D322F1C63F00E11432 /* ResTextureHelperTga.cpp */; };
 		274300DB22F1C63F00E11432 /* PlatformUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D522F1C63F00E11432 /* PlatformUtils.cpp */; };
 		274300DC22F1C63F00E11432 /* ResSceneHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 274300D622F1C63F00E11432 /* ResSceneHelper.cpp */; };
-		274A654C21DB85BC00C08668 /* ResConverter in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D5252721DB628E0006D934 /* ResConverter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		276B5A6621DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276B5A6321DBC74800815317 /* ResTextureHelpeDXTDecoder.cpp */; };
 		27745B3721DB68FC006CDD60 /* ResShaderBindingHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2121DB68FB006CDD60 /* ResShaderBindingHelper.cpp */; };
 		27745B3821DB68FC006CDD60 /* ResTextureHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B2321DB68FB006CDD60 /* ResTextureHelper.cpp */; };
@@ -32,8 +31,9 @@
 		27745B4621DB6D68006CDD60 /* ResTextureHelperAstc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27745B4521DB6D68006CDD60 /* ResTextureHelperAstc.cpp */; };
 		277E9DF721DB818800F1C00B /* TCrc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF521DB818800F1C00B /* TCrc.cpp */; };
 		277E9DFA21DB819900F1C00B /* TFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277E9DF921DB819800F1C00B /* TFile.cpp */; };
-		27AF57B822F1CF3D0043AD71 /* libispc_texcomp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */; };
+		27CDFF4422F72CC400155CFD /* libispc_texcomp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CDFF4322F72CC400155CFD /* libispc_texcomp.a */; };
 		27D5252B21DB628E0006D934 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D5252A21DB628E0006D934 /* main.m */; };
+		27E379A422F689CA00DCC373 /* ResConverter in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27D5252721DB628E0006D934 /* ResConverter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,7 +43,7 @@
 			dstPath = "$(PROJECT_DIR)/../../Binary/Mac";
 			dstSubfolderSpec = 0;
 			files = (
-				274A654C21DB85BC00C08668 /* ResConverter in CopyFiles */,
+				27E379A422F689CA00DCC373 /* ResConverter in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,7 +65,7 @@
 		274300D222F1C63F00E11432 /* ResSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResSettings.h; sourceTree = SOURCE_ROOT; };
 		274300D322F1C63F00E11432 /* ResTextureHelperTga.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResTextureHelperTga.cpp; sourceTree = SOURCE_ROOT; };
 		274300D422F1C63F00E11432 /* ResInstancesHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResInstancesHelper.h; sourceTree = SOURCE_ROOT; };
-		274300D522F1C63F00E11432 /* PlatformUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformUtils.cpp; sourceTree = SOURCE_ROOT; };
+		274300D522F1C63F00E11432 /* PlatformUtils.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = PlatformUtils.cpp; sourceTree = SOURCE_ROOT; };
 		274300D622F1C63F00E11432 /* ResSceneHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResSceneHelper.cpp; sourceTree = SOURCE_ROOT; };
 		274300D722F1C63F00E11432 /* ResMultiThreadTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResMultiThreadTask.h; sourceTree = SOURCE_ROOT; };
 		276B5A6121DBC74800815317 /* dds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dds.h; sourceTree = SOURCE_ROOT; };
@@ -96,7 +96,7 @@
 		277E9DF621DB818800F1C00B /* TCrc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TCrc.h; path = ../../../Sources/Engine/TCrc.h; sourceTree = "<group>"; };
 		277E9DF821DB819800F1C00B /* TFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TFile.h; path = ../../../Sources/Engine/TFile.h; sourceTree = "<group>"; };
 		277E9DF921DB819800F1C00B /* TFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TFile.cpp; path = ../../../Sources/Engine/TFile.cpp; sourceTree = "<group>"; };
-		27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libispc_texcomp.dylib; path = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx/libispc_texcomp.dylib"; sourceTree = "<group>"; };
+		27CDFF4322F72CC400155CFD /* libispc_texcomp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libispc_texcomp.a; path = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx/libispc_texcomp.a"; sourceTree = "<group>"; };
 		27D5252721DB628E0006D934 /* ResConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResConverter; sourceTree = BUILT_PRODUCTS_DIR; };
 		27D5252A21DB628E0006D934 /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -106,7 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27AF57B822F1CF3D0043AD71 /* libispc_texcomp.dylib in Frameworks */,
+				27CDFF4422F72CC400155CFD /* libispc_texcomp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,7 +116,7 @@
 		2718BADD21DB7106007E008B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				27AF57B722F1CF3D0043AD71 /* libispc_texcomp.dylib */,
+				27CDFF4322F72CC400155CFD /* libispc_texcomp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

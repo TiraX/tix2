@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018 zhaoshuai. All rights reserved.
+# Copyright 2018~2020 zhaoshuai. All rights reserved.
 
 if [ ! -d "Cooked" ]; then
 	echo "Create directories for cooked resource."
@@ -11,9 +11,14 @@ fi
 
 echo "Converting tjs files."
 Converter="$(dirname "$0")"/../../../Binary/Mac/ResConverter
-for fn in *.tjs; do
-	echo "Converting $fn"
-	"$Converter" "$fn" ./Cooked/iOS/"${fn%.*}".tres
+for fn in $(find . -name '*.tjs'); do
+	echo " Converting $fn"
+	pathname=$(dirname $fn)
+	pathname=${pathname#"./"}
+	filename=$(basename $fn .tjs)
+	# echo --- $filename
+	# echo ---- $pathname
+	"$Converter" "$fn" ./Cooked/iOS/"$pathname"/"$filename".tasset -ForceAlphaChannel
 done
 
 echo "Copying Config"
@@ -23,8 +28,3 @@ if [ ! -d "Config" ]; then
 fi
 popd
 cp ./Config/*.ini ./Cooked/iOS/Config/
-
-echo "Copying other data files"
-for fn in *.bn; do
-	cp "$fn" ./Cooked/iOS/"$fn"
-done

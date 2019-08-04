@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		27CDFF3D22F72AFB00155CFD /* kernel_astc.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CDFF3922F72AFB00155CFD /* kernel_astc.o */; };
+		27CDFF3E22F72AFB00155CFD /* kernel_avx.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CDFF3A22F72AFB00155CFD /* kernel_avx.o */; };
+		27CDFF3F22F72AFB00155CFD /* kernel.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CDFF3B22F72AFB00155CFD /* kernel.o */; };
+		27CDFF4022F72AFB00155CFD /* kernel_sse2.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CDFF3C22F72AFB00155CFD /* kernel_sse2.o */; };
 		2B731BBA1C8D9C2000A9B109 /* ispc_texcomp_astc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B731BB51C8D9C2000A9B109 /* ispc_texcomp_astc.cpp */; };
 		2B731BBB1C8D9C2000A9B109 /* ispc_texcomp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2B731BB61C8D9C2000A9B109 /* ispc_texcomp.cpp */; };
 		2B731BBC1C8D9C2000A9B109 /* ispc_texcomp.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B731BB71C8D9C2000A9B109 /* ispc_texcomp.h */; };
@@ -28,6 +32,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		27CDFF3922F72AFB00155CFD /* kernel_astc.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = kernel_astc.o; path = "../../../../../Library/Developer/Xcode/DerivedData/ispc_texcomp-gjvxwahmliqnmxauxjsevbmcirki/Build/Intermediates.noindex/kernel_astc.o"; sourceTree = "<group>"; };
+		27CDFF3A22F72AFB00155CFD /* kernel_avx.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = kernel_avx.o; path = "../../../../../Library/Developer/Xcode/DerivedData/ispc_texcomp-gjvxwahmliqnmxauxjsevbmcirki/Build/Intermediates.noindex/kernel_avx.o"; sourceTree = "<group>"; };
+		27CDFF3B22F72AFB00155CFD /* kernel.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = kernel.o; path = "../../../../../Library/Developer/Xcode/DerivedData/ispc_texcomp-gjvxwahmliqnmxauxjsevbmcirki/Build/Intermediates.noindex/kernel.o"; sourceTree = "<group>"; };
+		27CDFF3C22F72AFB00155CFD /* kernel_sse2.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = kernel_sse2.o; path = "../../../../../Library/Developer/Xcode/DerivedData/ispc_texcomp-gjvxwahmliqnmxauxjsevbmcirki/Build/Intermediates.noindex/kernel_sse2.o"; sourceTree = "<group>"; };
 		2B731BAE1C8D9B6500A9B109 /* libispc_texcomp.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libispc_texcomp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B731BB51C8D9C2000A9B109 /* ispc_texcomp_astc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ispc_texcomp_astc.cpp; path = ispc_texcomp/ispc_texcomp_astc.cpp; sourceTree = "<group>"; };
 		2B731BB61C8D9C2000A9B109 /* ispc_texcomp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ispc_texcomp.cpp; path = ispc_texcomp/ispc_texcomp.cpp; sourceTree = "<group>"; };
@@ -41,6 +49,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27CDFF3E22F72AFB00155CFD /* kernel_avx.o in Frameworks */,
+				27CDFF3F22F72AFB00155CFD /* kernel.o in Frameworks */,
+				27CDFF3D22F72AFB00155CFD /* kernel_astc.o in Frameworks */,
+				27CDFF4022F72AFB00155CFD /* kernel_sse2.o in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +67,10 @@
 				2B731BB71C8D9C2000A9B109 /* ispc_texcomp.h */,
 				2B731BB81C8D9C2000A9B109 /* kernel_astc.ispc */,
 				2B731BB91C8D9C2000A9B109 /* kernel.ispc */,
+				27CDFF3922F72AFB00155CFD /* kernel_astc.o */,
+				27CDFF3A22F72AFB00155CFD /* kernel_avx.o */,
+				27CDFF3C22F72AFB00155CFD /* kernel_sse2.o */,
+				27CDFF3B22F72AFB00155CFD /* kernel.o */,
 				2B731BAF1C8D9B6500A9B109 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -119,6 +135,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 2B731BA51C8D9B6500A9B109;
@@ -148,7 +165,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-            shellScript = "chmod 755 ISPC/osx/ispc\nISPC/osx/ispc -O2 ispc_texcomp/kernel.ispc -o \"$OBJROOT/kernel.o\" -h ispc_texcomp/kernel_ispc.h --arch=x86-64 --target=sse2,avx --opt=fast-math\nISPC/osx/ispc -O2 ispc_texcomp/kernel_astc.ispc -o \"$OBJROOT/kernel_astc.o\" -h ispc_texcomp/kernel_astc_ispc.h --arch=x86-64 --target=sse2 --opt=fast-math";
+			shellScript = "chmod 755 ISPC/osx/ispc\nISPC/osx/ispc -O2 ispc_texcomp/kernel.ispc -o \"$OBJROOT/kernel.o\" -h ispc_texcomp/kernel_ispc.h --arch=x86-64 --target=sse2,avx --opt=fast-math\nISPC/osx/ispc -O2 ispc_texcomp/kernel_astc.ispc -o \"$OBJROOT/kernel_astc.o\" -h ispc_texcomp/kernel_astc_ispc.h --arch=x86-64 --target=sse2 --opt=fast-math";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -253,7 +270,8 @@
 				DYLIB_INSTALL_NAME_BASE = "";
 				EXECUTABLE_PREFIX = lib;
 				INSTALL_PATH = "";
-				LD_DYLIB_INSTALL_NAME = "@executable_path/../Frameworks/$(EXECUTABLE_PATH)";
+				LD_DYLIB_INSTALL_NAME = "";
+				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = (
 					"$(OBJROOT)/kernel.o",
 					"$(OBJROOT)/kernel_sse2.o",
@@ -273,7 +291,8 @@
 				DYLIB_INSTALL_NAME_BASE = "";
 				EXECUTABLE_PREFIX = lib;
 				INSTALL_PATH = "";
-				LD_DYLIB_INSTALL_NAME = "@executable_path/../Frameworks/$(EXECUTABLE_PATH)";
+				LD_DYLIB_INSTALL_NAME = "";
+				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = (
 					"$(OBJROOT)/kernel.o",
 					"$(OBJROOT)/kernel_sse2.o",

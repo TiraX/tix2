@@ -433,6 +433,11 @@ namespace tix
 				Surface.width = SrcData.W;
 				Surface.height = SrcData.H;
 				Surface.stride = SrcData.RowPitch;
+                
+                if (Surface.width < BlockSize || Surface.height < BlockSize)
+                {
+                    break;
+                }
 
 				uint8_t* Dst = (uint8_t*)DstData.Data.GetBuffer();
 				// Call ISPC function to convert
