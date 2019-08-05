@@ -92,5 +92,8 @@
     <FxCompile Include="Shaders\Dx12\S_UVDiscardCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TileDeterminationCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

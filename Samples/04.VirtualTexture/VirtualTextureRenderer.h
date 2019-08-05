@@ -9,18 +9,17 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FUVDiscardInput)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)
 END_UNIFORM_BUFFER_STRUCT(FUVDiscardInput)
 
-class FComputeUVDiscard : public FComputeTask
+class FTileDeterminationCS : public FComputeTask
 {
 public:
 	static const int32 ThreadBlockSize = 8;
 
-	FComputeUVDiscard(int32 W, int32 H);
-	virtual ~FComputeUVDiscard();
+	FTileDeterminationCS(int32 W, int32 H);
+	virtual ~FTileDeterminationCS();
 
 	virtual void Run(FRHI * RHI) override;
 
 	void PrepareBuffers(FTexturePtr UVInput);
-	void PrepareDataForCPU(FRHI * RHI);
 	TStreamPtr ReadUVBuffer();
 protected:
 	virtual void FinalizeInRenderThread() override;
@@ -29,12 +28,12 @@ private:
 	vector2di InputSize;
 	FUVDiscardInputPtr InputInfoBuffer;
 
-	FUniformBufferPtr OutputUVBuffer;
+	FUniformBufferPtr QuadTreeBuffer;
 	FRenderResourceTablePtr ResourceTable;
 
 	bool UVBufferTriggerd;
 };
-typedef TI_INTRUSIVE_PTR(FComputeUVDiscard) FComputeUVDiscardPtr;
+typedef TI_INTRUSIVE_PTR(FTileDeterminationCS) FTileDeterminationCSPtr;
 
 ////////////////////////////////////////////////////////
 
@@ -48,7 +47,7 @@ enum E_Graphics_Pipeline
 
 enum E_Compute_Pipeline
 {
-	ComputeDiscardUV,
+	ComputeTileDetermine,
 
 	ComputeCount
 };
@@ -67,5 +66,5 @@ private:
 	FRenderTargetPtr RT_BasePass;
 	FArgumentBufferPtr AB_Result;
 
-	FComputeUVDiscardPtr ComputeUVDiscard;
+	FTileDeterminationCSPtr ComputeTileDetermination;
 };

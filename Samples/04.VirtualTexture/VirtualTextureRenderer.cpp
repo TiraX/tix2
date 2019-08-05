@@ -8,17 +8,17 @@
 #include "FVTSystem.h"
 #include "FVTTaskThread.h"
 
-FComputeUVDiscard::FComputeUVDiscard(int32 W, int32 H)
+FTileDeterminationCS::FTileDeterminationCS(int32 W, int32 H)
 	: FComputeTask("S_UVDiscardCS")
 	, InputSize(W, H)
 	, UVBufferTriggerd(false)
 {
 }
 
-FComputeUVDiscard::~FComputeUVDiscard()
+FTileDeterminationCS::~FTileDeterminationCS()
 {}
 
-void FComputeUVDiscard::FinalizeInRenderThread()
+void FTileDeterminationCS::FinalizeInRenderThread()
 {
 	FComputeTask::FinalizeInRenderThread();
 
@@ -28,12 +28,12 @@ void FComputeUVDiscard::FinalizeInRenderThread()
 	InputInfoBuffer->InitUniformBuffer();
 }
 
-void FComputeUVDiscard::Run(FRHI * RHI)
+void FTileDeterminationCS::Run(FRHI * RHI)
 {
 	//uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
 	//RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
 
-	RHI->SetResourceStateUB(OutputUVBuffer, RESOURCE_STATE_COPY_DEST);
+	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
@@ -42,34 +42,29 @@ void FComputeUVDiscard::Run(FRHI * RHI)
 	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
 }
 
-void FComputeUVDiscard::PrepareBuffers(FTexturePtr UVInput)
+void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 {
+	TI_ASSERT(0);
 	// prepare compute parameters
 	const int32 BufferSize = InputSize.X / ThreadBlockSize * InputSize.Y / ThreadBlockSize;
-	TI_TODO("Try if OutputUVBuffer can use uint4 instead of ffloat4.");
-	OutputUVBuffer = FRHI::Get()->CreateUniformBuffer(16, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
-	FRHI::Get()->UpdateHardwareResourceUB(OutputUVBuffer, nullptr);
+	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(16, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
+	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, nullptr);
 	
 	// Create Render Resource Table
 	ResourceTable = FRHI::Get()->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
 	ResourceTable->PutTextureInTable(UVInput, 0);
-	ResourceTable->PutBufferInTable(OutputUVBuffer, 1);
+	ResourceTable->PutBufferInTable(QuadTreeBuffer, 1);
 }
 
-void FComputeUVDiscard::PrepareDataForCPU(FRHI * RHI)
+TStreamPtr FTileDeterminationCS::ReadUVBuffer()
 {
-	RHI->PrepareDataForCPU(OutputUVBuffer);
-	UVBufferTriggerd = true;
-}
-
-TStreamPtr FComputeUVDiscard::ReadUVBuffer()
-{
-	if (UVBufferTriggerd)
-	{
-		TStreamPtr Result = OutputUVBuffer->ReadBufferData();
-		UVBufferTriggerd = false;
-		return Result;
-	}
+	TI_ASSERT(0);
+	//if (UVBufferTriggerd)
+	//{
+	//	TStreamPtr Result = OutputUVBuffer->ReadBufferData();
+	//	UVBufferTriggerd = false;
+	//	return Result;
+	//}
 	return nullptr;
 }
 
@@ -121,9 +116,9 @@ void FVirtualTextureRenderer::InitInRenderThread()
 
 	if (FVTSystem::IsEnabled())
 	{
-		ComputeUVDiscard = ti_new FComputeUVDiscard(RTWidth, RTHeight);
-		ComputeUVDiscard->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
-		ComputeUVDiscard->Finalize();
+		ComputeTileDetermination = ti_new FTileDeterminationCS(RTWidth, RTHeight);
+		ComputeTileDetermination->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
+		ComputeTileDetermination->Finalize();
 	}
 }
 
@@ -131,11 +126,12 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	if (FVTSystem::IsEnabled())
 	{
-		TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
-		if (UVBuffer != nullptr)
-		{
-			FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
-		}
+		TI_ASSERT(0);
+		//TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
+		//if (UVBuffer != nullptr)
+		//{
+		//	FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
+		//}
 
 
 		// Prepare virtual texture system indirect texture
@@ -156,9 +152,10 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 		//if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
 			RHI->BeginPopulateCommandList(EPL_COMPUTE);
-			ComputeUVDiscard->Run(RHI);
+			ComputeTileDetermination->Run(RHI);
 
-			ComputeUVDiscard->PrepareDataForCPU(RHI);
+			TI_ASSERT(0);
+			//ComputeTileDetermination->PrepareDataForCPU(RHI);
 			RHI->EndPopulateCommandList();
 		}
 	}
