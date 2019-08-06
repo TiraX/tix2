@@ -30,7 +30,7 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		static const E_PIXEL_FORMAT PageFormat = EPF_DDS_DXT5_SRGB;
 #elif defined (TI_PLATFORM_IOS)
-		static const E_PIXEL_FORMAT PageFormat = EPF_ASTC4x4;
+		static const E_PIXEL_FORMAT PageFormat = EPF_ASTC4x4_SRGB;
 #else
 #error("do not support other platforms yet.")
 #endif
