@@ -45,7 +45,7 @@ namespace tix
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
-		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) override;
+		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedTextures) override;
 
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
@@ -54,10 +54,10 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) override;
 		virtual bool UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion) override;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
-		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) override;
+		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) override;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
-		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) override;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer) override;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) override;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
@@ -72,7 +72,8 @@ namespace tix
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
-		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) override;
+		virtual void SetArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer) override;
+		virtual void SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer) override;
 		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) override;
 
 		virtual void SetStencilRef(uint32 InRefValue) override;

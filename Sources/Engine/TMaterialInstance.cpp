@@ -21,24 +21,26 @@ namespace tix
 		{
 			TI_ASSERT(ArgumentBuffer == nullptr);
 			TI_ASSERT(LinkedMaterial->GetDesc().Shader != nullptr);
-			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer(LinkedMaterial->GetDesc().Shader->ShaderResource);
+			ArgumentBuffer = FRHI::Get()->CreateArgumentBuffer((int32)ParamTextureNames.size());
 			ArgumentBuffer->SetTextureNames(ParamTextureNames);
 			ArgumentBuffer->SetTextureSizes(ParamTextureSizes);
 
-			TVector<FTexturePtr> Textures;
-			TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
-			for (auto Tex : ParamTextures)
+			if (ParamValueBuffer != nullptr)
 			{
-				TI_ASSERT(Tex->TextureResource != nullptr);
-				Textures.push_back(Tex->TextureResource);
+				ArgumentBuffer->SetDataBuffer(ParamValueBuffer->GetBuffer(), ParamValueBuffer->GetLength());
 			}
 
-			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(UpdateMIArgumentBuffer,
+			TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
+			for (int32 i = 0 ; i < (int32)ParamTextures.size(); ++ i)
+			{
+				TI_ASSERT(ParamTextures[i]->TextureResource != nullptr);
+				ArgumentBuffer->SetTexture(i, ParamTextures[i]->TextureResource);
+			}
+
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateMIArgumentBuffer,
 				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
-				TStreamPtr, UniformBufferData, ParamValueBuffer,
-				TVector<FTexturePtr>, Textures, Textures,
 				{
-					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, UniformBufferData, Textures);
+					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer);
 				});
 		}
 	}

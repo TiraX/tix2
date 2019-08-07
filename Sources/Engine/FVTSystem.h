@@ -30,7 +30,7 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		static const E_PIXEL_FORMAT PageFormat = EPF_DDS_DXT5_SRGB;
 #elif defined (TI_PLATFORM_IOS)
-		static const E_PIXEL_FORMAT PageFormat = EPF_ASTC4x4;
+		static const E_PIXEL_FORMAT PageFormat = EPF_ASTC4x4_SRGB;
 #else
 #error("do not support other platforms yet.")
 #endif
@@ -66,7 +66,7 @@ namespace tix
 
 		TI_API void PrepareVTIndirectTexture();
 
-		FRenderResourceTablePtr GetVTResource()
+		FArgumentBufferPtr GetVTResource()
 		{
 			return VTResource;
 		}
@@ -178,7 +178,7 @@ namespace tix
 		THMap<uint32, FTextureInfo> TexturesInVT;
 		
 		// Virtual texture resource, 0 is indirect texture; 1 is physic page atlas
-		FRenderResourceTablePtr VTResource;
+		FArgumentBufferPtr VTResource;
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;

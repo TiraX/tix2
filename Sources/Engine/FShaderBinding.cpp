@@ -10,6 +10,8 @@ namespace tix
 {
 	FShaderBinding::FShaderBinding(uint32 InNumBindings)
 		: NumBindings(InNumBindings)
+		, MIBufferBindingIndex(-1)
+		, MITextureBindingIndex(-1)
 	{
 #if DEBUG_SHADER_BINDING_TYPE
 		BindingTypes.resize(InNumBindings);
@@ -85,15 +87,21 @@ namespace tix
 		TSort(PixelArguments.begin(), PixelArguments.end());
 	}
 
-	int32 FShaderBinding::GetFirstPSBindingIndexByType(E_ARGUMENT_TYPE InType) const
+	void FShaderBinding::PostInitArguments()
 	{
+		SortArguments();
+
+		// Remember mi buffer binding index and mi texture binding index
 		for (const auto& Arg : PixelArguments)
 		{
-			if (Arg.ArgumentType == InType)
+			if (Arg.ArgumentType == ARGUMENT_MI_BUFFER)
 			{
-				return Arg.BindingIndex;
+				MIBufferBindingIndex = Arg.BindingIndex;
+			}
+			else if (Arg.ArgumentType == ARGUMENT_MI_TEXTURE)
+			{
+				MITextureBindingIndex = Arg.BindingIndex;
 			}
 		}
-		return -1;
 	}
 }

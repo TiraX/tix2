@@ -10,13 +10,11 @@ namespace tix
 	class FArgumentBuffer : public FRenderResource
 	{
 	public:
-		FArgumentBuffer(FShaderPtr InShader);
+		FArgumentBuffer(int32 ReservedTextures);
 		virtual ~FArgumentBuffer();
 
-		FShaderPtr GetShader()
-		{
-			return Shader;
-		}
+		TI_API void SetDataBuffer(const void * InData, int32 DataLength);
+		TI_API void SetTexture(int32 Index, FTexturePtr InTexture);
 
 		void SetTextureNames(const TVector<TString>& InTextureNames)
 		{
@@ -26,6 +24,16 @@ namespace tix
 		void SetTextureSizes(const TVector<vector2di>& InSizes)
 		{
 			TextureSizes = InSizes;
+		}
+
+		const TStream& GetArgumentData() const
+		{
+			return ArgumentDataBuffer;
+		}
+
+		const TVector<FTexturePtr>& GetArgumentTextures() const
+		{
+			return ArgumentTextures;
 		}
 
 		const TVector<TString>& GetTextureNames() const
@@ -41,7 +49,8 @@ namespace tix
 	protected:
 
 	protected:
-		FShaderPtr Shader;
+		TStream ArgumentDataBuffer;
+		TVector<FTexturePtr> ArgumentTextures;
 
 		// For VT System
 		TVector<TString> TextureNames;

@@ -27,7 +27,12 @@ namespace tix
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 #elif defined (TI_PLATFORM_IOS)
-
+    // An empty 4x4 ASTC4x4 block with color RGBA (0, 0, 0, 255)
+    static const int32 BlockLength = 16;
+    static const uint8 EmptyBlock[BlockLength] = {
+        0x51, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
 #else
 #error("do not support other platforms yet.")
 #endif
@@ -60,7 +65,7 @@ namespace tix
 		memset(RegionData.data(), -1, ITSize * ITSize * sizeof(int32));
 
 		// Init render resources
-		VTResource = FRHI::Get()->CreateRenderResourceTable(PPCount, EHT_SHADER_RESOURCE);
+		VTResource = FRHI::Get()->CreateArgumentBuffer(2);
 
 		// Create indirect texture
 		IndirectTextureData = ti_new TImage(EPF_RGBA8, ITSize, ITSize);
@@ -121,8 +126,9 @@ namespace tix
 		FRHI::Get()->UpdateHardwareResourceTexture(PhysicPageAtlas, ImageInit);
 		ImageInit = nullptr;
 
-		VTResource->PutTextureInTable(IndirectTexture, 0);
-		VTResource->PutTextureInTable(PhysicPageAtlas, 1);
+		VTResource->SetTexture(0, IndirectTexture);
+		VTResource->SetTexture(1, PhysicPageAtlas);
+		FRHI::Get()->UpdateHardwareResourceAB(VTResource);
 	}
 
 #if VT_PRELOADED_REGIONS

@@ -11,10 +11,8 @@
 
 namespace tix
 {
-	FArgumentBufferDx12::FArgumentBufferDx12(FShaderPtr InShader)
-		: FArgumentBuffer(InShader)
-		, UniformBindIndex(-1)
-		, TextureBindIndex(-1)
+	FArgumentBufferDx12::FArgumentBufferDx12(int32 ReservedTextures)
+		: FArgumentBuffer(ReservedTextures)
 	{
 	}
 

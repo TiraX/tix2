@@ -78,7 +78,7 @@ namespace tix
 		};
 
 		void AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument);
-		void SortArguments();
+		void PostInitArguments();
 
 		const TVector<FShaderArgument>& GetVertexShaderArguments() const
 		{
@@ -90,9 +90,18 @@ namespace tix
 			return PixelArguments;
 		}
 
-		int32 GetFirstPSBindingIndexByType(E_ARGUMENT_TYPE InType) const;
+		int32 GetMIBufferBindingIndex() const
+		{
+			return MIBufferBindingIndex;
+		}
+
+		int32 GetMITextureBindingIndex() const
+		{
+			return MITextureBindingIndex;
+		}
 
 	protected:
+		void SortArguments();
 #if DEBUG_SHADER_BINDING_TYPE
 		void InitBindingType(uint32 InBindingIndex, E_BINDING_TYPE InBindingType);
 #endif
@@ -104,5 +113,7 @@ namespace tix
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif
+		int32 MIBufferBindingIndex;
+		int32 MITextureBindingIndex;
 	};
 }
