@@ -11,16 +11,15 @@
 
 namespace tix
 {
-	FArgumentBufferDx12::FArgumentBufferDx12(int32 ReservedTextures)
-		: FArgumentBuffer(ReservedTextures)
+	FArgumentBufferDx12::FArgumentBufferDx12(int32 ReservedSlots)
+		: FArgumentBuffer(ReservedSlots)
 	{
 	}
 
 	FArgumentBufferDx12::~FArgumentBufferDx12()
 	{
 		TI_ASSERT(IsRenderThread());
-		UniformBuffer = nullptr;
-		TextureResourceTable = nullptr;
+		ResourceTable = nullptr;
 	}
 }
 

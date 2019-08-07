@@ -32,8 +32,7 @@ namespace tix
 		ARGUMENT_EB_PRIMITIVE,
 		ARGUMENT_EB_LIGHTS,
 		ARGUMENT_EB_INDIRECTTEXTURE,
-		ARGUMENT_MI_BUFFER,
-		ARGUMENT_MI_TEXTURE,
+		ARGUMENT_MI_ARGUMENTS,
 
 		ARGUMENT_UNKNOWN,
 	};
@@ -90,14 +89,9 @@ namespace tix
 			return PixelArguments;
 		}
 
-		int32 GetMIBufferBindingIndex() const
+		int32 GetMIArgumentsBindingIndex() const
 		{
-			return MIBufferBindingIndex;
-		}
-
-		int32 GetMITextureBindingIndex() const
-		{
-			return MITextureBindingIndex;
+			return MIArgumentsBindingIndex;
 		}
 
 	protected:
@@ -113,7 +107,6 @@ namespace tix
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif
-		int32 MIBufferBindingIndex;
-		int32 MITextureBindingIndex;
+		int32 MIArgumentsBindingIndex;
 	};
 }

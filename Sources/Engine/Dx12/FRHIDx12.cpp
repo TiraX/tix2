@@ -529,9 +529,9 @@ namespace tix
 		return ti_new FShaderDx12(ComputeShaderName);
 	}
 
-	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(int32 ReservedTextures)
+	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(int32 ReservedSlots)
 	{
-		return ti_new FArgumentBufferDx12(ReservedTextures);
+		return ti_new FArgumentBufferDx12(ReservedSlots);
 	}
 
 	int32 FRHIDx12::GetCurrentEncodingFrameIndex()
@@ -1888,22 +1888,26 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
-		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
-		if (ArgumentBuffer->GetArgumentData().GetLength() > 0)
-		{
-			// Create uniform buffer
-			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentBuffer->GetArgumentData().GetLength(), 1);
-			UpdateHardwareResourceUB(ArgumentDx12->UniformBuffer, ArgumentBuffer->GetArgumentData().GetBuffer());
-		}
+		const TVector<FRenderResourcePtr>& Arguments = ArgumentBuffer->GetArguments();
+		TI_ASSERT(ArgumentDx12->ResourceTable == nullptr && Arguments.size() > 0);
 
-		if (ArgumentBuffer->GetArgumentTextures().size() > 0)
+		ArgumentDx12->ResourceTable = CreateRenderResourceTable((uint32)Arguments.size(), EHT_SHADER_RESOURCE);
+		for (int32 i = 0 ; i < (int32)Arguments.size() ; ++ i)
 		{
-			// Create texture resource table
-			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentBuffer->GetArgumentTextures().size(), EHT_SHADER_RESOURCE);
-			for (int32 t = 0; t < (int32)ArgumentBuffer->GetArgumentTextures().size(); ++t)
+			FRenderResourcePtr Arg = Arguments[i];
+			if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
 			{
-				FTexturePtr Texture = ArgumentBuffer->GetArgumentTextures()[t];
-				ArgumentDx12->TextureResourceTable->PutTextureInTable(Texture, t);
+				FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
+				ArgumentDx12->ResourceTable->PutBufferInTable(ArgUB, i);
+			}
+			else if (Arg->GetResourceType() == RRT_TEXTURE)
+			{
+				FTexturePtr ArgTex = static_cast<FTexture*>(Arg.get());
+				ArgumentDx12->ResourceTable->PutTextureInTable(ArgTex, i);
+			}
+			else
+			{
+				_LOG(Fatal, "Invalid resource type in Argument buffer.\n");
 			}
 		}
 
@@ -2228,23 +2232,16 @@ namespace tix
 	void FRHIDx12::SetArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		// Only bind texture buffer here.
-		SetRenderResourceTable(InBindIndex, ArgDx12->TextureResourceTable);
+		SetRenderResourceTable(InBindIndex, ArgDx12->ResourceTable);
 	}
 	
 	void FRHIDx12::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		if (InShaderBinding->GetMIBufferBindingIndex() >= 0)
+		if (InShaderBinding->GetMIArgumentsBindingIndex() >= 0)
 		{
-			TI_ASSERT(ArgDx12->UniformBuffer != nullptr);
-			SetUniformBuffer(ESS_PIXEL_SHADER, InShaderBinding->GetMIBufferBindingIndex(), ArgDx12->UniformBuffer);
-			TI_TODO("Do argument buffer for vertex shader");
-		}
-		if (InShaderBinding->GetMITextureBindingIndex() >= 0)
-		{
-			TI_ASSERT(ArgDx12->TextureResourceTable != nullptr);
-			SetRenderResourceTable(InShaderBinding->GetMITextureBindingIndex(), ArgDx12->TextureResourceTable);
+			TI_ASSERT(ArgDx12->ResourceTable != nullptr);
+			SetRenderResourceTable(InShaderBinding->GetMIArgumentsBindingIndex(), ArgDx12->ResourceTable);
 		}
 	}
 

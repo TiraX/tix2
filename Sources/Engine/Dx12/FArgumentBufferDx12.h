@@ -13,14 +13,13 @@ namespace tix
 	class FArgumentBufferDx12 : public FArgumentBuffer
 	{
 	public:
-		FArgumentBufferDx12(int32 ReservedTextures);
+		FArgumentBufferDx12(int32 ReservedSlots);
 		virtual ~FArgumentBufferDx12();
 
 	protected:
 
 	private:
-		FUniformBufferPtr UniformBuffer;
-		FRenderResourceTablePtr TextureResourceTable;
+		FRenderResourceTablePtr ResourceTable;
 
 		friend class FRHIDx12;
 	};

@@ -83,8 +83,7 @@ namespace tix
 		case ARGUMENT_EB_INDIRECTTEXTURE:
 			RHI->SetArgumentBuffer(Argument.BindingIndex, FVTSystem::Get()->GetVTResource());
 			break;
-		case ARGUMENT_MI_BUFFER:
-		case ARGUMENT_MI_TEXTURE:
+		case ARGUMENT_MI_ARGUMENTS:
 			break;
 		default:
 			TI_ASSERT(0);
