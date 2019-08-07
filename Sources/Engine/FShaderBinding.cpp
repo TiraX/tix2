@@ -9,7 +9,8 @@
 namespace tix
 {
 	FShaderBinding::FShaderBinding(uint32 InNumBindings)
-		: NumBindings(InNumBindings)
+		: FRenderResource(RRT_SHADER_BINDING)
+		, NumBindings(InNumBindings)
 		, MIBufferBindingIndex(-1)
 		, MITextureBindingIndex(-1)
 	{

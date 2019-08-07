@@ -9,14 +9,16 @@
 namespace tix
 {
 	FRenderResourceTable::FRenderResourceTable(uint32 InSize)
-		: HeapType(EHT_NONE)
+		: FRenderResource(RRT_RESOURCE_TABLE)
+		, HeapType(EHT_NONE)
 		, Start(uint32(-1))
 		, Size(InSize)
 	{
 	}
 
 	FRenderResourceTable::FRenderResourceTable(FRenderResourceHeap * InHeap, uint32 InStart, uint32 InSize)
-		: HeapType(InHeap->GetHeapType())
+		: FRenderResource(RRT_RESOURCE_TABLE)
+		, HeapType(InHeap->GetHeapType())
 		, Start(InStart)
 		, Size(InSize)
 	{

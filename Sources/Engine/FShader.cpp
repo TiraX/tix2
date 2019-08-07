@@ -9,13 +9,15 @@
 namespace tix
 {
 	FShader::FShader(const TString& ComputeShaderName)
-		: Type(EST_COMPUTE)
+		: FRenderResource(RRT_SHADER)
+		, Type(EST_COMPUTE)
 	{
 		ShaderNames.ShaderNames[0] = ComputeShaderName;
 	}
 
 	FShader::FShader(const TShaderNames& RenderShaderNames)
-		: ShaderNames(RenderShaderNames)
+		: FRenderResource(RRT_SHADER)
+		, ShaderNames(RenderShaderNames)
 		, Type(EST_RENDER)
 	{
 	}

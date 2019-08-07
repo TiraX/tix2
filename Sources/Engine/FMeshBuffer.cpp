@@ -8,7 +8,8 @@
 namespace tix
 {
 	FMeshBuffer::FMeshBuffer()
-		: PrimitiveType(EPT_TRIANGLELIST)
+		: FRenderResource(RRT_VERTEX_BUFFER)
+		, PrimitiveType(EPT_TRIANGLELIST)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
 		, PsDataCount(0)
@@ -36,6 +37,7 @@ namespace tix
 
 	///////////////////////////////////////////////////////////
 	FInstanceBuffer::FInstanceBuffer()
+		: FRenderResource(RRT_INSTANCE_BUFFER)
 	{
 	}
 

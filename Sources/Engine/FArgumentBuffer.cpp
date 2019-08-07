@@ -9,6 +9,7 @@
 namespace tix
 {
 	FArgumentBuffer::FArgumentBuffer(int32 ReservedTextures)
+		: FRenderResource(RRT_ARGUMENT_BUFFER)
 	{
 		ArgumentTextures.resize(ReservedTextures);
 	}

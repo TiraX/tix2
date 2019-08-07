@@ -9,7 +9,8 @@
 namespace tix
 {
 	FUniformBuffer::FUniformBuffer(uint32 InStructureSizeInBytes, uint32 InElements, uint32 InUBFlag)
-		: StructureSizeInBytes(InStructureSizeInBytes)
+		: FRenderResource(RRT_UNIFORM_BUFFER)
+		, StructureSizeInBytes(InStructureSizeInBytes)
 		, Elements(InElements)
 		, Flag(InUBFlag)
 	{
