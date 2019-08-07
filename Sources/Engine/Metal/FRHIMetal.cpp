@@ -211,9 +211,9 @@ namespace tix
         return nullptr;
     }
     
-    FArgumentBufferPtr FRHIMetal::CreateArgumentBuffer(FShaderPtr InShader)
+    FArgumentBufferPtr FRHIMetal::CreateArgumentBuffer(int32 ReservedSlots)
     {
-        return ti_new FArgumentBufferMetal(InShader);
+        return ti_new FArgumentBufferMetal(ReservedSlots);
     }
     
     int32 FRHIMetal::GetCurrentEncodingFrameIndex()
@@ -435,7 +435,7 @@ namespace tix
                                                          FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
             }
         }
-        Shader->ShaderBinding->SortArguments();
+        Shader->ShaderBinding->PostInitArguments();
         
         // Create depth stencil state
         MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
@@ -465,7 +465,7 @@ namespace tix
 	}
 
 	//static const int32 UniformBufferAlignSize = 16;
-	bool FRHIMetal::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData)
+	bool FRHIMetal::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData)
 	{
         TI_ASSERT(0);
         //FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
@@ -549,53 +549,54 @@ namespace tix
         return true;
     }
     
-    bool FRHIMetal::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures)
+    bool FRHIMetal::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer)
     {
-        FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
-        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex < 0 && ArgBufferMetal->Buffers.size() == 0 && ArgBufferMetal->Textures.size() == 0);
-        FShaderPtr Shader = ArgumentBuffer->GetShader();
-        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
-        TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
-        
-        // Get Uniform buffer Bind Index
-        FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
-        ArgBufferMetal->ArgumentBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_BUFFER);
-        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex >= 0);
-        
-        // Create uniform data if exist
-        id<MTLBuffer> UniformBuffer = nil;
-        if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
-        {
-            UniformBuffer = [MtlDevice newBufferWithBytes:ArgumentData->GetBuffer() length:ArgumentData->GetLength() options:MTLResourceStorageModeShared];
-        }
-        
-        // Create argument buffer, fill uniform and textures
-        TI_ASSERT(ArgBufferMetal->ArgumentBuffer == nil);
-        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgBufferMetal->ArgumentBindIndex];
-        NSUInteger argumentBufferLength = argumentEncoder.encodedLength;
-        ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
-#if defined (TIX_DEBUG)
-        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
-        TString ArgName = ShaderName + "_ArgumentBuffer";
-        ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
-#endif
-        [argumentEncoder setArgumentBuffer:ArgBufferMetal->ArgumentBuffer offset:0];
-        
-        int32 ArgumentIndex = 0;
-        // Fill uniform
-        if (UniformBuffer != nil) {
-            [argumentEncoder setBuffer:UniformBuffer offset:0 atIndex:ArgumentIndex];
-            ++ ArgumentIndex;
-            ArgBufferMetal->Buffers.push_back(UniformBuffer);
-        }
-        
-        // Fill textures
-        for (const auto& Tex : ArgumentTextures) {
-            FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Tex.get());
-            [argumentEncoder setTexture:TexMetal->Texture atIndex:ArgumentIndex];
-            ++ ArgumentIndex;
-            ArgBufferMetal->Textures.push_back(TexMetal->Texture);
-        }
+        TI_ASSERT(0);
+//        FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+//        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex < 0 && ArgBufferMetal->Buffers.size() == 0 && ArgBufferMetal->Textures.size() == 0);
+//        FShaderPtr Shader = ArgumentBuffer->GetShader();
+//        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
+//        TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
+//
+//        // Get Uniform buffer Bind Index
+//        FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+//        ArgBufferMetal->ArgumentBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_BUFFER);
+//        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex >= 0);
+//
+//        // Create uniform data if exist
+//        id<MTLBuffer> UniformBuffer = nil;
+//        if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
+//        {
+//            UniformBuffer = [MtlDevice newBufferWithBytes:ArgumentData->GetBuffer() length:ArgumentData->GetLength() options:MTLResourceStorageModeShared];
+//        }
+//        
+//        // Create argument buffer, fill uniform and textures
+//        TI_ASSERT(ArgBufferMetal->ArgumentBuffer == nil);
+//        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgBufferMetal->ArgumentBindIndex];
+//        NSUInteger argumentBufferLength = argumentEncoder.encodedLength;
+//        ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
+//#if defined (TIX_DEBUG)
+//        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
+//        TString ArgName = ShaderName + "_ArgumentBuffer";
+//        ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
+//#endif
+//        [argumentEncoder setArgumentBuffer:ArgBufferMetal->ArgumentBuffer offset:0];
+//
+//        int32 ArgumentIndex = 0;
+//        // Fill uniform
+//        if (UniformBuffer != nil) {
+//            [argumentEncoder setBuffer:UniformBuffer offset:0 atIndex:ArgumentIndex];
+//            ++ ArgumentIndex;
+//            ArgBufferMetal->Buffers.push_back(UniformBuffer);
+//        }
+//
+//        // Fill textures
+//        for (const auto& Tex : ArgumentTextures) {
+//            FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Tex.get());
+//            [argumentEncoder setTexture:TexMetal->Texture atIndex:ArgumentIndex];
+//            ++ ArgumentIndex;
+//            ArgBufferMetal->Textures.push_back(TexMetal->Texture);
+//        }
         
         return true;
     }
@@ -677,23 +678,29 @@ namespace tix
         [RenderEncoder setFragmentTexture:TexMetal->Texture atIndex:BindIndex];
 	}
     
-    void FRHIMetal::SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer)
+    void FRHIMetal::SetArgumentBuffer(int32 Index, FArgumentBufferPtr InArgumentBuffer)
     {
-        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
-        TI_ASSERT(ABMetal->ArgumentBindIndex >= 0 && ABMetal->ArgumentBindIndex < 31);
-        
-        // Indicate buffers and textures usage
-        for (int32 i = 0; i < (int32)ABMetal->Buffers.size(); ++ i) {
-            [RenderEncoder useResource:ABMetal->Buffers[i] usage:MTLResourceUsageRead];
-        }
-        for (int32 i = 0; i < (int32)ABMetal->Textures.size(); ++ i) {
-            [RenderEncoder useResource:ABMetal->Textures[i] usage:MTLResourceUsageSample];
-        }
-        
-        // Set argument buffer
-        [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
-                                  offset:0
-                                 atIndex:ABMetal->ArgumentBindIndex];
+        TI_ASSERT(0);
+//        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
+//        TI_ASSERT(ABMetal->ArgumentBindIndex >= 0 && ABMetal->ArgumentBindIndex < 31);
+//
+//        // Indicate buffers and textures usage
+//        for (int32 i = 0; i < (int32)ABMetal->Buffers.size(); ++ i) {
+//            [RenderEncoder useResource:ABMetal->Buffers[i] usage:MTLResourceUsageRead];
+//        }
+//        for (int32 i = 0; i < (int32)ABMetal->Textures.size(); ++ i) {
+//            [RenderEncoder useResource:ABMetal->Textures[i] usage:MTLResourceUsageSample];
+//        }
+//
+//        // Set argument buffer
+//        [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
+//                                  offset:0
+//                                 atIndex:ABMetal->ArgumentBindIndex];
+    }
+    
+    void FRHIMetal::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
+    {
+        TI_ASSERT(0);
     }
     
     void FRHIMetal::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)

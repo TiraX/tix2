@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FArgumentBufferMetal::FArgumentBufferMetal(FShaderPtr InShader)
-		: FArgumentBuffer(InShader)
+	FArgumentBufferMetal::FArgumentBufferMetal(int32 ReservedSlots)
+		: FArgumentBuffer(ReservedSlots)
         , ArgumentBindIndex(-1)
 	{
         ArgumentBuffer = nil;
