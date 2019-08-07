@@ -31,37 +31,22 @@ FSSSSRenderer::FSSSSRenderer()
 	const TString SSSBlurMaterialName = "M_SSSBlur.tasset";
 	TMaterialPtr M_SSSBlur = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(SSSBlurMaterialName)->GetResourcePtr());
 	PL_SSSBlur = M_SSSBlur->PipelineResource;
-	AB_SSSBlurX = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
-	AB_SSSBlurY = FRHI::Get()->CreateArgumentBuffer(M_SSSBlur->GetDesc().Shader->ShaderResource);
 
 	const TString AddSpecularMaterialName = "M_AddSpecular.tasset";
 	TMaterialPtr M_AddSpecular = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(AddSpecularMaterialName)->GetResourcePtr());
 	PL_AddSpecular = M_AddSpecular->PipelineResource;
-	AB_AddSpecular = FRHI::Get()->CreateArgumentBuffer(M_AddSpecular->GetDesc().Shader->ShaderResource);
 
 	const TString GlareDetectionMaterialName = "M_GlareDetection.tasset";
 	TMaterialPtr M_GlareDetection = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(GlareDetectionMaterialName)->GetResourcePtr());
 	PL_GlareDetection = M_GlareDetection->PipelineResource;
-	AB_GlareDetection = FRHI::Get()->CreateArgumentBuffer(M_GlareDetection->GetDesc().Shader->ShaderResource);
-
+	
 	const TString BloomMaterialName = "M_Bloom.tasset";
 	TMaterialPtr M_Bloom = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(BloomMaterialName)->GetResourcePtr());
 	PL_Bloom = M_Bloom->PipelineResource;
-	for (int32 p = 0; p < BloomPasses; ++p)
-	{
-		// Pass Horizontal
-		FBloomPass& PassX = BloomPass[p][0];
-		PassX.AB = FRHI::Get()->CreateArgumentBuffer(M_Bloom->GetDesc().Shader->ShaderResource);
-
-		// Pass Vertical
-		FBloomPass& PassY = BloomPass[p][1];
-		PassY.AB = FRHI::Get()->CreateArgumentBuffer(M_Bloom->GetDesc().Shader->ShaderResource);
-	}
 
 	const TString CombineMaterialName = "M_Combine.tasset";
 	TMaterialPtr M_Combine = static_cast<TMaterial*>(TAssetLibrary::Get()->LoadAsset(CombineMaterialName)->GetResourcePtr());
 	PL_Combine = M_Combine->PipelineResource;
-	AB_Combine = FRHI::Get()->CreateArgumentBuffer(M_Combine->GetDesc().Shader->ShaderResource);
 }
 
 FSSSSRenderer::~FSSSSRenderer()
@@ -83,7 +68,6 @@ void FSSSSRenderer::InitInRenderThread()
     const int32 ViewHeight = TEngine::AppInfo.Height * ViewWidth / TEngine::AppInfo.Width;
 
 	TStreamPtr ArgumentValues = ti_new TStream;
-	TVector<FTexturePtr> ArgumentTextures;
 
 	// Setup base pass render target
 	RT_BasePass = FRenderTarget::Create(ViewWidth, ViewHeight);
@@ -117,6 +101,8 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_SSSBlurY->AddColorBuffer(SceneColor, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_SSSBlurY->AddDepthStencilBuffer(SceneDepth, ERT_LOAD_LOAD, ERT_STORE_DONTCARE);
 	RT_SSSBlurY->Compile();
+	AB_SSSBlurX = FRHI::Get()->CreateArgumentBuffer(2);
+	AB_SSSBlurY = FRHI::Get()->CreateArgumentBuffer(2);
 	{
 		float ar = (float)ViewHeight / (float)ViewWidth;
 		ArgumentValues->Reset();
@@ -134,31 +120,30 @@ void FSSSSRenderer::InitInRenderThread()
 		ArgumentValues->Put(&BlurDir, sizeof(FFloat4));
 		ArgumentValues->Put(&BlurParam, sizeof(FFloat4));
 		ArgumentValues->Put(&Kernel, sizeof(FFloat4) * SeparableSSS::SampleCount);
-
-		ArgumentTextures.clear();
-		ArgumentTextures.push_back(SceneColor);
-		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResourceAB(AB_SSSBlurX, ArgumentValues, ArgumentTextures);
+		AB_SSSBlurX->SetDataBuffer(ArgumentValues->GetBuffer(), ArgumentValues->GetLength());
+		AB_SSSBlurX->SetTexture(0, SceneColor);
+		AB_SSSBlurX->SetTexture(1, SpecularTex);
+		RHI->UpdateHardwareResourceAB(AB_SSSBlurX);
 
 		ArgumentValues->Reset();
 		BlurDir = FFloat4(0.f, 1.f, 0.f, 0.f);
 		ArgumentValues->Put(&BlurDir, sizeof(FFloat4));
 		ArgumentValues->Put(&BlurParam, sizeof(FFloat4));
 		ArgumentValues->Put(&Kernel, sizeof(FFloat4) * SeparableSSS::SampleCount);
+		AB_SSSBlurY->SetDataBuffer(ArgumentValues->GetBuffer(), ArgumentValues->GetLength());
 
-		ArgumentTextures.clear();
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
-		ArgumentTextures.push_back(TextureBlurX);
-		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResourceAB(AB_SSSBlurY, ArgumentValues, ArgumentTextures);
+		AB_SSSBlurY->SetTexture(0, TextureBlurX);
+		AB_SSSBlurY->SetTexture(1, SpecularTex);
+		RHI->UpdateHardwareResourceAB(AB_SSSBlurY);
 	}
 
 	// AB_AddSpecular
 	{
-		ArgumentTextures.clear();
-		ArgumentTextures.push_back(SceneColor);
-		ArgumentTextures.push_back(SpecularTex);
-		RHI->UpdateHardwareResourceAB(AB_AddSpecular, nullptr, ArgumentTextures);
+		AB_AddSpecular = FRHI::Get()->CreateArgumentBuffer(2);
+		AB_AddSpecular->SetTexture(0, SceneColor);
+		AB_AddSpecular->SetTexture(1, SpecularTex);
+		RHI->UpdateHardwareResourceAB(AB_AddSpecular);
 	}
 
 	const float Exposure = 2.f;
@@ -174,10 +159,11 @@ void FSSSSRenderer::InitInRenderThread()
 		BloomParam.Y = Threshold;
 		ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 
+		AB_GlareDetection = FRHI::Get()->CreateArgumentBuffer(1);
+		AB_GlareDetection->SetDataBuffer(ArgumentValues->GetBuffer(), ArgumentValues->GetLength());
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
-		ArgumentTextures.clear();
-		ArgumentTextures.push_back(TextureBlurX);
-		RHI->UpdateHardwareResourceAB(AB_GlareDetection, ArgumentValues, ArgumentTextures);
+		AB_GlareDetection->SetTexture(0, TextureBlurX);
+		RHI->UpdateHardwareResourceAB(AB_GlareDetection);
 	}
 
 	// Bloom Blur Passes
@@ -195,14 +181,13 @@ void FSSSSRenderer::InitInRenderThread()
 		PassX.RT = FRenderTarget::Create(ViewWidth / SizeBase, ViewHeight / SizeBase);
 		PassX.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 		PassX.RT->Compile();
+		PassX.AB = FRHI::Get()->CreateArgumentBuffer(1);
 		vector2df BloomStepX = BloomStep * vector2df(1.f, 0.f);
 		BloomParam = BloomStepX;
 		{
-			ArgumentValues->Reset();
-			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
-			ArgumentTextures.clear();
-			ArgumentTextures.push_back(LastResult);
-            RHI->UpdateHardwareResourceAB(PassX.AB, ArgumentValues, ArgumentTextures);
+			PassX.AB->SetDataBuffer(&BloomParam, sizeof(FFloat4));
+			PassX.AB->SetTexture(0, LastResult);
+            RHI->UpdateHardwareResourceAB(PassX.AB);
 		}
 		LastResult = PassX.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -211,14 +196,13 @@ void FSSSSRenderer::InitInRenderThread()
 		PassY.RT = FRenderTarget::Create(ViewWidth / SizeBase, ViewHeight / SizeBase);
 		PassY.RT->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 		PassY.RT->Compile();
+		PassY.AB = FRHI::Get()->CreateArgumentBuffer(1);
 		vector2df BloomStepY = BloomStep * vector2df(0.f, 1.f);
 		BloomParam = BloomStepY;
 		{
-			ArgumentValues->Reset();
-			ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
-			ArgumentTextures.clear();
-			ArgumentTextures.push_back(LastResult);
-            RHI->UpdateHardwareResourceAB(PassY.AB, ArgumentValues, ArgumentTextures);
+			PassY.AB->SetDataBuffer(&BloomParam, sizeof(FFloat4));
+			PassY.AB->SetTexture(0, LastResult);
+            RHI->UpdateHardwareResourceAB(PassY.AB);
 		}
 		LastResult = PassY.RT->GetColorBuffer(ERTC_COLOR0).Texture;
 
@@ -231,28 +215,26 @@ void FSSSSRenderer::InitInRenderThread()
 	RT_Combine->AddColorBuffer(EPF_RGBA8, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_Combine->Compile();
 	{
-		ArgumentValues->Reset();
 		FFloat4 BloomParam;
 		BloomParam.X = Exposure;
 		BloomParam.Y = BloomIntensity;
-		ArgumentValues->Put(&BloomParam, sizeof(FFloat4));
 
+		AB_Combine = FRHI::Get()->CreateArgumentBuffer(3);
+		AB_Combine->SetDataBuffer(&BloomParam, sizeof(FFloat4));
 		FTexturePtr TextureBlurX = RT_SSSBlurX->GetColorBuffer(ERTC_COLOR0).Texture;
-		ArgumentTextures.clear();
-		ArgumentTextures.push_back(TextureBlurX);
-		ArgumentTextures.push_back(BloomPass[0][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
-		ArgumentTextures.push_back(BloomPass[1][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResourceAB(AB_Combine, ArgumentValues, ArgumentTextures);
+		AB_Combine->SetTexture(0, TextureBlurX);
+		AB_Combine->SetTexture(1, BloomPass[0][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
+		AB_Combine->SetTexture(2, BloomPass[1][1].RT->GetColorBuffer(ERTC_COLOR0).Texture);
+		RHI->UpdateHardwareResourceAB(AB_Combine);
 	}
 
 	// Output result
-    AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
+    AB_Result = RHI->CreateArgumentBuffer(1);
     {
-        ArgumentValues->Reset();
-        ArgumentTextures.clear();
-        ArgumentTextures.push_back(RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
-        RHI->UpdateHardwareResourceAB(AB_Result, ArgumentValues, ArgumentTextures);
+		AB_Result->SetTexture(0, RT_Combine->GetColorBuffer(ERTC_COLOR0).Texture);
+        RHI->UpdateHardwareResourceAB(AB_Result);
     }
+	ArgumentValues = nullptr;
 }
 
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)

@@ -81,7 +81,7 @@ namespace tix
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
 			break;
 		case ARGUMENT_EB_INDIRECTTEXTURE:
-			RHI->SetRenderResourceTable(Argument.BindingIndex, FVTSystem::Get()->GetVTResource());
+			RHI->SetArgumentBuffer(Argument.BindingIndex, FVTSystem::Get()->GetVTResource());
 			break;
 		case ARGUMENT_MI_BUFFER:
 		case ARGUMENT_MI_TEXTURE:
@@ -93,9 +93,9 @@ namespace tix
 		TI_TODO("Bind VS with different Argument from PS");
 	}
 
-	void FDefaultRenderer::BindMaterialInstanceArgument(FRHI * RHI, FArgumentBufferPtr ArgumentBuffer)
+	void FDefaultRenderer::BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer)
 	{
-		RHI->SetArgumentBuffer(ArgumentBuffer);
+		RHI->SetArgumentBuffer(InShaderBinding, ArgumentBuffer);
 	}
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive)
@@ -116,7 +116,7 @@ namespace tix
 			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, Primitive);
 		}
 
-		BindMaterialInstanceArgument(RHI, Primitive->GetArgumentBuffer());
+		BindMaterialInstanceArgument(RHI, ShaderBinding, Primitive->GetArgumentBuffer());
 	}
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer)
@@ -137,6 +137,6 @@ namespace tix
 			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, nullptr);
 		}
 
-		BindMaterialInstanceArgument(RHI, ArgumentBuffer);
+		BindMaterialInstanceArgument(RHI, ShaderBinding, ArgumentBuffer);
 	}
 }

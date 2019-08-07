@@ -8,12 +8,28 @@
 
 namespace tix
 {
-	FArgumentBuffer::FArgumentBuffer(FShaderPtr InShader)
-		: Shader(InShader)
+	FArgumentBuffer::FArgumentBuffer(int32 ReservedTextures)
 	{
+		ArgumentTextures.resize(ReservedTextures);
 	}
 
 	FArgumentBuffer::~FArgumentBuffer()
 	{
+	}
+
+	void FArgumentBuffer::SetDataBuffer(const void * InData, int32 DataLength)
+	{
+		ArgumentDataBuffer.Reset();
+		ArgumentDataBuffer.Put(InData, DataLength);
+	}
+
+	void FArgumentBuffer::SetTexture(int32 Index, FTexturePtr InTexture)
+	{
+		TI_ASSERT(Index < 16);
+		if (ArgumentTextures.size() <= Index)
+		{
+			ArgumentTextures.resize(Index + 1);
+		}
+		ArgumentTextures[Index] = InTexture;
 	}
 }

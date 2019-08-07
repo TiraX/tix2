@@ -89,7 +89,7 @@ namespace tix
 		virtual FRenderResourceTablePtr CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap);
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) = 0;
-		virtual FArgumentBufferPtr CreateArgumentBuffer(FShaderPtr InShader) = 0;
+		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedTextures) = 0;
 
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) = 0;
@@ -98,10 +98,10 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) = 0;
 		virtual bool UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion) = 0;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
-		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, void* InData) = 0;
+		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) = 0;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
-		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, TStreamPtr ArgumentData, const TVector<FTexturePtr>& ArgumentTextures) = 0;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer) = 0;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
@@ -116,7 +116,8 @@ namespace tix
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
-		virtual void SetArgumentBuffer(FArgumentBufferPtr InArgumentBuffer) = 0;
+		virtual void SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
+		virtual void SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer) = 0;
 		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) = 0;
 
 		virtual void SetStencilRef(uint32 InRefValue) = 0;

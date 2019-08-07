@@ -66,7 +66,7 @@ namespace tix
 
 		TI_API void PrepareVTIndirectTexture();
 
-		FRenderResourceTablePtr GetVTResource()
+		FArgumentBufferPtr GetVTResource()
 		{
 			return VTResource;
 		}
@@ -178,7 +178,7 @@ namespace tix
 		THMap<uint32, FTextureInfo> TexturesInVT;
 		
 		// Virtual texture resource, 0 is indirect texture; 1 is physic page atlas
-		FRenderResourceTablePtr VTResource;
+		FArgumentBufferPtr VTResource;
 
 		// Indirect texture data
 		TImagePtr IndirectTextureData;

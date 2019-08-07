@@ -111,12 +111,10 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->Compile();
 
-	AB_Result = RHI->CreateArgumentBuffer(FSRender.GetFullScreenShader());
+	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
-		ArgumentValues->Reset();
-		ArgumentTextures.clear();
-		ArgumentTextures.push_back(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResourceAB(AB_Result, ArgumentValues, ArgumentTextures);
+		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
+		RHI->UpdateHardwareResourceAB(AB_Result);
 	}
 
 	if (FVTSystem::IsEnabled())

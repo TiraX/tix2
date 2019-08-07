@@ -101,7 +101,7 @@ namespace tix
 		TI_ASSERT(bInited);
         RHI->SetGraphicsPipeline(FullScreenPipeline);
 		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
-		RHI->SetArgumentBuffer(ArgumentBuffer);
+		RHI->SetArgumentBuffer(0, ArgumentBuffer);
 
 		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
 	}
