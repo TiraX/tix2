@@ -1796,7 +1796,7 @@ namespace tix
 				{
 					if (ShaderDx12->ShaderCodes[s].GetLength() > 0)
 					{
-						THMap<int32, int32> BindingMap;	// Key is Binding Index, Value is ArgumentIndex in Arguments
+						THMap<int32, E_ARGUMENT_TYPE> BindingMap;	// Key is Binding Index, Value is ArgumentIndex in Arguments
 
 						ID3D12ShaderReflection* ShaderReflection;
 						VALIDATE_HRESULT(D3DReflect(ShaderDx12->ShaderCodes[s].GetBuffer(), ShaderDx12->ShaderCodes[s].GetLength(), IID_PPV_ARGS(&ShaderReflection)));
