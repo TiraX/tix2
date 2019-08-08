@@ -50,7 +50,7 @@ namespace tix
 		FShaderBinding(uint32 InNumBindings);
 		virtual ~FShaderBinding();
 
-		static E_ARGUMENT_TYPE GetArgumentTypeByName(const TString& ArgName, bool bIsTexture = false);
+		static E_ARGUMENT_TYPE GetArgumentTypeByName(const TString& ArgName);
 
 		const int32 GetNumBinding() const
 		{

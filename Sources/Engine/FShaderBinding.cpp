@@ -26,7 +26,7 @@ namespace tix
 	{
 	}
 
-	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName, bool bIsTexture)
+	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName)
 	{
 		TString::size_type PrefixPos = ArgName.find('_');
 		if (PrefixPos != TString::npos)
