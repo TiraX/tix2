@@ -43,7 +43,9 @@ namespace tix
 				if (BufferName == "Lights")
 					return ARGUMENT_EB_LIGHTS;
 				if (BufferName == "IndirectTexture")
-					return ARGUMENT_EB_INDIRECTTEXTURE;
+					return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
+				if (BufferName == "PhysicPageAtlas")
+					return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
 				TI_ASSERT(0);
 			}
 		}
