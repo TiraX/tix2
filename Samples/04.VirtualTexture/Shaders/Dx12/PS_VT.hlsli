@@ -45,12 +45,15 @@ float4 GetBaseColor(in float2 texcoord)
 	//return PPCoord.xyxy;
 }
 #else	// VT_ENABLED
-
+cbuffer MaterialInstanceParameter : register(b1)
+{
+	float4 CustomScalar0;
+};
 Texture2D<float4> TexBaseColor : register(t0);
 SamplerState LinearSampler : register(s0);
 
 float4 GetBaseColor(in float2 texcoord)
 {
-	return TexBaseColor.Sample(LinearSampler, texcoord);
+	return TexBaseColor.Sample(LinearSampler, texcoord) * (1.0 + CustomScalar0.x * 0.1);
 }
 #endif

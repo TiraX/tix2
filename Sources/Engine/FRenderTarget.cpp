@@ -15,7 +15,8 @@ namespace tix
 	}
 
 	FRenderTarget::FRenderTarget(int32 W, int32 H)
-		: Demension(W, H)
+		: FRenderResource(RRT_RENDER_TARGET)
+		, Demension(W, H)
 		, ColorBuffers(0)
 	{
 	}

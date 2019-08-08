@@ -45,7 +45,7 @@ namespace tix
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
-		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedTextures) override;
+		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedSlots) override;
 
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;

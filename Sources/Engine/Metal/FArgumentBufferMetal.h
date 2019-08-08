@@ -13,7 +13,7 @@ namespace tix
 	class FArgumentBufferMetal : public FArgumentBuffer
 	{
 	public:
-		FArgumentBufferMetal(FShaderPtr InShader);
+		FArgumentBufferMetal(int32 ReservedSlots);
 		virtual ~FArgumentBufferMetal();
 	protected:
 

@@ -9,9 +9,15 @@ namespace tix
 {
 	enum E_RENDER_RESOURCE_TYPE
 	{
-		RRT_BUFFER,
+		RRT_VERTEX_BUFFER,
+		RRT_INSTANCE_BUFFER,
+		RRT_UNIFORM_BUFFER,
 		RRT_TEXTURE,
-		RRT_RESOURCE_TALBE,
+		RRT_PIPELINE,
+		RRT_SHADER,
+		RRT_SHADER_BINDING,
+		RRT_RENDER_TARGET,
+		RRT_RESOURCE_TABLE,
 		RRT_ARGUMENT_BUFFER,
 	};
 
@@ -25,10 +31,16 @@ namespace tix
 	class FRenderResource : public IReferenceCounted
 	{
 	public:
-		FRenderResource()
+		FRenderResource(E_RENDER_RESOURCE_TYPE InResourceType)
+			: ResourceType(InResourceType)
 		{}
 		virtual ~FRenderResource() 
 		{}
+
+		E_RENDER_RESOURCE_TYPE GetResourceType() const
+		{
+			return ResourceType;
+		}
 
 #if defined (TIX_DEBUG)
 		void SetResourceName(const TString& Name)
@@ -42,6 +54,8 @@ namespace tix
 #endif
 
 	protected:
+		E_RENDER_RESOURCE_TYPE ResourceType;
+
 #if defined (TIX_DEBUG)
 		TString ResourceName;
 #endif

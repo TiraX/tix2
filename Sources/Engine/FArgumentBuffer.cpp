@@ -8,28 +8,33 @@
 
 namespace tix
 {
-	FArgumentBuffer::FArgumentBuffer(int32 ReservedTextures)
+	FArgumentBuffer::FArgumentBuffer(int32 ReservedSlots)
+		: FRenderResource(RRT_ARGUMENT_BUFFER)
 	{
-		ArgumentTextures.resize(ReservedTextures);
+		Arguments.resize(ReservedSlots);
 	}
 
 	FArgumentBuffer::~FArgumentBuffer()
 	{
 	}
 
-	void FArgumentBuffer::SetDataBuffer(const void * InData, int32 DataLength)
+	void FArgumentBuffer::SetBuffer(int32 Index, FUniformBufferPtr InUniform)
 	{
-		ArgumentDataBuffer.Reset();
-		ArgumentDataBuffer.Put(InData, DataLength);
+		TI_ASSERT(Index < MaxResourcesInArgumentBuffer);
+		if (Arguments.size() <= Index)
+		{
+			Arguments.resize(Index + 1);
+		}
+		Arguments[Index] = InUniform;
 	}
 
 	void FArgumentBuffer::SetTexture(int32 Index, FTexturePtr InTexture)
 	{
-		TI_ASSERT(Index < 16);
-		if (ArgumentTextures.size() <= Index)
+		TI_ASSERT(Index < MaxResourcesInArgumentBuffer);
+		if (Arguments.size() <= Index)
 		{
-			ArgumentTextures.resize(Index + 1);
+			Arguments.resize(Index + 1);
 		}
-		ArgumentTextures[Index] = InTexture;
+		Arguments[Index] = InTexture;
 	}
 }

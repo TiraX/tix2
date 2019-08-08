@@ -529,9 +529,9 @@ namespace tix
 		return ti_new FShaderDx12(ComputeShaderName);
 	}
 
-	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(int32 ReservedTextures)
+	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(int32 ReservedSlots)
 	{
-		return ti_new FArgumentBufferDx12(ReservedTextures);
+		return ti_new FArgumentBufferDx12(ReservedSlots);
 	}
 
 	int32 FRHIDx12::GetCurrentEncodingFrameIndex()
@@ -1619,6 +1619,7 @@ namespace tix
 			return -1;
 		}
 
+		// Find correct bind index in RootSignature
 		for (uint32 i = 0; i < RSDesc.NumParameters; ++i)
 		{
 			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
@@ -1634,21 +1635,18 @@ namespace tix
 					{
 						if (BindDesc.Type == D3D_SIT_TEXTURE)
 						{
-							if (BindDesc.BindPoint == DescriptorRange.BaseShaderRegister)
-							{
-								return (int32)i;
-							}
-							else if (BindDesc.BindPoint > DescriptorRange.BaseShaderRegister
-								&& BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
-							{
-								// Use texture descriptor table, bind the first texture only.
-								return -1;
-							}
+							TI_ASSERT(BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors);
+							return (int32)i;
 						}
-						else
+					}
+					else if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
+					{
+						if (BindDesc.Type == D3D_SIT_CBUFFER)
 						{
-							// Not support yet.
-							TI_ASSERT(0);
+							TI_ASSERT(BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors);
+							return (int32)i;
 						}
 					}
 					else
@@ -1682,6 +1680,7 @@ namespace tix
 			}
 		}
 
+		// Not found correspond param bind index.
 		TI_ASSERT(0);
 		return -1;
 	}
@@ -1797,24 +1796,35 @@ namespace tix
 				{
 					if (ShaderDx12->ShaderCodes[s].GetLength() > 0)
 					{
-						ID3D12ShaderReflection* ShaderReflection;
-						D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
+						THMap<int32, int32> BindingMap;	// Key is Binding Index, Value is ArgumentIndex in Arguments
 
+						ID3D12ShaderReflection* ShaderReflection;
 						VALIDATE_HRESULT(D3DReflect(ShaderDx12->ShaderCodes[s].GetBuffer(), ShaderDx12->ShaderCodes[s].GetLength(), IID_PPV_ARGS(&ShaderReflection)));
 
 						D3D12_SHADER_DESC ShaderDesc;
 						VALIDATE_HRESULT(ShaderReflection->GetDesc(&ShaderDesc));
 						for (uint32 r = 0; r < ShaderDesc.BoundResources; ++r)
 						{
+							D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
 							VALIDATE_HRESULT(ShaderReflection->GetResourceBindingDesc(r, &BindDescriptor));
 							int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc);
 							if (BindIndex >= 0)
 							{
 								TString BindName = BindDescriptor.Name;
-								E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, BindDescriptor.Type == D3D_SIT_TEXTURE);
-								ShaderDx12->ShaderBinding->AddShaderArgument(
-									(E_SHADER_STAGE)s,
-									FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+								E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
+								if (BindingMap.find(BindIndex) == BindingMap.end())
+								{
+									// Not binded, bind it
+									ShaderDx12->ShaderBinding->AddShaderArgument(
+										(E_SHADER_STAGE)s,
+										FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+									BindingMap[BindIndex] = ArgumentType;
+								}
+								else
+								{
+									TI_ASSERT(RSDesc->pParameters[BindIndex].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE);
+									TI_ASSERT(BindingMap[BindIndex] == ArgumentType);
+								}
 							}
 						}
 					}
@@ -1888,22 +1898,26 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
-		TI_ASSERT(ArgumentDx12->UniformBuffer == nullptr && ArgumentDx12->TextureResourceTable == nullptr);
-		if (ArgumentBuffer->GetArgumentData().GetLength() > 0)
-		{
-			// Create uniform buffer
-			ArgumentDx12->UniformBuffer = CreateUniformBuffer(ArgumentBuffer->GetArgumentData().GetLength(), 1);
-			UpdateHardwareResourceUB(ArgumentDx12->UniformBuffer, ArgumentBuffer->GetArgumentData().GetBuffer());
-		}
+		const TVector<FRenderResourcePtr>& Arguments = ArgumentBuffer->GetArguments();
+		TI_ASSERT(ArgumentDx12->ResourceTable == nullptr && Arguments.size() > 0);
 
-		if (ArgumentBuffer->GetArgumentTextures().size() > 0)
+		ArgumentDx12->ResourceTable = CreateRenderResourceTable((uint32)Arguments.size(), EHT_SHADER_RESOURCE);
+		for (int32 i = 0 ; i < (int32)Arguments.size() ; ++ i)
 		{
-			// Create texture resource table
-			ArgumentDx12->TextureResourceTable = CreateRenderResourceTable((uint32)ArgumentBuffer->GetArgumentTextures().size(), EHT_SHADER_RESOURCE);
-			for (int32 t = 0; t < (int32)ArgumentBuffer->GetArgumentTextures().size(); ++t)
+			FRenderResourcePtr Arg = Arguments[i];
+			if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
 			{
-				FTexturePtr Texture = ArgumentBuffer->GetArgumentTextures()[t];
-				ArgumentDx12->TextureResourceTable->PutTextureInTable(Texture, t);
+				FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
+				ArgumentDx12->ResourceTable->PutBufferInTable(ArgUB, i);
+			}
+			else if (Arg->GetResourceType() == RRT_TEXTURE)
+			{
+				FTexturePtr ArgTex = static_cast<FTexture*>(Arg.get());
+				ArgumentDx12->ResourceTable->PutTextureInTable(ArgTex, i);
+			}
+			else
+			{
+				_LOG(Fatal, "Invalid resource type in Argument buffer.\n");
 			}
 		}
 
@@ -2228,23 +2242,16 @@ namespace tix
 	void FRHIDx12::SetArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		// Only bind texture buffer here.
-		SetRenderResourceTable(InBindIndex, ArgDx12->TextureResourceTable);
+		SetRenderResourceTable(InBindIndex, ArgDx12->ResourceTable);
 	}
 	
 	void FRHIDx12::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		if (InShaderBinding->GetMIBufferBindingIndex() >= 0)
+		if (InShaderBinding->GetMIArgumentsBindingIndex() >= 0)
 		{
-			TI_ASSERT(ArgDx12->UniformBuffer != nullptr);
-			SetUniformBuffer(ESS_PIXEL_SHADER, InShaderBinding->GetMIBufferBindingIndex(), ArgDx12->UniformBuffer);
-			TI_TODO("Do argument buffer for vertex shader");
-		}
-		if (InShaderBinding->GetMITextureBindingIndex() >= 0)
-		{
-			TI_ASSERT(ArgDx12->TextureResourceTable != nullptr);
-			SetRenderResourceTable(InShaderBinding->GetMITextureBindingIndex(), ArgDx12->TextureResourceTable);
+			TI_ASSERT(ArgDx12->ResourceTable != nullptr);
+			SetRenderResourceTable(InShaderBinding->GetMIArgumentsBindingIndex(), ArgDx12->ResourceTable);
 		}
 	}
 

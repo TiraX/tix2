@@ -9,9 +9,9 @@
 namespace tix
 {
 	FShaderBinding::FShaderBinding(uint32 InNumBindings)
-		: NumBindings(InNumBindings)
-		, MIBufferBindingIndex(-1)
-		, MITextureBindingIndex(-1)
+		: FRenderResource(RRT_SHADER_BINDING)
+		, NumBindings(InNumBindings)
+		, MIArgumentsBindingIndex(-1)
 	{
 #if DEBUG_SHADER_BINDING_TYPE
 		BindingTypes.resize(InNumBindings);
@@ -26,7 +26,7 @@ namespace tix
 	{
 	}
 
-	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName, bool bIsTexture)
+	E_ARGUMENT_TYPE FShaderBinding::GetArgumentTypeByName(const TString& ArgName)
 	{
 		TString::size_type PrefixPos = ArgName.find('_');
 		if (PrefixPos != TString::npos)
@@ -48,7 +48,7 @@ namespace tix
 			}
 		}
 
-		return bIsTexture ? ARGUMENT_MI_TEXTURE : ARGUMENT_MI_BUFFER;
+		return ARGUMENT_MI_ARGUMENTS;
 	}
 
 #if DEBUG_SHADER_BINDING_TYPE
@@ -94,13 +94,11 @@ namespace tix
 		// Remember mi buffer binding index and mi texture binding index
 		for (const auto& Arg : PixelArguments)
 		{
-			if (Arg.ArgumentType == ARGUMENT_MI_BUFFER)
+			if (Arg.ArgumentType == ARGUMENT_MI_ARGUMENTS)
 			{
-				MIBufferBindingIndex = Arg.BindingIndex;
-			}
-			else if (Arg.ArgumentType == ARGUMENT_MI_TEXTURE)
-			{
-				MITextureBindingIndex = Arg.BindingIndex;
+				// Should only have 1 argument buffer binding for each shader, so we add a check here
+				TI_ASSERT(MIArgumentsBindingIndex == -1);
+				MIArgumentsBindingIndex = Arg.BindingIndex;
 			}
 		}
 	}
