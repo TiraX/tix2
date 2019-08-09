@@ -1311,38 +1311,6 @@ namespace tix
 		return true;
 	}
 
-	bool FRHIDx12::UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion)
-	{
-		TI_ASSERT(SrcTexture != nullptr);
-		TI_ASSERT(SrcTexture->GetDesc().Width == InRegion.getWidth() && SrcTexture->GetDesc().Height == InRegion.getHeight());
-		FTextureDx12 * DstTexDx12 = static_cast<FTextureDx12*>(DestTexture.get());
-		FTextureDx12 * SrcTexDx12 = static_cast<FTextureDx12*>(SrcTexture.get());
-		TI_ASSERT(DstTexDx12->GetDesc().Type == ETT_TEXTURE_2D && SrcTexDx12->GetDesc().Type == ETT_TEXTURE_2D);
-		TI_ASSERT(InRegion.getWidth() == SrcTexture->GetDesc().Width && InRegion.getHeight() == SrcTexture->GetDesc().Height);
-		TI_ASSERT(DestTexture->GetDesc().Format == SrcTexture->GetDesc().Format);
-
-		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
-		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
-
-		D3D12_BOX SrcBox;
-		SrcBox.left = 0;
-		SrcBox.top = 0;
-		SrcBox.front = 0;
-		SrcBox.right = InRegion.getWidth();
-		SrcBox.bottom = InRegion.getHeight();
-		SrcBox.back = 1;
-		CD3DX12_TEXTURE_COPY_LOCATION Dst(DstTexDx12->TextureResource.GetResource().Get(), 0);
-		CD3DX12_TEXTURE_COPY_LOCATION Src(SrcTexDx12->TextureResource.GetResource().Get(), 0);
-		CurrentWorkingCommandList->CopyTextureRegion(&Dst, InRegion.Left, InRegion.Upper, 0, &Src, &SrcBox);
-
-		// Hold resources used here
-		HoldResourceReference(DestTexture);
-		HoldResourceReference(SrcTexture);
-
-		return true;
-	}
-
 	inline FShaderDx12* GetDx12Shader(TPipelinePtr Pipeline, E_SHADER_STAGE Stage)
 	{
 		TI_ASSERT(0);
@@ -1576,6 +1544,55 @@ namespace tix
 		{
 			_LOG(Error, "Can not read buffer without flag UB_FLAG_READBACK.\n");
 		}
+	}
+
+	bool FRHIDx12::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture)
+	{
+		TI_ASSERT(SrcTexture != nullptr);
+		TI_ASSERT(SrcTexture->GetDesc().Width == InDstRegion.getWidth() && SrcTexture->GetDesc().Height == InDstRegion.getHeight());
+		FTextureDx12 * DstTexDx12 = static_cast<FTextureDx12*>(DstTexture.get());
+		FTextureDx12 * SrcTexDx12 = static_cast<FTextureDx12*>(SrcTexture.get());
+		TI_ASSERT(DstTexDx12->GetDesc().Type == ETT_TEXTURE_2D && SrcTexDx12->GetDesc().Type == ETT_TEXTURE_2D);
+		TI_ASSERT(InDstRegion.getWidth() == SrcTexture->GetDesc().Width && InDstRegion.getHeight() == SrcTexture->GetDesc().Height);
+		TI_ASSERT(DstTexture->GetDesc().Format == SrcTexture->GetDesc().Format);
+
+		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
+		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+
+		D3D12_BOX SrcBox;
+		SrcBox.left = 0;
+		SrcBox.top = 0;
+		SrcBox.front = 0;
+		SrcBox.right = InDstRegion.getWidth();
+		SrcBox.bottom = InDstRegion.getHeight();
+		SrcBox.back = 1;
+		CD3DX12_TEXTURE_COPY_LOCATION Dst(DstTexDx12->TextureResource.GetResource().Get(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION Src(SrcTexDx12->TextureResource.GetResource().Get(), 0);
+		CurrentWorkingCommandList->CopyTextureRegion(&Dst, InDstRegion.Left, InDstRegion.Upper, 0, &Src, &SrcBox);
+
+		// Hold resources used here
+		HoldResourceReference(DstTexture);
+		HoldResourceReference(SrcTexture);
+
+		return true;
+	}
+
+	bool FRHIDx12::CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length)
+	{
+		TI_ASSERT(DstOffset + Length <= DstBuffer->GetTotalBufferSize());
+		TI_ASSERT(Length <= SrcBuffer->GetTotalBufferSize());
+
+		FUniformBufferDx12 * DstBufferDx12 = static_cast<FUniformBufferDx12*>(DstBuffer.get());
+		FUniformBufferDx12 * SrcBufferDx12 = static_cast<FUniformBufferDx12*>(SrcBuffer.get());
+
+		CurrentWorkingCommandList->CopyBufferRegion(DstBufferDx12->BufferResource.GetResource().Get(), DstOffset, SrcBufferDx12->BufferResource.GetResource().Get(), 0, Length);
+
+		// Hold resources used here
+		HoldResourceReference(DstBuffer);
+		HoldResourceReference(SrcBuffer);
+
+		return true;
 	}
 
 	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)

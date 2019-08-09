@@ -20,8 +20,9 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void PrepareBuffers(FTexturePtr UVInput);
-	void PrepareDataForCPU(FRHI * RHI, int32 FrameNum);
+	void PrepareDataForCPU(FRHI * RHI);
 	TStreamPtr ReadUVBuffer();
+	void ClearQuadTree(FRHI * RHI);
 protected:
 	virtual void FinalizeInRenderThread() override;
 
@@ -29,6 +30,7 @@ private:
 	vector2di InputSize;
 	FUVDiscardInputPtr InputInfoBuffer;
 
+	FUniformBufferPtr QuadTreeBufferClear;
 	FUniformBufferPtr QuadTreeBuffer;
 	FRenderResourceTablePtr ResourceTable;
 

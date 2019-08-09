@@ -30,14 +30,9 @@ void FTileDeterminationCS::FinalizeInRenderThread()
 
 void FTileDeterminationCS::Run(FRHI * RHI)
 {
-	//uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
-	//RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
-
-	TI_TODO("Clear quad tree.");
 	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	//RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
 	RHI->SetComputeResourceTable(0, ResourceTable);
 
 	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
@@ -48,8 +43,15 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 	// prepare compute parameters
 	int32 MipSize = FVTSystem::VTSize;
 	int32 BufferSize = FVTSystem::TotalPagesInVT;
+	// create quad tree buffer to store tile info
 	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, nullptr);
+	// create a zero inited buffer to clear quad tree buffer
+	QuadTreeBufferClear = FRHI::Get()->CreateUniformBuffer(4, BufferSize, 0);
+	uint8 * ZeroData = ti_new uint8[4 * BufferSize];
+	memset(ZeroData, 0, 4 * BufferSize);
+	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBufferClear, ZeroData);
+	ti_delete[] ZeroData;
 	
 	// Create Render Resource Table
 	ResourceTable = FRHI::Get()->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
@@ -57,7 +59,7 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 	ResourceTable->PutBufferInTable(QuadTreeBuffer, 1);
 }
 
-void FTileDeterminationCS::PrepareDataForCPU(FRHI * RHI, int32 FrameNum)
+void FTileDeterminationCS::PrepareDataForCPU(FRHI * RHI)
 {
 	RHI->PrepareDataForCPU(QuadTreeBuffer);
 	UVBufferTriggerd = true;
@@ -72,6 +74,12 @@ TStreamPtr FTileDeterminationCS::ReadUVBuffer()
 		return Result;
 	}
 	return nullptr;
+}
+
+void FTileDeterminationCS::ClearQuadTree(FRHI * RHI)
+{
+	// Clear quad tree.
+	RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, FVTSystem::TotalPagesInVT * 4);
 }
 
 ////////////////////////////////////////////////////////
@@ -138,6 +146,9 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		// Prepare virtual texture system indirect texture
 		FVTSystem::Get()->PrepareVTIndirectTexture();
+
+		// Clear quad tree in graphics list
+		ComputeTileDetermination->ClearQuadTree(RHI);
 	}
 
 	// Render Base Pass
@@ -156,7 +167,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->BeginPopulateCommandList(EPL_COMPUTE);
 			ComputeTileDetermination->Run(RHI);
 
-			ComputeTileDetermination->PrepareDataForCPU(RHI, 0);
+			ComputeTileDetermination->PrepareDataForCPU(RHI);
 			RHI->EndPopulateCommandList();
 		}
 	}

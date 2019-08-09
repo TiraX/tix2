@@ -373,7 +373,7 @@ namespace tix
 			TI_ASSERT(PhysicPage->TextureResource == nullptr);
 			PhysicPage->TextureResource = FRHI::Get()->CreateTexture(PhysicPage->GetDesc());
 			FRHI::Get()->UpdateHardwareResourceTexture(PhysicPage->TextureResource, PhysicPage);
-			FRHI::Get()->UpdateHardwareResourceTextureRegion(PhysicPageAtlas, PhysicPage->TextureResource, TargetRegion);
+			FRHI::Get()->CopyTextureRegion(PhysicPageAtlas, TargetRegion, PhysicPage->TextureResource);
 		}
 		if (LoadedPages.size() > 0)
 		{
