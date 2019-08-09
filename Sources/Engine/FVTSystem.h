@@ -21,6 +21,8 @@ namespace tix
 		static const int32 PPSize = 256;
 		// Indirection texture size
 		static const int32 ITSize = VTSize / PPSize;
+		// Total pages in VT
+		static const int32 TotalPagesInVT = 5461;
 
 		static const int32 PhysicAtlasSize = 32;
 		// Physical page count
@@ -42,6 +44,11 @@ namespace tix
 		static TI_API FVTSystem * Get()
 		{
 			return VTSystem;
+		}
+
+		static int32 GetVTMipLevels()
+		{
+			return (int32)VTMipsOffset.size();
 		}
 
 		static int32 GetVTMipPagesOffset(int32 MipLevel)

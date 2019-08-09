@@ -12,7 +12,7 @@ END_UNIFORM_BUFFER_STRUCT(FUVDiscardInput)
 class FTileDeterminationCS : public FComputeTask
 {
 public:
-	static const int32 ThreadBlockSize = 8;
+	static const int32 ThreadBlockSize = 32;
 
 	FTileDeterminationCS(int32 W, int32 H);
 	virtual ~FTileDeterminationCS();
@@ -20,6 +20,7 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void PrepareBuffers(FTexturePtr UVInput);
+	void PrepareDataForCPU(FRHI * RHI, int32 FrameNum);
 	TStreamPtr ReadUVBuffer();
 protected:
 	virtual void FinalizeInRenderThread() override;

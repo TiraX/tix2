@@ -9,7 +9,7 @@
 #include "FVTTaskThread.h"
 
 FTileDeterminationCS::FTileDeterminationCS(int32 W, int32 H)
-	: FComputeTask("S_UVDiscardCS")
+	: FComputeTask("S_TileDeterminationCS")
 	, InputSize(W, H)
 	, UVBufferTriggerd(false)
 {
@@ -33,21 +33,22 @@ void FTileDeterminationCS::Run(FRHI * RHI)
 	//uint32 CounterOffset = ProcessedCommandsBuffer->GetStructureSizeInBytes() * ProcessedCommandsBuffer->GetElements();
 	//RHI->ComputeCopyBuffer(ProcessedCommandsBuffer, CounterOffset, ResetBuffer->UniformBuffer, 0, sizeof(uint32));
 
+	TI_TODO("Clear quad tree.");
 	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
-	RHI->SetComputeResourceTable(1, ResourceTable);
+	//RHI->SetComputeConstantBuffer(0, InputInfoBuffer->UniformBuffer);
+	RHI->SetComputeResourceTable(0, ResourceTable);
 
 	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
 }
 
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 {
-	TI_ASSERT(0);
 	// prepare compute parameters
-	const int32 BufferSize = InputSize.X / ThreadBlockSize * InputSize.Y / ThreadBlockSize;
-	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(16, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
+	int32 MipSize = FVTSystem::VTSize;
+	int32 BufferSize = FVTSystem::TotalPagesInVT;
+	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, nullptr);
 	
 	// Create Render Resource Table
@@ -56,15 +57,20 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 	ResourceTable->PutBufferInTable(QuadTreeBuffer, 1);
 }
 
+void FTileDeterminationCS::PrepareDataForCPU(FRHI * RHI, int32 FrameNum)
+{
+	RHI->PrepareDataForCPU(QuadTreeBuffer);
+	UVBufferTriggerd = true;
+}
+
 TStreamPtr FTileDeterminationCS::ReadUVBuffer()
 {
-	TI_ASSERT(0);
-	//if (UVBufferTriggerd)
-	//{
-	//	TStreamPtr Result = OutputUVBuffer->ReadBufferData();
-	//	UVBufferTriggerd = false;
-	//	return Result;
-	//}
+	if (UVBufferTriggerd)
+	{
+		TStreamPtr Result = QuadTreeBuffer->ReadBufferData();
+		UVBufferTriggerd = false;
+		return Result;
+	}
 	return nullptr;
 }
 
@@ -124,13 +130,11 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	if (FVTSystem::IsEnabled())
 	{
-		TI_ASSERT(0);
-		//TStreamPtr UVBuffer = ComputeUVDiscard->ReadUVBuffer();
-		//if (UVBuffer != nullptr)
-		//{
-		//	FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
-		//}
-
+		TStreamPtr UVBuffer = ComputeTileDetermination->ReadUVBuffer();
+		if (UVBuffer != nullptr)
+		{
+			FVTSystem::Get()->GetAnalysisThread()->AddUVBuffer(UVBuffer);
+		}
 
 		// Prepare virtual texture system indirect texture
 		FVTSystem::Get()->PrepareVTIndirectTexture();
@@ -152,8 +156,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->BeginPopulateCommandList(EPL_COMPUTE);
 			ComputeTileDetermination->Run(RHI);
 
-			TI_ASSERT(0);
-			//ComputeTileDetermination->PrepareDataForCPU(RHI);
+			ComputeTileDetermination->PrepareDataForCPU(RHI, 0);
 			RHI->EndPopulateCommandList();
 		}
 	}

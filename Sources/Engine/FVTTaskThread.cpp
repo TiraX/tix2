@@ -103,50 +103,44 @@ namespace tix
 
 		++AnalysisFrame;
 
-		const FFloat4* DataPtr = (const FFloat4*)Buffer->GetBuffer();
-		const int32 DataCount = Buffer->GetLength() / sizeof(FFloat4);
+		const float* DataPtr = (const float*)Buffer->GetBuffer();
+		const int32 DataCount = Buffer->GetLength() / sizeof(int32);
+		TI_ASSERT(DataCount == FVTSystem::TotalPagesInVT);
 
 		THMap<uint32, int32> NewPages;	// New pages in this frame. Key is PageIndex, Value is MipLevel
 		THMap<uint32, uint32> UsedLocations;	// Used locations in PhysicPageTextures in this frame;
 
 		// Go through every pixel
-		for (int32 i = 0 ; i < DataCount ; ++ i)
+		const int32 TotalMips = FVTSystem::GetVTMipLevels();
+		int32 TotalPages = 0;
+		for (int32 MipLevel = 0 ; MipLevel < TotalMips ; ++MipLevel)
 		{
-			const FFloat4& Data = DataPtr[i];
-			if (Data.W > 0.f)
+			const int32 ITSize = FVTSystem::ITSize >> MipLevel;
+			const int32 PagesInMip = ITSize * ITSize;
+
+			for (int32 Page = 0 ; Page < PagesInMip ; ++ Page)
 			{
-				int32 MipLevel = (int32)Data.Z;
-				//int32 VTSize = FVTSystem::VTSize >> MipLevel;
-				int32 ITSize = FVTSystem::ITSize >> MipLevel;
-				int32 MipPageOffset = FVTSystem::GetVTMipPagesOffset(MipLevel);
-
-				//float U = ti_min(Data.X, 0.9999f);
-				//float V = ti_min(Data.Y, 0.9999f);
-
-				//vector2di Position;
-				//Position.X = (int32)(U * VTSize);
-				//Position.Y = (int32)(V * VTSize);
-
-				//int32 PageX = Position.X / FVTSystem::PPSize;
-				//int32 PageY = Position.Y / FVTSystem::PPSize;
-				int32 PageX = (int32)Data.X;
-				int32 PageY = (int32)Data.Y;
-				TI_ASSERT(PageX >= 0 && PageY >= 0);
-				uint32 PageIndex = PageY * ITSize + PageX + MipPageOffset;
-
-				if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
+				if (DataPtr[TotalPages] > 0.f)
 				{
-					// This is a page not in Slots, remember it
-					TI_ASSERT(NewPages.find(PageIndex) == NewPages.end() || NewPages[PageIndex] == MipLevel);
-					NewPages[PageIndex] = MipLevel;
+					uint32 PageIndex = TotalPages;
+
+					if (PhysicPagesMap.find(PageIndex) == PhysicPagesMap.end())
+					{
+						// This is a page not in Slots, remember it
+						TI_ASSERT(NewPages.find(PageIndex) == NewPages.end() || NewPages[PageIndex] == MipLevel);
+						NewPages[PageIndex] = MipLevel;
+					}
+					else
+					{
+						// Remember this location is used in this frame
+						UsedLocations[PhysicPagesMap[PageIndex]] = 1;
+					}
 				}
-				else
-				{
-					// Remember this location is used in this frame
-					UsedLocations[PhysicPagesMap[PageIndex]] = 1;
-				}
+
+				++TotalPages;
 			}
 		}
+
 		// Pages updated in one frame can not exceed PPCount(1024)
 		TI_ASSERT(NewPages.size() + UsedLocations.size() < FVTSystem::PPCount);
 		//_LOG(Log, "%03d, NewPages : %d\n", AnalysisFrame, NewPages.size());

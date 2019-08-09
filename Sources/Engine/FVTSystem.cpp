@@ -55,6 +55,7 @@ namespace tix
 			TotalPages += Rows * Rows;
 			MipSize /= 2;
 		}
+		TI_ASSERT(TotalPages == TotalPagesInVT);
 
 		// Start task thread
 		VTAnalysisThread = ti_new FVTAnalysisThread;

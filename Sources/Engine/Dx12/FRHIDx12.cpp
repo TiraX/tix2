@@ -2169,6 +2169,7 @@ namespace tix
 				IBDx12->InstanceBufferView
 			};
 			CurrentWorkingCommandList->IASetVertexBuffers(0, 2, Views);
+			HoldResourceReference(InInstanceBuffer);
 		}
 		CurrentWorkingCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
 
