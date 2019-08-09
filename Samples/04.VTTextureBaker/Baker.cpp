@@ -260,22 +260,17 @@ namespace tix
 		return Mips;
 	}
 
-	static TImage* ProcessBorders(TImage * TgaImage, const recti& SrcRegion, const TVTTextureBaker::TVTTextureBasicInfo& Info, int32 PPSize)
+	// Expand image 1 pixel with neighbor color
+	static TImage* ProcessBorders(TImage * TgaImage, const recti& SrcRegion, int32 PPSize)
 	{
 		const int32 PPSizeWithBorder = PPSize + BorderWidth * 2;
-		int32 SizeX = Info.Size.X >> Info.LodBias;
-		int32 SizeY = Info.Size.Y >> Info.LodBias;
+		int32 SizeX = TgaImage->GetWidth();
+		int32 SizeY = TgaImage->GetHeight();
 
 		TImage * PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSizeWithBorder, PPSizeWithBorder);
 
 		// Copy original image to center
 		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
-
-		if (Info.AddressMode != ETC_REPEAT)
-		{
-			TI_ASSERT(0);
-			_LOG(Error, "unsupported address mode for VT. %s\n", Info.Name.c_str());
-		}
 
 		if (bDebugBorder)
 		{
@@ -405,6 +400,48 @@ namespace tix
 		return PageImageWithBorder;
 	}
 
+	// Expand image 1 pixel with duplicated border color
+	static TImage* ProcessBorders1(TImage * TgaImage, const recti& SrcRegion, int32 PPSize)
+	{
+		const int32 PPSizeWithBorder = PPSize + BorderWidth * 2;
+
+		TImage * PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSizeWithBorder, PPSizeWithBorder);
+
+		// Copy original image to center
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
+
+		if (bDebugBorder)
+		{
+			SColor DebugColor(255, 0, 255, 0);
+			for (int32 i = 0; i < PPSizeWithBorder; ++i)
+			{
+				PageImageWithBorder->SetPixel(i, 0, DebugColor);
+				PageImageWithBorder->SetPixel(i, PPSizeWithBorder - 1, DebugColor);
+				PageImageWithBorder->SetPixel(0, i, DebugColor);
+				PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, i, DebugColor);
+			}
+			return PageImageWithBorder;
+		}
+
+		// top
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, recti(SrcRegion.Left, SrcRegion.Upper, SrcRegion.Right, SrcRegion.Upper + 1), 0);
+		// bottom
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, recti(SrcRegion.Left, SrcRegion.Lower - 1, SrcRegion.Right, SrcRegion.Lower), 0);
+		// left
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, recti(SrcRegion.Left, SrcRegion.Upper, SrcRegion.Left + 1, SrcRegion.Lower), 0);
+		// right
+		TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, recti(SrcRegion.Right - 1, SrcRegion.Upper, SrcRegion.Right, SrcRegion.Lower), 0);
+
+
+		// 4 corners
+		PageImageWithBorder->SetPixel(0, 0, TgaImage->GetPixel(0, 0));
+		PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, 0, TgaImage->GetPixel(PPSize - 1, 0));
+		PageImageWithBorder->SetPixel(0, PPSizeWithBorder - 1, TgaImage->GetPixel(0, PPSize - 1));
+		PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, PPSizeWithBorder - 1, TgaImage->GetPixel(PPSize - 1, PPSize - 1));
+
+		return PageImageWithBorder;
+	}
+
 	class TBakeSplitTextureTask : public TResMTTask
 	{
 	public:
@@ -423,6 +460,7 @@ namespace tix
 			, X(InX)
 			, Y(InY)
 			, PageImage(nullptr)
+			, PageImageWithBorder(nullptr)
 		{}
 
 		const TVTTextureBaker::TVTTextureBasicInfo& Info;
@@ -433,41 +471,33 @@ namespace tix
 		int32 X, Y;
 
 		TImage* PageImage;
+		TImage* PageImageWithBorder;
 
 		virtual void Exec() override
 		{
+			// Keep origin image block
 			PageImage = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
+			TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
+
+			// Process with border
+			PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSize, PPSize);
 			if (bAddBorder)
 			{
-				TImage * PageImageWithBorder = ProcessBorders(TgaImage, SrcRegion, Info, PPSize);
+				TImage* PageImageExpand = ProcessBorders1(TgaImage, SrcRegion, PPSize);
 				if (Info.Srgb)
 				{
-					PageImageWithBorder->ConvertToLinearSpace();
+					PageImageExpand->ConvertToLinearSpace();
 				}
-				PageImageWithBorder->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
+				PageImageExpand->CopyRegionTo(PageImageWithBorder, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
 				if (Info.Srgb)
 				{
-					PageImage->ConvertToSrgbSpace();
+					PageImageWithBorder->ConvertToSrgbSpace();
 				}
-
-				//debug
-				//if (Region.X + X == 0 && (Region.Y + Y == 2 || Region.Y + Y == 6))
-				//{
-				//	if (Info.Srgb)
-				//	{
-				//		PageImageWithBorder->ConvertToSrgbSpace();
-				//	}
-				//	char name0[128], name1[128];
-				//	sprintf_s(name0, 128, "%d_%d_bord.tga", Region.X + X, Region.Y + Y);
-				//	sprintf_s(name1, 128, "%d_%d_page.tga", Region.X + X, Region.Y + Y);
-				//	PageImageWithBorder->SaveToTga(name0);
-				//	PageImage->SaveToTga(name1);
-				//}
-				ti_delete PageImageWithBorder;
+				ti_delete PageImageExpand;
 			}
 			else
 			{
-				TgaImage->CopyRegionTo(PageImage, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
+				TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 0, PPSize, PPSize), 0, SrcRegion, 0);
 			}
 		}
 	};
@@ -480,18 +510,22 @@ namespace tix
 
 		MipPages.clear();
 		MipPages.resize(TotalMips);
+		MipPagesWithBorder.clear();
+		MipPagesWithBorder.resize(TotalMips);
 		
 		int32 Size = RegionSize;
 		for (int32 M = 0 ; M < (int32)MipPages.size(); ++ M)
 		{
-			for (int32 S = 0; S < Size * Size; ++ S)
+			for (int32 S = 0; S < Size * Size; ++S)
 			{
 				MipPages[M][S] = nullptr;
+				MipPagesWithBorder[M][S] = nullptr;
 			}
 			Size /= 2;
 		}
 
 		THMap<int32, TImage*>& SplitedTextures = MipPages[0];
+		THMap<int32, TImage*>& SplitedTexturesWithBorder = MipPagesWithBorder[0];
 		//CurrentPages = MipPages[Mip];
 
 		TVector<TBakeSplitTextureTask*> Tasks;
@@ -501,6 +535,12 @@ namespace tix
 		{
 			const TVTTextureBasicInfo& Info = TextureInfos[Index];
 			const vector4di& Region = TextureRegionInVT[Index];
+
+			if (Info.AddressMode != ETC_REPEAT)
+			{
+				TI_ASSERT(0);
+				_LOG(Error, "unsupported address mode for VT. %s\n", Info.Name.c_str());
+			}
 
 			int32 SizeX = Info.Size.X >> Info.LodBias;
 			int32 SizeY = Info.Size.Y >> Info.LodBias;
@@ -554,6 +594,7 @@ namespace tix
 			int32 PageIndex = Pos.Y * RegionSize + Pos.X;
 			TI_ASSERT(SplitedTextures[PageIndex] == nullptr);
 			SplitedTextures[PageIndex] = Task->PageImage;
+			SplitedTexturesWithBorder[PageIndex] = Task->PageImageWithBorder;
 
 			ti_delete Task;
 		}
@@ -632,6 +673,7 @@ namespace tix
 			, MipSize(InMipSize)
 			, PPSize(InPPSize)
 			, ResultImage(nullptr)
+			, ResultImageWithBorder(nullptr)
 		{}
 
 		THMap<int32, TImage*>* ParentPages;
@@ -640,10 +682,19 @@ namespace tix
 		int32 PPSize;
 
 		TImage* ResultImage;
+		TImage* ResultImageWithBorder;
 
 		virtual void Exec() override
 		{
 			ResultImage = DownSamplePages(*ParentPages, X, Y, MipSize, PPSize);
+			if (ResultImage != nullptr)
+			{
+				TI_ASSERT(ResultImage->GetWidth() == PPSize);
+				ResultImageWithBorder = ti_new TImage(ResultImage->GetFormat(), PPSize, PPSize);
+				TImage* ResultImageExpand = ProcessBorders1(ResultImage, recti(0, 0, PPSize, PPSize), PPSize);
+				ResultImageExpand->CopyRegionTo(ResultImageWithBorder, recti(0, 0, PPSize, PPSize), 0, recti(0, 0, PPSize + BorderWidth * 2, PPSize + BorderWidth * 2), 0);
+				ti_delete ResultImageExpand;
+			}
 		}
 	};
 
@@ -658,6 +709,7 @@ namespace tix
 		{
 			THMap<int32, TImage*>& ParentPages = MipPages[Mip - 1];
 			THMap<int32, TImage*>& CurrentPages = MipPages[Mip];
+			THMap<int32, TImage*>& CurrentPagesWithBorder = MipPagesWithBorder[Mip];
 
 			TVector<TBakePageMipmapTask*> Tasks;
 			Tasks.reserve(MipPages[Mip].size() / MaxThreads);
@@ -683,6 +735,7 @@ namespace tix
 				int32 y = Task->Y;
 				int32 PageIndex = (y / 2 * CurrMipSize) + x / 2;
 				CurrentPages[PageIndex] = Task->ResultImage;
+				CurrentPagesWithBorder[PageIndex] = Task->ResultImageWithBorder;
 
 				ti_delete Task;
 			}
@@ -707,6 +760,19 @@ namespace tix
 			}
 		}
 		MipPages.clear();
+		for (int32 M = 0; M < (int32)MipPagesWithBorder.size(); ++M)
+		{
+			THMap<int32, TImage*>& Pages = MipPagesWithBorder[M];
+
+			for (auto& Page : Pages)
+			{
+				if (Page.second != nullptr)
+				{
+					ti_delete Page.second;
+				}
+			}
+		}
+		MipPagesWithBorder.clear();
 	}
 
 	class TComporessTextureTask : public TResMTTask
@@ -785,20 +851,40 @@ namespace tix
 
 		TVector<TComporessTextureTask*> Tasks;
 
+		TI_ASSERT(MipPages.size() == MipPagesWithBorder.size());
 		for (int32 M = 0; M < (int32)MipPages.size(); ++M)
 		{
 			THMap<int32, TImage*>& Pages = MipPages[M];
+			THMap<int32, TImage*>& PagesWithBorder = MipPagesWithBorder[M];
 
-			for (auto& Page : Pages)
+			if (bAddBorder)
 			{
-				if (Page.second != nullptr)
+				for (auto& Page : PagesWithBorder)
 				{
-					int32 PageX = Page.first % RegionSize;
-					int32 PageY = Page.first / RegionSize;
+					if (Page.second != nullptr)
+					{
+						int32 PageX = Page.first % RegionSize;
+						int32 PageY = Page.first / RegionSize;
 
-					TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
-					TResMTTaskExecuter::Get()->AddTask(Task);
-					Tasks.push_back(Task);
+						TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
+						TResMTTaskExecuter::Get()->AddTask(Task);
+						Tasks.push_back(Task);
+					}
+				}
+			}
+			else
+			{
+				for (auto& Page : Pages)
+				{
+					if (Page.second != nullptr)
+					{
+						int32 PageX = Page.first % RegionSize;
+						int32 PageY = Page.first / RegionSize;
+
+						TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
+						TResMTTaskExecuter::Get()->AddTask(Task);
+						Tasks.push_back(Task);
+					}
 				}
 			}
 
@@ -826,9 +912,17 @@ namespace tix
 
 			for (int32 M = 0; M < (int32)MipPages.size(); ++M)
 			{
-				THMap<int32, TImage*>& Pages = MipPages[M];
+				THMap<int32, TImage*>* Pages;
+				if (bIgnoreBorders)
+				{
+					Pages = &MipPages[M];
+				}
+				else
+				{
+					Pages = &MipPagesWithBorder[M];
+				}
 
-				for (auto& Page : Pages)
+				for (auto& Page : *Pages)
 				{
 					if (Page.second != nullptr)
 					{
@@ -854,27 +948,38 @@ namespace tix
 			{
 				TImage * VTMip = ti_new TImage(EPF_RGBA8, RegionSize * PPSize, RegionSize * PPSize);
 
-				THMap<int32, TImage*>& Pages = MipPages[M];
+				THMap<int32, TImage*>* Pages;
+				if (bIgnoreBorders)
+				{
+					Pages = &MipPages[M];
+				}
+				else
+				{
+					Pages = &MipPagesWithBorder[M];
+				}
 
-				for (auto& Page : Pages)
+				for (auto& Page : *Pages)
 				{
 					if (Page.second != nullptr)
 					{
 						int32 PageX = Page.first % RegionSize;
 						int32 PageY = Page.first / RegionSize;
 
-						// Add Border to page image
-						SColor PinkC(255, 255, 0, 255);
-						for (int32 i = 0 ; i < PPSize ; ++ i)
+						if (bDumpAllVTWithBorder)
 						{
-							Page.second->SetPixel(i, 0, PinkC);
-							Page.second->SetPixel(i, PPSize - 1, PinkC);
-							Page.second->SetPixel(i, 1, PinkC);
-							Page.second->SetPixel(i, PPSize - 2, PinkC);
-							Page.second->SetPixel(0, i, PinkC);
-							Page.second->SetPixel(PPSize - 1, i, PinkC);
-							Page.second->SetPixel(1, i, PinkC);
-							Page.second->SetPixel(PPSize - 2, i, PinkC);
+							// Add Border to page image
+							SColor PinkC(255, 255, 0, 255);
+							for (int32 i = 0; i < PPSize; ++i)
+							{
+								Page.second->SetPixel(i, 0, PinkC);
+								Page.second->SetPixel(i, PPSize - 1, PinkC);
+								Page.second->SetPixel(i, 1, PinkC);
+								Page.second->SetPixel(i, PPSize - 2, PinkC);
+								Page.second->SetPixel(0, i, PinkC);
+								Page.second->SetPixel(PPSize - 1, i, PinkC);
+								Page.second->SetPixel(1, i, PinkC);
+								Page.second->SetPixel(PPSize - 2, i, PinkC);
+							}
 						}
 
 						Page.second->CopyRegionTo(VTMip, recti(PageX * PPSize, PageY * PPSize, PageX * PPSize + PPSize, PageY * PPSize + PPSize), 0, recti(0, 0, PPSize, PPSize), 0);

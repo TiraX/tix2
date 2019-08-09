@@ -12,6 +12,7 @@ namespace tix
 	public:
 		bool bDumpAllPages;
 		bool bDumpAllVTs;
+		bool bDumpAllVTWithBorder;
 		bool bIgnoreBorders;
 		bool bDebugBorders;
 
@@ -54,6 +55,7 @@ namespace tix
 		TVector<TVTTextureBasicInfo> TextureInfos;
 		TVector<vector4di> TextureRegionInVT;
 		TVector<THMap<int32, TImage*> > MipPages;
+		TVector<THMap<int32, TImage*> > MipPagesWithBorder;
 
 		TString SceneFileName;
 		TString OutputPath;

@@ -26,7 +26,7 @@ for /r . %%i in (*.tjs) do (
   %Converter% !Source! Cooked\Windows\!Target!.tasset -ForceAlphaChannel
 )
 
-rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256
+rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256
 %VTBaker% showcase_01.tjs Cooked/Windows
 rem Convert scene file again with vt_info
 %Converter% showcase_01.tjs Cooked\Windows\showcase_01.tasset -VTInfo=showcase_01_vt.tjs
