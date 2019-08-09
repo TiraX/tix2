@@ -261,144 +261,144 @@ namespace tix
 	}
 
 	// Expand image 1 pixel with neighbor color
-	static TImage* ProcessBorders(TImage * TgaImage, const recti& SrcRegion, int32 PPSize)
-	{
-		const int32 PPSizeWithBorder = PPSize + BorderWidth * 2;
-		int32 SizeX = TgaImage->GetWidth();
-		int32 SizeY = TgaImage->GetHeight();
-
-		TImage * PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSizeWithBorder, PPSizeWithBorder);
-
-		// Copy original image to center
-		TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
-
-		if (bDebugBorder)
-		{
-			SColor DebugColor(255, 0, 255, 0);
-			for (int32 i = 0 ; i < PPSizeWithBorder ; ++ i)
-			{
-				PageImageWithBorder->SetPixel(i, 0, DebugColor);
-				PageImageWithBorder->SetPixel(i, PPSizeWithBorder - 1, DebugColor);
-				PageImageWithBorder->SetPixel(0, i, DebugColor);
-				PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, i, DebugColor);
-			}
-			return PageImageWithBorder;
-		}
-
-		// Left border
-		if (SrcRegion.Left == 0)
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Left = SizeX - 1;
-			SrcBorderRegion.Right = SizeX;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-		}
-		else
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Left = SrcRegion.Left - 1;
-			SrcBorderRegion.Right = SrcRegion.Left;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-		}
-
-		// Right border
-		if (SrcRegion.Right == SizeX)
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Left = 0;
-			SrcBorderRegion.Right = 1;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-		}
-		else
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Left = SrcRegion.Right;
-			SrcBorderRegion.Right = SrcRegion.Right + 1;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
-		}
-
-		// Top border
-		if (SrcRegion.Upper == 0)
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Upper = SizeY - 1;
-			SrcBorderRegion.Lower = SizeY;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
-		}
-		else
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Upper = SrcRegion.Upper - 1;
-			SrcBorderRegion.Lower = SrcRegion.Upper;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
-		}
-
-		// Bottom border
-		if (SrcRegion.Lower == SizeY)
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Upper = 0;
-			SrcBorderRegion.Lower = 1;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
-		}
-		else
-		{
-			recti SrcBorderRegion = SrcRegion;
-			SrcBorderRegion.Upper = SrcRegion.Lower;
-			SrcBorderRegion.Lower = SrcRegion.Lower + 1;
-			TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
-		}
-
-		// corners
-		int32 SrcX, SrcY;
-		SColor SrcC;
-		{
-			// top left
-			SrcX = SrcRegion.Left - 1;
-			SrcY = SrcRegion.Upper - 1;
-			if (SrcRegion.Left == 0)
-				SrcX = SizeX - 1;
-			if (SrcRegion.Upper == 0)
-				SrcY = SizeY - 1;
-			SrcC = TgaImage->GetPixel(SrcX, SrcY);
-			PageImageWithBorder->SetPixel(0, 0, SrcC);
-		}
-		{
-			// top right
-			SrcX = SrcRegion.Right;
-			SrcY = SrcRegion.Upper - 1;
-			if (SrcRegion.Right == SizeX)
-				SrcX = 0;
-			if (SrcRegion.Upper == 0)
-				SrcY = SizeY - 1;
-			SrcC = TgaImage->GetPixel(SrcX, SrcY);
-			PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, 0, SrcC);
-		}
-		{
-			// bottom left
-			SrcX = SrcRegion.Left - 1;
-			SrcY = SrcRegion.Lower;
-			if (SrcRegion.Left == 0)
-				SrcX = SizeX - 1;
-			if (SrcRegion.Lower == SizeY)
-				SrcY = 0;
-			SrcC = TgaImage->GetPixel(SrcX, SrcY);
-			PageImageWithBorder->SetPixel(0, PPSizeWithBorder - 1, SrcC);
-		}
-		{
-			// bottom right
-			SrcX = SrcRegion.Right;
-			SrcY = SrcRegion.Lower;
-			if (SrcRegion.Right == SizeX)
-				SrcX = 0;
-			if (SrcRegion.Lower == SizeY)
-				SrcY = 0;
-			SrcC = TgaImage->GetPixel(SrcX, SrcY);
-			PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, PPSizeWithBorder - 1, SrcC);
-		}
-
-		return PageImageWithBorder;
-	}
+//    static TImage* ProcessBorders(TImage * TgaImage, const recti& SrcRegion, int32 PPSize)
+//    {
+//        const int32 PPSizeWithBorder = PPSize + BorderWidth * 2;
+//        int32 SizeX = TgaImage->GetWidth();
+//        int32 SizeY = TgaImage->GetHeight();
+//
+//        TImage * PageImageWithBorder = ti_new TImage(TgaImage->GetFormat(), PPSizeWithBorder, PPSizeWithBorder);
+//
+//        // Copy original image to center
+//        TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 1, PPSizeWithBorder - 1, PPSizeWithBorder - 1), 0, SrcRegion, 0);
+//
+//        if (bDebugBorder)
+//        {
+//            SColor DebugColor(255, 0, 255, 0);
+//            for (int32 i = 0 ; i < PPSizeWithBorder ; ++ i)
+//            {
+//                PageImageWithBorder->SetPixel(i, 0, DebugColor);
+//                PageImageWithBorder->SetPixel(i, PPSizeWithBorder - 1, DebugColor);
+//                PageImageWithBorder->SetPixel(0, i, DebugColor);
+//                PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, i, DebugColor);
+//            }
+//            return PageImageWithBorder;
+//        }
+//
+//        // Left border
+//        if (SrcRegion.Left == 0)
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Left = SizeX - 1;
+//            SrcBorderRegion.Right = SizeX;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+//        }
+//        else
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Left = SrcRegion.Left - 1;
+//            SrcBorderRegion.Right = SrcRegion.Left;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(0, 1, 1, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+//        }
+//
+//        // Right border
+//        if (SrcRegion.Right == SizeX)
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Left = 0;
+//            SrcBorderRegion.Right = 1;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+//        }
+//        else
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Left = SrcRegion.Right;
+//            SrcBorderRegion.Right = SrcRegion.Right + 1;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(PPSizeWithBorder - 1, 1, PPSizeWithBorder, PPSizeWithBorder - 1), 0, SrcBorderRegion, 0);
+//        }
+//
+//        // Top border
+//        if (SrcRegion.Upper == 0)
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Upper = SizeY - 1;
+//            SrcBorderRegion.Lower = SizeY;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
+//        }
+//        else
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Upper = SrcRegion.Upper - 1;
+//            SrcBorderRegion.Lower = SrcRegion.Upper;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, 0, PPSizeWithBorder - 1, 1), 0, SrcBorderRegion, 0);
+//        }
+//
+//        // Bottom border
+//        if (SrcRegion.Lower == SizeY)
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Upper = 0;
+//            SrcBorderRegion.Lower = 1;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
+//        }
+//        else
+//        {
+//            recti SrcBorderRegion = SrcRegion;
+//            SrcBorderRegion.Upper = SrcRegion.Lower;
+//            SrcBorderRegion.Lower = SrcRegion.Lower + 1;
+//            TgaImage->CopyRegionTo(PageImageWithBorder, recti(1, PPSizeWithBorder - 1, PPSizeWithBorder - 1, PPSizeWithBorder), 0, SrcBorderRegion, 0);
+//        }
+//
+//        // corners
+//        int32 SrcX, SrcY;
+//        SColor SrcC;
+//        {
+//            // top left
+//            SrcX = SrcRegion.Left - 1;
+//            SrcY = SrcRegion.Upper - 1;
+//            if (SrcRegion.Left == 0)
+//                SrcX = SizeX - 1;
+//            if (SrcRegion.Upper == 0)
+//                SrcY = SizeY - 1;
+//            SrcC = TgaImage->GetPixel(SrcX, SrcY);
+//            PageImageWithBorder->SetPixel(0, 0, SrcC);
+//        }
+//        {
+//            // top right
+//            SrcX = SrcRegion.Right;
+//            SrcY = SrcRegion.Upper - 1;
+//            if (SrcRegion.Right == SizeX)
+//                SrcX = 0;
+//            if (SrcRegion.Upper == 0)
+//                SrcY = SizeY - 1;
+//            SrcC = TgaImage->GetPixel(SrcX, SrcY);
+//            PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, 0, SrcC);
+//        }
+//        {
+//            // bottom left
+//            SrcX = SrcRegion.Left - 1;
+//            SrcY = SrcRegion.Lower;
+//            if (SrcRegion.Left == 0)
+//                SrcX = SizeX - 1;
+//            if (SrcRegion.Lower == SizeY)
+//                SrcY = 0;
+//            SrcC = TgaImage->GetPixel(SrcX, SrcY);
+//            PageImageWithBorder->SetPixel(0, PPSizeWithBorder - 1, SrcC);
+//        }
+//        {
+//            // bottom right
+//            SrcX = SrcRegion.Right;
+//            SrcY = SrcRegion.Lower;
+//            if (SrcRegion.Right == SizeX)
+//                SrcX = 0;
+//            if (SrcRegion.Lower == SizeY)
+//                SrcY = 0;
+//            SrcC = TgaImage->GetPixel(SrcX, SrcY);
+//            PageImageWithBorder->SetPixel(PPSizeWithBorder - 1, PPSizeWithBorder - 1, SrcC);
+//        }
+//
+//        return PageImageWithBorder;
+//    }
 
 	// Expand image 1 pixel with duplicated border color
 	static TImage* ProcessBorders1(TImage * TgaImage, const recti& SrcRegion, int32 PPSize)

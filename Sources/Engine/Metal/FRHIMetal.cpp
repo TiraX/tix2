@@ -328,12 +328,6 @@ namespace tix
         TI_ASSERT(0);
         return true;
     }
-    
-    bool FRHIMetal::UpdateHardwareResourceTextureRegion(FTexturePtr DestTexture, FTexturePtr SrcTexture, const recti& InRegion)
-    {
-        TI_ASSERT(0);
-        return true;
-    }
 
 	bool FRHIMetal::UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
     {
@@ -405,6 +399,7 @@ namespace tix
         PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
         
         // Create shader binding info for shaders
+        TI_ASSERT(0);   //review shader binding implementation
         TI_ASSERT(Shader->ShaderBinding == nullptr);
         Shader->ShaderBinding = ti_new FShaderBinding(0);   // Metal do not care NumBindingCount
         for (int32 i = 0 ; i < ReflectionObj.vertexArguments.count; ++i)
@@ -418,7 +413,7 @@ namespace tix
             }
             if (BindIndex >= 0)
             {
-                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
+                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
                 Shader->ShaderBinding->AddShaderArgument(ESS_VERTEX_SHADER,
                                                          FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
             }
@@ -430,7 +425,7 @@ namespace tix
             int32 BindIndex = (int32)Arg.index;
             if (BindIndex >= 0)
             {
-                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName, Arg.type == MTLArgumentTypeTexture);
+                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
                 Shader->ShaderBinding->AddShaderArgument(ESS_PIXEL_SHADER,
                                                          FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
             }
@@ -604,6 +599,18 @@ namespace tix
     void FRHIMetal::PrepareDataForCPU(FUniformBufferPtr UniformBuffer)
     {
         TI_ASSERT(0);
+    }
+    
+    bool FRHIMetal::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture)
+    {
+        TI_ASSERT(0);
+        return true;
+    }
+    
+    bool FRHIMetal::CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length)
+    {
+        TI_ASSERT(0);
+        return true;
     }
     
 	void FRHIMetal::PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)

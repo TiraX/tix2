@@ -41,7 +41,7 @@ void FTileDeterminationCS::Run(FRHI * RHI)
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 {
 	// prepare compute parameters
-	int32 MipSize = FVTSystem::VTSize;
+	//int32 MipSize = FVTSystem::VTSize;
 	int32 BufferSize = FVTSystem::TotalPagesInVT;
 	// create quad tree buffer to store tile info
 	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(4, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
