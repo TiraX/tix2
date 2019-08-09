@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		27531BCF22FDAF0300507ACD /* VTTextureBaker in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27CF647822F480E900756F8E /* VTTextureBaker */; };
+		27531BD122FDAF5200507ACD /* libispc_texcomp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27531BD022FDAF5200507ACD /* libispc_texcomp.a */; };
 		27D87BE722F535B9005A4A77 /* Baker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BE222F535B9005A4A77 /* Baker.cpp */; };
 		27D87BE822F535B9005A4A77 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BE322F535B9005A4A77 /* stdafx.cpp */; };
 		27D87BE922F535B9005A4A77 /* VTTextureBaker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BE522F535B9005A4A77 /* VTTextureBaker.cpp */; };
@@ -20,22 +22,23 @@
 		27D87C0522F53815005A4A77 /* TTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BFD22F53814005A4A77 /* TTimer.cpp */; };
 		27D87C0622F53815005A4A77 /* TThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BFE22F53814005A4A77 /* TThread.cpp */; };
 		27D87C0722F53815005A4A77 /* TLog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D87BFF22F53815005A4A77 /* TLog.cpp */; };
-		27D87C0A22F53E7A005A4A77 /* libispc_texcomp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27D87C0922F53E7A005A4A77 /* libispc_texcomp.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		27CF647622F480E900756F8E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			buildActionMask = 12;
+			dstPath = "$(PROJECT_DIR)/../../Binary/Mac";
 			dstSubfolderSpec = 0;
 			files = (
+				27531BCF22FDAF0300507ACD /* VTTextureBaker in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		27531BD022FDAF5200507ACD /* libispc_texcomp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libispc_texcomp.a; path = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx/libispc_texcomp.a"; sourceTree = "<group>"; };
 		27CF647822F480E900756F8E /* VTTextureBaker */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = VTTextureBaker; sourceTree = BUILT_PRODUCTS_DIR; };
 		27D87BE122F535B9005A4A77 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = SOURCE_ROOT; };
 		27D87BE222F535B9005A4A77 /* Baker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Baker.cpp; sourceTree = SOURCE_ROOT; };
@@ -62,7 +65,6 @@
 		27D87BFE22F53814005A4A77 /* TThread.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = TThread.cpp; path = ../../../../Sources/Engine/TThread.cpp; sourceTree = "<group>"; };
 		27D87BFF22F53815005A4A77 /* TLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TLog.cpp; path = ../../../../Sources/Engine/TLog.cpp; sourceTree = "<group>"; };
 		27D87C0022F53815005A4A77 /* TRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TRegion.h; path = ../../../../Sources/Engine/TRegion.h; sourceTree = "<group>"; };
-		27D87C0922F53E7A005A4A77 /* libispc_texcomp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libispc_texcomp.dylib; path = "../../Sources/Externals/ISPCTextureCompressor-master/libs/osx/libispc_texcomp.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27D87C0A22F53E7A005A4A77 /* libispc_texcomp.dylib in Frameworks */,
+				27531BD122FDAF5200507ACD /* libispc_texcomp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,7 +155,7 @@
 		27D87C0822F53E79005A4A77 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				27D87C0922F53E7A005A4A77 /* libispc_texcomp.dylib */,
+				27531BD022FDAF5200507ACD /* libispc_texcomp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
