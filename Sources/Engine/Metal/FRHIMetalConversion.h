@@ -76,6 +76,14 @@ namespace tix
         MTLVertexFormatUChar4,    // ESSI_BLENDINDEX,
         MTLVertexFormatUChar4Normalized,    // ESSI_BLENDWEIGHT
     };
+    
+    static const MTLVertexFormat k_INSTANCEBUFFER_STREAM_FORMAT_MAP[EISI_TOTAL] =
+    {
+        MTLVertexFormatFloat4,    // EISI_TRANSITION,
+        MTLVertexFormatHalf4,    // EISI_ROT_SCALE_MAT0,
+        MTLVertexFormatHalf4,    // EISI_ROT_SCALE_MAT1,
+        MTLVertexFormatHalf4,    // EISI_ROT_SCALE_MAT2,
+    };
 
 	static const MTLBlendFactor k_BLEND_FACTOR_MAP[EBF_COUNT] =
 	{

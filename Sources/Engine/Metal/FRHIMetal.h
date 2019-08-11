@@ -23,9 +23,8 @@ namespace tix
 		virtual void EndFrame() override;
         virtual void BeginRenderToFrameBuffer() override;
 
-        virtual void InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList) override;
-        virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) override;
-        virtual void EndPopulateCommandList() override;
+        virtual void BeginComputeTask() override;
+        virtual void EndComputeTask() override;
         
         virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;

@@ -151,82 +151,34 @@ namespace tix
         
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
     }
-
-    void FRHIMetal::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
+    
+    void FRHIMetal::BeginComputeTask()
     {
-//        // the 1st Graphics command list is the default command list, need one more space for default command list
-//        GraphicsCommandLists.resize(NumGraphicsList + 1);
-//        ComputeCommandLists.resize(NumComputeList);
-//
-//        // Create graphics command allocator and list
-//        GraphicsCommandLists[0] = DefaultGraphicsCommandList;
-//        for (uint32 i = 1; i < NumGraphicsList + 1; ++i)
-//        {
-//            GraphicsCommandLists[i].Create(D3dDevice, EPL_GRAPHICS, i);
-//        }
-//        // Create compute command allocator and list.
-//        for (uint32 i = 0; i < NumComputeList; ++i)
-//        {
-//            ComputeCommandLists[i].Create(D3dDevice, EPL_COMPUTE, i);
-//        }
+        // Switch from graphics command list to compute command list.
+        TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+        
+        // Try to close RenderEncoder
+        if (RenderEncoder)
+        {
+            [RenderEncoder endEncoding];
+            RenderEncoder = nil;
+        }
+        // Create compute encoder
+        CurrentCommandListCounter[EPL_COMPUTE] ++;
+        TI_ASSERT(ComputeEncoder == nil);
+        ComputeEncoder = [CommandBuffer computeCommandEncoder];
+        
+        // Remember the list we are using, and push it to order vector
+        CurrentCommandListState.ListType = EPL_COMPUTE;
+        CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
+        ListExecuteOrder.push_back(CurrentCommandListState);
     }
     
-    void FRHIMetal::BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType)
+    void FRHIMetal::EndComputeTask()
     {
-        TI_ASSERT(0);
-//        TVector<FCommandListDx12>& Lists = (PipelineType == EPL_GRAPHICS) ? GraphicsCommandLists : ComputeCommandLists;
-//        if (CurrentCommandListState.ListType != PipelineType)
-//        {
-//            // End last encoder
-//            if (CurrentCommandListState.ListType == EPL_GRAPHICS)
-//            {
-//                TI_ASSERT(RenderEncoder != nil);
-//                [RenderEncoder endEncoding];
-//            }
-//            else if (CurrentCommandListState.ListType == EPL_COMPUTE)
-//            {
-//                TI_ASSERT(ComputeEncoder != nil);
-//                [ComputeEncoder endEncoding];
-//            }
-//            
-//            // Use a new encoder
-//            CurrentCommandListCounter[PipelineType] ++;
-//            TI_ASSERT(CurrentCommandListCounter[PipelineType] < (int32)Lists.size());
-//            
-//            // Remember the encoder we are using, and push it to order vector
-//            CurrentCommandListState.ListType = PipelineType;
-//            CurrentCommandListState.ListIndex = CurrentCommandListCounter[PipelineType];
-//            ListExecuteOrder.push_back(CurrentCommandListState);
-//            
-//            // Create a new encoder.
-//            FCommandListDx12& List = Lists[CurrentCommandListCounter[PipelineType]];
-//            CurrentWorkingCommandList = List.CommandList;
-//            
-//            // Reset command list
-//            VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
-//            VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
-//            
-//            // Set the descriptor heaps to be used by this frame.
-//            ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
-//            CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-//            
-//            if (PipelineType == EPL_GRAPHICS)
-//            {
-//                // Set the viewport and scissor rectangle.
-//                D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-//                CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
-//                D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-//                CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
-//            }
-//        }
-//        CommandListStateDebug.ListType = PipelineType;
-//        CommandListStateDebug.ListIndex = CurrentCommandListCounter[PipelineType];
-    }
-    
-    void FRHIMetal::EndPopulateCommandList()
-    {
-        TI_ASSERT(0);
-        //CommandListStateDebug.Reset();
+        TI_ASSERT(ComputeEncoder != nil);
+        [ComputeEncoder endEncoding];
+        ComputeEncoder = nil;
     }
     
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -403,130 +355,170 @@ namespace tix
 
 	bool FRHIMetal::UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc)
     {
-        TI_ASSERT(0);
         FPipelineMetal * PipelineMetal = static_cast<FPipelineMetal*>(Pipeline.get());
-        const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
-        //Pipeline->SetDesc(Desc);
+        FShaderPtr Shader = Pipeline->GetShader();
         
-        MTLRenderPipelineDescriptor * PipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
-#if defined (TIX_DEBUG)
-        Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
-        NSString * PipelineName = [NSString stringWithUTF8String:InPipelineDesc->GetResourceName().c_str()];
-        PipelineStateDesc.label = PipelineName;
-#endif
-        PipelineStateDesc.sampleCount = 1;
-        
-        FShaderPtr Shader = InPipelineDesc->GetDesc().Shader->ShaderResource;
-        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
-        PipelineStateDesc.vertexFunction = ShaderMetal->VertexProgram;
-        PipelineStateDesc.fragmentFunction = ShaderMetal->FragmentProgram;
-        
-        // Set vertex layout
-        TVector<E_MESH_STREAM_INDEX> Streams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
-        MTLVertexDescriptor * VertexDesc = [[MTLVertexDescriptor alloc] init];
-        
-        uint32 VertexDataOffset = 0;
-        for (uint32 i = 0; i < (uint32)Streams.size(); ++i)
+        if (Shader->GetShaderType() == EST_RENDER)
         {
-            E_MESH_STREAM_INDEX Stream = Streams[i];
-            VertexDesc.attributes[i].format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
-            VertexDesc.attributes[i].bufferIndex = 0;
-            VertexDesc.attributes[i].offset = VertexDataOffset;
-            VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
-        }
-        VertexDesc.layouts[0].stride = TMeshBuffer::GetStrideFromFormat(Desc.VsFormat);
-        VertexDesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
-        PipelineStateDesc.vertexDescriptor = VertexDesc;
-        
-        // Set color, depth, stencil attachments format
-        TI_ASSERT(Desc.RTCount > 0);
-        for (int32 r = 0 ; r < Desc.RTCount; ++r)
-        {
-            PipelineStateDesc.colorAttachments[r].pixelFormat = GetMetalPixelFormat(Desc.RTFormats[r]);
-        }
-        PipelineStateDesc.depthAttachmentPixelFormat = GetMetalPixelFormat(Desc.DepthFormat);
-        PipelineStateDesc.stencilAttachmentPixelFormat = GetMetalPixelFormat(Desc.StencilFormat);
-        
-        for (int32 r = 0 ; r < Desc.RTCount; ++r)
-        {
-            if (Desc.IsEnabled(EPSO_BLEND))
-            {
-                PipelineStateDesc.colorAttachments[r].blendingEnabled = YES;
-                PipelineStateDesc.colorAttachments[r].rgbBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOp];
-                PipelineStateDesc.colorAttachments[r].alphaBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOpAlpha];
-                PipelineStateDesc.colorAttachments[r].sourceRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlend];
-                PipelineStateDesc.colorAttachments[r].sourceAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlendAlpha];
-                PipelineStateDesc.colorAttachments[r].destinationRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlend];
-                PipelineStateDesc.colorAttachments[r].destinationAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlendAlpha];
-            }
-            else
-            {
-                PipelineStateDesc.colorAttachments[r].blendingEnabled = NO;
-            }
-        }
-        
-        // Create pso with reflection
-        NSError* Err  = nil;
-        MTLRenderPipelineReflection * ReflectionObj = nil;
-        PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
-        
-        // Create shader binding info for shaders
-        TI_ASSERT(0);   //review shader binding implementation
-        TI_ASSERT(Shader->ShaderBinding == nullptr);
-        Shader->ShaderBinding = ti_new FShaderBinding(0);   // Metal do not care NumBindingCount
-        for (int32 i = 0 ; i < ReflectionObj.vertexArguments.count; ++i)
-        {
-            MTLArgument * Arg = ReflectionObj.vertexArguments[i];
-            TString BindName = [Arg.name UTF8String];
-            int32 BindIndex = (int32)Arg.index;
-            if (BindName.substr(0, 12) == "vertexBuffer")
-            {
-                continue;
-            }
-            if (BindIndex >= 0)
-            {
-                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
-                Shader->ShaderBinding->AddShaderArgument(ESS_VERTEX_SHADER,
-                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
-            }
-        }
-        for (int32 i = 0 ; i < ReflectionObj.fragmentArguments.count; ++ i)
-        {
-            MTLArgument * Arg = ReflectionObj.fragmentArguments[i];
-            TString BindName = [Arg.name UTF8String];
-            int32 BindIndex = (int32)Arg.index;
-            if (BindIndex >= 0)
-            {
-                E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
-                Shader->ShaderBinding->AddShaderArgument(ESS_PIXEL_SHADER,
-                                                         FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
-            }
-        }
-        Shader->ShaderBinding->PostInitArguments();
-        
-        // Create depth stencil state
-        MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
-        DepthStateDesc.depthCompareFunction = Desc.IsEnabled(EPSO_DEPTH_TEST) ? k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc] : MTLCompareFunctionAlways;
-        DepthStateDesc.depthWriteEnabled = Desc.IsEnabled(EPSO_DEPTH);
-        
-        if (Desc.IsEnabled(EPSO_STENCIL))
-        {
-            DepthStateDesc.frontFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.FrontFace.StencilFunc];
-            DepthStateDesc.frontFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilFailOp];
-            DepthStateDesc.frontFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilDepthFailOp];
-            DepthStateDesc.frontFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilPassOp];
-            DepthStateDesc.frontFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
-            DepthStateDesc.frontFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+            TI_ASSERT(InPipelineDesc != nullptr);
+            const TPipelineDesc& Desc = InPipelineDesc->GetDesc();
+            TI_ASSERT(Shader == Desc.Shader->ShaderResource);
             
-            DepthStateDesc.backFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.BackFace.StencilFunc];
-            DepthStateDesc.backFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilFailOp];
-            DepthStateDesc.backFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilDepthFailOp];
-            DepthStateDesc.backFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilPassOp];
-            DepthStateDesc.backFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
-            DepthStateDesc.backFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+            MTLRenderPipelineDescriptor * PipelineStateDesc = [[MTLRenderPipelineDescriptor alloc] init];
+#if defined (TIX_DEBUG)
+            Pipeline->SetResourceName(InPipelineDesc->GetResourceName());
+            NSString * PipelineName = [NSString stringWithUTF8String:InPipelineDesc->GetResourceName().c_str()];
+            PipelineStateDesc.label = PipelineName;
+#endif
+            PipelineStateDesc.sampleCount = 1;
+            
+            FShaderPtr Shader = InPipelineDesc->GetDesc().Shader->ShaderResource;
+            FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
+            PipelineStateDesc.vertexFunction = ShaderMetal->VertexProgram;
+            PipelineStateDesc.fragmentFunction = ShaderMetal->FragmentProgram;
+
+            // Set vertex layout
+            TVector<E_MESH_STREAM_INDEX> VertexStreams = TMeshBuffer::GetSteamsFromFormat(Desc.VsFormat);
+            MTLVertexDescriptor * VertexDesc = [[MTLVertexDescriptor alloc] init];
+            
+            uint32 VertexDataOffset = 0;
+            for (uint32 i = 0; i < (uint32)VertexStreams.size(); ++i)
+            {
+                E_MESH_STREAM_INDEX Stream = VertexStreams[i];
+                VertexDesc.attributes[i].format = k_MESHBUFFER_STREAM_FORMAT_MAP[Stream];
+                VertexDesc.attributes[i].bufferIndex = 0;
+                VertexDesc.attributes[i].offset = VertexDataOffset;
+                VertexDataOffset += TMeshBuffer::SemanticSize[Stream];
+            }
+
+            // Set instance layout
+            TVector<E_INSTANCE_STREAM_INDEX> InstanceStreams = TInstanceBuffer::GetSteamsFromFormat(Desc.InsFormat);
+            uint32 InstanceDataOffset = 0;
+            for (uint32 i = 0; i < InstanceStreams.size(); ++i)
+            {
+                E_INSTANCE_STREAM_INDEX Stream = InstanceStreams[i];
+                VertexDesc.attributes[i + VertexStreams.size()].format = k_INSTANCEBUFFER_STREAM_FORMAT_MAP[Stream];
+                VertexDesc.attributes[i + VertexStreams.size()].bufferIndex = 1;
+                VertexDesc.attributes[i + VertexStreams.size()].offset = InstanceDataOffset;
+                InstanceDataOffset += TInstanceBuffer::SemanticSize[Stream];
+            }
+            
+            VertexDesc.layouts[0].stride = TMeshBuffer::GetStrideFromFormat(Desc.VsFormat);
+            VertexDesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+            VertexDesc.layouts[1].stride = TInstanceBuffer::GetStrideFromFormat(Desc.InsFormat);
+            VertexDesc.layouts[1].stepFunction = MTLVertexStepFunctionPerInstance;
+            VertexDesc.layouts[1].stepRate = 1;
+            PipelineStateDesc.vertexDescriptor = VertexDesc;
+            
+            // Set color, depth, stencil attachments format
+            TI_ASSERT(Desc.RTCount > 0);
+            for (int32 r = 0 ; r < Desc.RTCount; ++r)
+            {
+                PipelineStateDesc.colorAttachments[r].pixelFormat = GetMetalPixelFormat(Desc.RTFormats[r]);
+            }
+            PipelineStateDesc.depthAttachmentPixelFormat = GetMetalPixelFormat(Desc.DepthFormat);
+            PipelineStateDesc.stencilAttachmentPixelFormat = GetMetalPixelFormat(Desc.StencilFormat);
+            
+            for (int32 r = 0 ; r < Desc.RTCount; ++r)
+            {
+                if (Desc.IsEnabled(EPSO_BLEND))
+                {
+                    PipelineStateDesc.colorAttachments[r].blendingEnabled = YES;
+                    PipelineStateDesc.colorAttachments[r].rgbBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOp];
+                    PipelineStateDesc.colorAttachments[r].alphaBlendOperation = k_BLEND_OPERATION_MAP[Desc.BlendState.BlendOpAlpha];
+                    PipelineStateDesc.colorAttachments[r].sourceRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlend];
+                    PipelineStateDesc.colorAttachments[r].sourceAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.SrcBlendAlpha];
+                    PipelineStateDesc.colorAttachments[r].destinationRGBBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlend];
+                    PipelineStateDesc.colorAttachments[r].destinationAlphaBlendFactor = k_BLEND_FACTOR_MAP[Desc.BlendState.DestBlendAlpha];
+                }
+                else
+                {
+                    PipelineStateDesc.colorAttachments[r].blendingEnabled = NO;
+                }
+            }
+            
+            // Create pso with reflection
+            NSError* Err  = nil;
+            MTLRenderPipelineReflection * ReflectionObj = nil;
+            PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
+            
+            // Create shader binding info for shaders
+            TI_ASSERT(Shader->ShaderBinding == nullptr);
+            Shader->ShaderBinding = ti_new FShaderBinding(0);   // Metal do not care NumBindingCount
+            for (int32 i = 0 ; i < ReflectionObj.vertexArguments.count; ++i)
+            {
+                MTLArgument * Arg = ReflectionObj.vertexArguments[i];
+                TString BindName = [Arg.name UTF8String];
+                int32 BindIndex = (int32)Arg.index;
+                if (BindName.substr(0, 12) == "vertexBuffer")
+                {
+                    continue;
+                }
+                if (BindIndex >= 0)
+                {
+                    E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
+                    Shader->ShaderBinding->AddShaderArgument(ESS_VERTEX_SHADER,
+                                                             FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+                }
+            }
+            for (int32 i = 0 ; i < ReflectionObj.fragmentArguments.count; ++ i)
+            {
+                MTLArgument * Arg = ReflectionObj.fragmentArguments[i];
+                TString BindName = [Arg.name UTF8String];
+                int32 BindIndex = (int32)Arg.index;
+                if (BindIndex >= 0)
+                {
+                    E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
+                    Shader->ShaderBinding->AddShaderArgument(ESS_PIXEL_SHADER,
+                                                             FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+                }
+            }
+            Shader->ShaderBinding->PostInitArguments();
+            
+            // Create depth stencil state
+            MTLDepthStencilDescriptor * DepthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
+            DepthStateDesc.depthCompareFunction = Desc.IsEnabled(EPSO_DEPTH_TEST) ? k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.DepthFunc] : MTLCompareFunctionAlways;
+            DepthStateDesc.depthWriteEnabled = Desc.IsEnabled(EPSO_DEPTH);
+            
+            if (Desc.IsEnabled(EPSO_STENCIL))
+            {
+                DepthStateDesc.frontFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.FrontFace.StencilFunc];
+                DepthStateDesc.frontFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilFailOp];
+                DepthStateDesc.frontFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilDepthFailOp];
+                DepthStateDesc.frontFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.FrontFace.StencilPassOp];
+                DepthStateDesc.frontFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
+                DepthStateDesc.frontFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+                
+                DepthStateDesc.backFaceStencil.stencilCompareFunction = k_COMPARE_FUNC_MAP[Desc.DepthStencilDesc.BackFace.StencilFunc];
+                DepthStateDesc.backFaceStencil.stencilFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilFailOp];
+                DepthStateDesc.backFaceStencil.depthFailureOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilDepthFailOp];
+                DepthStateDesc.backFaceStencil.depthStencilPassOperation = k_STENCIL_OP_MAP[Desc.DepthStencilDesc.BackFace.StencilPassOp];
+                DepthStateDesc.backFaceStencil.readMask = Desc.DepthStencilDesc.StencilReadMask;
+                DepthStateDesc.backFaceStencil.writeMask = Desc.DepthStencilDesc.StencilWriteMask;
+            }
+            
+            PipelineMetal->DepthState = [MtlDevice newDepthStencilStateWithDescriptor:DepthStateDesc];
         }
-        
-        PipelineMetal->DepthState = [MtlDevice newDepthStencilStateWithDescriptor:DepthStateDesc];
+        else
+        {
+            // create compute pipeline state here
+            TI_ASSERT(0);
+//            // Compute pipeline
+//            FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
+//            FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
+//            TI_ASSERT(Binding != nullptr);
+//            FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
+//
+//            D3D12_COMPUTE_PIPELINE_STATE_DESC state = {};
+//            state.pRootSignature = PipelineRS->Get();
+//            state.CS = { ShaderDx12->ShaderCodes[0].GetBuffer(), uint32(ShaderDx12->ShaderCodes[0].GetLength()) };
+//
+//            VALIDATE_HRESULT(D3dDevice->CreateComputePipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
+//
+//            // Shader data can be deleted once the pipeline state is created.
+//            ShaderDx12->ReleaseShaderCode();
+        }
+        HoldResourceReference(Pipeline);
         
 		return true;
 	}
@@ -591,7 +583,6 @@ namespace tix
     
     bool FRHIMetal::UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource)
     {
-        TI_ASSERT(0);
         // Load vertex function and pixel function
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ShaderResource.get());
         TI_ASSERT(!ShaderResource->GetShaderName(ESS_VERTEX_SHADER).empty());
@@ -613,6 +604,8 @@ namespace tix
         {
             ShaderMetal->FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
         }
+        
+        // Metal shader binding created at Pipeline creation, since we need reflection object
         return true;
     }
     
