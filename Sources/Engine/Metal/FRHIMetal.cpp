@@ -35,6 +35,7 @@ namespace tix
         
         CommandBuffer = nil;
         RenderEncoder = nil;
+        ComputeEncoder = nil;
         
         FrameBufferPassDesc = nil;
         
@@ -93,6 +94,8 @@ namespace tix
     
 	void FRHIMetal::BeginFrame()
     {
+        FRHI::BeginFrame();
+        
         TI_ASSERT(CommandBuffer == nil);
         TI_ASSERT(RenderEncoder == nil);
         
@@ -151,17 +154,79 @@ namespace tix
 
     void FRHIMetal::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
     {
-        TI_ASSERT(0);
+//        // the 1st Graphics command list is the default command list, need one more space for default command list
+//        GraphicsCommandLists.resize(NumGraphicsList + 1);
+//        ComputeCommandLists.resize(NumComputeList);
+//
+//        // Create graphics command allocator and list
+//        GraphicsCommandLists[0] = DefaultGraphicsCommandList;
+//        for (uint32 i = 1; i < NumGraphicsList + 1; ++i)
+//        {
+//            GraphicsCommandLists[i].Create(D3dDevice, EPL_GRAPHICS, i);
+//        }
+//        // Create compute command allocator and list.
+//        for (uint32 i = 0; i < NumComputeList; ++i)
+//        {
+//            ComputeCommandLists[i].Create(D3dDevice, EPL_COMPUTE, i);
+//        }
     }
     
     void FRHIMetal::BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType)
     {
         TI_ASSERT(0);
+//        TVector<FCommandListDx12>& Lists = (PipelineType == EPL_GRAPHICS) ? GraphicsCommandLists : ComputeCommandLists;
+//        if (CurrentCommandListState.ListType != PipelineType)
+//        {
+//            // End last encoder
+//            if (CurrentCommandListState.ListType == EPL_GRAPHICS)
+//            {
+//                TI_ASSERT(RenderEncoder != nil);
+//                [RenderEncoder endEncoding];
+//            }
+//            else if (CurrentCommandListState.ListType == EPL_COMPUTE)
+//            {
+//                TI_ASSERT(ComputeEncoder != nil);
+//                [ComputeEncoder endEncoding];
+//            }
+//            
+//            // Use a new encoder
+//            CurrentCommandListCounter[PipelineType] ++;
+//            TI_ASSERT(CurrentCommandListCounter[PipelineType] < (int32)Lists.size());
+//            
+//            // Remember the encoder we are using, and push it to order vector
+//            CurrentCommandListState.ListType = PipelineType;
+//            CurrentCommandListState.ListIndex = CurrentCommandListCounter[PipelineType];
+//            ListExecuteOrder.push_back(CurrentCommandListState);
+//            
+//            // Create a new encoder.
+//            FCommandListDx12& List = Lists[CurrentCommandListCounter[PipelineType]];
+//            CurrentWorkingCommandList = List.CommandList;
+//            
+//            // Reset command list
+//            VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
+//            VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
+//            
+//            // Set the descriptor heaps to be used by this frame.
+//            ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
+//            CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+//            
+//            if (PipelineType == EPL_GRAPHICS)
+//            {
+//                // Set the viewport and scissor rectangle.
+//                D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+//                CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
+//                D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+//                CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
+//            }
+//        }
+//        CommandListStateDebug.ListType = PipelineType;
+//        CommandListStateDebug.ListIndex = CurrentCommandListCounter[PipelineType];
     }
     
     void FRHIMetal::EndPopulateCommandList()
     {
         TI_ASSERT(0);
+        //CommandListStateDebug.Reset();
     }
     
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -264,10 +329,17 @@ namespace tix
             MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
             // Only support texture 2d for now
             TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
-            TI_ASSERT(Desc.Mips == 1);
             
-            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:NO];
-            TextureDesc.usage |= MTLTextureUsageRenderTarget;
+            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips == 1 ? NO : YES];
+            TextureDesc.mipmapLevelCount = Desc.Mips;
+            if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
+            {
+                TI_ASSERT(Desc.Mips == 1);
+                TextureDesc.usage |= MTLTextureUsageRenderTarget;
+            }
+            //if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
+            //{
+            //}
             TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
         }
         

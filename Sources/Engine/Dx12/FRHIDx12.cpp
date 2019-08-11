@@ -319,10 +319,8 @@ namespace tix
 
 	void FRHIDx12::BeginFrame()
 	{
-		CurrentCommandListState.Reset();
-		CurrentCommandListCounter[EPL_GRAPHICS] = -1;
-		CurrentCommandListCounter[EPL_COMPUTE] = -1;
-		ListExecuteOrder.clear();
+		FRHI::BeginFrame();
+
 		CurrentWorkingCommandList = nullptr;
 		TI_ASSERT(GraphicsNumBarriersToFlush == 0);
 		TI_ASSERT(ComputeNumBarriersToFlush == 0);

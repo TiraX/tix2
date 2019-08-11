@@ -55,11 +55,14 @@ namespace tix
 		Viewport = InViewport;
 	}
 	
-	//FRenderTargetPtr FRHI::CreateRenderTarget(int32 W, int32 H)
-	//{
-	//	return ti_new FRenderTarget(W, H);
-	//}
-
+    void FRHI::BeginFrame()
+    {
+        CurrentCommandListState.Reset();
+        CurrentCommandListCounter[EPL_GRAPHICS] = -1;
+        CurrentCommandListCounter[EPL_COMPUTE] = -1;
+        ListExecuteOrder.clear();
+    }
+    
 	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap)
 	{
 		FRenderResourceTablePtr Table = ti_new FRenderResourceTable(InSize);

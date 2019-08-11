@@ -102,6 +102,7 @@ namespace tix
         
         id <MTLCommandBuffer> CommandBuffer;
         id <MTLRenderCommandEncoder> RenderEncoder;
+        id <MTLComputeCommandEncoder> ComputeEncoder;
         
         MTLRenderPassDescriptor* FrameBufferPassDesc;
         

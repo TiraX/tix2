@@ -69,7 +69,7 @@ namespace tix
 		static void ReleaseRHI();
 
 		virtual void InitRHI() = 0;
-		virtual void BeginFrame() = 0;
+		virtual void BeginFrame();
 		virtual void EndFrame() = 0;
         virtual void BeginRenderToFrameBuffer() {};
 
@@ -164,5 +164,25 @@ namespace tix
 
 		FRenderResourceHeap RenderResourceHeap[EHT_COUNT];
 		FBoundResource CurrentBoundResource;
+        
+        struct FCommandListState
+        {
+            E_PIPELINE_TYPE ListType;
+            int32 ListIndex;
+            
+            FCommandListState()
+            : ListType(EPL_INVALID)
+            , ListIndex(-1)
+            {}
+            
+            void Reset()
+            {
+                ListType = EPL_INVALID;
+                ListIndex = -1;
+            }
+        };
+        FCommandListState CurrentCommandListState;
+        TVector<FCommandListState> ListExecuteOrder;
+        int32 CurrentCommandListCounter[EPL_NUM];
 	};
 }

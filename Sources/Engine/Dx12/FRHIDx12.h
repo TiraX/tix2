@@ -229,25 +229,6 @@ namespace tix
 		TVector<FCommandListDx12> ComputeCommandLists;
 		ComPtr<ID3D12Fence> FrameFence;
 
-		struct FCommandListState
-		{
-			E_PIPELINE_TYPE ListType;
-			int32 ListIndex;
-
-			FCommandListState()
-				: ListType(EPL_INVALID)
-				, ListIndex(-1)
-			{}
-
-			void Reset()
-			{
-				ListType = EPL_INVALID;
-				ListIndex = -1;
-			}
-		};
-		FCommandListState CurrentCommandListState;
-		TVector<FCommandListState> ListExecuteOrder;
-		int32 CurrentCommandListCounter[EPL_NUM];
 		ComPtr<ID3D12GraphicsCommandList> CurrentWorkingCommandList;
 		FCommandListState CommandListStateDebug;
 
