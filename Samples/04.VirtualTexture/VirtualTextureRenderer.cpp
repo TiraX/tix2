@@ -95,7 +95,6 @@ FVirtualTextureRenderer::~FVirtualTextureRenderer()
 void FVirtualTextureRenderer::InitInRenderThread()
 {
 	FRHI * RHI = FRHI::Get();
-	RHI->InitCommandLists(GraphicsCount, ComputeCount);
 	FSRender.InitCommonResources(RHI);
 
 	const int32 RTWidth = 1600;
@@ -152,28 +151,24 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	// Render Base Pass
-	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->PushRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	RenderDrawList(RHI, Scene, LIST_MASK);
 	RHI->PopRenderTarget();
-	RHI->EndPopulateCommandList();
 
 	// Do UV discard check, only check when camera moved or primitives changed
 	if (FVTSystem::IsEnabled())
 	{
 		//if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
-			RHI->BeginPopulateCommandList(EPL_COMPUTE);
+			RHI->BeginComputeTask();
 			ComputeTileDetermination->Run(RHI);
 
 			ComputeTileDetermination->PrepareDataForCPU(RHI);
-			RHI->EndPopulateCommandList();
+			RHI->EndComputeTask();
 		}
 	}
 
-	RHI->BeginPopulateCommandList(EPL_GRAPHICS);
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
-	RHI->EndPopulateCommandList();
 }

@@ -139,6 +139,9 @@ namespace tix
 		// Describe and create a shader resource view (SRV) heap for the texture.
 		DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Create(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+		// Pre-allocate memory to avoid alloc in runtime
+		GraphicsCommandLists.reserve(16);
+		ComputeCommandLists.reserve(16);
 		// Create default command list
 		DefaultGraphicsCommandList.Create(D3dDevice, EPL_GRAPHICS, 0);
 		GraphicsCommandLists.resize(1);
@@ -325,6 +328,8 @@ namespace tix
 		TI_ASSERT(GraphicsNumBarriersToFlush == 0);
 		TI_ASSERT(ComputeNumBarriersToFlush == 0);
 		FrameFence = nullptr;
+
+		InitGraphicsPipeline();
 	}
 
 	void FRHIDx12::BeginRenderToFrameBuffer()
@@ -406,73 +411,91 @@ namespace tix
 		CurrentBoundResource.Reset();
 	}
 
-	void FRHIDx12::InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList)
+	void FRHIDx12::InitGraphicsPipeline()
 	{
-		// the 1st Graphics command list is the default command list, need one more space for default command list
-		GraphicsCommandLists.resize(NumGraphicsList + 1);
-		ComputeCommandLists.resize(NumComputeList);
+		TVector<FCommandListDx12>& Lists = GraphicsCommandLists;
+		// Close last command list
+		if (CurrentWorkingCommandList != nullptr)
+		{
+			VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
+		}
 
-		// Create graphics command allocator and list
-		GraphicsCommandLists[0] = DefaultGraphicsCommandList;
-		for (uint32 i = 1; i < NumGraphicsList + 1; ++i)
+		// Use a new command list
+		CurrentCommandListCounter[EPL_GRAPHICS] ++;
+		if (CurrentCommandListCounter[EPL_GRAPHICS] >= (int32)Lists.size())
 		{
-			GraphicsCommandLists[i].Create(D3dDevice, EPL_GRAPHICS, i);
+			int32 Index = CurrentCommandListCounter[EPL_GRAPHICS];
+			Lists.push_back(FCommandListDx12());
+			Lists[Index].Create(D3dDevice, EPL_GRAPHICS, Index);
 		}
-		// Create compute command allocator and list.
-		for (uint32 i = 0; i < NumComputeList; ++i)
-		{
-			ComputeCommandLists[i].Create(D3dDevice, EPL_COMPUTE, i);
-		}
+
+		// Remember the list we are using, and push it to order vector
+		CurrentCommandListState.ListType = EPL_GRAPHICS;
+		CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_GRAPHICS];
+		ListExecuteOrder.push_back(CurrentCommandListState);
+
+		// Grab current command list.
+		FCommandListDx12& List = Lists[CurrentCommandListCounter[EPL_GRAPHICS]];
+		CurrentWorkingCommandList = List.CommandList;
+
+		// Reset command list
+		VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
+		VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
+
+		// Set the descriptor heaps to be used by this frame.
+		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
+		CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+		// Set the viewport and scissor rectangle.
+		D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
+		CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
+		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
+		CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
-	void FRHIDx12::BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType)
+	void FRHIDx12::BeginComputeTask()
 	{
-		TVector<FCommandListDx12>& Lists = (PipelineType == EPL_GRAPHICS) ? GraphicsCommandLists : ComputeCommandLists;
-		if (CurrentCommandListState.ListType != PipelineType)
+		// Switch from graphics command list to compute command list.
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		TVector<FCommandListDx12>& Lists = ComputeCommandLists;
+		// Close last command list
+		if (CurrentWorkingCommandList != nullptr)
 		{
-			// Close last command list
-			if (CurrentWorkingCommandList != nullptr)
-			{
-				VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
-			}
-
-			// Use a new command list
-			CurrentCommandListCounter[PipelineType] ++;
-			TI_ASSERT(CurrentCommandListCounter[PipelineType] < (int32)Lists.size());
-
-			// Remember the list we are using, and push it to order vector
-			CurrentCommandListState.ListType = PipelineType;
-			CurrentCommandListState.ListIndex = CurrentCommandListCounter[PipelineType];
-			ListExecuteOrder.push_back(CurrentCommandListState);
-
-			// Grab current command list.
-			FCommandListDx12& List = Lists[CurrentCommandListCounter[PipelineType]];
-			CurrentWorkingCommandList = List.CommandList;
-
-			// Reset command list
-			VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
-			VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
-
-			// Set the descriptor heaps to be used by this frame.
-			ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
-			CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-			if (PipelineType == EPL_GRAPHICS)
-			{
-				// Set the viewport and scissor rectangle.
-				D3D12_VIEWPORT ViewportDx = { float(Viewport.Left), float(Viewport.Top), float(Viewport.Width), float(Viewport.Height), 0.f, 1.f };
-				CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
-				D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
-				CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
-			}
+			VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
 		}
-		CommandListStateDebug.ListType = PipelineType;
-		CommandListStateDebug.ListIndex = CurrentCommandListCounter[PipelineType];
+
+		// Use a new command list
+		CurrentCommandListCounter[EPL_COMPUTE] ++;
+		if (CurrentCommandListCounter[EPL_COMPUTE] >= (int32)Lists.size())
+		{
+			int32 Index = CurrentCommandListCounter[EPL_COMPUTE];
+			Lists.push_back(FCommandListDx12());
+			Lists[Index].Create(D3dDevice, EPL_COMPUTE, Index);
+		}
+
+		// Remember the list we are using, and push it to order vector
+		CurrentCommandListState.ListType = EPL_COMPUTE;
+		CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
+		ListExecuteOrder.push_back(CurrentCommandListState);
+
+		// Grab current command list.
+		FCommandListDx12& List = Lists[CurrentCommandListCounter[EPL_COMPUTE]];
+		CurrentWorkingCommandList = List.CommandList;
+
+		// Reset command list
+		VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
+		VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
+
+		// Set the descriptor heaps to be used by this frame.
+		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
+		CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	}
 
-	void FRHIDx12::EndPopulateCommandList()
+	void FRHIDx12::EndComputeTask()
 	{
-		CommandListStateDebug.Reset();
+		// Switch from compute command list to graphics command list.
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
+		InitGraphicsPipeline();
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture()
@@ -2229,7 +2252,7 @@ namespace tix
 
 	void FRHIDx12::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
 	{
-		TI_ASSERT(CommandListStateDebug.ListType == EPL_COMPUTE);
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
 		CurrentWorkingCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
 	}
 
@@ -2278,7 +2301,7 @@ namespace tix
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
 	{
-		TI_ASSERT(CommandListStateDebug.ListType == EPL_GRAPHICS);
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
 		CurrentWorkingCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
 	}
 

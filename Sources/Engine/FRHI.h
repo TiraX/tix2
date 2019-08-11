@@ -73,9 +73,8 @@ namespace tix
 		virtual void EndFrame() = 0;
         virtual void BeginRenderToFrameBuffer() {};
 
-		virtual void InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList) = 0;
-		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) = 0;
-		virtual void EndPopulateCommandList() = 0;
+		virtual void BeginComputeTask() = 0;
+		virtual void EndComputeTask() = 0;
 
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;

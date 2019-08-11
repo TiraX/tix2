@@ -29,9 +29,8 @@ namespace tix
 		virtual void EndFrame() override;
 		virtual void BeginRenderToFrameBuffer() override;
 
-		virtual void InitCommandLists(uint32 NumGraphicsList, uint32 NumComputeList) override;
-		virtual void BeginPopulateCommandList(E_PIPELINE_TYPE PipelineType) override;
-		virtual void EndPopulateCommandList() override;
+		virtual void BeginComputeTask() override;
+		virtual void EndComputeTask() override;
 
 		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
@@ -106,6 +105,7 @@ namespace tix
 		void MoveToNextFrame();
 		void HoldResourceReference(FRenderResourcePtr InResource);
 		void HoldResourceReference(ComPtr<ID3D12Resource> InDxResource);
+		void InitGraphicsPipeline();
 
 		void SetResourceName(ID3D12Resource* InDxResource, const TString& InName);
 		void SetResourceName(ID3D12PipelineState* InDxResource, const TString& InName);
@@ -171,6 +171,15 @@ namespace tix
 			ComPtr<ID3D12GraphicsCommandList> CommandList;
 			ComPtr<ID3D12Fence> Fence;
 
+			FCommandListDx12()
+			{
+			}
+
+			FCommandListDx12(const FCommandListDx12& Other)
+			{
+				*this = Other;
+			}
+
 			FCommandListDx12& operator = (const FCommandListDx12& Other)
 			{
 				for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
@@ -230,7 +239,6 @@ namespace tix
 		ComPtr<ID3D12Fence> FrameFence;
 
 		ComPtr<ID3D12GraphicsCommandList> CurrentWorkingCommandList;
-		FCommandListState CommandListStateDebug;
 
 		// Descriptor heaps
 		FDescriptorHeapDx12 DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];

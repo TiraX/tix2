@@ -44,6 +44,11 @@ namespace tix
 		{
 			FrameResources[i] = nullptr;
 		}
+
+		CurrentCommandListState.Reset();
+		CurrentCommandListCounter[EPL_GRAPHICS] = -1;
+		CurrentCommandListCounter[EPL_COMPUTE] = -1;
+		ListExecuteOrder.clear();
 	}
 
 	FRHI::~FRHI()
