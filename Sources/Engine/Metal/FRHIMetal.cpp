@@ -224,8 +224,7 @@ namespace tix
     
     FShaderPtr FRHIMetal::CreateComputeShader(const TString& InComputeShaderName)
     {
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FShaderMetal(InComputeShaderName);
     }
     
     FArgumentBufferPtr FRHIMetal::CreateArgumentBuffer(int32 ReservedSlots)
@@ -523,16 +522,41 @@ namespace tix
 		return true;
 	}
 
-	//static const int32 UniformBufferAlignSize = 16;
+	static const int32 UniformBufferAlignSize = 16;
 	bool FRHIMetal::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData)
 	{
-        TI_ASSERT(0);
-        //FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
+        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
         
-        //const int32 AlignedDataSize = ti_align(UniformBuffer->GetStructSize(), UniformBufferAlignSize);
-        //TI_ASSERT(UBMetal->ConstantBuffer == nil);
-        //UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
-        //HoldResourceReference(UniformBuffer);
+        if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
+        {
+            TI_ASSERT(0);
+//            // Add a counter for UAV
+//            int32 BufferSize = UniformBuffer->GetTotalBufferSize();
+//            if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+//                BufferSize += sizeof(uint32);
+//            CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+//
+//            UniformBufferDx12->BufferResource.CreateResource(
+//                                                             D3dDevice.Get(),
+//                                                             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+//                                                             D3D12_HEAP_FLAG_NONE,
+//                                                             &BufferDesc,
+//                                                             D3D12_RESOURCE_STATE_COPY_DEST);
+//
+//            //Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+//            //FlushGraphicsBarriers(ComputeCommandList.Get());
+        }
+        else
+        {
+            TI_ASSERT(InData != nullptr);
+            
+            const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+            TI_ASSERT(UBMetal->ConstantBuffer == nil);
+            UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
+            HoldResourceReference(UniformBuffer);
+        }
+        
+        HoldResourceReference(UniformBuffer);
         
         return true;
 	}
@@ -609,55 +633,55 @@ namespace tix
         return true;
     }
     
-    bool FRHIMetal::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer)
+    bool FRHIMetal::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex)
     {
-        TI_ASSERT(0);
-//        FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
-//        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex < 0 && ArgBufferMetal->Buffers.size() == 0 && ArgBufferMetal->Textures.size() == 0);
-//        FShaderPtr Shader = ArgumentBuffer->GetShader();
-//        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ArgumentBuffer->GetShader().get());
-//        TI_ASSERT((ArgumentData != nullptr && ArgumentData->GetLength() > 0) || ArgumentTextures.size() > 0);
-//
-//        // Get Uniform buffer Bind Index
-//        FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
-//        ArgBufferMetal->ArgumentBindIndex = ShaderBinding->GetFirstPSBindingIndexByType(ARGUMENT_MI_BUFFER);
-//        TI_ASSERT(ArgBufferMetal->ArgumentBindIndex >= 0);
-//
-//        // Create uniform data if exist
-//        id<MTLBuffer> UniformBuffer = nil;
-//        if (ArgumentData != nullptr && ArgumentData->GetLength() > 0)
-//        {
-//            UniformBuffer = [MtlDevice newBufferWithBytes:ArgumentData->GetBuffer() length:ArgumentData->GetLength() options:MTLResourceStorageModeShared];
-//        }
-//        
-//        // Create argument buffer, fill uniform and textures
-//        TI_ASSERT(ArgBufferMetal->ArgumentBuffer == nil);
-//        id <MTLArgumentEncoder> argumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgBufferMetal->ArgumentBindIndex];
-//        NSUInteger argumentBufferLength = argumentEncoder.encodedLength;
-//        ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:argumentBufferLength options:0];
-//#if defined (TIX_DEBUG)
-//        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
-//        TString ArgName = ShaderName + "_ArgumentBuffer";
-//        ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
-//#endif
-//        [argumentEncoder setArgumentBuffer:ArgBufferMetal->ArgumentBuffer offset:0];
-//
-//        int32 ArgumentIndex = 0;
-//        // Fill uniform
-//        if (UniformBuffer != nil) {
-//            [argumentEncoder setBuffer:UniformBuffer offset:0 atIndex:ArgumentIndex];
-//            ++ ArgumentIndex;
-//            ArgBufferMetal->Buffers.push_back(UniformBuffer);
-//        }
-//
-//        // Fill textures
-//        for (const auto& Tex : ArgumentTextures) {
-//            FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Tex.get());
-//            [argumentEncoder setTexture:TexMetal->Texture atIndex:ArgumentIndex];
-//            ++ ArgumentIndex;
-//            ArgBufferMetal->Textures.push_back(TexMetal->Texture);
-//        }
+        FArgumentBufferMetal * ArgBufferMetal = static_cast<FArgumentBufferMetal*>(ArgumentBuffer.get());
+        const TVector<FRenderResourcePtr>& Arguments = ArgumentBuffer->GetArguments();
+        TI_ASSERT(ArgBufferMetal->ArgumentBuffer == nil && Arguments.size() > 0);
         
+        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(InShader.get());
+
+        // Get Uniform buffer Bind Index
+        int32 ArgumentBindIndex = SpecifiedBindingIndex;
+        if (ArgumentBindIndex < 0)
+        {
+            FShaderBindingPtr ShaderBinding = InShader->ShaderBinding;
+            ArgumentBindIndex = ShaderBinding->GetMIArgumentsBindingIndex();
+        }
+        TI_ASSERT(ArgumentBindIndex >= 0);
+        
+        // Create argument buffer, fill uniform and textures
+        id <MTLArgumentEncoder> ArgumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgumentBindIndex];
+        NSUInteger ArgumentBufferLength = ArgumentEncoder.encodedLength;
+        ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:ArgumentBufferLength options:0];
+#if defined (TIX_DEBUG)
+        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
+        TString ArgName = ShaderName + "_ArgumentBuffer";
+        ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
+#endif
+        [ArgumentEncoder setArgumentBuffer:ArgBufferMetal->ArgumentBuffer offset:0];
+        
+        for (int32 i = 0 ; i < (int32)Arguments.size() ; ++ i)
+        {
+            FRenderResourcePtr Arg = Arguments[i];
+            if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
+            {
+                FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
+                FUniformBufferMetal* ArgUBMetal = static_cast<FUniformBufferMetal*>(ArgUB.get());
+                [ArgumentEncoder setBuffer:ArgUBMetal->ConstantBuffer offset:0 atIndex:i];
+            }
+            else if (Arg->GetResourceType() == RRT_TEXTURE)
+            {
+                FTexturePtr ArgTex = static_cast<FTexture*>(Arg.get());
+                FTextureMetal* ArgTexMetal = static_cast<FTextureMetal*>(ArgTex.get());
+                [ArgumentEncoder setTexture:ArgTexMetal->Texture atIndex:i];
+            }
+            else
+            {
+                _LOG(Fatal, "Invalid resource type in Argument buffer.\n");
+            }
+        }
+
         return true;
     }
     
