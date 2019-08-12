@@ -100,7 +100,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) = 0;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
-		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer) = 0;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex = -1) = 0;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) = 0;
 		virtual bool CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture) = 0;
 		virtual bool CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length) = 0;

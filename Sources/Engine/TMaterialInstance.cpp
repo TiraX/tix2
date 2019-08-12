@@ -49,10 +49,13 @@ namespace tix
 				ArgumentBuffer->SetTexture(i + NumBuffers, ParamTextures[i]->TextureResource);
 			}
 
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateMIArgumentBuffer,
+			FShaderPtr MaterialShader = LinkedMaterial->GetDesc().Shader->ShaderResource;
+
+			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer,
 				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
+				FShaderPtr, MaterialShader, MaterialShader,
 				{
-					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer);
+					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, MaterialShader);
 				});
 		}
 	}

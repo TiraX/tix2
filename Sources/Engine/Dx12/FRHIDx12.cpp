@@ -1933,7 +1933,8 @@ namespace tix
 		return ShaderBinding;
 	}
 
-	bool FRHIDx12::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer)
+	// InShader and SpecifiedBindingIndex are used for Metal to create argument buffer, no use in dx12.
+	bool FRHIDx12::UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex)
 	{
 		FArgumentBufferDx12 * ArgumentDx12 = static_cast<FArgumentBufferDx12*>(ArgumentBuffer.get());
 		const TVector<FRenderResourcePtr>& Arguments = ArgumentBuffer->GetArguments();

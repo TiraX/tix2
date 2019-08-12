@@ -55,7 +55,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) override;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
-		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer) override;
+		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex = -1) override;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) override;
 		virtual bool CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture) override;
 		virtual bool CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length) override;

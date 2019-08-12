@@ -129,7 +129,23 @@ namespace tix
 
 		VTResource->SetTexture(0, IndirectTexture);
 		VTResource->SetTexture(1, PhysicPageAtlas);
-		FRHI::Get()->UpdateHardwareResourceAB(VTResource);
+
+		// Create an empty shader to create virtual texture argument buffer
+		FShaderPtr EmptyVTShader = nullptr;
+#if defined (TI_PLATFORM_IOS)
+		{
+			TShaderNames ShaderNames;
+			ShaderNames.ShaderNames[ESS_VERTEX_SHADER] = "S_EmptyVTVS";
+			ShaderNames.ShaderNames[ESS_PIXEL_SHADER] = "S_EmptyVTPS";
+
+			TShaderPtr Shader = ti_new TShader(ShaderNames);
+			Shader->LoadShaderCode();
+			Shader->ShaderResource = FRHI::Get()->CreateShader(ShaderNames);
+			FRHI::Get()->UpdateHardwareResourceShader(Shader->ShaderResource, Shader);
+			EmptyVTShader = Shader->ShaderResource;
+		}
+#endif
+		FRHI::Get()->UpdateHardwareResourceAB(VTResource, EmptyVTShader);
 	}
 
 #if VT_PRELOADED_REGIONS

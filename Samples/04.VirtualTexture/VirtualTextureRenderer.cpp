@@ -122,7 +122,7 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResourceAB(AB_Result);
+		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
 
 	if (FVTSystem::IsEnabled())
