@@ -122,6 +122,9 @@ namespace tix
             dispatch_semaphore_signal(block_sema);
             LastFrameMark = CurrentFrame;
             CurrentFrame = (CurrentFrame + 1) % FRHIConfig::FrameBufferNum;
+
+            // Remember GPU Frames 
+            FRHI::GPUFrameDone();
         }];
         
         [CommandBuffer presentDrawable:CurrentDrawable];
@@ -281,8 +284,11 @@ namespace tix
             // Only support texture 2d for now
             TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
             
-            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips == 1 ? NO : YES];
+            // Follow the instructions here to create a private MTLBuffer
+            // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
+            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
             TextureDesc.mipmapLevelCount = Desc.Mips;
+            TextureDesc.storageMode = MTLStorageModeShared;
             if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
             {
                 TI_ASSERT(Desc.Mips == 1);
@@ -318,6 +324,10 @@ namespace tix
         {
             TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
         }
+        // Follow the instructions here to create a private MTLBuffer
+        // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
+        TextureDesc.mipmapLevelCount = Desc.Mips;
+        TextureDesc.storageMode = MTLStorageModeShared;
         TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
         
         int32 Faces = 1;
@@ -549,10 +559,12 @@ namespace tix
         else
         {
             TI_ASSERT(InData != nullptr);
+            // Follow the instructions here to create a private MTLBuffer
+            // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
             
             const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
             TI_ASSERT(UBMetal->ConstantBuffer == nil);
-            UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLResourceStorageModeShared];
+            UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLStorageModeShared];
             HoldResourceReference(UniformBuffer);
         }
         

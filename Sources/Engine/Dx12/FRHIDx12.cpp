@@ -592,6 +592,7 @@ namespace tix
 		{
 			VALIDATE_HRESULT(FrameFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
+			FRHI::GPUFrameDone();
 		}
 
 		// Set the fence value for the next frame.

@@ -68,6 +68,11 @@ namespace tix
 		static void CreateRHI();
 		static void ReleaseRHI();
 
+		static uint32 GetGPUFrames()
+		{
+			return NumGPUFrames;
+		}
+
 		virtual void InitRHI() = 0;
 		virtual void BeginFrame();
 		virtual void EndFrame() = 0;
@@ -152,7 +157,12 @@ namespace tix
 		static FRHI* RHI;
 		FRHI(E_RHI_TYPE InRHIType);
 		virtual ~FRHI();
-
+		
+		static void GPUFrameDone()
+		{
+			++NumGPUFrames;
+		}
+		static uint32 NumGPUFrames;
 	protected:
 		E_RHI_TYPE RHIType;
 		FViewport Viewport;

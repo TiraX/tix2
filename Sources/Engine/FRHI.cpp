@@ -12,6 +12,7 @@
 namespace tix
 {
 	FRHI* FRHI::RHI = nullptr;
+	uint32 FRHI::NumGPUFrames = 0;
 
 	FRHI* FRHI::Get()
 	{

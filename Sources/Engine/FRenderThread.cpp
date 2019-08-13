@@ -21,6 +21,7 @@ namespace tix
 	FRenderThread* FRenderThread::RenderThread = nullptr;
 	bool FRenderThread::Inited = false;
 	bool FRenderThread::ThreadEnabled = true;
+	uint32 FRenderThread::FrameNum = 0;
 
 	void FRenderThread::CreateRenderThread(bool ForceDisableThread)
 	{
@@ -142,6 +143,7 @@ namespace tix
 		}
 		RHI->EndFrame();
         
+		++FrameNum;
         AUTORELEASE_POOL_END
 	}
 

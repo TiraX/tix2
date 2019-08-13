@@ -138,6 +138,10 @@ namespace tix
 		static void DestroyRenderThread();
 		static FRenderThread* Get();
 		static bool IsInited();
+		static uint32 GetFrameNum()
+		{
+			return FrameNum;
+		}
 
 		// Functions run on game thread.
 		virtual void Stop() override;
@@ -171,6 +175,9 @@ namespace tix
 		FRenderThread();
 		virtual ~FRenderThread();
 
+		// Number of frames done in render thread.
+		static uint32 FrameNum;
+
 	protected:
 		void CreateRenderComponents();
 		void DestroyRenderComponents();
@@ -179,6 +186,7 @@ namespace tix
 		void DoRenderTasks();
 
 	protected:
+
 		// Variables for synchronize with game thread.
 		int32 TriggerNum;
 		TMutex RenderMutex;
@@ -186,7 +194,7 @@ namespace tix
 
 		// Frame Index that is filling by game thread, operate in game thread
 		int32 PreFrameIndex;
-		// Frame Index that is rendering
+		// Frame Index that is rendering (0~FRHIConfig::FrameBufferNum)
 		int32 RenderFrameIndex;
 		FRenderFrame RenderFrames[FRHIConfig::FrameBufferNum];
 
