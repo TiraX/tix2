@@ -5,10 +5,6 @@
 
 #pragma once
 
-BEGIN_UNIFORM_BUFFER_STRUCT(FUVDiscardInput)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)
-END_UNIFORM_BUFFER_STRUCT(FUVDiscardInput)
-
 class FTileDeterminationCS : public FComputeTask
 {
 public:
@@ -24,15 +20,13 @@ public:
 	TStreamPtr ReadUVBuffer();
 	void ClearQuadTree(FRHI * RHI);
 protected:
-	virtual void FinalizeInRenderThread() override;
 
 private:
 	vector2di InputSize;
-	FUVDiscardInputPtr InputInfoBuffer;
 
 	FUniformBufferPtr QuadTreeBufferClear;
 	FUniformBufferPtr QuadTreeBuffer;
-	FRenderResourceTablePtr ResourceTable;
+	FArgumentBufferPtr ComputeArgument;
 
 	bool UVBufferTriggerd;
 };

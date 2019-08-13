@@ -383,7 +383,7 @@ namespace tix
             
             FShaderPtr Shader = InPipelineDesc->GetDesc().Shader->ShaderResource;
             FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
-            PipelineStateDesc.vertexFunction = ShaderMetal->VertexProgram;
+            PipelineStateDesc.vertexFunction = ShaderMetal->VertexComputeProgram;
             PipelineStateDesc.fragmentFunction = ShaderMetal->FragmentProgram;
 
             // Set vertex layout
@@ -512,7 +512,7 @@ namespace tix
         {
             // create compute pipeline state here
             TI_ASSERT(0);
-//            // Compute pipeline
+            // Compute pipeline
 //            FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
 //            FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
 //            TI_ASSERT(Binding != nullptr);
@@ -539,22 +539,9 @@ namespace tix
         
         if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
         {
-            TI_ASSERT(0);
-//            // Add a counter for UAV
-//            int32 BufferSize = UniformBuffer->GetTotalBufferSize();
-//            if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
-//                BufferSize += sizeof(uint32);
-//            CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-//
-//            UniformBufferDx12->BufferResource.CreateResource(
-//                                                             D3dDevice.Get(),
-//                                                             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-//                                                             D3D12_HEAP_FLAG_NONE,
-//                                                             &BufferDesc,
-//                                                             D3D12_RESOURCE_STATE_COPY_DEST);
-//
-//            //Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-//            //FlushGraphicsBarriers(ComputeCommandList.Get());
+            const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+            TI_ASSERT(UBMetal->ConstantBuffer == nil);
+            UBMetal->ConstantBuffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
         }
         else
         {
@@ -565,7 +552,6 @@ namespace tix
             const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
             TI_ASSERT(UBMetal->ConstantBuffer == nil);
             UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLStorageModeShared];
-            HoldResourceReference(UniformBuffer);
         }
         
         HoldResourceReference(UniformBuffer);
@@ -621,24 +607,40 @@ namespace tix
     {
         // Load vertex function and pixel function
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(ShaderResource.get());
-        TI_ASSERT(!ShaderResource->GetShaderName(ESS_VERTEX_SHADER).empty());
-        NSString * VertexShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str()];
-        NSString * FragmentShader = nil;
-        if (!ShaderResource->GetShaderName(ESS_PIXEL_SHADER).empty())
-        {
-            FragmentShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_PIXEL_SHADER).c_str()];
-        }
         
-        ShaderMetal->VertexProgram = [DefaultLibrary newFunctionWithName:VertexShader];
-        if(ShaderMetal->VertexProgram == nil)
+        if (ShaderResource->GetShaderType() == EST_COMPUTE)
         {
-            _LOG(Fatal, "Can not load vertex function %s.\n", ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str());
-            return false;
+            TI_ASSERT(!ShaderResource->GetShaderName(ESS_COMPUTE_SHADER).empty());
+            NSString * ComputeShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_COMPUTE_SHADER).c_str()];
+            
+            ShaderMetal->VertexComputeProgram = [DefaultLibrary newFunctionWithName:ComputeShader];
+            if(ShaderMetal->VertexComputeProgram == nil)
+            {
+                _LOG(Fatal, "Can not load compute function %s.\n", ShaderResource->GetShaderName(ESS_COMPUTE_SHADER).c_str());
+                return false;
+            }
         }
-        
-        if (FragmentShader != nil)
+        else
         {
-            ShaderMetal->FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
+            TI_ASSERT(!ShaderResource->GetShaderName(ESS_VERTEX_SHADER).empty());
+            NSString * VertexShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str()];
+            NSString * FragmentShader = nil;
+            if (!ShaderResource->GetShaderName(ESS_PIXEL_SHADER).empty())
+            {
+                FragmentShader = [NSString stringWithUTF8String:ShaderResource->GetShaderName(ESS_PIXEL_SHADER).c_str()];
+            }
+            
+            ShaderMetal->VertexComputeProgram = [DefaultLibrary newFunctionWithName:VertexShader];
+            if(ShaderMetal->VertexComputeProgram == nil)
+            {
+                _LOG(Fatal, "Can not load vertex function %s.\n", ShaderResource->GetShaderName(ESS_VERTEX_SHADER).c_str());
+                return false;
+            }
+            
+            if (FragmentShader != nil)
+            {
+                ShaderMetal->FragmentProgram = [DefaultLibrary newFunctionWithName:FragmentShader];
+            }
         }
         
         // Metal shader binding created at Pipeline creation, since we need reflection object
@@ -850,6 +852,16 @@ namespace tix
     }
     
     void FRHIMetal::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer)
+    {
+        TI_ASSERT(0);
+    }
+    
+    void FRHIMetal::SetComputeArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
     {
         TI_ASSERT(0);
     }

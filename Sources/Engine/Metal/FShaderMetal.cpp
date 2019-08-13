@@ -14,14 +14,14 @@ namespace tix
     FShaderMetal::FShaderMetal(const TString& ComputeShaderName)
         : FShader(ComputeShaderName)
     {
-        VertexProgram = nil;
+        VertexComputeProgram = nil;
         FragmentProgram = nil;
     }
     
 	FShaderMetal::FShaderMetal(const TShaderNames& InNames)
 		: FShader(InNames)
 	{
-        VertexProgram = nil;
+        VertexComputeProgram = nil;
         FragmentProgram = nil;
 	}
 
@@ -29,7 +29,7 @@ namespace tix
 	{
         TI_ASSERT(IsRenderThread());
         
-        VertexProgram = nil;
+        VertexComputeProgram = nil;
         FragmentProgram = nil;
 	}
 }

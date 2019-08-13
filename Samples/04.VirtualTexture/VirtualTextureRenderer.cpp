@@ -18,22 +18,12 @@ FTileDeterminationCS::FTileDeterminationCS(int32 W, int32 H)
 FTileDeterminationCS::~FTileDeterminationCS()
 {}
 
-void FTileDeterminationCS::FinalizeInRenderThread()
-{
-	FComputeTask::FinalizeInRenderThread();
-
-	// Init Constant Buffer
-	InputInfoBuffer = ti_new FUVDiscardInput;
-	InputInfoBuffer->UniformBufferData[0].Info.X = float(InputSize.X / ThreadBlockSize);	// Group rows
-	InputInfoBuffer->InitUniformBuffer();
-}
-
 void FTileDeterminationCS::Run(FRHI * RHI)
 {
 	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeResourceTable(0, ResourceTable);
+    RHI->SetComputeArgumentBuffer(0, ComputeArgument);
 
 	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
 }
@@ -53,10 +43,11 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBufferClear, ZeroData);
 	ti_delete[] ZeroData;
 	
-	// Create Render Resource Table
-	ResourceTable = FRHI::Get()->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
-	ResourceTable->PutTextureInTable(UVInput, 0);
-	ResourceTable->PutBufferInTable(QuadTreeBuffer, 1);
+	// Create compute argument buffer
+    ComputeArgument = FRHI::Get()->CreateArgumentBuffer(2);
+    ComputeArgument->SetTexture(0, UVInput);
+    ComputeArgument->SetBuffer(1, QuadTreeBuffer);
+    FRHI::Get()->UpdateHardwareResourceAB(ComputeArgument, ComputeShader);
 }
 
 void FTileDeterminationCS::PrepareDataForCPU(FRHI * RHI)
@@ -128,8 +119,8 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	if (FVTSystem::IsEnabled())
 	{
 		ComputeTileDetermination = ti_new FTileDeterminationCS(RTWidth, RTHeight);
+        ComputeTileDetermination->Finalize();
 		ComputeTileDetermination->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
-		ComputeTileDetermination->Finalize();
 	}
 }
 

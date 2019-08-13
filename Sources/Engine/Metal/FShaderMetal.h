@@ -19,7 +19,7 @@ namespace tix
 	protected:
 
 	protected:
-        id <MTLFunction> VertexProgram;
+        id <MTLFunction> VertexComputeProgram;
         id <MTLFunction> FragmentProgram;
 		friend class FRHIMetal;
 	};

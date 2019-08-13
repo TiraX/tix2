@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2702B6CE2303012B00B842D3 /* S_TileDetermination.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2702B6CD2303012B00B842D3 /* S_TileDetermination.metal */; };
 		270C459922F1D53000DA8872 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C459822F1D53000DA8872 /* AppDelegate.m */; };
 		270C459C22F1D53000DA8872 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C459B22F1D53000DA8872 /* ViewController.m */; };
 		270C45A122F1D53100DA8872 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 270C45A022F1D53100DA8872 /* Assets.xcassets */; };
 		270C45A722F1D53100DA8872 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 270C45A622F1D53100DA8872 /* main.m */; };
 		27531BD322FDB4CD00507ACD /* iOS in Resources */ = {isa = PBXBuildFile; fileRef = 27531BD222FDB4CD00507ACD /* iOS */; };
-		27531BDE2300041700507ACD /* S_TileDetermination.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27531BD92300041700507ACD /* S_TileDetermination.metal */; };
 		27531BDF2300041700507ACD /* S_FullScreen.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27531BDA2300041700507ACD /* S_FullScreen.metal */; };
 		27531BE02300041700507ACD /* S_Grass.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27531BDC2300041700507ACD /* S_Grass.metal */; };
 		27531BE22300054400507ACD /* S_Sky.metal in Sources */ = {isa = PBXBuildFile; fileRef = 27531BE12300054400507ACD /* S_Sky.metal */; };
@@ -40,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2702B6CD2303012B00B842D3 /* S_TileDetermination.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = S_TileDetermination.metal; path = Shaders/Metal/S_TileDetermination.metal; sourceTree = "<group>"; };
 		270C459422F1D53000DA8872 /* VirtualTexture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTexture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		270C459722F1D53000DA8872 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		270C459822F1D53000DA8872 /* AppDelegate.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -52,7 +53,6 @@
 		27531BD52300041700507ACD /* VS_Instanced.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VS_Instanced.h; path = Shaders/Metal/VS_Instanced.h; sourceTree = "<group>"; };
 		27531BD62300041700507ACD /* PS_Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PS_Common.h; path = Shaders/Metal/PS_Common.h; sourceTree = "<group>"; };
 		27531BD82300041700507ACD /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = Shaders/Metal/Common.h; sourceTree = "<group>"; };
-		27531BD92300041700507ACD /* S_TileDetermination.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_TileDetermination.metal; path = Shaders/Metal/S_TileDetermination.metal; sourceTree = "<group>"; };
 		27531BDA2300041700507ACD /* S_FullScreen.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_FullScreen.metal; path = Shaders/Metal/S_FullScreen.metal; sourceTree = "<group>"; };
 		27531BDB2300041700507ACD /* PS_VT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PS_VT.h; path = Shaders/Metal/PS_VT.h; sourceTree = "<group>"; };
 		27531BDC2300041700507ACD /* S_Grass.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_Grass.metal; path = Shaders/Metal/S_Grass.metal; sourceTree = "<group>"; };
@@ -123,7 +123,7 @@
 				27531BDA2300041700507ACD /* S_FullScreen.metal */,
 				27531BDC2300041700507ACD /* S_Grass.metal */,
 				27531BE12300054400507ACD /* S_Sky.metal */,
-				27531BD92300041700507ACD /* S_TileDetermination.metal */,
+				2702B6CD2303012B00B842D3 /* S_TileDetermination.metal */,
 				27531BD52300041700507ACD /* VS_Instanced.h */,
 			);
 			name = Shaders;
@@ -246,12 +246,12 @@
 			files = (
 				270C459C22F1D53000DA8872 /* ViewController.m in Sources */,
 				27FE11E922F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp in Sources */,
+				2702B6CE2303012B00B842D3 /* S_TileDetermination.metal in Sources */,
 				27531BE02300041700507ACD /* S_Grass.metal in Sources */,
 				27531BDF2300041700507ACD /* S_FullScreen.metal in Sources */,
 				27FE11E822F1D88B00CEB9F1 /* stdafx.cpp in Sources */,
 				27531BE22300054400507ACD /* S_Sky.metal in Sources */,
 				270C45A722F1D53100DA8872 /* main.m in Sources */,
-				27531BDE2300041700507ACD /* S_TileDetermination.metal in Sources */,
 				27FE11EE22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp in Sources */,
 				270C459922F1D53000DA8872 /* AppDelegate.m in Sources */,
 			);
