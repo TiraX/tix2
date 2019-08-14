@@ -20,6 +20,9 @@
 		27FE11E922F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11E622F1D88B00CEB9F1 /* VirtualTextureRenderer.cpp */; };
 		27FE11EE22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE11EB22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp */; };
 		27FE122322F1E0B800CEB9F1 /* libTiX2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27934AA022F1D70A002E1D36 /* libTiX2.a */; };
+		F76AE8B52303B74200A1E662 /* S_TreeOpaque.metal in Sources */ = {isa = PBXBuildFile; fileRef = F76AE8B22303B74200A1E662 /* S_TreeOpaque.metal */; };
+		F76AE8B62303B74200A1E662 /* S_EmptyVT.metal in Sources */ = {isa = PBXBuildFile; fileRef = F76AE8B32303B74200A1E662 /* S_EmptyVT.metal */; };
+		F76AE8B72303B74200A1E662 /* S_TreeMask.metal in Sources */ = {isa = PBXBuildFile; fileRef = F76AE8B42303B74200A1E662 /* S_TreeMask.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +68,9 @@
 		27FE11E722F1D88B00CEB9F1 /* VirtualTextureRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualTextureRenderer.h; sourceTree = "<group>"; };
 		27FE11EB22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualTextureTicker.cpp; sourceTree = "<group>"; };
 		27FE11EC22F1D89A00CEB9F1 /* VirtualTextureTicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualTextureTicker.h; sourceTree = "<group>"; };
+		F76AE8B22303B74200A1E662 /* S_TreeOpaque.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_TreeOpaque.metal; path = Shaders/Metal/S_TreeOpaque.metal; sourceTree = "<group>"; };
+		F76AE8B32303B74200A1E662 /* S_EmptyVT.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_EmptyVT.metal; path = Shaders/Metal/S_EmptyVT.metal; sourceTree = "<group>"; };
+		F76AE8B42303B74200A1E662 /* S_TreeMask.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = S_TreeMask.metal; path = Shaders/Metal/S_TreeMask.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,10 +126,13 @@
 				27531BD82300041700507ACD /* Common.h */,
 				27531BD62300041700507ACD /* PS_Common.h */,
 				27531BDB2300041700507ACD /* PS_VT.h */,
+				F76AE8B32303B74200A1E662 /* S_EmptyVT.metal */,
 				27531BDA2300041700507ACD /* S_FullScreen.metal */,
 				27531BDC2300041700507ACD /* S_Grass.metal */,
 				27531BE12300054400507ACD /* S_Sky.metal */,
 				2702B6CD2303012B00B842D3 /* S_TileDetermination.metal */,
+				F76AE8B42303B74200A1E662 /* S_TreeMask.metal */,
+				F76AE8B22303B74200A1E662 /* S_TreeOpaque.metal */,
 				27531BD52300041700507ACD /* VS_Instanced.h */,
 			);
 			name = Shaders;
@@ -249,10 +258,13 @@
 				2702B6CE2303012B00B842D3 /* S_TileDetermination.metal in Sources */,
 				27531BE02300041700507ACD /* S_Grass.metal in Sources */,
 				27531BDF2300041700507ACD /* S_FullScreen.metal in Sources */,
+				F76AE8B52303B74200A1E662 /* S_TreeOpaque.metal in Sources */,
 				27FE11E822F1D88B00CEB9F1 /* stdafx.cpp in Sources */,
+				F76AE8B62303B74200A1E662 /* S_EmptyVT.metal in Sources */,
 				27531BE22300054400507ACD /* S_Sky.metal in Sources */,
 				270C45A722F1D53100DA8872 /* main.m in Sources */,
 				27FE11EE22F1D89A00CEB9F1 /* VirtualTextureTicker.cpp in Sources */,
+				F76AE8B72303B74200A1E662 /* S_TreeMask.metal in Sources */,
 				270C459922F1D53000DA8872 /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

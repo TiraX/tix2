@@ -13,15 +13,15 @@ using namespace metal;
 
 
 typedef struct FragmentShaderArguments {
-    device float * Uniform [[ id(0) ]];
-    texture2d<half, access::read> TexBaseColor  [[ id(1) ]];
+    texture2d<half, access::read> TexBaseColor  [[ id(0) ]];
+    device float * Uniform [[ id(1) ]];
 } ComputeShaderArguments;
 
 //constant half3 kRec709Luma = half3(0.2126, 0.7152, 0.0722);
 // Grayscale compute kernel
 kernel void
 S_TileDeterminationCS(
-                    device ComputeShaderArguments & fragmentArgs [[ buffer(0) ]],
+                    device ComputeShaderArguments & ComputeArgs [[ buffer(0) ]],
                     uint2                          gid         [[thread_position_in_grid]])
 {
 //    // Check if the pixel is within the bounds of the output texture

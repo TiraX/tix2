@@ -11,7 +11,8 @@ namespace tix
 	FShaderBinding::FShaderBinding(uint32 InNumBindings)
 		: FRenderResource(RRT_SHADER_BINDING)
 		, NumBindings(InNumBindings)
-		, MIArgumentsBindingIndex(-1)
+        , VertexComputeArgumentBufferBindingIndex(-1)
+		, PixelArgumentBufferBindingIndex(-1)
 	{
 #if DEBUG_SHADER_BINDING_TYPE
 		BindingTypes.resize(InNumBindings);
@@ -71,7 +72,8 @@ namespace tix
 	{
 		if (ShaderStage == ESS_VERTEX_SHADER)
 		{
-			VertexArguments.push_back(InArgument);
+            // Vertex / Compute shader arguments share the same container
+			VertexComputeArguments.push_back(InArgument);
 		}
 		else if (ShaderStage == ESS_PIXEL_SHADER)
 		{
@@ -85,7 +87,7 @@ namespace tix
 
 	void FShaderBinding::SortArguments()
 	{
-		TSort(VertexArguments.begin(), VertexArguments.end());
+		TSort(VertexComputeArguments.begin(), VertexComputeArguments.end());
 		TSort(PixelArguments.begin(), PixelArguments.end());
 	}
 
@@ -94,13 +96,22 @@ namespace tix
 		SortArguments();
 
 		// Remember mi buffer binding index and mi texture binding index
+        for (const auto& Arg : VertexComputeArguments)
+        {
+            if (Arg.ArgumentType == ARGUMENT_MI_ARGUMENTS)
+            {
+                // Should only have 1 argument buffer binding for each shader, so we add a check here
+                TI_ASSERT(VertexComputeArgumentBufferBindingIndex == -1);
+                VertexComputeArgumentBufferBindingIndex = Arg.BindingIndex;
+            }
+        }
 		for (const auto& Arg : PixelArguments)
 		{
 			if (Arg.ArgumentType == ARGUMENT_MI_ARGUMENTS)
 			{
 				// Should only have 1 argument buffer binding for each shader, so we add a check here
-				TI_ASSERT(MIArgumentsBindingIndex == -1);
-				MIArgumentsBindingIndex = Arg.BindingIndex;
+				TI_ASSERT(PixelArgumentBufferBindingIndex == -1);
+				PixelArgumentBufferBindingIndex = Arg.BindingIndex;
 			}
 		}
 	}

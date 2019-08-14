@@ -17,8 +17,9 @@ namespace tix
 	protected:
 
     private:
-        id <MTLRenderPipelineState> PipelineState;
+        id <MTLRenderPipelineState> RenderPipelineState;
         id <MTLDepthStencilState> DepthState;
+        id <MTLComputePipelineState> ComputePipelineState;
 		friend class FRHIMetal;
 	};
 }

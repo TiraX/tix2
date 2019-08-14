@@ -102,7 +102,7 @@ namespace tix
 		FShaderBindingPtr ShaderBinding = Primitive->GetPipeline()->GetShader()->ShaderBinding;
 
 		// bind vertex arguments
-		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
+		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexComputeShaderArguments();
 		for (const auto& Arg : VSArguments)
 		{
 			BindEngineBuffer(RHI, ESS_VERTEX_SHADER, Arg, Scene, Primitive);
@@ -123,7 +123,7 @@ namespace tix
 		FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
 
 		// bind vertex arguments
-		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexShaderArguments();
+		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexComputeShaderArguments();
 		for (const auto& Arg : VSArguments)
 		{
 			BindEngineBuffer(RHI, ESS_VERTEX_SHADER, Arg, Scene, nullptr);

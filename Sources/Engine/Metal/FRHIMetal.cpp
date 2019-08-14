@@ -356,9 +356,48 @@ namespace tix
         return true;
 	}
     
-    bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData)
+    bool FRHIMetal::UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InImageData)
     {
-        TI_ASSERT(0);
+        FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
+        const TTextureDesc& Desc = Texture->GetDesc();
+        TI_ASSERT(Desc.Width == InImageData->GetWidth() && Desc.Height == InImageData->GetHeight());
+        TI_ASSERT(Desc.Mips == InImageData->GetMipmapCount());
+        
+        if (TexMetal->Texture == nil)
+        {
+            MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
+            const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
+            TI_ASSERT(!IsCubeMap);
+            MTLTextureDescriptor * TextureDesc;
+            if (IsCubeMap)
+            {
+                TI_ASSERT(Desc.Width == Desc.Height);
+                TextureDesc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MtlFormat size:Desc.Width mipmapped:Desc.Mips > 1];
+            }
+            else
+            {
+                TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
+            }
+            // Follow the instructions here to create a private MTLBuffer
+            // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
+            TextureDesc.mipmapLevelCount = Desc.Mips;
+            TextureDesc.storageMode = MTLStorageModeShared;
+            TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        }
+        
+        const int32 Mips = Desc.Mips;
+        int32 W = Desc.Width;
+        int32 H = Desc.Height;
+        for (int32 M = 0 ; M < Mips ; ++ M)
+        {
+            const TImage::TSurfaceData& MipSurface = InImageData->GetMipmap(M);
+            MTLRegion Region = MTLRegionMake2D(0, 0, W, H);
+            [TexMetal->Texture replaceRegion:Region mipmapLevel:M slice:0 withBytes:MipSurface.Data.GetBuffer() bytesPerRow:MipSurface.RowPitch bytesPerImage:0];
+            W /= 2;
+            H /= 2;
+        }
+        
+        HoldResourceReference(Texture);
         return true;
     }
 
@@ -449,7 +488,7 @@ namespace tix
             // Create pso with reflection
             NSError* Err  = nil;
             MTLRenderPipelineReflection * ReflectionObj = nil;
-            PipelineMetal->PipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
+            PipelineMetal->RenderPipelineState = [MtlDevice newRenderPipelineStateWithDescriptor : PipelineStateDesc options:MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
             
             // Create shader binding info for shaders
             TI_ASSERT(Shader->ShaderBinding == nullptr);
@@ -510,22 +549,30 @@ namespace tix
         }
         else
         {
-            // create compute pipeline state here
-            TI_ASSERT(0);
-            // Compute pipeline
-//            FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
-//            FShaderBindingPtr Binding = ShaderDx12->ShaderBinding;
-//            TI_ASSERT(Binding != nullptr);
-//            FRootSignatureDx12 * PipelineRS = static_cast<FRootSignatureDx12*>(Binding.get());
-//
-//            D3D12_COMPUTE_PIPELINE_STATE_DESC state = {};
-//            state.pRootSignature = PipelineRS->Get();
-//            state.CS = { ShaderDx12->ShaderCodes[0].GetBuffer(), uint32(ShaderDx12->ShaderCodes[0].GetLength()) };
-//
-//            VALIDATE_HRESULT(D3dDevice->CreateComputePipelineState(&state, IID_PPV_ARGS(&(PipelineDx12->PipelineState))));
-//
-//            // Shader data can be deleted once the pipeline state is created.
-//            ShaderDx12->ReleaseShaderCode();
+            TI_ASSERT(Shader != nullptr);
+            FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
+            
+            // Create pso with reflection
+            NSError* Err  = nil;
+            MTLComputePipelineReflection * ReflectionObj = nil;
+            PipelineMetal->ComputePipelineState = [MtlDevice newComputePipelineStateWithFunction : ShaderMetal->VertexComputeProgram options: MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
+            
+            // Create shader binding info for shaders
+            TI_ASSERT(Shader->ShaderBinding == nullptr);
+            Shader->ShaderBinding = ti_new FShaderBinding(0);   // Metal do not care NumBindingCount
+            for (int32 i = 0; i < ReflectionObj.arguments.count; ++ i)
+            {
+                MTLArgument * Arg = ReflectionObj.arguments[i];
+                TString BindName = [Arg.name UTF8String];
+                int32 BindIndex = (int32)Arg.index;
+                if (BindIndex >= 0)
+                {
+                    E_ARGUMENT_TYPE ArgumentType = FShaderBinding::GetArgumentTypeByName(BindName);
+                    Shader->ShaderBinding->AddShaderArgument(ESS_COMPUTE_SHADER,
+                                                             FShaderBinding::FShaderArgument(BindIndex, ArgumentType));
+                }
+            }
+            Shader->ShaderBinding->PostInitArguments();
         }
         HoldResourceReference(Pipeline);
         
@@ -655,21 +702,46 @@ namespace tix
         
         FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(InShader.get());
 
-        // Get Uniform buffer Bind Index
         int32 ArgumentBindIndex = SpecifiedBindingIndex;
-        if (ArgumentBindIndex < 0)
+        id <MTLArgumentEncoder> ArgumentEncoder = nil;
+        
+#if defined (TIX_DEBUG)
+        TString ShaderName;
+#endif
+        if (InShader->GetShaderType() == EST_RENDER)
         {
-            FShaderBindingPtr ShaderBinding = InShader->ShaderBinding;
-            ArgumentBindIndex = ShaderBinding->GetMIArgumentsBindingIndex();
+            TI_TODO("Support vertex argument buffer.");
+            // Get Uniform buffer Bind Index
+            if (ArgumentBindIndex < 0)
+            {
+                FShaderBindingPtr ShaderBinding = InShader->ShaderBinding;
+                ArgumentBindIndex = ShaderBinding->GetPixelArgumentBufferBindingIndex();
+            }
+            ArgumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgumentBindIndex];
+#if defined (TIX_DEBUG)
+            ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
+#endif
+        }
+        else
+        {
+            // Compute shader
+            if (ArgumentBindIndex < 0)
+            {
+                FShaderBindingPtr ShaderBinding = InShader->ShaderBinding;
+                ArgumentBindIndex = ShaderBinding->GetVertexComputeArgumentBufferBindingIndex();
+            }
+            ArgumentEncoder = [ShaderMetal->VertexComputeProgram newArgumentEncoderWithBufferIndex:ArgumentBindIndex];
+#if defined (TIX_DEBUG)
+            ShaderName = ShaderMetal->GetShaderName(ESS_COMPUTE_SHADER);
+#endif
         }
         TI_ASSERT(ArgumentBindIndex >= 0);
+        TI_ASSERT(ArgumentEncoder != nil);
         
         // Create argument buffer, fill uniform and textures
-        id <MTLArgumentEncoder> ArgumentEncoder = [ShaderMetal->FragmentProgram newArgumentEncoderWithBufferIndex:ArgumentBindIndex];
         NSUInteger ArgumentBufferLength = ArgumentEncoder.encodedLength;
         ArgBufferMetal->ArgumentBuffer = [MtlDevice newBufferWithLength:ArgumentBufferLength options:0];
 #if defined (TIX_DEBUG)
-        const TString& ShaderName = ShaderMetal->GetShaderName(ESS_PIXEL_SHADER);
         TString ArgName = ShaderName + "_ArgumentBuffer";
         ArgBufferMetal->ArgumentBuffer.label = [NSString stringWithUTF8String:ArgName.c_str()];
 #endif
@@ -747,7 +819,7 @@ namespace tix
         TI_TODO("Don't set pipeline duplicated.");
         FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
         
-        [RenderEncoder setRenderPipelineState:PLMetal->PipelineState];
+        [RenderEncoder setRenderPipelineState:PLMetal->RenderPipelineState];
         [RenderEncoder setDepthStencilState:PLMetal->DepthState];
         
         //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;

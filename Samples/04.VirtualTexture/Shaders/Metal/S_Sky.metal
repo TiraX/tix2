@@ -43,7 +43,8 @@ vertex VSOutput S_SkyVS(VSInput vsInput [[stage_in]],
 }
 
 typedef struct FragmentShaderArguments {
-    texturecube<half> texSkyMap  [[ id(0) ]];
+    device float4 * Uniform [[ id(0) ]];
+    texturecube<half> TexBaseColor  [[ id(1) ]];
 } FragmentShaderArguments;
 
 constexpr sampler sampler0(mip_filter::linear,
@@ -56,7 +57,7 @@ fragment half4 S_SkyPS(VSOutput input [[stage_in]],
     float3 normal = -normalize(input.normal);
     
     half4 Color;
-    Color.xyz = sqrt(fragmentArgs.texSkyMap.sample(sampler0, normal).xyz) * 0.5;
+    Color.xyz = sqrt(fragmentArgs.TexBaseColor.sample(sampler0, normal).xyz) * 0.5;
     Color.a = 1.0;
     return Color;
 }

@@ -44,7 +44,7 @@ typedef struct
 	float4 VTDebugInfo;
 } EB_Primitive;
 
-float3 GetWorldPosition(VSInput vsInput)
+inline float3 GetWorldPosition(VSInput vsInput)
 {
     float3x3 RotMat = float3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
     float3 position = RotMat * vsInput.position;
@@ -53,7 +53,7 @@ float3 GetWorldPosition(VSInput vsInput)
     return position;
 }
 
-half2 GetTextureCoords(VSInput vsInput)
+inline half2 GetTextureCoords(VSInput vsInput)
 {
 	return vsInput.texcoord0;
 }

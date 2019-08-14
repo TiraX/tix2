@@ -145,7 +145,7 @@ namespace tix
 			EmptyVTShader = Shader->ShaderResource;
 		}
 #endif
-		FRHI::Get()->UpdateHardwareResourceAB(VTResource, EmptyVTShader);
+		FRHI::Get()->UpdateHardwareResourceAB(VTResource, EmptyVTShader, 0);
 	}
 
 #if VT_PRELOADED_REGIONS

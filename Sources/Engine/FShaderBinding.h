@@ -79,20 +79,25 @@ namespace tix
 		void AddShaderArgument(E_SHADER_STAGE ShaderStage, const FShaderArgument& InArgument);
 		void PostInitArguments();
 
-		const TVector<FShaderArgument>& GetVertexShaderArguments() const
+		const TVector<FShaderArgument>& GetVertexComputeShaderArguments() const
 		{
-			return VertexArguments;
+			return VertexComputeArguments;
 		}
 
 		const TVector<FShaderArgument>& GetPixelShaderArguments() const
 		{
 			return PixelArguments;
 		}
-
-		int32 GetMIArgumentsBindingIndex() const
-		{
-			return MIArgumentsBindingIndex;
-		}
+        
+        int32 GetVertexComputeArgumentBufferBindingIndex() const
+        {
+            return VertexComputeArgumentBufferBindingIndex;
+        }
+        
+        int32 GetPixelArgumentBufferBindingIndex() const
+        {
+            return PixelArgumentBufferBindingIndex;
+        }
 
 	protected:
 		void SortArguments();
@@ -102,11 +107,14 @@ namespace tix
 
 	protected:
 		int32 NumBindings;
-		TVector<FShaderArgument> VertexArguments;
+        // Vertex/Compute shader arguments share the same TVector<FShaderArgument> VertexComputeArguments
+		TVector<FShaderArgument> VertexComputeArguments;
+        // Pixel shader arguments
 		TVector<FShaderArgument> PixelArguments;
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif
-		int32 MIArgumentsBindingIndex;
+        int32 VertexComputeArgumentBufferBindingIndex;
+		int32 PixelArgumentBufferBindingIndex;
 	};
 }

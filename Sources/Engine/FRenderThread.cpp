@@ -25,6 +25,7 @@ namespace tix
 
 	void FRenderThread::CreateRenderThread(bool ForceDisableThread)
 	{
+        TI_TODO("Give render thread priority, as iOS required 45.");
 		FRenderThread::ThreadEnabled = !ForceDisableThread;
 		TI_ASSERT(RenderThread == nullptr);
 		RenderThread = ti_new FRenderThread;
