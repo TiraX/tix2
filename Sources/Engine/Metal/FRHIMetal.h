@@ -102,8 +102,11 @@ namespace tix
         id <MTLLibrary> DefaultLibrary;
         
         id <MTLCommandBuffer> CommandBuffer;
+        id <MTLCommandBuffer> BlitCommandBuffer;
+        
         id <MTLRenderCommandEncoder> RenderEncoder;
         id <MTLComputeCommandEncoder> ComputeEncoder;
+        id <MTLBlitCommandEncoder> BlitEncoder;
         
         MTLRenderPassDescriptor* FrameBufferPassDesc;
         

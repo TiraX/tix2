@@ -69,8 +69,9 @@ TStreamPtr FTileDeterminationCS::ReadUVBuffer()
 
 void FTileDeterminationCS::ClearQuadTree(FRHI * RHI)
 {
+    TI_TODO("Finish this clear process.");
 	// Clear quad tree.
-	RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, FVTSystem::TotalPagesInVT * 4);
+	//RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, FVTSystem::TotalPagesInVT * 4);
 }
 
 ////////////////////////////////////////////////////////

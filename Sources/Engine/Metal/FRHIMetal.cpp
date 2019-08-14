@@ -34,8 +34,11 @@ namespace tix
         DefaultLibrary = nil;
         
         CommandBuffer = nil;
+        BlitCommandBuffer = nil;
+        
         RenderEncoder = nil;
         ComputeEncoder = nil;
+        BlitEncoder = nil;
         
         FrameBufferPassDesc = nil;
         
@@ -97,12 +100,21 @@ namespace tix
         FRHI::BeginFrame();
         
         TI_ASSERT(CommandBuffer == nil);
+        TI_ASSERT(BlitCommandBuffer == nil);
         TI_ASSERT(RenderEncoder == nil);
+        TI_ASSERT(ComputeEncoder == nil);
+        TI_ASSERT(BlitEncoder == nil);
         
         dispatch_semaphore_wait(InflightSemaphore, DISPATCH_TIME_FOREVER);
         FrameResources[LastFrameMark]->RemoveAllReferences();
         
         CommandBuffer = [CommandQueue commandBuffer];
+        CommandBuffer.label = @"Render Command Buffer";
+        TI_TODO("Do not create blit command buffer and encoder here, create when need.");
+        BlitCommandBuffer = [CommandQueue commandBuffer];
+        BlitCommandBuffer.label = @"Blit Command Buffer";
+        
+        BlitEncoder = BlitCommandBuffer.blitCommandEncoder;
 	}
 
 	void FRHIMetal::EndFrame()
@@ -112,6 +124,12 @@ namespace tix
         TI_ASSERT(CurrentDrawable != nil);
         
         [RenderEncoder endEncoding];
+        
+        // Commit blit commands first
+        if (BlitCommandBuffer != nil)
+        {
+            TI_ASSERT(0);
+        }
         
         // call the view's completion handler which is required by the view since it will signal its semaphore and set up the next buffer
         __block dispatch_semaphore_t block_sema = InflightSemaphore;
@@ -131,7 +149,11 @@ namespace tix
         [CommandBuffer commit];
         
         RenderEncoder = nil;
+        ComputeEncoder = nil;
+        BlitEncoder = nil;
+        
         CommandBuffer = nil;
+        BlitCommandBuffer = nil;
         CurrentDrawable = nil;
 	}
     
@@ -289,14 +311,12 @@ namespace tix
             MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
             TextureDesc.mipmapLevelCount = Desc.Mips;
             TextureDesc.storageMode = MTLStorageModeShared;
-            if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
+            if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0 ||
+                (Desc.Flags & ETF_RT_DSBUFFER) != 0)
             {
                 TI_ASSERT(Desc.Mips == 1);
                 TextureDesc.usage |= MTLTextureUsageRenderTarget;
             }
-            //if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
-            //{
-            //}
             TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
         }
         
@@ -587,8 +607,8 @@ namespace tix
         if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
         {
             const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-            TI_ASSERT(UBMetal->ConstantBuffer == nil);
-            UBMetal->ConstantBuffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
+            TI_ASSERT(UBMetal->Buffer == nil);
+            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
         }
         else
         {
@@ -597,8 +617,8 @@ namespace tix
             // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
             
             const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-            TI_ASSERT(UBMetal->ConstantBuffer == nil);
-            UBMetal->ConstantBuffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLStorageModeShared];
+            TI_ASSERT(UBMetal->Buffer == nil);
+            UBMetal->Buffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLStorageModeShared];
         }
         
         HoldResourceReference(UniformBuffer);
@@ -754,7 +774,7 @@ namespace tix
             {
                 FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
                 FUniformBufferMetal* ArgUBMetal = static_cast<FUniformBufferMetal*>(ArgUB.get());
-                [ArgumentEncoder setBuffer:ArgUBMetal->ConstantBuffer offset:0 atIndex:i];
+                [ArgumentEncoder setBuffer:ArgUBMetal->Buffer offset:0 atIndex:i];
             }
             else if (Arg->GetResourceType() == RRT_TEXTURE)
             {
@@ -778,13 +798,35 @@ namespace tix
     
     bool FRHIMetal::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture)
     {
-        TI_ASSERT(0);
+        FTextureMetal * DstMetalTexture = static_cast<FTextureMetal*>(DstTexture.get());
+        FTextureMetal * SrcMetalTexture = static_cast<FTextureMetal*>(SrcTexture.get());
+        TI_ASSERT(InDstRegion.getWidth() == SrcTexture->GetWidth() && InDstRegion.getHeight() == SrcTexture->GetHeight());
+        MTLRegion SrcRegion = MTLRegionMake2D(0, 0, InDstRegion.getWidth(), InDstRegion.getHeight());
+        MTLRegion DstRegion = MTLRegionMake2D(InDstRegion.Left, InDstRegion.Upper, InDstRegion.getWidth(), InDstRegion.getHeight());
+        
+        [BlitEncoder copyFromTexture: SrcMetalTexture->Texture
+                         sourceSlice: 0
+                         sourceLevel: 0
+                        sourceOrigin: SrcRegion.origin
+                          sourceSize: SrcRegion.size
+                           toTexture: DstMetalTexture->Texture
+                    destinationSlice: 0
+                    destinationLevel: 0
+                   destinationOrigin: DstRegion.origin];
+        
         return true;
     }
     
     bool FRHIMetal::CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length)
     {
-        TI_ASSERT(0);
+        FUniformBufferMetal * DstMetalBuffer = static_cast<FUniformBufferMetal*>(DstBuffer.get());
+        FUniformBufferMetal * SrcMetalBuffer = static_cast<FUniformBufferMetal*>(SrcBuffer.get());
+        
+        [BlitEncoder copyFromBuffer: SrcMetalBuffer->Buffer
+                       sourceOffset: 0
+                           toBuffer: DstMetalBuffer->Buffer
+                  destinationOffset: DstOffset
+                               size: Length];
         return true;
     }
     
@@ -838,11 +880,13 @@ namespace tix
 	void FRHIMetal::SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer)
 	{
         FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(InUniformBuffer.get());
-        if (ShaderStage == ESS_VERTEX_SHADER) {
-            [RenderEncoder setVertexBuffer:UBMetal->ConstantBuffer offset:0 atIndex:BindIndex];
+        if (ShaderStage == ESS_VERTEX_SHADER)
+        {
+            [RenderEncoder setVertexBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
         }
-        else if (ShaderStage == ESS_PIXEL_SHADER) {
-            [RenderEncoder setFragmentBuffer:UBMetal->ConstantBuffer offset:0 atIndex:BindIndex];
+        else if (ShaderStage == ESS_PIXEL_SHADER)
+        {
+            [RenderEncoder setFragmentBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
         }
         else {
             TI_ASSERT(0);
@@ -892,7 +936,8 @@ namespace tix
 
 	void FRHIMetal::SetStencilRef(uint32 InRefValue)
 	{
-        if (RenderEncoder != nil) {
+        if (RenderEncoder != nil)
+        {
             [RenderEncoder setStencilReferenceValue:InRefValue];
         }
 	}

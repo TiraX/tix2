@@ -17,7 +17,7 @@ namespace tix
 	protected:
 
 	private:
-        id<MTLBuffer> ConstantBuffer;
+        id<MTLBuffer> Buffer;
 		friend class FRHIMetal;
 	};
 }

@@ -14,13 +14,13 @@ namespace tix
 	FUniformBufferMetal::FUniformBufferMetal(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag)
 		: FUniformBuffer(InStructureSizeInBytes, Elements, InFlag)
 	{
-        ConstantBuffer = nil;
+        Buffer = nil;
 	}
 
 	FUniformBufferMetal::~FUniformBufferMetal()
 	{
 		TI_ASSERT(IsRenderThread());
-		ConstantBuffer = nil;
+		Buffer = nil;
 	}
 }
 
