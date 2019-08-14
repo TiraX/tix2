@@ -2252,6 +2252,22 @@ namespace tix
 		HoldResourceReference(RenderResourceTable);
 	}
 
+	void FRHIDx12::SetComputeArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer)
+	{
+		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
+		SetComputeResourceTable(InBindIndex, ArgDx12->ResourceTable);
+	}
+
+	void FRHIDx12::SetComputeArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
+	{
+		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
+		if (InShaderBinding->GetVertexComputeArgumentBufferBindingIndex() >= 0)
+		{
+			TI_ASSERT(ArgDx12->ResourceTable != nullptr);
+			SetComputeResourceTable(InShaderBinding->GetVertexComputeArgumentBufferBindingIndex(), ArgDx12->ResourceTable);
+		}
+	}
+
 	void FRHIDx12::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
 	{
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
@@ -2289,10 +2305,10 @@ namespace tix
 	void FRHIDx12::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
-		if (InShaderBinding->GetMIArgumentsBindingIndex() >= 0)
+		if (InShaderBinding->GetPixelArgumentBufferBindingIndex() >= 0)
 		{
 			TI_ASSERT(ArgDx12->ResourceTable != nullptr);
-			SetRenderResourceTable(InShaderBinding->GetMIArgumentsBindingIndex(), ArgDx12->ResourceTable);
+			SetRenderResourceTable(InShaderBinding->GetPixelArgumentBufferBindingIndex(), ArgDx12->ResourceTable);
 		}
 	}
 
