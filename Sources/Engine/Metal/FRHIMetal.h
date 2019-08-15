@@ -86,8 +86,7 @@ namespace tix
         virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
         
 		virtual void SetViewport(const FViewport& InViewport) override;
-		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
-		virtual FRenderTargetPtr PopRenderTarget() override;
+		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
 
 	protected: 
 		FRHIMetal();

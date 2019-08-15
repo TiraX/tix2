@@ -147,6 +147,8 @@ namespace tix
     
     void FRHIMetal::BeginRenderToFrameBuffer()
     {
+        CloseCurrentEncoderIfNotMatch(EPL_INVALID);
+        
         CurrentDrawable = MtlLayer.nextDrawable;
         TI_ASSERT(CurrentDrawable != nil);
         id <MTLTexture> Texture = CurrentDrawable.texture;
@@ -163,6 +165,7 @@ namespace tix
         ColorAttachment.storeAction = MTLStoreActionStore;
         
         RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:FrameBufferPassDesc];
+        CurrentCommandListState.ListType = EPL_GRAPHICS;
     }
     
     void FRHIMetal::BeginComputeTask()
@@ -915,6 +918,7 @@ namespace tix
 	{
         TI_ASSERT(0);
         TI_TODO("Don't set pipeline duplicated.");
+        TI_ASSERT(RenderEncoder != nil);
         FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
         
         [RenderEncoder setRenderPipelineState:PLMetal->RenderPipelineState];
@@ -987,7 +991,7 @@ namespace tix
     
     void FRHIMetal::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
     {
-        TI_ASSERT(0);
+        // Metal do not have resource barrier.
     }
 
 	void FRHIMetal::SetStencilRef(uint32 InRefValue)
@@ -1017,6 +1021,9 @@ namespace tix
     void FRHIMetal::SetComputePipeline(FPipelinePtr InPipeline)
     {
         TI_ASSERT(0);
+        TI_ASSERT(ComputeEncoder != nil);
+        FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
+        [ComputeEncoder setComputePipelineState:PLMetal->ComputePipelineState];
     }
     
     void FRHIMetal::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
@@ -1066,56 +1073,38 @@ namespace tix
         }
 	}
 
-	void FRHIMetal::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+	void FRHIMetal::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
     {
-        FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
-        RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:RTMetal->RenderPassDesc];
+        CloseCurrentEncoderIfNotMatch(EPL_GRAPHICS);
+        
+        if (CurrentRenderTarget != RT)
+        {
+            if (RenderEncoder != nil)
+            {
+                [RenderEncoder endEncoding];
+            }
+            FRHI::BeginRenderToRenderTarget(RT, PassName);
+            
+            FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
+            RenderEncoder = [CommandBuffer renderCommandEncoderWithDescriptor:RTMetal->RenderPassDesc];
 #if defined (TIX_DEBUG)
-        RenderEncoder.label = [NSString stringWithUTF8String:PassName];
+            RenderEncoder.label = [NSString stringWithUTF8String:PassName];
 #endif
-        
-		FRHI::PushRenderTarget(RT, PassName);
-        
-        // Set scissor rect
-        const FViewport& VP = RtViewports.back();
-        MTLScissorRect Rect;
-        Rect.x = 0;
-        Rect.y = 0;
-        Rect.width = VP.Width;
-        Rect.height = VP.Height;
-        [RenderEncoder setScissorRect:Rect];
-        
-        // Try cull
-        //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-        //[RenderEncoder setCullMode:MTLCullModeBack];
-	}
-
-	FRenderTargetPtr FRHIMetal::PopRenderTarget()
-    {
-        TI_ASSERT(RenderTargets.size() > 0);
-        
-        RenderTargets.pop_back();
-        RtViewports.pop_back();
-        
-        FRenderTargetPtr RT  = nullptr;
-        if (RenderTargets.size() != 0)
-            RT = RenderTargets.back();
-        
-        if (RT != nullptr)
-        {
-            TI_ASSERT(0);
-            [RenderEncoder endEncoding];
-            //FRenderTargetMetal * RTMetal = static_cast<FRenderTargetMetal*>(RT.get());
-            //SetupPipeline(rtMetal->_colorBuffer, rtMetal->_depthBuffer, MTLClearColorMake(0.f, 0.f, 0.f, 0.f));
-            //RenderEncoder = [_commandBuffer renderCommandEncoderWithDescriptor:_renderPassDescriptor];
+            CurrentCommandListState.ListType = EPL_GRAPHICS;
+            
+            // Set scissor rect
+            const FViewport& VP = RtViewport;
+            MTLScissorRect Rect;
+            Rect.x = 0;
+            Rect.y = 0;
+            Rect.width = VP.Width;
+            Rect.height = VP.Height;
+            [RenderEncoder setScissorRect:Rect];
+            
+            // Try cull
+            //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+            //[RenderEncoder setCullMode:MTLCullModeBack];
         }
-        else
-        {
-            [RenderEncoder endEncoding];
-        }
-        RenderEncoder = nil;
-        
-        return RT;
 	}
     
     void FRHIMetal::HoldResourceReference(FRenderResourcePtr InResource)
