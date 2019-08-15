@@ -70,6 +70,7 @@ namespace tix
 		UB_FLAG_COMPUTE_WRITABLE = 1 << 0,
 		UB_FLAG_COMPUTE_WITH_COUNTER = 1 << 1,
 		UB_FLAG_READBACK = 1 << 2,
+        UB_FLAG_GPU_ONLY = 1 << 3,
 	};
 	class FUniformBuffer : public FRenderResource
 	{

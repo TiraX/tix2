@@ -48,7 +48,8 @@ namespace tix
 
 		CurrentCommandListState.Reset();
 		CurrentCommandListCounter[EPL_GRAPHICS] = -1;
-		CurrentCommandListCounter[EPL_COMPUTE] = -1;
+        CurrentCommandListCounter[EPL_COMPUTE] = -1;
+        CurrentCommandListCounter[EPL_BLIT] = -1;
 		ListExecuteOrder.clear();
 	}
 
@@ -66,6 +67,7 @@ namespace tix
         CurrentCommandListState.Reset();
         CurrentCommandListCounter[EPL_GRAPHICS] = -1;
         CurrentCommandListCounter[EPL_COMPUTE] = -1;
+        CurrentCommandListCounter[EPL_BLIT] = -1;
         ListExecuteOrder.clear();
     }
     

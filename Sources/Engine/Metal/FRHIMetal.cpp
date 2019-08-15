@@ -10,6 +10,7 @@
 #include "TDeviceIOS.h"
 #import "FMetalView.h"
 #include "FRHIMetalConversion.h"
+#include "FFrameResourcesMetal.h"
 #include "FTextureMetal.h"
 #include "FShaderBindingMetal.h"
 #include "FPipelineMetal.h"
@@ -34,7 +35,6 @@ namespace tix
         DefaultLibrary = nil;
         
         CommandBuffer = nil;
-        BlitCommandBuffer = nil;
         
         RenderEncoder = nil;
         ComputeEncoder = nil;
@@ -45,7 +45,8 @@ namespace tix
         // Create frame resource holders
         for (int32 i = 0 ; i < FRHIConfig::FrameBufferNum; ++ i)
         {
-            FrameResources[i] = ti_new FFrameResources;
+            ResHolders[i] = ti_new FFrameResourcesMetal;
+            FrameResources[i] = ResHolders[i];
         }
 	}
 
@@ -100,7 +101,6 @@ namespace tix
         FRHI::BeginFrame();
         
         TI_ASSERT(CommandBuffer == nil);
-        TI_ASSERT(BlitCommandBuffer == nil);
         TI_ASSERT(RenderEncoder == nil);
         TI_ASSERT(ComputeEncoder == nil);
         TI_ASSERT(BlitEncoder == nil);
@@ -110,11 +110,6 @@ namespace tix
         
         CommandBuffer = [CommandQueue commandBuffer];
         CommandBuffer.label = @"Render Command Buffer";
-        TI_TODO("Do not create blit command buffer and encoder here, create when need.");
-        BlitCommandBuffer = [CommandQueue commandBuffer];
-        BlitCommandBuffer.label = @"Blit Command Buffer";
-        
-        BlitEncoder = BlitCommandBuffer.blitCommandEncoder;
 	}
 
 	void FRHIMetal::EndFrame()
@@ -124,12 +119,6 @@ namespace tix
         TI_ASSERT(CurrentDrawable != nil);
         
         [RenderEncoder endEncoding];
-        
-        // Commit blit commands first
-        if (BlitCommandBuffer != nil)
-        {
-            TI_ASSERT(0);
-        }
         
         // call the view's completion handler which is required by the view since it will signal its semaphore and set up the next buffer
         __block dispatch_semaphore_t block_sema = InflightSemaphore;
@@ -153,7 +142,6 @@ namespace tix
         BlitEncoder = nil;
         
         CommandBuffer = nil;
-        BlitCommandBuffer = nil;
         CurrentDrawable = nil;
 	}
     
@@ -180,30 +168,78 @@ namespace tix
     void FRHIMetal::BeginComputeTask()
     {
         // Switch from graphics command list to compute command list.
-        TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+        bool EncoderClosed = CloseCurrentEncoderIfNotMatch(EPL_COMPUTE);
         
-        // Try to close RenderEncoder
-        if (RenderEncoder)
+        if (EncoderClosed)
         {
-            [RenderEncoder endEncoding];
-            RenderEncoder = nil;
+            // Create compute encoder
+            CurrentCommandListCounter[EPL_COMPUTE] ++;
+            TI_ASSERT(ComputeEncoder == nil);
+            ComputeEncoder = [CommandBuffer computeCommandEncoder];
+            
+            // Remember the list we are using, and push it to order vector
+            CurrentCommandListState.ListType = EPL_COMPUTE;
+            CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
+            ListExecuteOrder.push_back(CurrentCommandListState);
         }
-        // Create compute encoder
-        CurrentCommandListCounter[EPL_COMPUTE] ++;
-        TI_ASSERT(ComputeEncoder == nil);
-        ComputeEncoder = [CommandBuffer computeCommandEncoder];
-        
-        // Remember the list we are using, and push it to order vector
-        CurrentCommandListState.ListType = EPL_COMPUTE;
-        CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
-        ListExecuteOrder.push_back(CurrentCommandListState);
+        else
+        {
+            TI_ASSERT(ComputeEncoder != nil);
+        }
     }
     
     void FRHIMetal::EndComputeTask()
     {
         TI_ASSERT(ComputeEncoder != nil);
-        [ComputeEncoder endEncoding];
-        ComputeEncoder = nil;
+        // Do not close compute encoder here. Close it in CloseCurrentEncoder.
+        //[ComputeEncoder endEncoding];
+        //ComputeEncoder = nil;
+    }
+    
+    bool FRHIMetal::CloseCurrentEncoderIfNotMatch(E_PIPELINE_TYPE NextPipelineType)
+    {
+        if (CurrentCommandListState.ListType == NextPipelineType)
+        {
+            // Current Encoder match next encoder
+            return false;
+        }
+        if (CurrentCommandListState.ListType == EPL_GRAPHICS)
+        {
+            TI_ASSERT(RenderEncoder != nil);
+            [RenderEncoder endEncoding];
+            RenderEncoder = nil;
+        }
+        else if (CurrentCommandListState.ListType == EPL_COMPUTE)
+        {
+            TI_ASSERT(ComputeEncoder != nil);
+            [ComputeEncoder endEncoding];
+            ComputeEncoder = nil;
+        }
+        else if (CurrentCommandListState.ListType == EPL_BLIT)
+        {
+            TI_ASSERT(BlitEncoder != nil);
+            [BlitEncoder endEncoding];
+            BlitEncoder = nil;
+        }
+        CurrentCommandListState.ListType = EPL_INVALID;
+        return true;
+    }
+    
+    id <MTLBlitCommandEncoder> FRHIMetal::RequestBlitEncoder()
+    {
+        // Close other encoders
+        bool EncoderClosed = CloseCurrentEncoderIfNotMatch(EPL_BLIT);
+        if (EncoderClosed)
+        {
+            // Create a new BlitEncoder
+            BlitEncoder = [CommandBuffer blitCommandEncoder];
+            CurrentCommandListState.ListType = EPL_BLIT;
+        }
+        else
+        {
+            TI_ASSERT(BlitEncoder != nil);
+        }
+        return BlitEncoder;
     }
     
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -310,7 +346,7 @@ namespace tix
             // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
             MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
             TextureDesc.mipmapLevelCount = Desc.Mips;
-            TextureDesc.storageMode = MTLStorageModeShared;
+            TextureDesc.storageMode = MTLStorageModePrivate;
             if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0 ||
                 (Desc.Flags & ETF_RT_DSBUFFER) != 0)
             {
@@ -344,6 +380,7 @@ namespace tix
         {
             TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
         }
+        TI_TODO("Create normal texture as private");
         // Follow the instructions here to create a private MTLBuffer
         // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
         TextureDesc.mipmapLevelCount = Desc.Mips;
@@ -398,6 +435,7 @@ namespace tix
             {
                 TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
             }
+            TI_TODO("Create normal texture as private");
             // Follow the instructions here to create a private MTLBuffer
             // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
             TextureDesc.mipmapLevelCount = Desc.Mips;
@@ -604,21 +642,39 @@ namespace tix
 	{
         FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UniformBuffer.get());
         
-        if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
+        const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+        TI_ASSERT(UBMetal->Buffer == nil);
+        
+        if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_ONLY) != 0)
         {
-            const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-            TI_ASSERT(UBMetal->Buffer == nil);
-            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
+            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModePrivate];
         }
         else
         {
-            TI_ASSERT(InData != nullptr);
-            // Follow the instructions here to create a private MTLBuffer
-            // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
-            
-            const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
-            TI_ASSERT(UBMetal->Buffer == nil);
-            UBMetal->Buffer = [MtlDevice newBufferWithBytes:InData length:AlignedDataSize options:MTLStorageModeShared];
+            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
+        }
+        
+        if (InData != nullptr)
+        {
+            // Upload data
+            if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_ONLY) != 0)
+            {
+                // Follow the instructions here to create a private MTLBuffer
+                // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
+                // Upload data to GPU only buffer
+                id<MTLBuffer> UploadBuffer = [MtlDevice newBufferWithBytes: InData length: AlignedDataSize options:MTLStorageModeShared];
+                id<MTLBlitCommandEncoder> BlitCommandEncoder = RequestBlitEncoder();
+                [BlitCommandEncoder copyFromBuffer: UploadBuffer
+                                      sourceOffset: 0
+                                          toBuffer: UBMetal->Buffer
+                                 destinationOffset: 0
+                                              size: AlignedDataSize];
+                HoldResourceReference(UploadBuffer);
+            }
+            else
+            {
+                memcpy([UBMetal->Buffer contents], InData, UniformBuffer->GetTotalBufferSize());
+            }
         }
         
         HoldResourceReference(UniformBuffer);
@@ -1064,7 +1120,12 @@ namespace tix
     
     void FRHIMetal::HoldResourceReference(FRenderResourcePtr InResource)
     {
-        FrameResources[CurrentFrame]->HoldReference(InResource);
+        ResHolders[CurrentFrame]->HoldReference(InResource);
+    }
+    
+    void FRHIMetal::HoldResourceReference(id<MTLBuffer> InBuffer)
+    {
+        ResHolders[CurrentFrame]->HoldMetalBufferReference(InBuffer);
     }
 }
 #endif	// COMPILE_WITH_RHI_METAL

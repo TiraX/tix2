@@ -24,6 +24,7 @@ namespace tix
 		EPL_INVALID = -1,
 		EPL_GRAPHICS,
 		EPL_COMPUTE,
+        EPL_BLIT,
 
 		EPL_NUM,
 	};

@@ -11,6 +11,7 @@
 
 namespace tix
 {
+    class FFrameResourcesMetal;
 	// Render hardware interface use Metal
 	class FRHIMetal : public FRHI
 	{
@@ -92,6 +93,12 @@ namespace tix
 		FRHIMetal();
         
         void HoldResourceReference(FRenderResourcePtr InResource);
+        void HoldResourceReference(id<MTLBuffer> InBuffer);
+        // Close current encoder, if next encoder do not match current one.
+        // Return true if current encoder closed
+        // Return false if none encoder closed
+        bool CloseCurrentEncoderIfNotMatch(E_PIPELINE_TYPE NextPipelineType);
+        id <MTLBlitCommandEncoder> RequestBlitEncoder();
 
 	private:
         CAMetalLayer * MtlLayer;
@@ -102,7 +109,6 @@ namespace tix
         id <MTLLibrary> DefaultLibrary;
         
         id <MTLCommandBuffer> CommandBuffer;
-        id <MTLCommandBuffer> BlitCommandBuffer;
         
         id <MTLRenderCommandEncoder> RenderEncoder;
         id <MTLComputeCommandEncoder> ComputeEncoder;
@@ -113,6 +119,9 @@ namespace tix
         int32 LastFrameMark;
         int32 CurrentFrame;
         dispatch_semaphore_t InflightSemaphore;
+        
+        // Frame on the fly resource holders
+        FFrameResourcesMetal * ResHolders[FRHIConfig::FrameBufferNum];
         
 		friend class FRHI;
 	};

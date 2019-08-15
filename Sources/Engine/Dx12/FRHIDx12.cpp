@@ -350,6 +350,7 @@ namespace tix
 
 	void FRHIDx12::EndFrame()
 	{
+		TI_TODO("Review dx12 command list commit process.");
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
 		TI_ASSERT(CurrentWorkingCommandList != nullptr);
 		// Indicate that the render target will now be used to present when the command list is done executing.
@@ -2402,6 +2403,8 @@ namespace tix
 
 	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
+		TI_TODO("Refactor push render target to BeginRenderToRT");
+		TI_ASSERT(0);
 		FRHI::PushRenderTarget(RT, PassName);
 
 		SetRenderTarget(RT);

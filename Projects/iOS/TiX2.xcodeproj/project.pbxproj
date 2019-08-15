@@ -87,6 +87,7 @@
 		27FE121C22F1DA9600CEB9F1 /* FComputeTask.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121722F1DA9600CEB9F1 /* FComputeTask.cpp */; };
 		27FE122022F1DACD00CEB9F1 /* TNodeEnvironment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121D22F1DACD00CEB9F1 /* TNodeEnvironment.cpp */; };
 		27FE122122F1DACD00CEB9F1 /* TSceneLoading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FE121F22F1DACD00CEB9F1 /* TSceneLoading.cpp */; };
+		F76AE8BA230543F500A1E662 /* FFrameResourcesMetal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F76AE8B8230543F500A1E662 /* FFrameResourcesMetal.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -304,6 +305,8 @@
 		27FE121D22F1DACD00CEB9F1 /* TNodeEnvironment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TNodeEnvironment.cpp; path = ../../../Sources/Engine/TNodeEnvironment.cpp; sourceTree = "<group>"; };
 		27FE121E22F1DACD00CEB9F1 /* TNodeEnvironment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNodeEnvironment.h; path = ../../../Sources/Engine/TNodeEnvironment.h; sourceTree = "<group>"; };
 		27FE121F22F1DACD00CEB9F1 /* TSceneLoading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TSceneLoading.cpp; path = ../../../Sources/Engine/TSceneLoading.cpp; sourceTree = "<group>"; };
+		F76AE8B8230543F500A1E662 /* FFrameResourcesMetal.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = FFrameResourcesMetal.cpp; path = ../../../Sources/Engine/Metal/FFrameResourcesMetal.cpp; sourceTree = "<group>"; };
+		F76AE8BB230544CC00A1E662 /* FFrameResourcesMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFrameResourcesMetal.h; path = ../../../Sources/Engine/Metal/FFrameResourcesMetal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -517,6 +520,8 @@
 			children = (
 				278FB9BD21F772F60031A5E3 /* FArgumentBufferMetal.cpp */,
 				278FB9BE21F772F70031A5E3 /* FArgumentBufferMetal.h */,
+				F76AE8B8230543F500A1E662 /* FFrameResourcesMetal.cpp */,
+				F76AE8BB230544CC00A1E662 /* FFrameResourcesMetal.h */,
 				27F2B59921E395E10026C0A2 /* FMeshBufferMetal.cpp */,
 				27F2B59821E395E10026C0A2 /* FMeshBufferMetal.h */,
 				2713374521CCB398001BAE3A /* FMetalView.h */,
@@ -728,6 +733,7 @@
 				27FE120A22F1DA3200CEB9F1 /* TThreadIO.cpp in Sources */,
 				2775A37921CAA4A300E0AD35 /* FPipeline.cpp in Sources */,
 				2775A37D21CAA4A300E0AD35 /* FShader.cpp in Sources */,
+				F76AE8BA230543F500A1E662 /* FFrameResourcesMetal.cpp in Sources */,
 				27FE121C22F1DA9600CEB9F1 /* FComputeTask.cpp in Sources */,
 				27FE120B22F1DA3200CEB9F1 /* TThreadLoading.cpp in Sources */,
 				2775A3A521CAA52500E0AD35 /* stdafx.cpp in Sources */,
