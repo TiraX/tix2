@@ -142,8 +142,7 @@ namespace tix
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
-		virtual void PushRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass");
-		virtual FRenderTargetPtr PopRenderTarget();
+		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass");
 
 		E_RHI_TYPE GetRHIType() const
 		{
@@ -171,8 +170,8 @@ namespace tix
 		FViewport Viewport;
 		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
 
-		TVector<FRenderTargetPtr> RenderTargets;
-		TVector<FViewport> RtViewports;
+		FRenderTargetPtr CurrentRenderTarget;
+		FViewport RtViewport;
 
 		FRenderResourceHeap RenderResourceHeap[EHT_COUNT];
 		FBoundResource CurrentBoundResource;

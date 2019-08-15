@@ -78,29 +78,16 @@ namespace tix
 		return Table;
 	}
 
-	void FRHI::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+	void FRHI::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
-		RenderTargets.push_back(RT);
+		CurrentRenderTarget = RT;
         
         const vector2di& d = RT->GetDemension();
-        FViewport RTViewport(0, 0, d.X, d.Y);
-		RtViewports.push_back(RTViewport);
+		RtViewport.Left = 0;
+		RtViewport.Top = 0;
+		RtViewport.Width = d.X;
+		RtViewport.Height = d.Y;
 
-		SetViewport(RTViewport);
-	}
-
-	FRenderTargetPtr FRHI::PopRenderTarget()
-	{
-		TI_ASSERT(RenderTargets.size() > 0);
-
-		RenderTargets.pop_back();
-		const FViewport& vp = RtViewports.back();
-		SetViewport(vp);
-		RtViewports.pop_back();
-
-		if (RenderTargets.size() == 0)
-			return nullptr;
-		else
-			return RenderTargets.back();
+		SetViewport(RtViewport);
 	}
 }

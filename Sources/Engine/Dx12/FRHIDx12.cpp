@@ -2401,55 +2401,11 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::PushRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
 	{
-		TI_TODO("Refactor push render target to BeginRenderToRT");
-		TI_ASSERT(0);
-		FRHI::PushRenderTarget(RT, PassName);
+		FRHI::BeginRenderToRenderTarget(RT, PassName);
 
 		SetRenderTarget(RT);
-	}
-
-	FRenderTargetPtr FRHIDx12::PopRenderTarget()
-	{
-		// Transition Color buffer to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
-		TI_ASSERT(RenderTargets.size() > 0);
-		FRenderTargetPtr CurrentRT = RenderTargets.back();
-		const int32 CBCount = CurrentRT->GetColorBufferCount();
-		for (int32 cb = 0; cb < CBCount; ++cb)
-		{
-			FTexturePtr Texture = CurrentRT->GetColorBuffer(cb).Texture;
-			TI_ASSERT(Texture != nullptr);
-			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		}
-
-		// Transition Depth buffer to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
-		{
-			FTexturePtr Texture = CurrentRT->GetDepthStencilBuffer().Texture;
-			if (Texture != nullptr)
-			{
-				FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
-				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-			}
-		}
-		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
-
-		// Pop rt
-		FRenderTargetPtr RT = FRHI::PopRenderTarget();
-
-		if (RT == nullptr)
-		{
-			// Set back to frame buffer
-			D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
-			D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
-			CurrentWorkingCommandList->OMSetRenderTargets(1, &renderTargetView, false, &depthStencilView);
-		}
-		else
-		{
-			SetRenderTarget(RT);
-		}
-		return RT;
 	}
 
 	void FRHIDx12::InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset)

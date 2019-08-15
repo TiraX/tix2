@@ -240,75 +240,65 @@ void FSSSSRenderer::InitInRenderThread()
 void FSSSSRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	// Render Base Pass
-	RHI->PushRenderTarget(RT_BasePass, "BasePass");
-
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
-
-	RHI->PopRenderTarget();
     
 
 	// Go SSS Blur Pass
 	{
-		RHI->PushRenderTarget(RT_SSSBlurX, "SSSBlueX");
+		RHI->BeginRenderToRenderTarget(RT_SSSBlurX, "SSSBlueX");
 		RHI->SetGraphicsPipeline(PL_SSSBlur);
 		ApplyShaderParameter(RHI, PL_SSSBlur->GetShader(), Scene, AB_SSSBlurX);
 		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
 	}
 	{
-		RHI->PushRenderTarget(RT_SSSBlurY, "SSSBlurY");
+		RHI->BeginRenderToRenderTarget(RT_SSSBlurY, "SSSBlurY");
         RHI->SetGraphicsPipeline(PL_SSSBlur);
 		ApplyShaderParameter(RHI, PL_SSSBlur->GetShader(), Scene, AB_SSSBlurY);
 		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
 	}
 
 	// Add Specular
 	{
-		RHI->PushRenderTarget(RT_SSSBlurX, "AddSpecular");
+		RHI->BeginRenderToRenderTarget(RT_SSSBlurX, "AddSpecular");
 		RHI->SetGraphicsPipeline(PL_AddSpecular);
 		ApplyShaderParameter(RHI, PL_AddSpecular->GetShader(), Scene, AB_AddSpecular);
 		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
 	}
 
 	// Bloom
 	{
 		// Glare detection
-		RHI->PushRenderTarget(RT_GlareDetection, "GlareDetection");
+		RHI->BeginRenderToRenderTarget(RT_GlareDetection, "GlareDetection");
 		RHI->SetGraphicsPipeline(PL_GlareDetection);
 		ApplyShaderParameter(RHI, PL_GlareDetection->GetShader(), Scene, AB_GlareDetection);
 		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
 
 		// Bloom blur X & Y
 		for (int32 p = 0; p < BloomPasses; ++p)
 		{
 			// Pass Horizontal
 			FBloomPass& PassX = BloomPass[p][0];
-			RHI->PushRenderTarget(PassX.RT, "BloomX");
+			RHI->BeginRenderToRenderTarget(PassX.RT, "BloomX");
 			RHI->SetGraphicsPipeline(PL_Bloom);
 			ApplyShaderParameter(RHI, PL_Bloom->GetShader(), Scene, PassX.AB);
 			FSRender.DrawFullScreenQuad(RHI);
-			RHI->PopRenderTarget();
 			
 			// Pass Vertical
 			FBloomPass& PassY = BloomPass[p][1];
-			RHI->PushRenderTarget(PassY.RT, "BloomY");
+			RHI->BeginRenderToRenderTarget(PassY.RT, "BloomY");
 			RHI->SetGraphicsPipeline(PL_Bloom);
 			ApplyShaderParameter(RHI, PL_Bloom->GetShader(), Scene, PassY.AB);
 			FSRender.DrawFullScreenQuad(RHI);
-			RHI->PopRenderTarget();
 		}
 	}
 
 	// Combine
 	{
-		RHI->PushRenderTarget(RT_Combine, "Combine");
+		RHI->BeginRenderToRenderTarget(RT_Combine, "Combine");
 		RHI->SetGraphicsPipeline(PL_Combine);
 		ApplyShaderParameter(RHI, PL_Combine->GetShader(), Scene, AB_Combine);
 		FSRender.DrawFullScreenQuad(RHI);
-		RHI->PopRenderTarget();
 	}
     
     RHI->BeginRenderToFrameBuffer();

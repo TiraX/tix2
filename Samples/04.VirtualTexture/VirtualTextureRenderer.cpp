@@ -143,10 +143,9 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	// Render Base Pass
-	RHI->PushRenderTarget(RT_BasePass, "BasePass");
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	RenderDrawList(RHI, Scene, LIST_MASK);
-	RHI->PopRenderTarget();
 
 	// Do UV discard check, only check when camera moved or primitives changed
 	if (FVTSystem::IsEnabled())
