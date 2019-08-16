@@ -13,7 +13,6 @@ namespace tix
 {
 	FArgumentBufferMetal::FArgumentBufferMetal(int32 ReservedSlots)
 		: FArgumentBuffer(ReservedSlots)
-        , ArgumentBindIndex(-1)
 	{
         ArgumentBuffer = nil;
 	}

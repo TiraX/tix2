@@ -852,7 +852,7 @@ namespace tix
     
     void FRHIMetal::PrepareDataForCPU(FUniformBufferPtr UniformBuffer)
     {
-        TI_ASSERT(0);
+        // Metal iOS do not need sync data to CPU manually.
     }
     
     bool FRHIMetal::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture)
@@ -916,13 +916,17 @@ namespace tix
 
 	void FRHIMetal::SetGraphicsPipeline(FPipelinePtr InPipeline)
 	{
-        TI_ASSERT(0);
-        TI_TODO("Don't set pipeline duplicated.");
-        TI_ASSERT(RenderEncoder != nil);
-        FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
-        
-        [RenderEncoder setRenderPipelineState:PLMetal->RenderPipelineState];
-        [RenderEncoder setDepthStencilState:PLMetal->DepthState];
+        if (CurrentBoundResource.Pipeline != InPipeline)
+        {
+            TI_ASSERT(RenderEncoder != nil);
+            FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
+            
+            [RenderEncoder setRenderPipelineState:PLMetal->RenderPipelineState];
+            [RenderEncoder setDepthStencilState:PLMetal->DepthState];
+            
+            HoldResourceReference(InPipeline);
+            CurrentBoundResource.Pipeline = InPipeline;
+        }
         
         //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
         //[RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
@@ -1020,7 +1024,7 @@ namespace tix
     
     void FRHIMetal::SetComputePipeline(FPipelinePtr InPipeline)
     {
-        TI_ASSERT(0);
+        TI_TODO("Don't set pipeline duplicated.");
         TI_ASSERT(ComputeEncoder != nil);
         FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
         [ComputeEncoder setComputePipelineState:PLMetal->ComputePipelineState];
@@ -1038,7 +1042,37 @@ namespace tix
     
     void FRHIMetal::SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer)
     {
-        TI_ASSERT(0);
+        TI_ASSERT(ComputeEncoder != nil);
+        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
+        TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
+
+        // Indicate buffers and textures usage
+        const TVector<FRenderResourcePtr>& Arguments = InArgumentBuffer->GetArguments();
+        for (auto& Arg : Arguments)
+        {
+            if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
+            {
+                FUniformBufferPtr UB = static_cast<FUniformBuffer*>(Arg.get());
+                FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UB.get());
+                [ComputeEncoder useResource: UBMetal->Buffer usage: MTLResourceUsageRead];
+            }
+            else if (Arg->GetResourceType() == RRT_TEXTURE)
+            {
+                FTexturePtr Texture = static_cast<FTexture*>(Arg.get());
+                FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
+                [ComputeEncoder useResource: TexMetal->Texture usage: MTLResourceUsageRead];
+            }
+            else
+            {
+                // Invalid resource type here.
+                TI_ASSERT(0);
+            }
+        }
+        
+        // Set argument buffer
+        [ComputeEncoder setBuffer: ABMetal->ArgumentBuffer
+                           offset: 0
+                          atIndex: BindIndex];
     }
     
     void FRHIMetal::SetComputeArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
@@ -1046,9 +1080,19 @@ namespace tix
         TI_ASSERT(0);
     }
     
-    void FRHIMetal::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
+    void FRHIMetal::DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount)
     {
-        TI_ASSERT(0);
+        TI_ASSERT(ComputeEncoder != nil);
+        MTLSize ThreadGroupSize, ThreadGroupCount;
+        ThreadGroupSize.width = GroupSize.X;
+        ThreadGroupSize.height = GroupSize.Y;
+        ThreadGroupSize.depth = GroupSize.Z;
+        ThreadGroupCount.width = GroupCount.X;
+        ThreadGroupCount.height = GroupCount.Y;
+        ThreadGroupCount.depth = GroupCount.Z;
+        
+        [ComputeEncoder dispatchThreadgroups:ThreadGroupCount
+                       threadsPerThreadgroup:ThreadGroupSize];
     }
     
     void FRHIMetal::ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)

@@ -25,7 +25,7 @@ void FTileDeterminationCS::Run(FRHI * RHI)
 	RHI->SetComputePipeline(ComputePipeline);
     RHI->SetComputeArgumentBuffer(0, ComputeArgument);
 
-	RHI->DispatchCompute(uint32(InputSize.X / ThreadBlockSize), uint32(InputSize.Y / ThreadBlockSize), 1);
+	RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize), int32(InputSize.Y / ThreadBlockSize), 1));
 }
 
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)

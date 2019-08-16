@@ -138,7 +138,7 @@ namespace tix
         virtual void SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
         virtual void SetComputeArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer) = 0;
 
-		virtual void DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ) = 0;
+		virtual void DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount) = 0;
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
