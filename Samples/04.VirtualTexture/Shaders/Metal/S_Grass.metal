@@ -26,7 +26,8 @@ vertex VSOutput S_GrassVS(VSInput vsInput [[stage_in]],
 }
 
 typedef struct FragmentShaderArguments {
-    texture2d<half> texSkyMap  [[ id(0) ]];
+    device float4 * Uniform [[ id(0) ]];
+    texture2d<half> TexBaseColor  [[ id(1) ]];
 } FragmentShaderArguments;
 
 fragment half4 S_GrassPS(VSOutput input [[stage_in]],

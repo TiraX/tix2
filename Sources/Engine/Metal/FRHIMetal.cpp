@@ -267,8 +267,7 @@ namespace tix
     
     FInstanceBufferPtr FRHIMetal::CreateInstanceBuffer()
     {
-        TI_ASSERT(0);
-        return nullptr;
+        return ti_new FInstanceBufferMetal;
     }
 
 	FPipelinePtr FRHIMetal::CreatePipeline(FShaderPtr InShader)
@@ -315,6 +314,7 @@ namespace tix
 #endif
         FMeshBufferMetal * MBMetal = static_cast<FMeshBufferMetal*>(MeshBuffer.get());
         
+        TI_TODO("Create mesh buffer as GPU access only.");
         // Create Vertex Buffer
         const int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
         MBMetal->VertexBuffer = [MtlDevice newBufferWithBytes:InMeshData->GetVSData() length:BufferSize options:MTLResourceCPUCacheModeDefaultCache];
@@ -330,7 +330,19 @@ namespace tix
 
     bool FRHIMetal::UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
     {
-        TI_ASSERT(0);
+#if defined (TIX_DEBUG)
+        InstanceBuffer->SetResourceName(InInstanceData->GetResourceName());
+#endif
+        FInstanceBufferMetal * IBMetal = static_cast<FInstanceBufferMetal*>(InstanceBuffer.get());
+        
+        TI_TODO("Create instance buffer as GPU access only.");
+        // Create Instance Buffer
+        const int32 BufferSize = InInstanceData->GetInstanceCount() * InInstanceData->GetStride();
+        IBMetal->InstanceBuffer = [MtlDevice newBufferWithBytes:InInstanceData->GetInstanceData() length:BufferSize options:MTLResourceCPUCacheModeDefaultCache];
+        
+        // Hold resources used here
+        HoldResourceReference(InstanceBuffer);
+        
         return true;
     }
     
@@ -916,7 +928,8 @@ namespace tix
 
 	void FRHIMetal::SetGraphicsPipeline(FPipelinePtr InPipeline)
 	{
-        if (CurrentBoundResource.Pipeline != InPipeline)
+        // Metal need to set pipeline every time.
+        //if (CurrentBoundResource.Pipeline != InPipeline)
         {
             TI_ASSERT(RenderEncoder != nil);
             FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
@@ -925,7 +938,7 @@ namespace tix
             [RenderEncoder setDepthStencilState:PLMetal->DepthState];
             
             HoldResourceReference(InPipeline);
-            CurrentBoundResource.Pipeline = InPipeline;
+            //CurrentBoundResource.Pipeline = InPipeline;
         }
         
         //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
@@ -935,10 +948,14 @@ namespace tix
 
 	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer)
     {
-        TI_ASSERT(0);
         FMeshBufferMetal* MBMetal = static_cast<FMeshBufferMetal*>(InMeshBuffer.get());
         TI_ASSERT(RenderEncoder != nil);
         [RenderEncoder setVertexBuffer:MBMetal->VertexBuffer offset:0 atIndex:0];
+        if (InInstanceBuffer != nullptr)
+        {
+            FInstanceBufferMetal* IBMetal = static_cast<FInstanceBufferMetal*>(InInstanceBuffer.get());
+            [RenderEncoder setVertexBuffer:IBMetal->InstanceBuffer offset:0 atIndex:1];
+        }
 	}
 
 	void FRHIMetal::SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer)
@@ -968,24 +985,39 @@ namespace tix
         [RenderEncoder setFragmentTexture:TexMetal->Texture atIndex:BindIndex];
 	}
     
-    void FRHIMetal::SetArgumentBuffer(int32 Index, FArgumentBufferPtr InArgumentBuffer)
+    void FRHIMetal::SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer)
     {
-        TI_ASSERT(0);
-//        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
-//        TI_ASSERT(ABMetal->ArgumentBindIndex >= 0 && ABMetal->ArgumentBindIndex < 31);
-//
-//        // Indicate buffers and textures usage
-//        for (int32 i = 0; i < (int32)ABMetal->Buffers.size(); ++ i) {
-//            [RenderEncoder useResource:ABMetal->Buffers[i] usage:MTLResourceUsageRead];
-//        }
-//        for (int32 i = 0; i < (int32)ABMetal->Textures.size(); ++ i) {
-//            [RenderEncoder useResource:ABMetal->Textures[i] usage:MTLResourceUsageSample];
-//        }
-//
-//        // Set argument buffer
-//        [RenderEncoder setFragmentBuffer:ABMetal->ArgumentBuffer
-//                                  offset:0
-//                                 atIndex:ABMetal->ArgumentBindIndex];
+        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
+        TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
+
+        
+        // Indicate buffers and textures usage
+        const TVector<FRenderResourcePtr>& Arguments = InArgumentBuffer->GetArguments();
+        for (auto& Arg : Arguments)
+        {
+            if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
+            {
+                FUniformBufferPtr UB = static_cast<FUniformBuffer*>(Arg.get());
+                FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UB.get());
+                [ComputeEncoder useResource: UBMetal->Buffer usage: MTLResourceUsageRead];
+            }
+            else if (Arg->GetResourceType() == RRT_TEXTURE)
+            {
+                FTexturePtr Texture = static_cast<FTexture*>(Arg.get());
+                FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
+                [ComputeEncoder useResource: TexMetal->Texture usage: MTLResourceUsageRead];
+            }
+            else
+            {
+                // Invalid resource type here.
+                TI_ASSERT(0);
+            }
+        }
+
+        // Set argument buffer
+        [RenderEncoder setFragmentBuffer: ABMetal->ArgumentBuffer
+                                  offset: 0
+                                 atIndex: BindIndex];
     }
     
     void FRHIMetal::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)

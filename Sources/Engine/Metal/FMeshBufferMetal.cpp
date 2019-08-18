@@ -23,6 +23,17 @@ namespace tix
         VertexBuffer = nil;
         IndexBuffer = nil;
 	}
+    
+    /////////////////////////////////////////////////////////////
+    FInstanceBufferMetal::FInstanceBufferMetal()
+    {
+    }
+    
+    FInstanceBufferMetal::~FInstanceBufferMetal()
+    {
+        TI_ASSERT(IsRenderThread());
+        InstanceBuffer = nullptr;
+    }
 }
 
 #endif	// COMPILE_WITH_RHI_METAL
