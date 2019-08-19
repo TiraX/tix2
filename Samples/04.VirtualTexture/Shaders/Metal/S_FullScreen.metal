@@ -37,7 +37,7 @@ typedef struct FragmentShaderArguments {
 } FragmentShaderArguments;
 
 fragment half4 FullScreenPS(ColorInOut in [[stage_in]],
-                            device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
+                            constant FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
     constexpr sampler colorSampler(mip_filter::nearest,
                                    mag_filter::nearest,

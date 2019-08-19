@@ -13,7 +13,7 @@
 
 namespace tix
 {
-	const bool FVTSystem::Enabled = true;
+	const bool FVTSystem::Enabled = !true;
 	FVTSystem * FVTSystem::VTSystem = nullptr;
 	TVector<int32> FVTSystem::VTMipsOffset;
 
