@@ -12,13 +12,11 @@ typedef struct
     half3 normal [[attribute(1)]];
     half2 texcoord0 [[attribute(2)]];
     half3 tangent [[attribute(3)]];
-    
-    float4 ins_transition [[attribute(4)]];
-    float4 ins_transform0 [[attribute(5)]];
-    float4 ins_transform1 [[attribute(6)]];
-    float4 ins_transform2 [[attribute(7)]];
-    
-} VSInput;
+    float4 ins_transition[[attribute(4)]];
+    half4 ins_transform0[[attribute(5)]];
+    half4 ins_transform1[[attribute(6)]];
+    half4 ins_transform2[[attribute(7)]];
+} VertexInput;
 
 typedef struct
 {
@@ -44,16 +42,16 @@ typedef struct
 	float4 VTDebugInfo;
 } EB_Primitive;
 
-inline float3 GetWorldPosition(VSInput vsInput)
+inline float3 GetWorldPosition(VertexInput vsInput)
 {
-    float3x3 RotMat = float3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
-    float3 position = RotMat * vsInput.position;
+    half3x3 RotMat = half3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
+    float3 position = float3(RotMat * half3(vsInput.position));
     position += vsInput.ins_transition.xyz;
 
     return position;
 }
 
-inline half2 GetTextureCoords(VSInput vsInput)
+inline half2 GetTextureCoords(VertexInput vsInput)
 {
 	return vsInput.texcoord0;
 }

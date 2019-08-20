@@ -10,54 +10,42 @@
 #include <simd/simd.h>
 using namespace metal;
 
-typedef struct
-{
-    float3 position [[attribute(0)]];
-    float3 normal [[attribute(1)]];
-} VSInput;
+#include "VS_Instanced.h"
 
-typedef struct
-{
-    float4 position [[position]];
-    float3 normal;
-} VSOutput;
 
-typedef struct
-{
-    float4x4 ViewProjection;
-    float3 ViewDir;
-    float3 ViewPos;
-} EB_View;
-
-vertex VSOutput S_SkyVS(VSInput vsInput [[stage_in]],
-                            constant EB_View & EB_View [[ buffer(1) ]])
+vertex VSOutput S_SkyVS(VertexInput vsInput [[ stage_in ]],
+                        constant EB_View & EB_View [[ buffer(2) ]],
+                        constant EB_Primitive & EB_Primitive [[ buffer(3) ]]
+                        )
 {
     VSOutput vsOutput;
     
-    float4 InPosition = float4(vsInput.position, 1.0);
-    vsOutput.position = EB_View.ViewProjection * InPosition;
+    float3 WorldPosition = GetWorldPosition(vsInput);
+    vsOutput.position = EB_View.ViewProjection * float4(WorldPosition, 1.0);
     
-    vsOutput.normal = vsInput.normal * 2.0 - 1.0;
+    vsOutput.normal = vsInput.normal * 2.0h - 1.0h;
+    vsOutput.tangent = vsInput.tangent * 2.0h - 1.0h;
+    vsOutput.view = half3(EB_View.ViewPos - WorldPosition);
     
     return vsOutput;
 }
 
 typedef struct FragmentShaderArguments {
     device float4 * Uniform [[ id(0) ]];
-    texturecube<half> TexBaseColor  [[ id(1) ]];
+    texture2d<half> TexBaseColor  [[ id(1) ]];
 } FragmentShaderArguments;
 
-constexpr sampler sampler0(mip_filter::linear,
-                           mag_filter::linear,
-                           min_filter::linear);
+//constexpr sampler sampler0(mip_filter::linear,
+//                           mag_filter::linear,
+//                           min_filter::linear);
 
 fragment half4 S_SkyPS(VSOutput input [[stage_in]],
                            device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    float3 normal = -normalize(input.normal);
+    constexpr sampler LinearSampler(mip_filter::linear,
+                                    mag_filter::linear,
+                                    min_filter::linear);
+    half4 Color = fragmentArgs.TexBaseColor.sample(LinearSampler, input.texcoord0.xy);
     
-    half4 Color;
-    Color.xyz = sqrt(fragmentArgs.TexBaseColor.sample(sampler0, normal).xyz) * 0.5;
-    Color.a = 1.0;
     return Color;
 }

@@ -39,11 +39,14 @@ typedef struct FragmentShaderArguments {
 fragment half4 FullScreenPS(ColorInOut in [[stage_in]],
                             constant FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler colorSampler(mip_filter::nearest,
+    constexpr sampler NearestSampler(mip_filter::nearest,
                                    mag_filter::nearest,
                                    min_filter::nearest);
     
-    half4 colorSample = fragmentArgs.TexSource.sample(colorSampler, in.texCoord.xy);
+    half4 colorSample = fragmentArgs.TexSource.sample(NearestSampler, in.texCoord.xy);
+    
+    // Do gamma
+    colorSample.xyz = sqrt(colorSample.xyz);
     
     return colorSample;
 }

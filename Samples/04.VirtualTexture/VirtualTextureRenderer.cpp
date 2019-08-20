@@ -108,7 +108,7 @@ void FVirtualTextureRenderer::InitInRenderThread()
 		// Second for render uv onto it.
 		RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	}
-	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
