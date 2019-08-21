@@ -2269,10 +2269,10 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::DispatchCompute(uint32 GroupCountX, uint32 GroupCountY, uint32 GroupCountZ)
+	void FRHIDx12::DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount)
 	{
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
-		CurrentWorkingCommandList->Dispatch(GroupCountX, GroupCountY, GroupCountZ);
+		CurrentWorkingCommandList->Dispatch(GroupCount.X, GroupCount.Y, GroupCount.Z);
 	}
 
 	void FRHIDx12::ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
