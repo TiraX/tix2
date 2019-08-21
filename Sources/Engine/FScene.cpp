@@ -79,7 +79,7 @@ namespace tix
 			ViewUniformBuffer->UniformBufferData[0].ViewDir = VPInfo.CamDir;
 			ViewUniformBuffer->UniformBufferData[0].ViewPos = VPInfo.CamPos;
 
-			ViewUniformBuffer->InitUniformBuffer();
+			ViewUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 		}
 	}
 }

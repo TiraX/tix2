@@ -51,11 +51,11 @@ namespace tix
 		} \
 		FUniformBufferStruct UniformBufferData[StructTypeName::Elements]; \
 		FUniformBufferPtr UniformBuffer; \
-		FUniformBufferPtr InitUniformBuffer() \
+		FUniformBufferPtr InitUniformBuffer(uint32 UBFlag = 0) \
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::Elements); \
+			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), StructTypeName::Elements, UBFlag); \
 			RHI->UpdateHardwareResourceUB(UniformBuffer, UniformBufferData); \
 			return UniformBuffer; \
 		} \
