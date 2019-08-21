@@ -51,7 +51,7 @@ inline float3 GetWorldPosition(VertexInput vsInput)
     return position;
 }
 
-inline half2 GetTextureCoords(VertexInput vsInput)
+inline float2 GetTextureCoords(VertexInput vsInput)
 {
-	return vsInput.texcoord0;
+	return float2(vsInput.texcoord0);
 }

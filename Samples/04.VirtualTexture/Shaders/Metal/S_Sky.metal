@@ -22,6 +22,7 @@ vertex VSOutput S_SkyVS(VertexInput vsInput [[ stage_in ]],
     
     float3 WorldPosition = GetWorldPosition(vsInput);
     vsOutput.position = EB_View.ViewProjection * float4(WorldPosition, 1.0);
+    vsOutput.texcoord0 = GetTextureCoords(vsInput);
     
     vsOutput.normal = vsInput.normal * 2.0h - 1.0h;
     vsOutput.tangent = vsInput.tangent * 2.0h - 1.0h;
