@@ -78,6 +78,14 @@ namespace tix
         // Create Command Queue
         CommandQueue = [MtlDevice newCommandQueue];
         
+        // Create a heap large enough to store all resources
+        MTLHeapDescriptor * HeapDescriptor = [MTLHeapDescriptor new];
+        HeapDescriptor.storageMode = MTLStorageModePrivate;
+        TI_TODO("Make heap size configable in config.ini");
+        static const int32 HeapSize = 200 * 1024 * 1024;    // 200M heap
+        HeapDescriptor.size =  HeapSize;
+        ResourceHeap = [MtlDevice newHeapWithDescriptor: HeapDescriptor];
+        
         // Create Frame buffer pass descriptor
         TI_ASSERT(FrameBufferPassDesc == nil);
         FrameBufferPassDesc = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -93,6 +101,7 @@ namespace tix
         
         Viewport.Width = TEngine::AppInfo.Width;
         Viewport.Height = TEngine::AppInfo.Height;
+        
 		_LOG(Log, "  RHI Metal inited.\n");
 	}
     
@@ -245,6 +254,101 @@ namespace tix
         return BlitEncoder;
     }
     
+    MTLTextureDescriptor* FRHIMetal::CreateDescriptorFromTextureDesc(const TTextureDesc& InDesc)
+    {
+        MTLTextureDescriptor* Descriptor = nil;
+        MTLPixelFormat MtlFormat = GetMetalPixelFormat(InDesc.Format);
+        if (InDesc.Type == ETT_TEXTURE_CUBE)
+        {
+            TI_ASSERT(InDesc.Width == InDesc.Height);
+            Descriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat: MtlFormat
+                                                                               size: InDesc.Width
+                                                                          mipmapped: InDesc.Mips > 1];
+        }
+        else
+        {
+            TI_ASSERT(InDesc.Type == ETT_TEXTURE_2D);
+            Descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: MtlFormat
+                                                                            width: InDesc.Width
+                                                                           height: InDesc.Height
+                                                                        mipmapped: InDesc.Mips > 1];
+        }
+        Descriptor.mipmapLevelCount = InDesc.Mips;
+        
+        return Descriptor;
+    }
+    
+    MTLTextureDescriptor* FRHIMetal::CreateDescriptorFromTexture(id<MTLTexture> InTexture)
+    {
+        MTLTextureDescriptor* Descriptor = nil;
+        
+        MTLPixelFormat MtlFormat = InTexture.pixelFormat;
+        if (InTexture.textureType == MTLTextureTypeCube)
+        {
+            Descriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat: MtlFormat
+                                                                               size: InTexture.width
+                                                                          mipmapped: InTexture.mipmapLevelCount > 1];
+        }
+        else
+        {
+            TI_ASSERT(InTexture.textureType == MTLTextureType2D);
+            Descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: MtlFormat
+                                                                            width: InTexture.width
+                                                                           height: InTexture.height
+                                                                        mipmapped: InTexture.mipmapLevelCount > 1];
+        }
+        Descriptor.mipmapLevelCount = InTexture.mipmapLevelCount;
+        
+        return Descriptor;
+    }
+    
+    void FRHIMetal::CopyTextureData(id<MTLTexture> DstTexture, id<MTLTexture> SrcTexture)
+    {
+        id <MTLBlitCommandEncoder> BlitCommandEncoder = RequestBlitEncoder();
+        
+        // Blit every slice of every level from the existing texture to the new texture
+        MTLRegion region = MTLRegionMake2D(0, 0, SrcTexture.width, SrcTexture.height);
+        
+        for(NSUInteger level = 0; level < SrcTexture.mipmapLevelCount ; ++level)
+        {
+            for(NSUInteger slice = 0; slice < SrcTexture.arrayLength; slice++)
+            {
+                [BlitCommandEncoder copyFromTexture: SrcTexture
+                                        sourceSlice: slice
+                                        sourceLevel: level
+                                       sourceOrigin: region.origin
+                                         sourceSize: region.size
+                                          toTexture: DstTexture
+                                   destinationSlice: slice
+                                   destinationLevel: level
+                                  destinationOrigin: region.origin];
+            }
+            region.size.width /= 2;
+            region.size.height /= 2;
+            if(region.size.width == 0)
+                region.size.width = 1;
+            if(region.size.height == 0)
+                region.size.height = 1;
+        }
+    }
+    
+    id<MTLTexture> FRHIMetal::CloneTextureInHeap(id<MTLTexture> InTexture)
+    {
+        // Create a texture from the heap
+        MTLTextureDescriptor* Descriptor = CreateDescriptorFromTexture(InTexture);
+        Descriptor.storageMode = MTLStorageModePrivate;
+        id<MTLTexture> HeapTexture = [ResourceHeap newTextureWithDescriptor: Descriptor];
+        
+        CopyTextureData(HeapTexture, InTexture);
+        
+        return HeapTexture;
+    }
+    
+    id<MTLBuffer> FRHIMetal::MoveBufferToHeap(id<MTLBuffer> InBuffer)
+    {
+        TI_ASSERT(0);
+    }
+    
 	FTexturePtr FRHIMetal::CreateTexture()
 	{
         return ti_new FTextureMetal;
@@ -353,14 +457,12 @@ namespace tix
         {
             const TTextureDesc& Desc = Texture->GetDesc();
             
-            MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
             // Only support texture 2d for now
             TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
             
             // Follow the instructions here to create a private MTLBuffer
             // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
-            MTLTextureDescriptor * TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
-            TextureDesc.mipmapLevelCount = Desc.Mips;
+            MTLTextureDescriptor * TextureDesc = CreateDescriptorFromTextureDesc(Desc);
             TextureDesc.storageMode = MTLStorageModePrivate;
             if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0 ||
                 (Desc.Flags & ETF_RT_DSBUFFER) != 0)
@@ -368,7 +470,7 @@ namespace tix
                 TI_ASSERT(Desc.Mips == 1);
                 TextureDesc.usage |= MTLTextureUsageRenderTarget;
             }
-            TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+            TexMetal->Texture = [ResourceHeap newTextureWithDescriptor: TextureDesc];
         }
         
         HoldResourceReference(Texture);
@@ -383,27 +485,17 @@ namespace tix
         
         const TTextureDesc& Desc = InTexData->GetDesc();
         
-        MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
-        const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
-        MTLTextureDescriptor * TextureDesc;
-        if (IsCubeMap)
-        {
-            TI_ASSERT(Desc.Width == Desc.Height);
-            TextureDesc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MtlFormat size:Desc.Width mipmapped:Desc.Mips > 1];
-        }
-        else
-        {
-            TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
-        }
-        TI_TODO("Create normal texture as private");
+        MTLTextureDescriptor * Descriptor = CreateDescriptorFromTextureDesc(Desc);
+        
         // Follow the instructions here to create a private MTLBuffer
         // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
-        TextureDesc.mipmapLevelCount = Desc.Mips;
-        TextureDesc.storageMode = MTLStorageModeShared;
-        TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+        Descriptor.mipmapLevelCount = Desc.Mips;
+        // Create a shared upload texture to upload data to texture heap
+        Descriptor.storageMode = MTLStorageModeShared;
+        id<MTLTexture> UploadTexture = [MtlDevice newTextureWithDescriptor:Descriptor];
         
         int32 Faces = 1;
-        if (IsCubeMap)
+        if (Desc.Type == ETT_TEXTURE_CUBE)
             Faces = 6;
         
         const TVector<TTexture::TSurface*>& TextureSurfaces = InTexData->GetSurfaces();
@@ -417,12 +509,16 @@ namespace tix
                 const int32 SurfaceIndex = face * Desc.Mips + mip;
                 const TTexture::TSurface* Surface = TextureSurfaces[SurfaceIndex];
                 TI_ASSERT(Surface->RowPitch != 0);
-                [TexMetal->Texture replaceRegion:Region mipmapLevel:mip slice:face withBytes:Surface->Data bytesPerRow:Surface->RowPitch bytesPerImage:0];
+                [UploadTexture replaceRegion:Region mipmapLevel:mip slice:face withBytes:Surface->Data bytesPerRow:Surface->RowPitch bytesPerImage:0];
                 W /= 2;
                 H /= 2;
             }
         }
 
+        // Create private texture on heap
+        TexMetal->Texture = CloneTextureInHeap(UploadTexture);
+        
+        HoldResourceReference(UploadTexture);
         HoldResourceReference(Texture);
         
         return true;
@@ -435,28 +531,15 @@ namespace tix
         TI_ASSERT(Desc.Width == InImageData->GetWidth() && Desc.Height == InImageData->GetHeight());
         TI_ASSERT(Desc.Mips == InImageData->GetMipmapCount());
         
+        MTLTextureDescriptor * Descriptor = CreateDescriptorFromTextureDesc(Desc);
         if (TexMetal->Texture == nil)
         {
-            MTLPixelFormat MtlFormat = GetMetalPixelFormat(Desc.Format);
-            const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
-            TI_ASSERT(!IsCubeMap);
-            MTLTextureDescriptor * TextureDesc;
-            if (IsCubeMap)
-            {
-                TI_ASSERT(Desc.Width == Desc.Height);
-                TextureDesc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MtlFormat size:Desc.Width mipmapped:Desc.Mips > 1];
-            }
-            else
-            {
-                TextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MtlFormat width:Desc.Width height:Desc.Height mipmapped:Desc.Mips > 1];
-            }
-            TI_TODO("Create normal texture as private");
-            // Follow the instructions here to create a private MTLBuffer
-            // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
-            TextureDesc.mipmapLevelCount = Desc.Mips;
-            TextureDesc.storageMode = MTLStorageModeShared;
-            TexMetal->Texture = [MtlDevice newTextureWithDescriptor:TextureDesc];
+            Descriptor.storageMode = MTLStorageModePrivate;
+            TexMetal->Texture = [ResourceHeap newTextureWithDescriptor: Descriptor];
         }
+        
+        Descriptor.storageMode = MTLStorageModeShared;
+        id<MTLTexture> UploadTexture = [MtlDevice newTextureWithDescriptor: Descriptor];
         
         const int32 Mips = Desc.Mips;
         int32 W = Desc.Width;
@@ -465,11 +548,13 @@ namespace tix
         {
             const TImage::TSurfaceData& MipSurface = InImageData->GetMipmap(M);
             MTLRegion Region = MTLRegionMake2D(0, 0, W, H);
-            [TexMetal->Texture replaceRegion:Region mipmapLevel:M slice:0 withBytes:MipSurface.Data.GetBuffer() bytesPerRow:MipSurface.RowPitch bytesPerImage:0];
+            [UploadTexture replaceRegion:Region mipmapLevel:M slice:0 withBytes:MipSurface.Data.GetBuffer() bytesPerRow:MipSurface.RowPitch bytesPerImage:0];
             W /= 2;
             H /= 2;
         }
+        CopyTextureData(TexMetal->Texture, UploadTexture);
         
+        HoldResourceReference(UploadTexture);
         HoldResourceReference(Texture);
         return true;
     }
@@ -1220,6 +1305,11 @@ namespace tix
     void FRHIMetal::HoldResourceReference(id<MTLBuffer> InBuffer)
     {
         ResHolders[CurrentFrame]->HoldMetalBufferReference(InBuffer);
+    }
+    
+    void FRHIMetal::HoldResourceReference(id<MTLTexture> InTexture)
+    {
+        ResHolders[CurrentFrame]->HoldMetalTextureReference(InTexture);
     }
 }
 #endif	// COMPILE_WITH_RHI_METAL

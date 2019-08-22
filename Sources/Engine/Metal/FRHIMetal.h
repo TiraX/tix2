@@ -91,8 +91,17 @@ namespace tix
 	protected: 
 		FRHIMetal();
         
+        MTLTextureDescriptor* CreateDescriptorFromTextureDesc(const TTextureDesc& InDesc);
+        MTLTextureDescriptor* CreateDescriptorFromTexture(id<MTLTexture> InTexture);
+        
+        void CopyTextureData(id<MTLTexture> DstTexture, id<MTLTexture> SrcTexture);
+        
+        id<MTLTexture> CloneTextureInHeap(id<MTLTexture> InTexture);
+        id<MTLBuffer> MoveBufferToHeap(id<MTLBuffer> InBuffer);
+        
         void HoldResourceReference(FRenderResourcePtr InResource);
         void HoldResourceReference(id<MTLBuffer> InBuffer);
+        void HoldResourceReference(id<MTLTexture> InTexture);
         // Close current encoder, if next encoder do not match current one.
         // Return true if current encoder closed
         // Return false if none encoder closed
@@ -108,6 +117,7 @@ namespace tix
         id <MTLLibrary> DefaultLibrary;
         
         id <MTLCommandBuffer> CommandBuffer;
+        id <MTLHeap> ResourceHeap;
         
         id <MTLRenderCommandEncoder> RenderEncoder;
         id <MTLComputeCommandEncoder> ComputeEncoder;

@@ -19,10 +19,12 @@ namespace tix
         virtual void RemoveAllReferences();
         
         void HoldMetalBufferReference(id<MTLBuffer> InBuffer);
+        void HoldMetalTextureReference(id<MTLTexture> InTexture);
         
     private:
         // Hold some temp resources used in this frame
         TList< id<MTLBuffer> > MetalBuffers;
+        TList< id<MTLTexture> > MetalTextures;
     };
 }
 
