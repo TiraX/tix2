@@ -94,7 +94,8 @@ namespace tix
 
 	void FDefaultRenderer::BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer)
 	{
-		RHI->SetArgumentBuffer(InShaderBinding, ArgumentBuffer);
+        int32 BindingIndex = InShaderBinding->GetPixelArgumentBufferBindingIndex();
+		RHI->SetArgumentBuffer(BindingIndex, ArgumentBuffer);
 	}
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive)

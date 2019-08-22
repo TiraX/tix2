@@ -1074,69 +1074,11 @@ namespace tix
     {
         FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
         TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
-        
-        // Indicate buffers and textures usage
-        const TVector<FRenderResourcePtr>& Arguments = InArgumentBuffer->GetArguments();
-        for (auto& Arg : Arguments)
-        {
-            if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
-            {
-                FUniformBufferPtr UB = static_cast<FUniformBuffer*>(Arg.get());
-                FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UB.get());
-                [RenderEncoder useResource: UBMetal->Buffer usage: MTLResourceUsageRead];
-            }
-            else if (Arg->GetResourceType() == RRT_TEXTURE)
-            {
-                FTexturePtr Texture = static_cast<FTexture*>(Arg.get());
-                FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
-                [RenderEncoder useResource: TexMetal->Texture usage: MTLResourceUsageRead];
-            }
-            else
-            {
-                // Invalid resource type here.
-                TI_ASSERT(0);
-            }
-        }
 
         // Set argument buffer
         [RenderEncoder setFragmentBuffer: ABMetal->ArgumentBuffer
                                   offset: 0
                                  atIndex: BindIndex];
-    }
-    
-    void FRHIMetal::SetArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
-    {
-        FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
-        int32 BindIndex = InShaderBinding->GetPixelArgumentBufferBindingIndex();
-        if (BindIndex >= 0)
-        {
-            // Indicate buffers and textures usage
-            const TVector<FRenderResourcePtr>& Arguments = InArgumentBuffer->GetArguments();
-            for (auto& Arg : Arguments)
-            {
-                if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
-                {
-                    FUniformBufferPtr UB = static_cast<FUniformBuffer*>(Arg.get());
-                    FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UB.get());
-                    [RenderEncoder useResource: UBMetal->Buffer usage: MTLResourceUsageRead];
-                }
-                else if (Arg->GetResourceType() == RRT_TEXTURE)
-                {
-                    FTexturePtr Texture = static_cast<FTexture*>(Arg.get());
-                    FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
-                    [RenderEncoder useResource: TexMetal->Texture usage: MTLResourceUsageRead];
-                }
-                else
-                {
-                    // Invalid resource type here.
-                    TI_ASSERT(0);
-                }
-            }
-            // Set argument buffer
-            [RenderEncoder setFragmentBuffer: ABMetal->ArgumentBuffer
-                                      offset: 0
-                                     atIndex: BindIndex];
-        }
     }
     
     void FRHIMetal::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
@@ -1156,11 +1098,12 @@ namespace tix
     {
         FMeshBufferMetal * MBMetal = static_cast<FMeshBufferMetal*>(MeshBuffer.get());
         
-        [RenderEncoder drawIndexedPrimitives:k_PRIMITIVE_TYPE_MAP[MeshBuffer->GetPrimitiveType()]
-                                  indexCount:MeshBuffer->GetIndicesCount()
-                                   indexType:k_INDEX_TYPE_MAP[MeshBuffer->GetIndexType()]
-                                 indexBuffer:MBMetal->IndexBuffer
-                           indexBufferOffset:0];
+        [RenderEncoder drawIndexedPrimitives: k_PRIMITIVE_TYPE_MAP[MeshBuffer->GetPrimitiveType()]
+                                  indexCount: MeshBuffer->GetIndicesCount()
+                                   indexType: k_INDEX_TYPE_MAP[MeshBuffer->GetIndexType()]
+                                 indexBuffer: MBMetal->IndexBuffer
+                           indexBufferOffset: 0
+                               instanceCount: InstanceCount];
 	}
     
     void FRHIMetal::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
@@ -1191,39 +1134,11 @@ namespace tix
         TI_ASSERT(ComputeEncoder != nil);
         FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
         TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
-
-        // Indicate buffers and textures usage
-        const TVector<FRenderResourcePtr>& Arguments = InArgumentBuffer->GetArguments();
-        for (auto& Arg : Arguments)
-        {
-            if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
-            {
-                FUniformBufferPtr UB = static_cast<FUniformBuffer*>(Arg.get());
-                FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(UB.get());
-                [ComputeEncoder useResource: UBMetal->Buffer usage: MTLResourceUsageRead];
-            }
-            else if (Arg->GetResourceType() == RRT_TEXTURE)
-            {
-                FTexturePtr Texture = static_cast<FTexture*>(Arg.get());
-                FTextureMetal * TexMetal = static_cast<FTextureMetal*>(Texture.get());
-                [ComputeEncoder useResource: TexMetal->Texture usage: MTLResourceUsageRead];
-            }
-            else
-            {
-                // Invalid resource type here.
-                TI_ASSERT(0);
-            }
-        }
         
         // Set argument buffer
         [ComputeEncoder setBuffer: ABMetal->ArgumentBuffer
                            offset: 0
                           atIndex: BindIndex];
-    }
-    
-    void FRHIMetal::SetComputeArgumentBuffer(FShaderBindingPtr InShaderBinding, FArgumentBufferPtr InArgumentBuffer)
-    {
-        TI_ASSERT(0);
     }
     
     void FRHIMetal::DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount)
@@ -1289,7 +1204,10 @@ namespace tix
             Rect.y = 0;
             Rect.width = VP.Width;
             Rect.height = VP.Height;
-            [RenderEncoder setScissorRect:Rect];
+            [RenderEncoder setScissorRect: Rect];
+            
+            
+            [RenderEncoder useHeap: ResourceHeap];
             
             // Try cull
             //[RenderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];

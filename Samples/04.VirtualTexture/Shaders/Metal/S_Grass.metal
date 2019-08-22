@@ -43,5 +43,8 @@ fragment half4 S_GrassPS(VSOutput input [[stage_in]],
                                     min_filter::linear);
     half4 Color = fragmentArgs.TexBaseColor.sample(LinearSampler, input.texcoord0.xy);
     
+    if (Color.w < 0.1h)
+        discard_fragment();
+    
     return Color;
 }
