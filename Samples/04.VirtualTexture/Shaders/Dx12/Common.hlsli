@@ -1,1 +1,1 @@
-#define VT_ENABLED 1
+#define VT_ENABLED 0
