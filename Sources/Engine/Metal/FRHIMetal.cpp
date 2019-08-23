@@ -344,9 +344,19 @@ namespace tix
         return HeapTexture;
     }
     
-    id<MTLBuffer> FRHIMetal::MoveBufferToHeap(id<MTLBuffer> InBuffer)
+    id<MTLBuffer> FRHIMetal::CloneBufferToHeap(id<MTLBuffer> InBuffer)
     {
-        TI_ASSERT(0);
+        // Create a buffer from the heap
+        id<MTLBuffer> HeapBuffer = [ResourceHeap newBufferWithLength: InBuffer.length
+                                                             options: MTLResourceStorageModePrivate];
+        
+        id <MTLBlitCommandEncoder> BlitCommandEncoder = RequestBlitEncoder();
+        [BlitCommandEncoder copyFromBuffer: InBuffer
+                              sourceOffset: 0
+                                  toBuffer: HeapBuffer
+                         destinationOffset: 0
+                                      size: InBuffer.length];
+        return HeapBuffer;
     }
     
 	FTexturePtr FRHIMetal::CreateTexture()
@@ -745,38 +755,19 @@ namespace tix
         const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
         TI_ASSERT(UBMetal->Buffer == nil);
         
-        if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_ONLY) != 0)
+        id<MTLBuffer> UploadBuffer = [MtlDevice newBufferWithBytes: InData length: AlignedDataSize options:MTLStorageModeShared];
+        
+        if ((UniformBuffer->GetFlag() & UB_FLAG_READBACK) != 0)
         {
-            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModePrivate];
+            // Make the MTLBuffer as shared to access by CPU
+            UBMetal->Buffer = UploadBuffer;
         }
         else
         {
-            UBMetal->Buffer = [MtlDevice newBufferWithLength:AlignedDataSize options:MTLStorageModeShared];
+            // Create a private MTLBuffer in heap.  z
+            UBMetal->Buffer = CloneBufferToHeap(UploadBuffer);
         }
-        
-        if (InData != nullptr)
-        {
-            // Upload data
-            if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_ONLY) != 0)
-            {
-                // Follow the instructions here to create a private MTLBuffer
-                // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
-                // Upload data to GPU only buffer
-                id<MTLBuffer> UploadBuffer = [MtlDevice newBufferWithBytes: InData length: AlignedDataSize options:MTLStorageModeShared];
-                id<MTLBlitCommandEncoder> BlitCommandEncoder = RequestBlitEncoder();
-                [BlitCommandEncoder copyFromBuffer: UploadBuffer
-                                      sourceOffset: 0
-                                          toBuffer: UBMetal->Buffer
-                                 destinationOffset: 0
-                                              size: AlignedDataSize];
-                HoldResourceReference(UploadBuffer);
-            }
-            else
-            {
-                memcpy([UBMetal->Buffer contents], InData, UniformBuffer->GetTotalBufferSize());
-            }
-        }
-        
+        HoldResourceReference(UploadBuffer);
         HoldResourceReference(UniformBuffer);
         
         return true;
@@ -1014,7 +1005,7 @@ namespace tix
 	void FRHIMetal::SetGraphicsPipeline(FPipelinePtr InPipeline)
 	{
         // Metal need to set pipeline every time.
-        //if (CurrentBoundResource.Pipeline != InPipeline)
+        if (CurrentBoundResource.Pipeline != InPipeline)
         {
             TI_ASSERT(RenderEncoder != nil);
             FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
@@ -1023,7 +1014,7 @@ namespace tix
             [RenderEncoder setDepthStencilState:PLMetal->DepthState];
             
             HoldResourceReference(InPipeline);
-            //CurrentBoundResource.Pipeline = InPipeline;
+            CurrentBoundResource.Pipeline = InPipeline;
         }
         
         //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;

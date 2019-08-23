@@ -95,7 +95,7 @@ namespace tix
         void CopyTextureData(id<MTLTexture> DstTexture, id<MTLTexture> SrcTexture);
         
         id<MTLTexture> CloneTextureInHeap(id<MTLTexture> InTexture);
-        id<MTLBuffer> MoveBufferToHeap(id<MTLBuffer> InBuffer);
+        id<MTLBuffer> CloneBufferToHeap(id<MTLBuffer> InBuffer);
         
         void HoldResourceReference(FRenderResourcePtr InResource);
         void HoldResourceReference(id<MTLBuffer> InBuffer);

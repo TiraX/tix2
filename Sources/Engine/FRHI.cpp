@@ -70,6 +70,7 @@ namespace tix
         CurrentCommandListCounter[EPL_BLIT] = -1;
         ListExecuteOrder.clear();
         CurrentRenderTarget = nullptr;
+        CurrentBoundResource.Reset();
     }
     
 	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap)
