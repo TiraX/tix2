@@ -39,9 +39,10 @@ typedef struct FragmentShaderArguments {
 fragment half4 S_TreeMaskPS(VSOutput input [[stage_in]],
                             constant FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler LinearSampler(mip_filter::linear,
-                                   mag_filter::linear,
-                                   min_filter::linear);
+    constexpr sampler LinearSampler(mip_filter::none,
+                                    mag_filter::linear,
+                                    min_filter::linear,
+                                    address::repeat);
     half4 Color = fragmentArgs.TexBaseColor.sample(LinearSampler, input.texcoord0.xy);
     
     if (Color.w < 0.1h)
