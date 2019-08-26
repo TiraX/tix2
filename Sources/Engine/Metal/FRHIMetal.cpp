@@ -48,6 +48,8 @@ namespace tix
             ResHolders[i] = ti_new FFrameResourcesMetal;
             FrameResources[i] = ResHolders[i];
         }
+        
+        ClearBindedBuffers();
 	}
 
 	FRHIMetal::~FRHIMetal()
@@ -108,6 +110,7 @@ namespace tix
 	void FRHIMetal::BeginFrame()
     {
         FRHI::BeginFrame();
+        ClearBindedBuffers();
         
         TI_ASSERT(CommandBuffer == nil);
         TI_ASSERT(RenderEncoder == nil);
@@ -1036,14 +1039,23 @@ namespace tix
 
 	void FRHIMetal::SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer)
 	{
+        TI_ASSERT(BindIndex >= 0 && BindIndex < MaxBindingBuffers);
         FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(InUniformBuffer.get());
         if (ShaderStage == ESS_VERTEX_SHADER)
         {
-            [RenderEncoder setVertexBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
+            if (VSBindedBuffers[BindIndex] != UBMetal->Buffer)
+            {
+                [RenderEncoder setVertexBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
+                VSBindedBuffers[BindIndex] = UBMetal->Buffer;
+            }
         }
         else if (ShaderStage == ESS_PIXEL_SHADER)
         {
-            [RenderEncoder setFragmentBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
+            if (PSBindedBuffers[BindIndex] != UBMetal->Buffer)
+            {
+                [RenderEncoder setFragmentBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
+                PSBindedBuffers[BindIndex] = UBMetal->Buffer;
+            }
         }
         else {
             TI_ASSERT(0);
@@ -1219,6 +1231,15 @@ namespace tix
     void FRHIMetal::HoldResourceReference(id<MTLTexture> InTexture)
     {
         ResHolders[CurrentFrame]->HoldMetalTextureReference(InTexture);
+    }
+    
+    void FRHIMetal::ClearBindedBuffers()
+    {
+        for (int32 i = 0 ; i < MaxBindingBuffers; ++ i)
+        {
+            VSBindedBuffers[i] = nil;
+            PSBindedBuffers[i] = nil;
+        }
     }
 }
 #endif	// COMPILE_WITH_RHI_METAL

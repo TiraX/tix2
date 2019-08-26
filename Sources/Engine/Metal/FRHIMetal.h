@@ -105,6 +105,8 @@ namespace tix
         // Return false if none encoder closed
         bool CloseCurrentEncoderIfNotMatch(E_PIPELINE_TYPE NextPipelineType);
         id <MTLBlitCommandEncoder> RequestBlitEncoder();
+        
+        void ClearBindedBuffers();
 
 	private:
         CAMetalLayer * MtlLayer;
@@ -129,6 +131,11 @@ namespace tix
         
         // Frame on the fly resource holders
         FFrameResourcesMetal * ResHolders[FRHIConfig::FrameBufferNum];
+        
+        // Binded buffer in a frame
+        static const int32 MaxBindingBuffers = 32;
+        id <MTLBuffer> VSBindedBuffers[MaxBindingBuffers];
+        id <MTLBuffer> PSBindedBuffers[MaxBindingBuffers];
         
 		friend class FRHI;
 	};
