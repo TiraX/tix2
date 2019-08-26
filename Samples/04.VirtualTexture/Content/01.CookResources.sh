@@ -18,7 +18,7 @@ for fn in $(find . -name '*.tjs'); do
 	filename=$(basename $fn .tjs)
 	# echo --- $filename
 	# echo ---- $pathname
-	"$Converter" "$fn" ./Cooked/iOS/"$pathname"/"$filename".tasset -ForceAlphaChannel
+	"$Converter" "$fn" ./Cooked/iOS/"$pathname"/"$filename".tasset -ForceAlphaChannel -astc_quality=high
 done
 
 echo "Baking virtual texture pages."
