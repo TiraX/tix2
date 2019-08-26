@@ -413,6 +413,7 @@ namespace tix
 
 		DstImage->ImageSurfaces.resize(SrcImage->ImageSurfaces.size());
 
+		int32 AstcMips = 0;
 		for (int32 i = 0; i < (int32)SrcImage->ImageSurfaces.size(); ++i)
 		{
 			TImage * TgaImage = SrcImage->ImageSurfaces[i];
@@ -423,6 +424,7 @@ namespace tix
 				DxtImage->AllocEmptyMipmaps();
 			}
 
+			AstcMips = 0;
 			for (int32 Mip = 0; Mip < DxtImage->GetMipmapCount(); ++Mip)
 			{
 				const TImage::TSurfaceData& SrcData = TgaImage->GetMipmap(Mip);
@@ -442,8 +444,10 @@ namespace tix
 				uint8_t* Dst = (uint8_t*)DstData.Data.GetBuffer();
 				// Call ISPC function to convert
 				CompressBlocksASTC(&Surface, Dst, &AstcEncSetting);
+				++AstcMips;
 			}
 		}
+		DstImage->Desc.Mips = AstcMips;
 		return DstImage;
 	}
 }

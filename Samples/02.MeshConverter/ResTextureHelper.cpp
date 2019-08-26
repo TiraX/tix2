@@ -268,6 +268,18 @@ namespace tix
 					Tasks.push_back(Task);
 				}
 			}
+
+			static bool bDebugMips = false;
+			if (bDebugMips)
+			{
+				for (int32 Mip = 0 ; Mip < TgaImage->GetMipmapCount() ; ++ Mip)
+				{
+					char Name[256];
+					sprintf(Name, "%s_%d.tga", SrcInfo.TextureSource.c_str(), Mip);
+					TgaImage->SaveToTga(Name, Mip);
+				}
+			}
+
 			// delete Tasks
 			for (auto& T : Tasks)
 			{
