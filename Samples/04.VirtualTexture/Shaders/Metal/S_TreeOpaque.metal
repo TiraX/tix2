@@ -39,7 +39,7 @@ typedef struct FragmentShaderArguments {
 fragment half4 S_TreeOpaquePS(VSOutput input [[stage_in]],
                            device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
 {
-    constexpr sampler LinearSampler(mip_filter::none,
+    constexpr sampler LinearSampler(mip_filter::linear,
                                     mag_filter::linear,
                                     min_filter::linear,
                                     address::repeat);
