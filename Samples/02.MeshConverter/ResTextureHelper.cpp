@@ -244,29 +244,14 @@ namespace tix
 			for (int32 Mip = 1 ; Mip < TgaImage->GetMipmapCount() ; ++ Mip)
 			{
 				int32 H = TgaImage->GetMipmap(Mip).H;
-				if (H >= MaxThreads)
+				for (int32 y = 0 ; y < H ; ++ y)
 				{
-					int32 Section = H / MaxThreads;
-					for (int32 i = 0; i < MaxThreads; ++i)
-					{
-						TGenerateMipmapTask * Task = ti_new TGenerateMipmapTask(TgaImage, Mip, i * Section, (i + 1) * Section);
-						TResMTTaskExecuter::Get()->AddTask(Task);
-						Tasks.push_back(Task);
-					}
-				}
-			}
-			TResMTTaskExecuter::Get()->StartTasks();
-			TResMTTaskExecuter::Get()->WaitUntilFinished();
-			// Small mips generate here
-			for (int32 Mip = 1; Mip < TgaImage->GetMipmapCount(); ++Mip)
-			{
-				int32 H = TgaImage->GetMipmap(Mip).H;
-				if (H < MaxThreads)
-				{
-					TGenerateMipmapTask * Task = ti_new TGenerateMipmapTask(TgaImage, Mip, 0, H);
-					Task->Exec();
+					TGenerateMipmapTask * Task = ti_new TGenerateMipmapTask(TgaImage, Mip, y, y + 1);
+					TResMTTaskExecuter::Get()->AddTask(Task);
 					Tasks.push_back(Task);
 				}
+				TResMTTaskExecuter::Get()->StartTasks();
+				TResMTTaskExecuter::Get()->WaitUntilFinished();
 			}
 
 			static bool bDebugMips = false;
