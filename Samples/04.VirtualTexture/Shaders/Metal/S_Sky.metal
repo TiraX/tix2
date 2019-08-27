@@ -10,7 +10,9 @@
 #include <simd/simd.h>
 using namespace metal;
 
+#include "Common.h"
 #include "VS_Instanced.h"
+#include "PS_VT.h"
 
 
 vertex VSOutput S_SkyVS(VertexInput vsInput [[ stage_in ]],
@@ -31,23 +33,33 @@ vertex VSOutput S_SkyVS(VertexInput vsInput [[ stage_in ]],
     return vsOutput;
 }
 
+
+
+#if (VT_ENABLED)
+fragment half4 S_SkyPS(VSOutput input [[stage_in]],
+                       constant VTArguments & EB_VTArgs [[ buffer(PBIndex_VirtualTexture) ]],
+                       constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
+{
+    half4 Color = GetBaseColor(input.texcoord0.xy,
+                               EB_Primitive.VTUVTransform,
+                               EB_VTArgs.IndirectTexture,
+                               EB_VTArgs.PhysicTexture);
+    
+    return Color;
+}
+
+#else   // VT_ENABLED
 typedef struct FragmentShaderArguments {
     device float4 * Uniform [[ id(0) ]];
     texture2d<half> TexBaseColor  [[ id(1) ]];
 } FragmentShaderArguments;
 
-//constexpr sampler sampler0(mip_filter::linear,
-//                           mag_filter::linear,
-//                           min_filter::linear);
-
 fragment half4 S_SkyPS(VSOutput input [[stage_in]],
-                           device FragmentShaderArguments & fragmentArgs [[ buffer(0) ]])
+                       constant FragmentShaderArguments & fragmentArgs [[ buffer(PBIndex_MaterialInstance) ]],
+                       constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
-    constexpr sampler LinearSampler(mip_filter::linear,
-                                    mag_filter::linear,
-                                    min_filter::linear,
-                                    address::repeat);
-    half4 Color = fragmentArgs.TexBaseColor.sample(LinearSampler, input.texcoord0.xy);
+    half4 Color = GetBaseColor(fragmentArgs.TexBaseColor, input.texcoord0.xy);
     
     return Color;
 }
+#endif  // VT_ENABLED

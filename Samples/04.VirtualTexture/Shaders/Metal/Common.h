@@ -6,7 +6,7 @@
 //  Copyright © 2019 zhaoshuai. All rights reserved.
 //
 
-#define VT_ENABLED 0
+#define VT_ENABLED 1
 
 typedef enum TiXShaderBufferIndex
 {

@@ -35,13 +35,13 @@ vertex VSOutput S_TreeMaskVS(VertexInput vsInput [[ stage_in ]],
 
 #if (VT_ENABLED)
 fragment half4 S_TreeMaskPS(VSOutput input [[stage_in]],
-                            constant VTArguments & VTArgs [[ buffer(PBIndex_VirtualTexture) ]],
+                            constant VTArguments & EB_VTArgs [[ buffer(PBIndex_VirtualTexture) ]],
                             constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
     half4 Color = GetBaseColor(input.texcoord0.xy,
                                EB_Primitive.VTUVTransform,
-                               VTArgs.IndirectTexture,
-                               VTArgs.PhysicTexture);
+                               EB_VTArgs.IndirectTexture,
+                               EB_VTArgs.PhysicTexture);
     
     if (Color.w < 0.1h)
         discard_fragment();

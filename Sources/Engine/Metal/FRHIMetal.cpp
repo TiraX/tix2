@@ -758,7 +758,15 @@ namespace tix
         const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
         TI_ASSERT(UBMetal->Buffer == nil);
         
-        id<MTLBuffer> UploadBuffer = [MtlDevice newBufferWithBytes: InData length: AlignedDataSize options:MTLStorageModeShared];
+        id<MTLBuffer> UploadBuffer;
+        if (InData != nullptr)
+        {
+            UploadBuffer = [MtlDevice newBufferWithBytes: InData length: AlignedDataSize options:MTLStorageModeShared];
+        }
+        else
+        {
+            UploadBuffer = [MtlDevice newBufferWithLength: AlignedDataSize options:MTLStorageModeShared];
+        }
         
         if ((UniformBuffer->GetFlag() & UB_FLAG_READBACK) != 0)
         {
@@ -767,10 +775,10 @@ namespace tix
         }
         else
         {
-            // Create a private MTLBuffer in heap.  z
+            // Create a private MTLBuffer in heap.
             UBMetal->Buffer = CloneBufferToHeap(UploadBuffer);
+            HoldResourceReference(UploadBuffer);
         }
-        HoldResourceReference(UploadBuffer);
         HoldResourceReference(UniformBuffer);
         
         return true;

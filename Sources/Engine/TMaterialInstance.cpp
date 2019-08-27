@@ -42,21 +42,26 @@ namespace tix
 				ArgumentBuffer->SetBuffer(0, UniformBuffer);
 			}
 
-			TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
-			for (int32 i = 0; i < (int32)ParamTextures.size(); ++ i)
-			{
-				TI_ASSERT(ParamTextures[i]->TextureResource != nullptr);
-				ArgumentBuffer->SetTexture(i + NumBuffers, ParamTextures[i]->TextureResource);
-			}
-
-			FShaderPtr MaterialShader = LinkedMaterial->GetDesc().Shader->ShaderResource;
-
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer,
-				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
-				FShaderPtr, MaterialShader, MaterialShader,
-				{
-					FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, MaterialShader);
-				});
+            if (!FVTSystem::IsEnabled())
+            {
+                // if vt system enabled, all texture will be in vt atlas.
+                // do not need to load textures and put into argument buffer here.
+                TI_ASSERT(ParamTextures.size() == ParamTextureNames.size());
+                for (int32 i = 0; i < (int32)ParamTextures.size(); ++ i)
+                {
+                    TI_ASSERT(ParamTextures[i]->TextureResource != nullptr);
+                    ArgumentBuffer->SetTexture(i + NumBuffers, ParamTextures[i]->TextureResource);
+                }
+                
+                FShaderPtr MaterialShader = LinkedMaterial->GetDesc().Shader->ShaderResource;
+                
+                ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer,
+                                                           FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
+                                                           FShaderPtr, MaterialShader, MaterialShader,
+                                                           {
+                                                               FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, MaterialShader);
+                                                           });
+            }
 		}
 	}
 

@@ -43,10 +43,8 @@ namespace tix
 					return ARGUMENT_EB_PRIMITIVE;
 				if (BufferName == "Lights")
 					return ARGUMENT_EB_LIGHTS;
-				if (BufferName == "IndirectTexture")
-					return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
-				if (BufferName == "PhysicPageAtlas")
-					return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
+                if (BufferName.substr(0, 6) == "VTArgs")
+                    return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
 				TI_ASSERT(0);
 			}
 		}
