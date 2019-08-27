@@ -798,14 +798,20 @@ namespace tix
 
 			if (SrcFormat == EPF_RGBA8)
 			{
+#if defined (TI_PLATFORM_WIN32)
 				DstFormat = EPF_DDS_DXT5;
+#elif defined (TI_PLATFORM_IOS)
+                DstFormat = EPF_ASTC4x4;
+#else
+                TI_ASSERT(0);
+#endif
 			}
 			else
 			{
 				_LOG(Error, "Un-expected format when compress texture. Mip: %d; PageX: %d; PageY: %d\n", Mip, PageX, PageY);
 				return;
 			}
-			TImage * DxtImage = ti_new TImage(DstFormat, TgaPage->GetWidth(), TgaPage->GetHeight());
+			TImage * DstImage = ti_new TImage(DstFormat, TgaPage->GetWidth(), TgaPage->GetHeight());
 			const TImage::TSurfaceData& MipData = TgaPage->GetMipmap(0);
 			rgba_surface Surface;
 			Surface.ptr = (uint8_t*)MipData.Data.GetBuffer();
@@ -813,12 +819,22 @@ namespace tix
 			Surface.height = MipData.H;
 			Surface.stride = MipData.RowPitch;
 
-			uint8_t* Dst = (uint8_t*)DxtImage->GetMipmap(0).Data.GetBuffer();
+			uint8_t* Dst = (uint8_t*)DstImage->GetMipmap(0).Data.GetBuffer();
 			// Call ISPC function to convert
 			if (DstFormat == EPF_DDS_DXT5)
 			{
 				CompressBlocksBC3(&Surface, Dst);
 			}
+            else if (DstFormat == EPF_ASTC4x4)
+            {
+                astc_enc_settings AstcEncSetting;
+                GetProfile_astc_alpha_fast(&AstcEncSetting, 4, 4);
+                CompressBlocksASTC(&Surface, Dst, &AstcEncSetting);
+            }
+            else
+            {
+                TI_ASSERT(0);
+            }
 
 			// Write raw data
 			char name[128];
@@ -826,7 +842,7 @@ namespace tix
 			TFile PageFile;
 			if (PageFile.Open(name, EFA_CREATEWRITE))
 			{
-				PageFile.Write(DxtImage->GetMipmap(0).Data.GetBuffer(), DxtImage->GetMipmap(0).Data.GetLength());
+				PageFile.Write(DstImage->GetMipmap(0).Data.GetBuffer(), DstImage->GetMipmap(0).Data.GetLength());
 			}
 			//_LOG(Log, " - Output page: %s\n", name);
 		}

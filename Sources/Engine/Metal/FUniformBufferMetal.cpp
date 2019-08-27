@@ -22,6 +22,18 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 		Buffer = nil;
 	}
+    
+    TStreamPtr FUniformBufferMetal::ReadBufferData()
+    {
+        if (Buffer != nil)
+        {
+            TStreamPtr Data = ti_new TStream((int32)Buffer.length);
+            Data->Put([Buffer contents], (int32)Buffer.length);
+            
+            return Data;
+        }
+        return nullptr;
+    }
 }
 
 #endif	// COMPILE_WITH_RHI_METAL

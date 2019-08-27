@@ -14,6 +14,8 @@ namespace tix
 	public:
 		FUniformBufferMetal(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag);
 		virtual ~FUniformBufferMetal();
+        
+        virtual TStreamPtr ReadBufferData() override;
 	protected:
 
 	private:

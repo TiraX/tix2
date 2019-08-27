@@ -92,7 +92,7 @@ namespace tix
 	static int32 AnalysisFrame = 0;
 	void FVTAnalysisThread::AnalysisBuffer()
 	{
-		TIMER_RECORDER_FUNC();
+		//TIMER_RECORDER_FUNC();
 		TStreamPtr Buffer;
 		{
 			BufferMutex.lock();
@@ -104,8 +104,8 @@ namespace tix
 		++AnalysisFrame;
 
 		const float* DataPtr = (const float*)Buffer->GetBuffer();
-		const int32 DataCount = Buffer->GetLength() / sizeof(int32);
-		TI_ASSERT(DataCount == FVTSystem::TotalPagesInVT);
+		const int32 DataCount = Buffer->GetLength() / sizeof(float);
+		TI_ASSERT(DataCount >= FVTSystem::TotalPagesInVT);
 
 		THMap<uint32, int32> NewPages;	// New pages in this frame. Key is PageIndex, Value is MipLevel
 		THMap<uint32, uint32> UsedLocations;	// Used locations in PhysicPageTextures in this frame;

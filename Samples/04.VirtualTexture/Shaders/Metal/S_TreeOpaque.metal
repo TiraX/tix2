@@ -58,10 +58,10 @@ typedef struct FragmentShaderArguments {
 } FragmentShaderArguments;
 
 fragment half4 S_TreeOpaquePS(VSOutput input [[stage_in]],
-                              constant FragmentShaderArguments & fragmentArgs [[ buffer(PBIndex_MaterialInstance) ]],
+                              constant FragmentShaderArguments & MI_Args [[ buffer(PBIndex_MaterialInstance) ]],
                               constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
-    half4 Color = GetBaseColor(fragmentArgs.TexBaseColor, input.texcoord0.xy);
+    half4 Color = GetBaseColor(MI_Args.TexBaseColor, input.texcoord0.xy);
     
     return Color;
 }

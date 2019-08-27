@@ -45,11 +45,15 @@ namespace tix
 					return ARGUMENT_EB_LIGHTS;
                 if (BufferName.substr(0, 6) == "VTArgs")
                     return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
-				TI_ASSERT(0);
 			}
+            else if (Prefix == "MI")
+            {
+                return ARGUMENT_MI_ARGUMENTS;
+            }
+            TI_ASSERT(0);
 		}
 
-		return ARGUMENT_MI_ARGUMENTS;
+		return ARGUMENT_UNKNOWN;
 	}
 
 #if DEBUG_SHADER_BINDING_TYPE

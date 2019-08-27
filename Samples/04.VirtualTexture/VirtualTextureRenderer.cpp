@@ -20,10 +20,16 @@ FTileDeterminationCS::~FTileDeterminationCS()
 
 void FTileDeterminationCS::Run(FRHI * RHI)
 {
+#if defined (TI_PLATFORM_IOS)
+    RHI->SetComputePipeline(ComputePipeline);
+    RHI->SetComputeTexture(0, ScreenUV);
+    RHI->SetComputeBuffer(0, QuadTreeBuffer);
+#elif defined (TI_PLATFORM_WIN32)
 	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
 
 	RHI->SetComputePipeline(ComputePipeline);
     RHI->SetComputeArgumentBuffer(0, ComputeArgument);
+#endif
 
 	RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize), int32(InputSize.Y / ThreadBlockSize), 1));
 }
@@ -42,12 +48,16 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 	memset(ZeroData, 0, 4 * BufferSize);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBufferClear, ZeroData);
 	ti_delete[] ZeroData;
+    
+    ScreenUV = UVInput;
 	
 	// Create compute argument buffer
+#if !defined (TI_PLATFORM_IOS)
     ComputeArgument = FRHI::Get()->CreateArgumentBuffer(2);
     ComputeArgument->SetTexture(0, UVInput);
     ComputeArgument->SetBuffer(1, QuadTreeBuffer);
     FRHI::Get()->UpdateHardwareResourceAB(ComputeArgument, ComputeShader);
+#endif
 }
 
 void FTileDeterminationCS::PrepareDataForCPU(FRHI * RHI)
@@ -150,7 +160,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Do UV discard check, only check when camera moved or primitives changed
 	if (FVTSystem::IsEnabled())
 	{
-		if (false)
+		//if (false)
 		{
 			RHI->BeginComputeTask();
 			ComputeTileDetermination->Run(RHI);

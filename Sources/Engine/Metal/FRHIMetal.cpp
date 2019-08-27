@@ -908,6 +908,7 @@ namespace tix
                 FShaderBindingPtr ShaderBinding = InShader->ShaderBinding;
                 ArgumentBindIndex = ShaderBinding->GetVertexComputeArgumentBufferBindingIndex();
             }
+            TI_ASSERT(ArgumentBindIndex >= 0);
             ArgumentEncoder = [ShaderMetal->VertexComputeProgram newArgumentEncoderWithBufferIndex:ArgumentBindIndex];
 #if defined (TIX_DEBUG)
             ShaderName = ShaderMetal->GetShaderName(ESS_COMPUTE_SHADER);
@@ -1130,9 +1131,16 @@ namespace tix
         [ComputeEncoder setComputePipelineState:PLMetal->ComputePipelineState];
     }
     
-    void FRHIMetal::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+    void FRHIMetal::SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
     {
-        TI_ASSERT(0);
+        TI_ASSERT(ComputeEncoder != nil);
+        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(InUniformBuffer.get());
+        TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
+        
+        // Set argument buffer
+        [ComputeEncoder setBuffer: UBMetal->Buffer
+                           offset: 0
+                          atIndex: BindIndex];
     }
     
     void FRHIMetal::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)
@@ -1150,6 +1158,17 @@ namespace tix
         [ComputeEncoder setBuffer: ABMetal->ArgumentBuffer
                            offset: 0
                           atIndex: BindIndex];
+    }
+    
+    void FRHIMetal::SetComputeTexture(int32 BindIndex, FTexturePtr InTexture)
+    {
+        TI_ASSERT(ComputeEncoder != nil);
+        FTextureMetal * TextureMetal = static_cast<FTextureMetal*>(InTexture.get());
+        TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
+        
+        // Set compute texture
+        [ComputeEncoder setTexture: TextureMetal->Texture
+                           atIndex: BindIndex];
     }
     
     void FRHIMetal::DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount)

@@ -27,6 +27,7 @@ private:
 	FUniformBufferPtr QuadTreeBufferClear;
 	FUniformBufferPtr QuadTreeBuffer;
 	FArgumentBufferPtr ComputeArgument;
+    FTexturePtr ScreenUV;
 
 	bool UVBufferTriggerd;
 };
