@@ -12,6 +12,12 @@ static constant int PhysicAtlasSize = 32;
 static constant float PAInv = 1.0 / PhysicAtlasSize;
 
 #if (VT_ENABLED)
+// VT uv output
+struct VTBufferData
+{
+    half4 color [[color(0)]];
+    half4 uv [[color(1)]];
+};
 
 typedef struct FragmentShaderArguments {
     texture2d<half> IndirectTexture  [[ id(0) ]];
@@ -26,13 +32,13 @@ inline float mip_map_level(float2 texture_coordinate, float texture_size) // in 
     return min(6.0, max(0.0, 0.5 * log2(delta_max_sqr)));
 }
 
-inline float4 GetVTTextureCoords(float2 texcoord, float4 VTUVTransform)
+inline half4 GetVTTextureCoords(float2 texcoord, float4 VTUVTransform)
 {
     float4 TexCoord;
     TexCoord.xy = fract(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
     TexCoord.z = mip_map_level(TexCoord.xy, VTSize);
     TexCoord.w = 1.0;
-    return TexCoord;
+    return half4(TexCoord);
 }
 
 inline half4 GetBaseColor(float2 texcoord,

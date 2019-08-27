@@ -33,10 +33,11 @@ vertex VSOutput S_GrassVS(VertexInput vsInput [[ stage_in ]],
 }
 
 #if (VT_ENABLED)
-fragment half4 S_GrassPS(VSOutput input [[stage_in]],
+fragment VTBufferData S_GrassPS(VSOutput input [[stage_in]],
                          constant VTArguments & EB_VTArgs [[ buffer(PBIndex_VirtualTexture) ]],
                          constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
+    VTBufferData Data;
     half4 Color = GetBaseColor(input.texcoord0.xy,
                                EB_Primitive.VTUVTransform,
                                EB_VTArgs.IndirectTexture,
@@ -44,8 +45,11 @@ fragment half4 S_GrassPS(VSOutput input [[stage_in]],
     
     if (Color.w < 0.1h)
         discard_fragment();
+   
+    Data.color = Color;
+    Data.uv = GetVTTextureCoords(input.texcoord0.xy, EB_Primitive.VTUVTransform);
     
-    return Color;
+    return Data;
 }
 
 #else   // VT_ENABLED
