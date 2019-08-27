@@ -22,8 +22,8 @@ float4 GetVTTextureCoords(in float2 texcoord)
 }
 
 #if (VT_ENABLED)
-Texture2D<float4> EB_IndirectTexture : register(t0);
-Texture2D<float4> EB_PhysicPageAtlas : register(t1);
+Texture2D<float4> EB_VTArgsIndirect : register(t0);
+Texture2D<float4> EB_VTArgsPhysic : register(t1);
 SamplerState PointSampler : register(s0);
 SamplerState LinearSampler : register(s1);
 
@@ -32,7 +32,7 @@ float4 GetBaseColor(in float2 texcoord)
 	float2 VTCoord = frac(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
 	float MipLevel = floor(mip_map_level(VTCoord, VTSize));
 
-	float4 Indirect = EB_IndirectTexture.SampleLevel(PointSampler, VTCoord, MipLevel);
+	float4 Indirect = EB_VTArgsIndirect.SampleLevel(PointSampler, VTCoord, MipLevel);
 	// coord in virtual texture - 
 	int VTMipSize = VTSize / pow(2, int(MipLevel));
 	float2 VTPos = VTCoord * VTMipSize / PPSize;
@@ -40,7 +40,7 @@ float4 GetBaseColor(in float2 texcoord)
 	//float2 Coord = frac(VTPos);
 	float2 PPCoord = (floor(Indirect.xy * 256) + Coord) * PAInv;
 
-	float4 Color = EB_PhysicPageAtlas.Sample(LinearSampler, PPCoord);
+	float4 Color = EB_VTArgsPhysic.Sample(LinearSampler, PPCoord);
 	return Color;
 	//return PPCoord.xyxy;
 }

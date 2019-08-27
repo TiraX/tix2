@@ -21,8 +21,8 @@
 //	float4 Info;	// x, y groups
 //};
 
-Texture2D<float4> inputUVs : register(t0);
-RWStructuredBuffer<float> outputUVs : register(u0);	// UAV: Processed indirect commands
+Texture2D<float4> ScreenUV : register(t0);
+RWStructuredBuffer<float> OutputUV : register(u0);	// UAV: Processed indirect commands
 
 #define threadBlockSize 32
 
@@ -33,7 +33,7 @@ static const int vt_mips_offset[7] = { 0, 4096, 5120, 5376, 5440, 5456, 5460 };
 [numthreads(threadBlockSize, threadBlockSize, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	float4 result = inputUVs[dispatchThreadId.xy];
+	float4 result = ScreenUV[dispatchThreadId.xy];
 	uint mip_level = uint(result.z);
 	uint vt_mip_size = vt_mips[mip_level];
 	result.xy = min(float2(0.999f, 0.999f), result.xy);
@@ -41,5 +41,5 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint page_y = uint(result.y * vt_mip_size);
 	uint output_index = page_y * vt_mip_size + page_x + vt_mips_offset[mip_level];
 
-	outputUVs[output_index] = 1;
+	OutputUV[output_index] = 1;
 }
