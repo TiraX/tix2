@@ -152,11 +152,11 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		//if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
-			//RHI->BeginComputeTask();
-			//ComputeTileDetermination->Run(RHI);
+			RHI->BeginComputeTask();
+			ComputeTileDetermination->Run(RHI);
 
-			//ComputeTileDetermination->PrepareDataForCPU(RHI);
-			//RHI->EndComputeTask();
+			ComputeTileDetermination->PrepareDataForCPU(RHI);
+			RHI->EndComputeTask();
 		}
 	}
 
