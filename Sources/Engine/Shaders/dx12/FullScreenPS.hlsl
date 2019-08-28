@@ -7,7 +7,7 @@ struct PixelShaderInput
 	float2 uv : TEXCOORD;
 };
 
-Texture2D g_texture : register(t0);
+Texture2D MI_Texture : register(t0);
 SamplerState g_sampler : register(s0);
 
 // A pass-through function for the (interpolated) color data.
@@ -15,7 +15,7 @@ SamplerState g_sampler : register(s0);
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	//return float4(input.uv, 0.0, 1.0);
-	float4 color = g_texture.Sample(g_sampler, input.uv);
+	float4 color = MI_Texture.Sample(g_sampler, input.uv);
 	
 	// Do gamma
 	color.rgb = sqrt(color.rgb);

@@ -2227,7 +2227,7 @@ namespace tix
 		HoldResourceReference(InUniformBuffer);
 	}
 
-	void FRHIDx12::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	void FRHIDx12::SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
 	{
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
@@ -2257,6 +2257,11 @@ namespace tix
 	{
 		FArgumentBufferDx12 * ArgDx12 = static_cast<FArgumentBufferDx12*>(InArgumentBuffer.get());
 		SetComputeResourceTable(InBindIndex, ArgDx12->ResourceTable);
+	}
+	
+	void FRHIDx12::SetComputeTexture(int32 BindIndex, FTexturePtr InTexture)
+	{
+		TI_ASSERT(0);
 	}
 
 	void FRHIDx12::DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount)
