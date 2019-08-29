@@ -49,11 +49,11 @@ inline half4 GetBaseColor(float2 texcoord,
     float2 VTCoord = fract(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
     float MipLevel = floor(mip_map_level(VTCoord, VTSize));
     
-    constexpr sampler PointSampler(mip_filter::none,
-                                   mag_filter::linear,
-                                   min_filter::linear,
+    constexpr sampler PointSampler(mip_filter::nearest,
+                                   mag_filter::nearest,
+                                   min_filter::nearest,
                                    address::clamp_to_edge);
-    half4 Indirect = IndirectTexture.sample(PointSampler, VTCoord, MipLevel);
+    half4 Indirect = IndirectTexture.sample(PointSampler, VTCoord, level(MipLevel));
     // coord in virtual texture -
     int VTMipSize = VTSize / (int)(exp2(MipLevel));
     float2 VTPos = VTCoord * VTMipSize / PPSize;

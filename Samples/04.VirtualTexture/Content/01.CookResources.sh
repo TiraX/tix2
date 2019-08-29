@@ -23,7 +23,7 @@ done
 
 echo "Baking virtual texture pages."
 VTBaker="$(dirname "$0")"/../../../Binary/Mac/VTTextureBaker
-# "$VTBaker" showcase_01.tjs Cooked/iOS -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256
+# "$VTBaker" showcase_01.tjs Cooked/iOS -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256 -FillAllPages
 "$VTBaker" showcase_01.tjs Cooked/iOS
 # Convert scene file again with vt_info
 "$Converter" showcase_01.tjs Cooked/iOS/showcase_01.tasset -VTInfo=showcase_01_vt.tjs
