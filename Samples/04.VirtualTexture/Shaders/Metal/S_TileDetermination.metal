@@ -14,7 +14,7 @@ typedef struct ComputeShaderArguments {
     device float * OutputUV [[ id(1) ]];
 } ComputeShaderArguments;
 
-static constant float vt_mips[7] = {64.f, 32.f, 16.f, 8.f, 4.f, 2.f, 1.f};
+static constant uint vt_mips[7] = {64, 32, 16, 8, 4, 2, 1};
 static constant int vt_mips_offset[7] = { 0, 4096, 5120, 5376, 5440, 5456, 5460 };
 
 //constant half3 kRec709Luma = half3(0.2126, 0.7152, 0.0722);
