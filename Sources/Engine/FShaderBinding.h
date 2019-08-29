@@ -33,6 +33,10 @@ namespace tix
 		ARGUMENT_EB_LIGHTS,
 		ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC,
 		ARGUMENT_MI_ARGUMENTS,
+        
+        // Used for ios metal binding
+        ARGUMENT_EB_VT_INDIRECT,
+        ARGUMENT_EB_VT_PHYSIC,
 
 		ARGUMENT_UNKNOWN,
 	};

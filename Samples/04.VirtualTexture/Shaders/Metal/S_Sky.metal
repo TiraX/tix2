@@ -36,15 +36,20 @@ vertex VSOutput S_SkyVS(VertexInput vsInput [[ stage_in ]],
 
 
 #if (VT_ENABLED)
-fragment VTBufferData S_SkyPS(VSOutput input [[stage_in]],
-                       constant VTArguments & EB_VTArgs [[ buffer(PBIndex_VirtualTexture) ]],
-                       constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
+
+//texture2d<half> IndirectTexture  [[ id(0) ]];
+//texture2d<half> PhysicTexture  [[ id(1) ]];
+fragment VTBufferData
+S_SkyPS(VSOutput input [[stage_in]],
+        texture2d<half, access::sample> EB_VTIndirectTexture [[ texture(PBIndex_VTIndirectTexture) ]],
+        texture2d<half, access::sample> EB_VTPhysicTexture [[texture(PBIndex_VTPhysicTexture)]],
+        constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
     VTBufferData Data;
     half4 Color = GetBaseColor(input.texcoord0.xy,
                                EB_Primitive.VTUVTransform,
-                               EB_VTArgs.IndirectTexture,
-                               EB_VTArgs.PhysicTexture);
+                               EB_VTIndirectTexture,
+                               EB_VTPhysicTexture);
     
     Data.color = Color;
     Data.uv = GetVTTextureCoords(input.texcoord0.xy, EB_Primitive.VTUVTransform);

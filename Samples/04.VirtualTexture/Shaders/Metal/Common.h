@@ -20,3 +20,9 @@ typedef enum TiXShaderBufferIndex
     PBIndex_View = 2,
     PBIndex_Primitive = 3,
 } TiXShaderBufferIndex;
+
+typedef enum TiXShaderTextureIndex
+{
+    PBIndex_VTIndirectTexture = 0,
+    PBIndex_VTPhysicTexture = 1,
+} TiXShaderTextureIndex;

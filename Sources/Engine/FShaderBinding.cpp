@@ -43,8 +43,15 @@ namespace tix
 					return ARGUMENT_EB_PRIMITIVE;
 				if (BufferName == "Lights")
 					return ARGUMENT_EB_LIGHTS;
+#if (COMPILE_WITH_RHI_METAL)
+                if (BufferName == "VTIndirectTexture")
+                    return ARGUMENT_EB_VT_INDIRECT;
+                if (BufferName == "VTPhysicTexture")
+                    return ARGUMENT_EB_VT_PHYSIC;
+#else
                 if (BufferName.substr(0, 6) == "VTArgs")
                     return ARGUMENT_EB_VT_INDIRECT_AND_PHYSIC;
+#endif
 			}
             else if (Prefix == "MI")
             {

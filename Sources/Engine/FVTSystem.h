@@ -77,6 +77,16 @@ namespace tix
 		{
 			return VTResource;
 		}
+        
+        FTexturePtr GetVTIndirectTexture()
+        {
+            return IndirectTexture;
+        }
+        
+        FTexturePtr GetVTPhysicTexture()
+        {
+            return PhysicPageAtlas;
+        }
 
 		struct FPageLoadInfo
 		{
