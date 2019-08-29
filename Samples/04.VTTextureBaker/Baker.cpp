@@ -11,6 +11,7 @@
 
 namespace tix
 {
+	static TImage* EmptyPage = nullptr;
 	static bool bAddBorder = true;
 	static bool bDebugBorder = false;
 	static const int32 BorderWidth = 1;
@@ -25,6 +26,10 @@ namespace tix
 
 	TVTTextureBaker::~TVTTextureBaker()
 	{
+		if (EmptyPage != nullptr)
+		{
+			ti_delete EmptyPage;
+		}
 		TResMTTaskExecuter::Destroy();
 		ClearAllTextures();
 	}
@@ -848,6 +853,69 @@ namespace tix
 		}
 	};
 
+	void OutputDebugPage(int32 Mip, int32 PageX, int32 PageY, int32 PPSize, const TString& OutPath)
+	{
+		if (EmptyPage == nullptr)
+		{
+			// Create empty page
+			TImage* RGBEmpty = ti_new TImage(EPF_RGBA8, PPSize, PPSize);
+			SColor EmptyColor(255, 0, 255, 255);
+			for (int32 y = 0 ; y < PPSize ; ++ y)
+			{
+				for (int32 x = 0 ; x < PPSize ; ++ x)
+				{
+					RGBEmpty->SetPixel(x, y, EmptyColor);
+				}
+			}
+
+			E_PIXEL_FORMAT DstFormat;
+			// convert to target format
+#if defined (TI_PLATFORM_WIN32)
+			DstFormat = EPF_DDS_DXT5;
+#elif defined (TI_PLATFORM_IOS)
+			DstFormat = EPF_ASTC4x4;
+#else
+			TI_ASSERT(0);
+#endif
+			TImage* DstImage = ti_new TImage(DstFormat, PPSize, PPSize);
+			uint8_t* Dst = (uint8_t*)DstImage->GetMipmap(0).Data.GetBuffer();
+
+			const TImage::TSurfaceData& MipData = RGBEmpty->GetMipmap(0);
+			rgba_surface Surface;
+			Surface.ptr = (uint8_t*)MipData.Data.GetBuffer();
+			Surface.width = MipData.W;
+			Surface.height = MipData.H;
+			Surface.stride = MipData.RowPitch;
+
+			// Call ISPC function to convert
+			if (DstFormat == EPF_DDS_DXT5)
+			{
+				CompressBlocksBC3(&Surface, Dst);
+			}
+			else if (DstFormat == EPF_ASTC4x4)
+			{
+				astc_enc_settings AstcEncSetting;
+				GetProfile_astc_alpha_fast(&AstcEncSetting, 4, 4);
+				CompressBlocksASTC(&Surface, Dst, &AstcEncSetting);
+			}
+			else
+			{
+				TI_ASSERT(0);
+			}
+			EmptyPage = DstImage;
+			ti_delete RGBEmpty;
+		}
+
+		// save EmptyPage.
+		char name[128];
+		sprintf(name, "%s/%02d_%02d_%02d.page", OutPath.c_str(), Mip, PageX, PageY);
+		TFile PageFile;
+		if (PageFile.Open(name, EFA_CREATEWRITE))
+		{
+			PageFile.Write(EmptyPage->GetMipmap(0).Data.GetBuffer(), EmptyPage->GetMipmap(0).Data.GetLength());
+		}
+	}
+
 	void TVTTextureBaker::CompressTextures()
 	{
 		TIMER_RECORDER("Compress textures");
@@ -877,14 +945,21 @@ namespace tix
 			{
 				for (auto& Page : PagesWithBorder)
 				{
+					int32 PageX = Page.first % RegionSize;
+					int32 PageY = Page.first / RegionSize;
+
 					if (Page.second != nullptr)
 					{
-						int32 PageX = Page.first % RegionSize;
-						int32 PageY = Page.first / RegionSize;
-
 						TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
 						TResMTTaskExecuter::Get()->AddTask(Task);
 						Tasks.push_back(Task);
+					}
+					else
+					{
+						if (bDebugFillAllPages)
+						{
+							OutputDebugPage(M, PageX, PageY, PPSize, OutputFullPath);
+						}
 					}
 				}
 			}
@@ -892,14 +967,21 @@ namespace tix
 			{
 				for (auto& Page : Pages)
 				{
+					int32 PageX = Page.first % RegionSize;
+					int32 PageY = Page.first / RegionSize;
+
 					if (Page.second != nullptr)
 					{
-						int32 PageX = Page.first % RegionSize;
-						int32 PageY = Page.first / RegionSize;
-
 						TComporessTextureTask * Task = ti_new TComporessTextureTask(Page.second, M, PageX, PageY, OutputFullPath);
 						TResMTTaskExecuter::Get()->AddTask(Task);
 						Tasks.push_back(Task);
+					}
+					else
+					{
+						if (bDebugFillAllPages)
+						{
+							OutputDebugPage(M, PageX, PageY, PPSize, OutputFullPath);
+						}
 					}
 				}
 			}

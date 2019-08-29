@@ -14,6 +14,7 @@ bool bDumpAllVTs = false;
 bool bDumpAllVTWithBorder = false;
 bool bIgnoreBorders = false;
 bool bDebugBorders = false;
+bool bDebugFillAllPages = false;
 int32 InputVTSize = -1;
 int32 InputPPSize = -1;
 
@@ -65,6 +66,10 @@ bool ParseParams(int argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 			{
 				bDebugBorders = true;
 			}
+			else if (key == "FillAllPages")
+			{
+				bDebugFillAllPages = true;
+			}
 			else if (key == "VTSize")
 			{
 				InputVTSize = atoi(value.c_str());
@@ -101,6 +106,7 @@ int32 DoBake(int32 argc, VT_TEXTURE_BAKER_CONST int8* argv[])
 		Baker.bDumpAllVTWithBorder = bDumpAllVTWithBorder;
 		Baker.bIgnoreBorders = bIgnoreBorders;
 		Baker.bDebugBorders = bDebugBorders;
+		Baker.bDebugFillAllPages = bDebugFillAllPages;
 		if (InputVTSize > 0)
 		{
 			Baker.VTSize = InputVTSize;
