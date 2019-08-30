@@ -150,6 +150,7 @@ namespace tix
 
 	void FRenderThread::OnThreadStart()
 	{
+        TI_TODO("Set render thread priority for metal.");
 		TThread::OnThreadStart();
 		TThread::IndicateRenderThread();
 
