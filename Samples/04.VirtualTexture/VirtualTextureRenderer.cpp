@@ -8,6 +8,9 @@
 #include "FVTSystem.h"
 #include "FVTTaskThread.h"
 
+static const int32 QuadTreeElementSize = sizeof(float);
+static const int32 QuadTreeElementCount = FVTSystem::TotalPagesInVT;
+
 FTileDeterminationCS::FTileDeterminationCS(int32 W, int32 H)
 	: FComputeTask("S_TileDeterminationCS")
 	, InputSize(W, H)
@@ -38,15 +41,13 @@ void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 {
 	// prepare compute parameters
 	//int32 MipSize = FVTSystem::VTSize;
-	int32 BufferSize = FVTSystem::TotalPagesInVT;
 	// create quad tree buffer to store tile info
-    const int32 ElementSize = sizeof(float);
-	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(ElementSize, BufferSize, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
+	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(QuadTreeElementSize, QuadTreeElementCount, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, nullptr);
 	// create a zero inited buffer to clear quad tree buffer
-	QuadTreeBufferClear = FRHI::Get()->CreateUniformBuffer(ElementSize, BufferSize, 0);
-	uint8 * ZeroData = ti_new uint8[ElementSize * BufferSize];
-	memset(ZeroData, 0, ElementSize * BufferSize);
+	QuadTreeBufferClear = FRHI::Get()->CreateUniformBuffer(QuadTreeElementSize, QuadTreeElementCount, 0);
+	uint8 * ZeroData = ti_new uint8[QuadTreeElementSize * QuadTreeElementCount];
+	memset(ZeroData, 0, QuadTreeElementSize * QuadTreeElementCount);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBufferClear, ZeroData);
 	ti_delete[] ZeroData;
     
@@ -82,7 +83,7 @@ void FTileDeterminationCS::ClearQuadTree(FRHI * RHI)
 {
     TI_TODO("Finish this clear process.");
 	// Clear quad tree.
-	//RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, FVTSystem::TotalPagesInVT * 4);
+	RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, QuadTreeElementCount * QuadTreeElementSize);
 }
 
 ////////////////////////////////////////////////////////

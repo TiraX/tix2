@@ -981,11 +981,12 @@ namespace tix
         FUniformBufferMetal * DstMetalBuffer = static_cast<FUniformBufferMetal*>(DstBuffer.get());
         FUniformBufferMetal * SrcMetalBuffer = static_cast<FUniformBufferMetal*>(SrcBuffer.get());
         
-        [BlitEncoder copyFromBuffer: SrcMetalBuffer->Buffer
-                       sourceOffset: 0
-                           toBuffer: DstMetalBuffer->Buffer
-                  destinationOffset: DstOffset
-                               size: Length];
+        id <MTLBlitCommandEncoder> BlitCommandEncoder = RequestBlitEncoder();
+        [BlitCommandEncoder copyFromBuffer: SrcMetalBuffer->Buffer
+                              sourceOffset: 0
+                                  toBuffer: DstMetalBuffer->Buffer
+                         destinationOffset: DstOffset
+                                      size: Length];
         return true;
     }
     
