@@ -40,14 +40,13 @@ void FTileDeterminationCS::Run(FRHI * RHI)
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
 {
 	// prepare compute parameters
-	//int32 MipSize = FVTSystem::VTSize;
 	// create quad tree buffer to store tile info
+    uint8 * ZeroData = ti_new uint8[QuadTreeElementSize * QuadTreeElementCount];
+    memset(ZeroData, 0, QuadTreeElementSize * QuadTreeElementCount);
 	QuadTreeBuffer = FRHI::Get()->CreateUniformBuffer(QuadTreeElementSize, QuadTreeElementCount, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_READBACK);
-	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, nullptr);
+	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBuffer, ZeroData);
 	// create a zero inited buffer to clear quad tree buffer
 	QuadTreeBufferClear = FRHI::Get()->CreateUniformBuffer(QuadTreeElementSize, QuadTreeElementCount, 0);
-	uint8 * ZeroData = ti_new uint8[QuadTreeElementSize * QuadTreeElementCount];
-	memset(ZeroData, 0, QuadTreeElementSize * QuadTreeElementCount);
 	FRHI::Get()->UpdateHardwareResourceUB(QuadTreeBufferClear, ZeroData);
 	ti_delete[] ZeroData;
     

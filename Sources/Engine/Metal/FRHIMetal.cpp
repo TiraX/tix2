@@ -49,7 +49,7 @@ namespace tix
             FrameResources[i] = ResHolders[i];
         }
         
-        ClearBindedBuffers();
+        ClearBindedResources();
 	}
 
 	FRHIMetal::~FRHIMetal()
@@ -110,7 +110,7 @@ namespace tix
 	void FRHIMetal::BeginFrame()
     {
         FRHI::BeginFrame();
-        ClearBindedBuffers();
+        ClearBindedResources();
         
         TI_ASSERT(CommandBuffer == nil);
         TI_ASSERT(RenderEncoder == nil);
@@ -1080,7 +1080,12 @@ namespace tix
 	void FRHIMetal::SetShaderTexture(int32 BindIndex, FTexturePtr InTexture)
 	{
         FTextureMetal * TexMetal = static_cast<FTextureMetal*>(InTexture.get());
-        [RenderEncoder setFragmentTexture:TexMetal->Texture atIndex:BindIndex];
+        TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
+        if (PSBindedTextures[BindIndex] != TexMetal->Texture)
+        {
+            [RenderEncoder setFragmentTexture:TexMetal->Texture atIndex:BindIndex];
+            PSBindedTextures[BindIndex] = TexMetal->Texture;
+        }
 	}
     
     void FRHIMetal::SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer)
@@ -1088,10 +1093,14 @@ namespace tix
         FArgumentBufferMetal * ABMetal = static_cast<FArgumentBufferMetal*>(InArgumentBuffer.get());
         TI_ASSERT(BindIndex >= 0 && BindIndex < 31);
 
-        // Set argument buffer
-        [RenderEncoder setFragmentBuffer: ABMetal->ArgumentBuffer
-                                  offset: 0
-                                 atIndex: BindIndex];
+        if (PSBindedBuffers[BindIndex] != ABMetal->ArgumentBuffer)
+        {
+            // Set argument buffer
+            [RenderEncoder setFragmentBuffer: ABMetal->ArgumentBuffer
+                                      offset: 0
+                                     atIndex: BindIndex];
+            PSBindedBuffers[BindIndex] = ABMetal->ArgumentBuffer;
+        }
     }
     
     void FRHIMetal::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
@@ -1261,12 +1270,16 @@ namespace tix
         ResHolders[CurrentFrame]->HoldMetalTextureReference(InTexture);
     }
     
-    void FRHIMetal::ClearBindedBuffers()
+    void FRHIMetal::ClearBindedResources()
     {
         for (int32 i = 0 ; i < MaxBindingBuffers; ++ i)
         {
             VSBindedBuffers[i] = nil;
             PSBindedBuffers[i] = nil;
+        }
+        for (int32 i = 0 ; i < MaxBindingTextures; ++ i)
+        {
+            PSBindedTextures[i] = nil;
         }
     }
 }
