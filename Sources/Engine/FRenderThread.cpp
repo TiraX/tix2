@@ -25,13 +25,15 @@ namespace tix
 
 	void FRenderThread::CreateRenderThread(bool ForceDisableThread)
 	{
-        TI_TODO("Give render thread priority, as iOS required 45.");
 		FRenderThread::ThreadEnabled = !ForceDisableThread;
 		TI_ASSERT(RenderThread == nullptr);
 		RenderThread = ti_new FRenderThread;
 		if (FRenderThread::ThreadEnabled)
 		{
 			RenderThread->Start();
+			// Give render thread priority, as iOS required 45
+			// 612_hd_metal_game_performance_optimization.mp4 33'35"
+			RenderThread->SetPriority(45);
 		}
 		else
 		{
@@ -150,7 +152,6 @@ namespace tix
 
 	void FRenderThread::OnThreadStart()
 	{
-        TI_TODO("Set render thread priority for metal.");
 		TThread::OnThreadStart();
 		TThread::IndicateRenderThread();
 

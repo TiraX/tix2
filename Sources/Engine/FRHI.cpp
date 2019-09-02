@@ -55,6 +55,8 @@ namespace tix
 
 	FRHI::~FRHI()
 	{
+		CurrentRenderTarget = nullptr;
+		CurrentBoundResource.Reset();
 	}
 
 	void FRHI::SetViewport(const FViewport& InViewport)

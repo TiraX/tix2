@@ -111,6 +111,18 @@ namespace tix
 		ThreadId = GetThreadId();
 	}
 
+	void TThread::SetPriority(uint32 InPriority)
+	{
+#ifdef TI_PLATFORM_IOS
+		TI_ASSERT(Thread != nullptr);
+		struct sched_param param;
+		param.sched_priority = InPriority;
+		int32 Result = pthread_setschedparam(Thread->native_handle(), SCHED_RR, &param);
+		TI_ASSERT(Result == 0);
+#else
+#endif // TI_PLATFORM_IOS
+	}
+
 #ifdef TI_PLATFORM_WIN32
 	const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)  

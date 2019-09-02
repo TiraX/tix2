@@ -30,6 +30,8 @@ namespace tix
 		virtual void Run() = 0;
 		virtual void OnThreadStart();
 		virtual void OnThreadEnd() {};
+
+		virtual void SetPriority(uint32 InPriority);
 		
 		virtual bool ThreadRunning()
 		{

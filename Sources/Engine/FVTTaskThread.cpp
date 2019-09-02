@@ -58,19 +58,25 @@ namespace tix
 		}
 		
 		{
-			TI_ASSERT(BufferToAnalysis != nullptr);
-			AnalysisBuffer();
+			// When thread exit BufferToAnalysis is nullptr
+			if (BufferToAnalysis != nullptr)
+			{
+				AnalysisBuffer();
+			}
 		}
 	}
 
 	void FVTAnalysisThread::AddUVBuffer(TStreamPtr InBuffer)
 	{
-		unique_lock<TMutex> CLock(TaskBeginMutex);
-		TaskBeginCond.notify_one();
-
-		BufferMutex.lock();
-		BufferToAnalysis = InBuffer;
-		BufferMutex.unlock();
+		{
+			BufferMutex.lock();
+			BufferToAnalysis = InBuffer;
+			BufferMutex.unlock();
+		}
+		{
+			unique_lock<TMutex> CLock(TaskBeginMutex);
+			TaskBeginCond.notify_one();
+		}
 	}
 
 #if !VT_PRELOADED_REGIONS

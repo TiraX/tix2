@@ -28,9 +28,10 @@ namespace tix
 
 	void TTaskThread::Run()
 	{
-		TI_TODO("Try decrease TaskLock effective range");
-		unique_lock<TMutex> TaskLock(TaskMutex);
-		TaskCond.wait(TaskLock);
+		{
+			unique_lock<TMutex> TaskLock(TaskMutex);
+			TaskCond.wait(TaskLock);
+		}
 
 		DoTasks();
 	}

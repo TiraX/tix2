@@ -261,6 +261,8 @@ namespace tix
 		if (!Enabled)
 			return;
 
+#if (VT_PRELOADED_REGIONS)
+#else
 		TI_ASSERT(0);
 		uint32 TexturesHash = GetPrimitiveTextureHash(InPrimitive);
 		THMap<uint32, FRegionInfo>::iterator It = RegionsAllocated.find(TexturesHash);
@@ -277,6 +279,7 @@ namespace tix
 			// remove TexturesInVT
 			// clear RegionData
 		}
+#endif
 	}
 
 	void FVTSystem::GetPageLoadInfoByPageIndex(uint32 PageIndex, FPageLoadInfo& OutInfo)
