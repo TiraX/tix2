@@ -26,7 +26,7 @@ RWStructuredBuffer<float> OutputUV : register(u0);	// UAV: Processed indirect co
 
 #define threadBlockSize 32
 
-static const float vt_mips[7] = { 64.f, 32.f, 16.f, 8.f, 4.f, 2.f, 1.f };
+static const uint vt_mips[7] = { 64, 32, 16, 8, 4, 2, 1 };
 static const int vt_mips_offset[7] = { 0, 4096, 5120, 5376, 5440, 5456, 5460 };
 
 [RootSignature(TileDetermination_RootSig)]
@@ -37,9 +37,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint mip_level = uint(result.z);
 	uint vt_mip_size = vt_mips[mip_level];
 	result.xy = min(float2(0.999f, 0.999f), result.xy);
-	uint page_x = uint(result.x * vt_mip_size);
-	uint page_y = uint(result.y * vt_mip_size);
-	uint output_index = page_y * vt_mip_size + page_x + vt_mips_offset[mip_level];
+	uint2 page = uint2(result.xy * vt_mip_size);
+	uint output_index = page.y * vt_mip_size + page.x + vt_mips_offset[mip_level];
 
 	OutputUV[output_index] = 1;
 }
