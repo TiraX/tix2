@@ -45,8 +45,8 @@ S_GrassPS(VSOutput input [[stage_in]],
                                EB_VTIndirectTexture,
                                EB_VTPhysicTexture);
     
-    if (Color.w < 0.1h)
-        discard_fragment();
+    //if (Color.w < 0.1h)
+    //    discard_fragment();
    
     Data.color = Color;
     Data.uv = GetVTTextureCoords(input.texcoord0.xy, EB_Primitive.VTUVTransform);
@@ -66,8 +66,8 @@ fragment half4 S_GrassPS(VSOutput input [[stage_in]],
 {
     half4 Color = GetBaseColor(MI_Args.TexBaseColor, input.texcoord0.xy);
     
-    if (Color.w < 0.1h)
-        discard_fragment();
+    //if (Color.w < 0.1h)
+    //    discard_fragment();
     
     return Color;
 }
