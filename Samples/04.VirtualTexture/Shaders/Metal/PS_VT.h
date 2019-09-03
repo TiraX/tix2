@@ -35,7 +35,7 @@ inline float mip_map_level(float2 texture_coordinate, float texture_size) // in 
 inline half4 GetVTTextureCoords(float2 texcoord, float4 VTUVTransform)
 {
     float4 TexCoord;
-    TexCoord.xy = fract(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
+    TexCoord.xy = clamp(fract(texcoord), 0.f, 0.99f) * VTUVTransform.zw + VTUVTransform.xy;
     TexCoord.z = mip_map_level(TexCoord.xy, VTSize);
     TexCoord.w = 1.0;
     return half4(TexCoord);

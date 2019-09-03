@@ -36,11 +36,13 @@ S_TileDeterminationCS(texture2d<half, access::read> ScreenUV [[texture(0)]],
     }
     
     half4 result = ScreenUV.read(gid);
-    uint mip_level = uint(result.z);
-    uint vt_mip_size = vt_mips[mip_level];
-    result.xy = min(half2(0.999h, 0.999h), result.xy);
-    uint page_x = uint(result.x * vt_mip_size);
-    uint page_y = uint(result.y * vt_mip_size);
-    uint output_index = page_y * vt_mip_size + page_x + vt_mips_offset[mip_level];
-    OutputUV[output_index] = 1.f;
+    if (!isnan(result.z) && result.z >= 0.f)
+    {
+        uint mip_level = uint(result.z);
+        uint vt_mip_size = vt_mips[mip_level];
+        result.xy = min(half2(0.999h, 0.999h), result.xy);
+        uint2 page = uint2(result.xy * vt_mip_size);
+        uint output_index = page.y * vt_mip_size + page.x + vt_mips_offset[mip_level];
+        OutputUV[output_index] = 1.f;
+    }
 }
