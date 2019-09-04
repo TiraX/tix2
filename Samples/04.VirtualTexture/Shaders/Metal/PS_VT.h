@@ -57,7 +57,12 @@ inline half4 GetBaseColor(float4 VTCoord,
     // coord in virtual texture -
     int VTMipSize = VTSize / (int)(exp2(MipLevel));
     float2 VTPos = VTCoord.xy * VTMipSize / PPSize;
-    float2 Coord = fract(VTPos) * 256 / 258 + 1.0 / 258;
+    
+    const float m = 256.f / 258.f;
+    const float a = 1.f / 258.f;
+    
+    float2 Coord = fma(fract(VTPos), m, a);
+    //fract(VTPos) * 256 / 258 + 1.0 / 258;
     //float2 Coord = frac(VTPos);
     float2 PPCoord = (floor(float2(Indirect.xy) * 256.f) + Coord) * PAInv;
     
