@@ -32,31 +32,31 @@ inline float mip_map_level(float2 texture_coordinate, float texture_size) // in 
     return min(6.0, max(0.0, 0.5 * log2(delta_max_sqr)));
 }
 
-inline half4 GetVTTextureCoords(float2 texcoord, float4 VTUVTransform)
+inline float4 GetVTTextureCoords(float2 texcoord, float4 VTUVTransform)
 {
     float4 TexCoord;
     TexCoord.xy = clamp(fract(texcoord), 0.f, 0.99f) * VTUVTransform.zw + VTUVTransform.xy;
     TexCoord.z = mip_map_level(TexCoord.xy, VTSize);
     TexCoord.w = 1.0;
-    return half4(TexCoord);
+    return (TexCoord);
 }
 
-inline half4 GetBaseColor(float2 texcoord,
-                          float4 VTUVTransform,
+inline half4 GetBaseColor(float4 VTCoord,
                           texture2d<half> IndirectTexture,
                           texture2d<half> PhysicTexture)
 {
-    float2 VTCoord = fract(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
-    float MipLevel = floor(mip_map_level(VTCoord, VTSize));
+    //float2 VTCoord = fract(texcoord) * VTUVTransform.zw + VTUVTransform.xy;
+    //float MipLevel = floor(mip_map_level(VTCoord, VTSize));
+    float MipLevel = floor(VTCoord.z);
     
     constexpr sampler PointSampler(mip_filter::nearest,
                                    mag_filter::nearest,
                                    min_filter::nearest,
                                    address::clamp_to_edge);
-    half4 Indirect = IndirectTexture.sample(PointSampler, VTCoord, level(MipLevel));
+    half4 Indirect = IndirectTexture.sample(PointSampler, VTCoord.xy, level(MipLevel));
     // coord in virtual texture -
     int VTMipSize = VTSize / (int)(exp2(MipLevel));
-    float2 VTPos = VTCoord * VTMipSize / PPSize;
+    float2 VTPos = VTCoord.xy * VTMipSize / PPSize;
     float2 Coord = fract(VTPos) * 256 / 258 + 1.0 / 258;
     //float2 Coord = frac(VTPos);
     float2 PPCoord = (floor(float2(Indirect.xy) * 256.f) + Coord) * PAInv;

@@ -23,7 +23,7 @@ vertex VSOutput S_GrassVS(VertexInput vsInput [[ stage_in ]],
     
     float3 WorldPosition = GetWorldPosition(vsInput);
     vsOutput.position = EB_View.ViewProjection * float4(WorldPosition, 1.0);
-    vsOutput.texcoord0 = GetTextureCoords(vsInput);
+    vsOutput.texcoord0 = GetTextureCoords(vsInput, EB_Primitive.VTUVTransform);
     
     vsOutput.normal = vsInput.normal * 2.0h - 1.0h;
     vsOutput.tangent = vsInput.tangent * 2.0h - 1.0h;
@@ -40,16 +40,16 @@ S_GrassPS(VSOutput input [[stage_in]],
           constant EB_Primitive & EB_Primitive [[ buffer(PBIndex_Primitive) ]])
 {
     VTBufferData Data;
-    half4 Color = GetBaseColor(input.texcoord0.xy,
-                               EB_Primitive.VTUVTransform,
+    float4 VTUV = GetVTTextureCoords(input.texcoord0.xy, EB_Primitive.VTUVTransform);
+    half4 Color = GetBaseColor(VTUV,
                                EB_VTIndirectTexture,
                                EB_VTPhysicTexture);
     
     //if (Color.w < 0.1h)
     //    discard_fragment();
-   
+    
     Data.color = Color;
-    Data.uv = GetVTTextureCoords(input.texcoord0.xy, EB_Primitive.VTUVTransform);
+    Data.uv = half4(VTUV);
     
     return Data;
 }

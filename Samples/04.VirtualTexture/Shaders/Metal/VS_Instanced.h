@@ -51,7 +51,9 @@ inline float3 GetWorldPosition(VertexInput vsInput)
     return position;
 }
 
-inline float2 GetTextureCoords(VertexInput vsInput)
+inline float2 GetTextureCoords(VertexInput vsInput, float4 VTTransform)
 {
-	return float2(vsInput.texcoord0);
+	//return (clamp(float2(vsInput.texcoord0), 0.f, 0.99f) * VTTransform.zw + VTTransform.xy);
+    return float2(vsInput.texcoord0);
+
 }
