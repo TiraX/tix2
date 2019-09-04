@@ -29,13 +29,14 @@ S_TileDeterminationCS(texture2d<half, access::read> ScreenUV [[texture(0)]],
                       )
 {
     // Check if the pixel is within the bounds of the output texture
-    if((gid.x >= ScreenUV.get_width()) || (gid.y >= ScreenUV.get_height()))
+    uint2 pos = gid * 4;
+    if((pos.x >= ScreenUV.get_width()) || (pos.y >= ScreenUV.get_height()))
     {
         // Return early if the pixel is out of bounds
         return;
     }
     
-    half4 result = ScreenUV.read(gid);
+    half4 result = ScreenUV.read(pos);
     if (!isnan(result.z) && result.z >= 0.f)
     {
         uint mip_level = uint(result.z);

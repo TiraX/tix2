@@ -34,7 +34,8 @@ void FTileDeterminationCS::Run(FRHI * RHI)
     RHI->SetComputeArgumentBuffer(0, ComputeArgument);
 #endif
 
-	RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize), int32(InputSize.Y / ThreadBlockSize), 1));
+    const int32 SamplerPerPixel = 4;
+	RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize / SamplerPerPixel), int32(InputSize.Y / ThreadBlockSize / SamplerPerPixel), 1));
 }
 
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
@@ -80,7 +81,6 @@ TStreamPtr FTileDeterminationCS::ReadUVBuffer()
 
 void FTileDeterminationCS::ClearQuadTree(FRHI * RHI)
 {
-    TI_TODO("Finish this clear process.");
 	// Clear quad tree.
 	RHI->CopyBufferRegion(QuadTreeBuffer, 0, QuadTreeBufferClear, QuadTreeElementCount * QuadTreeElementSize);
 }
