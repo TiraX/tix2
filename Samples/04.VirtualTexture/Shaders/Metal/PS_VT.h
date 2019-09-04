@@ -55,8 +55,10 @@ inline half4 GetBaseColor(float4 VTCoord,
                                    address::clamp_to_edge);
     half4 Indirect = IndirectTexture.sample(PointSampler, VTCoord.xy, level(MipLevel));
     // coord in virtual texture -
-    int VTMipSize = VTSize / (int)(exp2(MipLevel));
-    float2 VTPos = VTCoord.xy * VTMipSize / PPSize;
+    const float VTMipFactor[7] = {64.f, 32.f, 16.f, 8.f, 4.f, 2.f, 1.f};
+    //int VTMipSize = VTSize / (int)(exp2(MipLevel));
+    //float2 VTPos = VTCoord.xy * VTMipSize / PPSize;
+    float2 VTPos = VTCoord.xy * VTMipFactor[int(MipLevel)];
     
     const float m = 256.f / 258.f;
     const float a = 1.f / 258.f;
