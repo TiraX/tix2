@@ -7,6 +7,7 @@
 //
 
 #define VT_ENABLED 1
+#define VT_USE_TILESHADER 1
 
 typedef enum TiXShaderBufferIndex
 {
@@ -26,3 +27,13 @@ typedef enum TiXShaderTextureIndex
     PBIndex_VTIndirectTexture = 0,
     PBIndex_VTPhysicTexture = 1,
 } TiXShaderTextureIndex;
+
+#if (VT_ENABLED)
+// VT uv output
+struct VTBufferData
+{
+    half4 color [[color(0)]];
+    half4 uv [[color(1)]];
+};
+
+#endif

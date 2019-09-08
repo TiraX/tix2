@@ -79,8 +79,8 @@ namespace tix
 		virtual void EndFrame() = 0;
         virtual void BeginRenderToFrameBuffer() {};
 
-		virtual void BeginComputeTask() = 0;
-		virtual void EndComputeTask() = 0;
+		virtual void BeginComputeTask(FComputeTaskPtr ComputTask) = 0;
+		virtual void EndComputeTask(FComputeTaskPtr ComputTask) = 0;
 
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;
@@ -103,6 +103,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) = 0;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) = 0;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) = 0;
+        virtual bool UpdateHardwareResourceTilePL(FPipelinePtr Pipeline, TTilePipelinePtr InTilePipelineDesc) = 0;
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) = 0;
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
@@ -129,6 +130,11 @@ namespace tix
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) = 0;
 		virtual void GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
+        
+        // Tile
+        virtual void SetTilePipeline(FPipelinePtr InPipeline) = 0;
+        virtual void SetTileBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
+        virtual void DispatchTile(const vector3di& GroupSize) = 0;
 
 		// Compute
 		virtual void SetComputePipeline(FPipelinePtr InPipeline) = 0;
@@ -141,6 +147,8 @@ namespace tix
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
+        
+        // TileWidth, TileHeight, ThreadGroupMemoryLength for iOS Metal when use tile shader.
 		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass");
 
 		E_RHI_TYPE GetRHIType() const

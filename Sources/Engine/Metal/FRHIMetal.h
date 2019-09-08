@@ -24,8 +24,8 @@ namespace tix
 		virtual void EndFrame() override;
         virtual void BeginRenderToFrameBuffer() override;
 
-        virtual void BeginComputeTask() override;
-        virtual void EndComputeTask() override;
+        virtual void BeginComputeTask(FComputeTaskPtr ComputTask) override;
+        virtual void EndComputeTask(FComputeTaskPtr ComputTask) override;
         
         virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
@@ -47,6 +47,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) override;
         virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TImagePtr InTexData) override;
 		virtual bool UpdateHardwareResourcePL(FPipelinePtr Pipeline, TPipelinePtr InPipelineDesc) override;
+        virtual bool UpdateHardwareResourceTilePL(FPipelinePtr Pipeline, TTilePipelinePtr InTilePipelineDesc) override;
 		virtual bool UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData) override;
         virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;
         virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
@@ -73,6 +74,11 @@ namespace tix
 		virtual void SetStencilRef(uint32 InRefValue) override;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount) override;
         virtual void GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
+        
+        // Tile
+        virtual void SetTilePipeline(FPipelinePtr InPipeline) override;
+        virtual void SetTileBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+        virtual void DispatchTile(const vector3di& GroupSize) override;
 
         // Compute
         virtual void SetComputePipeline(FPipelinePtr InPipeline) override;
@@ -85,7 +91,7 @@ namespace tix
         virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
         
 		virtual void SetViewport(const FViewport& InViewport) override;
-		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
+        virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;
 
 	protected: 
 		FRHIMetal();

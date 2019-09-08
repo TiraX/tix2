@@ -10,9 +10,24 @@
 
 static const int32 QuadTreeElementSize = sizeof(float);
 static const int32 QuadTreeElementCount = FVTSystem::TotalPagesInVT;
+static const E_PIXEL_FORMAT ColorAttachmentFormat = EPF_RGBA16F;
+static const E_PIXEL_FORMAT UVAttachmentFormat = EPF_RGBA16F;
 
+#if defined (TI_PLATFORM_IOS)
+#   define USE_TILE_SHADER 1
+#else
+#   define USE_TILE_SHADER 0
+#endif
+
+#if USE_TILE_SHADER
+#   define COMPUTE_FLAG COMPUTE_TILE
+#else
+#   define COMPUTE_FLAG COMPUTE_NONE
+#endif
+
+// Indicate this is a tile shader for metal.
 FTileDeterminationCS::FTileDeterminationCS(int32 W, int32 H)
-	: FComputeTask("S_TileDeterminationCS")
+	: FComputeTask("S_TileDeterminationCS", COMPUTE_FLAG)
 	, InputSize(W, H)
 	, UVBufferTriggerd(false)
 {
@@ -23,19 +38,28 @@ FTileDeterminationCS::~FTileDeterminationCS()
 
 void FTileDeterminationCS::Run(FRHI * RHI)
 {
+    if (HasFlag(COMPUTE_TILE))
+    {
+        RHI->SetTilePipeline(ComputePipeline);
+        RHI->SetTileBuffer(0, QuadTreeBuffer);
+        RHI->DispatchTile(vector3di(16, 16, 1));
+    }
+    else
+    {
 #if defined (TI_PLATFORM_IOS)
-    RHI->SetComputePipeline(ComputePipeline);
-    RHI->SetComputeTexture(0, ScreenUV);
-    RHI->SetComputeBuffer(0, QuadTreeBuffer);
+        RHI->SetComputePipeline(ComputePipeline);
+        RHI->SetComputeTexture(0, ScreenUV);
+        RHI->SetComputeBuffer(0, QuadTreeBuffer);
 #elif defined (TI_PLATFORM_WIN32)
-	RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
-
-	RHI->SetComputePipeline(ComputePipeline);
-    RHI->SetComputeArgumentBuffer(0, ComputeArgument);
+        RHI->SetResourceStateUB(QuadTreeBuffer, RESOURCE_STATE_COPY_DEST);
+        
+        RHI->SetComputePipeline(ComputePipeline);
+        RHI->SetComputeArgumentBuffer(0, ComputeArgument);
 #endif
-
-    const int32 SamplerPerPixel = 4;
-	RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize / SamplerPerPixel), int32(InputSize.Y / ThreadBlockSize / SamplerPerPixel), 1));
+        
+        const int32 SamplerPerPixel = 4;
+        RHI->DispatchCompute(vector3di(32, 32, 1), vector3di(int32(InputSize.X / ThreadBlockSize / SamplerPerPixel), int32(InputSize.Y / ThreadBlockSize / SamplerPerPixel), 1));
+    }
 }
 
 void FTileDeterminationCS::PrepareBuffers(FTexturePtr UVInput)
@@ -112,14 +136,20 @@ void FVirtualTextureRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("BasePass");
 #endif
-	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddColorBuffer(ColorAttachmentFormat, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 
 	if (FVTSystem::IsEnabled())
 	{
 		// Second for render uv onto it.
-		RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+        TI_TODO("Use memory less mode for UV Attachment when use TILE shader.");
+		RT_BasePass->AddColorBuffer(UVAttachmentFormat, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	}
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
+#if (USE_TILE_SHADER)
+    RT_BasePass->SetTileSize(vector2di(16, 16));
+    // tileW * tileH * (sizeof(RGBA16F) + sizeof(RGBA16F))
+    RT_BasePass->SetThreadGroupMemoryLength(16*16*(8+8));
+#endif
 	RT_BasePass->Compile();
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
@@ -131,6 +161,13 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	if (FVTSystem::IsEnabled())
 	{
 		ComputeTileDetermination = ti_new FTileDeterminationCS(RTWidth, RTHeight);
+#if defined (TI_PLATFORM_IOS)
+        TTilePipelinePtr TilePL = ti_new TTilePipeline;
+        TilePL->SetRTFormat(0, ColorAttachmentFormat);
+        TilePL->SetRTFormat(1, UVAttachmentFormat);
+        TilePL->SetThreadGroupSizeMatchesTileSize(true);
+        ComputeTileDetermination->SetTilePipelineDesc(TilePL);
+#endif
         ComputeTileDetermination->Finalize();
 		ComputeTileDetermination->PrepareBuffers(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture);
 	}
@@ -154,7 +191,7 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	// Render Base Pass
-	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+    RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	RenderDrawList(RHI, Scene, LIST_OPAQUE);
 	RenderDrawList(RHI, Scene, LIST_MASK);
 
@@ -163,11 +200,9 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		//if (false)
 		{
-			RHI->BeginComputeTask();
-			ComputeTileDetermination->Run(RHI);
-
+			RHI->BeginComputeTask(ComputeTileDetermination);
 			ComputeTileDetermination->PrepareDataForCPU(RHI);
-			RHI->EndComputeTask();
+			RHI->EndComputeTask(ComputeTileDetermination);
 		}
 	}
 

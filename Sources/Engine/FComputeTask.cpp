@@ -8,8 +8,9 @@
 
 namespace tix
 {
-	FComputeTask::FComputeTask(const TString& ComputeShaderName)
+	FComputeTask::FComputeTask(const TString& ComputeShaderName, uint32 InFlags)
 		: ShaderName(ComputeShaderName)
+        , Flags(InFlags)
 	{
 		ComputeShader = FRHI::Get()->CreateComputeShader(ComputeShaderName);
 		ComputePipeline = FRHI::Get()->CreatePipeline(ComputeShader);
@@ -43,7 +44,16 @@ namespace tix
 		ShaderCode->LoadShaderCode();
 		FRHI::Get()->UpdateHardwareResourceShader(ComputeShader, ShaderCode);
 
-		TPipelinePtr PipelineDesc = nullptr;
-		FRHI::Get()->UpdateHardwareResourcePL(ComputePipeline, PipelineDesc);
+        if (HasFlag(COMPUTE_TILE))
+        {
+            // For metal : Create tile pipeline state
+            TI_ASSERT(TilePLDesc->GetRTCount() > 0);
+            FRHI::Get()->UpdateHardwareResourceTilePL(ComputePipeline, TilePLDesc);
+        }
+        else
+        {
+            TPipelinePtr PipelineDesc = nullptr;
+            FRHI::Get()->UpdateHardwareResourcePL(ComputePipeline, PipelineDesc);
+        }
 	}
 }

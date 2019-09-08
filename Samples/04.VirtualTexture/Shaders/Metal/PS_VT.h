@@ -12,12 +12,6 @@ static constant int PhysicAtlasSize = 32;
 static constant float PAInv = 1.0 / PhysicAtlasSize;
 
 #if (VT_ENABLED)
-// VT uv output
-struct VTBufferData
-{
-    half4 color [[color(0)]];
-    half4 uv [[color(1)]];
-};
 
 typedef struct FragmentShaderArguments {
     texture2d<half> IndirectTexture  [[ id(0) ]];

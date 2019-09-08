@@ -253,4 +253,66 @@ namespace tix
 	protected:
 		TPipelineDesc Desc;
 	};
+    
+    ////////////////////////////////////////////////////////////////////////
+    
+    // For metal: Tile shader pipeline desc corresponding to MTLTileRenderPipelineDescriptor
+    class TTilePipeline : public TResource
+    {
+    public:
+        TTilePipeline();
+        virtual ~TTilePipeline();
+        
+        virtual void InitRenderThreadResource() override {};
+        virtual void DestroyRenderThreadResource() override {};
+        
+        void SetRTFormat(uint32 Index, E_PIXEL_FORMAT InFormat)
+        {
+            TI_ASSERT(Index < ERTC_COUNT);
+            RTFormats[Index] = InFormat;
+            if (RTCount <= Index)
+            {
+                RTCount = Index + 1;
+            }
+        }
+        
+        void SetSampleCount(uint32 InCount)
+        {
+            SampleCount = InCount;
+        }
+        
+        void SetThreadGroupSizeMatchesTileSize(bool bMatch)
+        {
+            ThreadGroupSizeMatchesTileSize = bMatch ? 1 : 0;
+        }
+        
+        E_PIXEL_FORMAT GetRTFormat(uint32 Index) const
+        {
+            TI_ASSERT(Index < RTCount);
+            return RTFormats[Index];
+        }
+        
+        uint32 GetRTCount() const
+        {
+            return RTCount;
+        }
+        
+        uint32 GetSampleCount() const
+        {
+            return SampleCount;
+        }
+        
+        uint32 GetThreadGroupSizeMatchesTileSize() const
+        {
+            return ThreadGroupSizeMatchesTileSize;
+        }
+        
+    protected:
+        
+    protected:
+        E_PIXEL_FORMAT RTFormats[ERTC_COUNT];
+        uint32 RTCount;
+        uint32 SampleCount;
+        uint32 ThreadGroupSizeMatchesTileSize;
+    };
 }

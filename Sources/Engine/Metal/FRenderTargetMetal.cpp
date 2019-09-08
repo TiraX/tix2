@@ -13,6 +13,7 @@ namespace tix
 {
     FRenderTargetMetal::FRenderTargetMetal(int32 W, int32 H)
         : FRenderTarget(W, H)
+        , ThreadGroupMemoryLength(0)
     {
         RenderPassDesc = nil;
     }

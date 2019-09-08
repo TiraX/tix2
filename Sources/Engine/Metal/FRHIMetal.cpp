@@ -180,32 +180,52 @@ namespace tix
         CurrentCommandListState.ListType = EPL_GRAPHICS;
     }
     
-    void FRHIMetal::BeginComputeTask()
+    void FRHIMetal::BeginComputeTask(FComputeTaskPtr ComputTask)
     {
-        // Switch from graphics command list to compute command list.
-        bool EncoderClosed = CloseCurrentEncoderIfNotMatch(EPL_COMPUTE);
-        
-        if (EncoderClosed)
+        if (ComputTask->HasFlag(COMPUTE_TILE))
         {
-            // Create compute encoder
-            CurrentCommandListCounter[EPL_COMPUTE] ++;
-            TI_ASSERT(ComputeEncoder == nil);
-            ComputeEncoder = [CommandBuffer computeCommandEncoder];
-            
-            // Remember the list we are using, and push it to order vector
-            CurrentCommandListState.ListType = EPL_COMPUTE;
-            CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
-            ListExecuteOrder.push_back(CurrentCommandListState);
+            // Tile compute. Stay with render encoder
+            TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS && RenderEncoder != nil);
         }
         else
         {
-            TI_ASSERT(ComputeEncoder != nil);
+            // Non-Tile Compute pass
+            // Switch from graphics command list to compute command list.
+            bool EncoderClosed = CloseCurrentEncoderIfNotMatch(EPL_COMPUTE);
+            
+            if (EncoderClosed)
+            {
+                // Create compute encoder
+                CurrentCommandListCounter[EPL_COMPUTE] ++;
+                TI_ASSERT(ComputeEncoder == nil);
+                ComputeEncoder = [CommandBuffer computeCommandEncoder];
+                
+                // Remember the list we are using, and push it to order vector
+                CurrentCommandListState.ListType = EPL_COMPUTE;
+                CurrentCommandListState.ListIndex = CurrentCommandListCounter[EPL_COMPUTE];
+                ListExecuteOrder.push_back(CurrentCommandListState);
+            }
+            else
+            {
+                TI_ASSERT(ComputeEncoder != nil);
+            }
         }
+        
+        // Run compute shader
+        ComputTask->Run(this);
     }
     
-    void FRHIMetal::EndComputeTask()
+    void FRHIMetal::EndComputeTask(FComputeTaskPtr ComputTask)
     {
-        TI_ASSERT(ComputeEncoder != nil);
+        if (ComputTask->HasFlag(COMPUTE_TILE))
+        {
+            // Tile compute. Stay with render encoder
+            TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS && RenderEncoder != nil);
+        }
+        else
+        {
+            TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE && ComputeEncoder != nil);
+        }
         // Do not close compute encoder here. Close it in CloseCurrentEncoder.
         //[ComputeEncoder endEncoding];
         //ComputeEncoder = nil;
@@ -724,6 +744,7 @@ namespace tix
             FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
             
             // Create pso with reflection
+            TI_ASSERT(PipelineMetal->ComputePipelineState == nil);
             NSError* Err  = nil;
             MTLComputePipelineReflection * ReflectionObj = nil;
             PipelineMetal->ComputePipelineState = [MtlDevice newComputePipelineStateWithFunction : ShaderMetal->VertexComputeProgram options: MTLPipelineOptionArgumentInfo reflection:&ReflectionObj error:&Err];
@@ -749,6 +770,38 @@ namespace tix
         
 		return true;
 	}
+    
+    bool FRHIMetal::UpdateHardwareResourceTilePL(FPipelinePtr Pipeline, TTilePipelinePtr InTilePipelineDesc)
+    {
+        FPipelineMetal * PipelineMetal = static_cast<FPipelineMetal*>(Pipeline.get());
+        FShaderPtr Shader = Pipeline->GetShader();
+        
+        MTLTileRenderPipelineDescriptor * TilePLDesc = [MTLTileRenderPipelineDescriptor new];
+        
+        // Set color attachment format
+        const uint32 RTCount = InTilePipelineDesc->GetRTCount();
+        for (uint32 i = 0 ; i < RTCount ; ++ i)
+        {
+            TilePLDesc.colorAttachments[i].pixelFormat = GetMetalPixelFormat(InTilePipelineDesc->GetRTFormat(i));
+        }
+        TilePLDesc.rasterSampleCount = InTilePipelineDesc->GetSampleCount();
+        TilePLDesc.threadgroupSizeMatchesTileSize = InTilePipelineDesc->GetThreadGroupSizeMatchesTileSize() > 0;
+        
+        // Set shader function
+        TI_ASSERT(Shader != nullptr);
+        FShaderMetal * ShaderMetal = static_cast<FShaderMetal*>(Shader.get());
+        TilePLDesc.tileFunction = ShaderMetal->VertexComputeProgram;
+        
+        NSError* Err  = nil;
+        TI_ASSERT(PipelineMetal->RenderPipelineState == nil);
+        PipelineMetal->RenderPipelineState =
+            [MtlDevice newRenderPipelineStateWithTileDescriptor: TilePLDesc
+                                                        options: 0
+                                                     reflection: nil
+                                                          error: &Err];
+
+        return true;
+    }
 
 	static const int32 UniformBufferAlignSize = 16;
 	bool FRHIMetal::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData)
@@ -824,6 +877,17 @@ namespace tix
                 StencilAttachment.loadAction = k_LOAD_ACTION_MAP[DepthStencilBuffer.LoadAction];
                 StencilAttachment.storeAction = k_STORE_ACTION_MAP[DepthStencilBuffer.StoreAction];
             }
+        }
+        
+        // Tile
+        if (RTMetal->TileSize != vector2di())
+        {
+            RTMetal->RenderPassDesc.tileWidth = RTMetal->TileSize.X;
+            RTMetal->RenderPassDesc.tileHeight = RTMetal->TileSize.Y;
+        }
+        if (RTMetal->ThreadGroupMemoryLength > 0)
+        {
+            RTMetal->RenderPassDesc.threadgroupMemoryLength = RTMetal->ThreadGroupMemoryLength;
         }
         return true;
     }
@@ -1017,7 +1081,6 @@ namespace tix
 
 	void FRHIMetal::SetGraphicsPipeline(FPipelinePtr InPipeline)
 	{
-        // Metal need to set pipeline every time.
         if (CurrentBoundResource.Pipeline != InPipeline)
         {
             TI_ASSERT(RenderEncoder != nil);
@@ -1034,6 +1097,38 @@ namespace tix
         //[RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
         //[RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
 	}
+    
+    void FRHIMetal::SetTilePipeline(FPipelinePtr InPipeline)
+    {
+        if (CurrentBoundResource.Pipeline != InPipeline)
+        {
+            TI_ASSERT(RenderEncoder != nil);
+            FPipelineMetal* PLMetal = static_cast<FPipelineMetal*>(InPipeline.get());
+            
+            [RenderEncoder setRenderPipelineState:PLMetal->RenderPipelineState];
+            
+            HoldResourceReference(InPipeline);
+            CurrentBoundResource.Pipeline = InPipeline;
+        }
+        
+        //E_CULL_MODE Cull = (E_CULL_MODE)InPipeline->GetDesc().RasterizerDesc.CullMode;
+        //[RenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        //[RenderEncoder setCullMode:k_CULL_MODE_MAP[Cull]];
+    }
+    
+    void FRHIMetal::SetTileBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+    {
+        TI_ASSERT(BindIndex >= 0 && BindIndex < MaxBindingBuffers);
+        FUniformBufferMetal * UBMetal = static_cast<FUniformBufferMetal*>(InUniformBuffer.get());
+        
+        [RenderEncoder setTileBuffer:UBMetal->Buffer offset:0 atIndex:BindIndex];
+    }
+    
+    void FRHIMetal::DispatchTile(const vector3di& GroupSize)
+    {
+        TI_ASSERT(RenderEncoder != nil);
+        [RenderEncoder dispatchThreadsPerTile:MTLSizeMake(GroupSize.X, GroupSize.Y, GroupSize.Z)];
+    }
 
 	void FRHIMetal::SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer)
     {
@@ -1218,7 +1313,7 @@ namespace tix
         }
 	}
 
-	void FRHIMetal::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+    void FRHIMetal::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
     {
         CloseCurrentEncoderIfNotMatch(EPL_GRAPHICS);
         

@@ -15,10 +15,22 @@ namespace tix
         FRenderTargetMetal(int32 W, int32 H);
         virtual ~FRenderTargetMetal();
         
+        virtual void SetTileSize(const vector2di& InTileSize) override
+        {
+            TileSize = InTileSize;
+        }
+        
+        virtual void SetThreadGroupMemoryLength(uint32 Length) override
+        {
+            ThreadGroupMemoryLength = Length;
+        }
+        
     protected:
 
     private:
         MTLRenderPassDescriptor * RenderPassDesc;
+        vector2di TileSize;
+        uint32 ThreadGroupMemoryLength;
         friend class FRHIMetal;
     };
 }
