@@ -27,9 +27,9 @@ for /r . %%i in (*.tjs) do (
 )
 
 rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256
-%VTBaker% showcase_01.tjs Cooked/Windows
+%VTBaker% showcase_04.tjs Cooked/Windows
 rem Convert scene file again with vt_info
-%Converter% showcase_01.tjs Cooked\Windows\showcase_01.tasset -VTInfo=showcase_01_vt.tjs
+%Converter% showcase_04.tjs Cooked\Windows\showcase_04.tasset -VTInfo=showcase_04_vt.tjs
 
 echo copy Config
 pushd "Cooked\Windows"
