@@ -143,13 +143,14 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	if (FVTSystem::IsEnabled())
 	{
 		// Second for render uv onto it.
-        TI_TODO("Use memory less mode for UV Attachment when use TILE shader.");
         TTextureDesc Desc;
         Desc.Format = UVAttachmentFormat;
         Desc.Width = RTWidth;
         Desc.Height = RTHeight;
         Desc.AddressMode = ETC_CLAMP_TO_EDGE;
+#if (USE_TILE_SHADER)
         Desc.Flags |= ETF_MEMORY_LESS;
+#endif
         
         FRHI * RHI = FRHI::Get();
         FTexturePtr Texture = RHI->CreateTexture(Desc);
