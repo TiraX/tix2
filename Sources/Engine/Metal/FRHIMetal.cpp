@@ -496,7 +496,14 @@ namespace tix
             // Follow the instructions here to create a private MTLBuffer
             // https://developer.apple.com/documentation/metal/setting_resource_storage_modes/choosing_a_resource_storage_mode_in_ios_and_tvos?language=objc
             MTLTextureDescriptor * TextureDesc = CreateDescriptorFromTextureDesc(Desc);
-            TextureDesc.storageMode = MTLStorageModePrivate;
+            if ((Desc.Flags & ETF_MEMORY_LESS) != 0)
+            {
+                TextureDesc.storageMode = MTLStorageModeMemoryless;
+            }
+            else
+            {
+                TextureDesc.storageMode = MTLStorageModePrivate;
+            }
             if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0 ||
                 (Desc.Flags & ETF_RT_DSBUFFER) != 0)
             {

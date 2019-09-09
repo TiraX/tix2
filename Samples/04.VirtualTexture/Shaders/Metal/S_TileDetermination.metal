@@ -27,10 +27,10 @@ S_TileDeterminationCS(imageblock<VTBufferData, imageblock_layout_implicit> Scene
     //ScreenUV.read(pos);
     if (!isnan(result.z) && result.z >= 0.f)
     {
-        uint mip_level = uint(result.z);
+        int mip_level = int(result.z);
         uint vt_mip_size = vt_mips[mip_level];
         uint2 page = uint2(result.xy * vt_mip_size);
-        uint output_index = page.y * vt_mip_size + page.x + vt_mips_offset[mip_level];
+        int output_index = page.y * vt_mip_size + page.x + vt_mips_offset[mip_level];
         if (output_index < 5461)
             OutputUV[output_index] = 1.f;
     }

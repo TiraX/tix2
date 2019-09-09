@@ -21,8 +21,10 @@ static const E_PIXEL_FORMAT UVAttachmentFormat = EPF_RGBA16F;
 
 #if USE_TILE_SHADER
 #   define COMPUTE_FLAG COMPUTE_TILE
+#   define UV_ATT_STORE ERT_STORE_DONTCARE
 #else
 #   define COMPUTE_FLAG COMPUTE_NONE
+#   define UV_ATT_STORE ERT_STORE_STORE
 #endif
 
 // Indicate this is a tile shader for metal.
@@ -142,7 +144,17 @@ void FVirtualTextureRenderer::InitInRenderThread()
 	{
 		// Second for render uv onto it.
         TI_TODO("Use memory less mode for UV Attachment when use TILE shader.");
-		RT_BasePass->AddColorBuffer(UVAttachmentFormat, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+        TTextureDesc Desc;
+        Desc.Format = UVAttachmentFormat;
+        Desc.Width = RTWidth;
+        Desc.Height = RTHeight;
+        Desc.AddressMode = ETC_CLAMP_TO_EDGE;
+        Desc.Flags |= ETF_MEMORY_LESS;
+        
+        FRHI * RHI = FRHI::Get();
+        FTexturePtr Texture = RHI->CreateTexture(Desc);
+        
+		RT_BasePass->AddColorBuffer(Texture, ERTC_COLOR1, ERT_LOAD_CLEAR, UV_ATT_STORE);
 	}
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 #if (USE_TILE_SHADER)

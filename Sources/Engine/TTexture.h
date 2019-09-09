@@ -72,6 +72,9 @@ namespace tix
 		ETF_RT_DSBUFFER = 1 << 1,
 
 		ETF_RENDER_RESOURCE_UPDATED = 1 << 2,	// Used for FTexture
+        
+        // Used for iOS Metal
+        ETF_MEMORY_LESS = 1 << 3,
 	};
 
 	struct TTextureDesc
