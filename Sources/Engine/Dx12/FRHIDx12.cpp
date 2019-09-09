@@ -453,7 +453,8 @@ namespace tix
 		CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
-	void FRHIDx12::BeginComputeTask()
+	// No use of param ComputeTask, it's for metal.
+	void FRHIDx12::BeginComputeTask(FComputeTaskPtr ComputeTask)
 	{
 		// Switch from graphics command list to compute command list.
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
@@ -489,9 +490,13 @@ namespace tix
 		// Set the descriptor heaps to be used by this frame.
 		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
 		CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+		// Run compute task.
+		ComputeTask->Run(this);
 	}
 
-	void FRHIDx12::EndComputeTask()
+	// No use of param ComputeTask, it's for metal.
+	void FRHIDx12::EndComputeTask(FComputeTaskPtr ComputeTask)
 	{
 		// Switch from compute command list to graphics command list.
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
@@ -1470,6 +1475,13 @@ namespace tix
 		return true;
 	}
 
+	bool FRHIDx12::UpdateHardwareResourceTilePL(FPipelinePtr Pipeline, TTilePipelinePtr InTilePipelineDesc)
+	{
+		// This is for Metal
+		TI_ASSERT(0);
+		return false;
+	}
+
 	static const int32 UniformBufferAlignSize = 256;
 	bool FRHIDx12::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData)
 	{
@@ -2310,6 +2322,21 @@ namespace tix
 	}
 
 	void FRHIDx12::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FRHIDx12::SetTilePipeline(FPipelinePtr InPipeline)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FRHIDx12::SetTileBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FRHIDx12::DispatchTile(const vector3di& GroupSize)
 	{
 		TI_ASSERT(0);
 	}
