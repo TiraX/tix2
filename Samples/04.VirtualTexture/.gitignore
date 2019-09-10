@@ -1,0 +1,14 @@
+Content/Cooked/
+x64/
+Tropical_Forest/
+Content/showcase_01/
+Content/showcase_02/
+Content/showcase_03/
+Content/showcase_04/
+Content/showcase_01-Landscape_11_sections/
+Content/showcase_02-Landscape_11_sections/
+Content/showcase_03-Landscape_11_sections/
+Content/showcase_04-Landscape_11_sections/
+Content/*.tjs
+Content/*.tga
+Content/*.zip
