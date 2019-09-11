@@ -36,6 +36,10 @@ namespace tix
 #else
 #error("do not support other platforms yet.")
 #endif
+		static TI_API void SetVTEnabled(bool bEnable)
+		{
+			Enabled = bEnable;
+		}
 
 		static TI_API bool IsEnabled()
 		{
@@ -152,7 +156,7 @@ namespace tix
 		void MarkRegion(uint32 InRegionIndex, int32 W, int32 H);
 
 	private:
-		static const bool Enabled;
+		static bool Enabled;
 		static FVTSystem * VTSystem;
 		static TVector<int32> VTMipsOffset;
 

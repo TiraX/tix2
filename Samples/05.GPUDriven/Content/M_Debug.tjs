@@ -1,0 +1,33 @@
+{
+	"name": "M_Debug",
+	"type": "material",
+	"version": 1,
+	"desc": "Material from TiX exporter.",
+	"shaders": [
+		"S_DebugOpaqueVS",
+		"S_DebugOpaquePS",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_NORMAL",
+		"EVSSEG_TEXCOORD0",
+		"EVSSEG_TANGENT"
+	],
+	"ins_format": [
+		"EINSSEG_TRANSITION",
+		"EINSSEG_ROT_SCALE_MAT0",
+		"EINSSEG_ROT_SCALE_MAT1",
+		"EINSSEG_ROT_SCALE_MAT2"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": true,
+	"depth_test": true,
+	"two_sides": false
+}

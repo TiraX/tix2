@@ -206,7 +206,7 @@ namespace tix
 			// Load material
 			TString MaterialResName = GetString(Header->StrMaterialInstance);
 			TAssetPtr MIRes = TAssetLibrary::Get()->LoadAsset(MaterialResName);
-			if (MIRes == nullptr)
+			if (MIRes->GetResources().size() == 0)
 			{
 				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
@@ -430,7 +430,7 @@ namespace tix
 					if (!FVTSystem::IsEnabled())
 					{
 						TAssetPtr TextureRes = TAssetLibrary::Get()->LoadAsset(TextureName);
-						if (TextureRes == nullptr)
+						if (TextureRes->GetResources().size() == 0)
 						{
 							_LOG(Error, "Failed to load texture [%s] for Material Instance [%s].\n", TextureName.c_str(), Filename.c_str());
 						}
@@ -449,7 +449,7 @@ namespace tix
 			// Link material
 			TString MaterialResName = GetString(Header->LinkedMaterialIndex);
 			TAssetPtr Material = TAssetLibrary::Get()->LoadAsset(MaterialResName);
-			if (Material == nullptr)
+			if (Material->GetResources().size() == 0)
 			{
 				_LOG(Error, "Failed to load material [%s] for Material Instance [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
