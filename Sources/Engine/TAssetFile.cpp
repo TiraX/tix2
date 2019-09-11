@@ -615,6 +615,7 @@ namespace tix
 				}
 				InstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, InstanceCount);
 				SceneTile->MeshInstances.push_back(InstanceBuffer);
+				ti_delete[] Data;
 			}
 
 			OutResources.push_back(SceneTile);
