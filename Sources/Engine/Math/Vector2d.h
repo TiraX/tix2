@@ -319,6 +319,7 @@ typedef vector2d<float64> vector2df64;
 //! Typedef for integer 2d vector.
 typedef vector2d<int32> vector2di;
 typedef vector2d<uint16> vector2du16;
+typedef vector2d<int16> vector2di16;
 
 template<class S, class T>
 vector2d<T> operator*(const S scalar, const vector2d<T>& vector) { return vector*scalar; }

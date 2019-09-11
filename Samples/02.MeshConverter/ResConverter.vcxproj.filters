@@ -58,9 +58,6 @@
     <ClInclude Include="ResSettings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResInstancesHelper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ResMultiThreadTask.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -72,6 +69,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TLog.h">
       <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="ResSceneTileHelper.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -129,9 +129,6 @@
     <ClCompile Include="ResTextureHelperTga.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResInstancesHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResMultiThreadTask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -146,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp">
       <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="ResSceneTileHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

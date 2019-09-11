@@ -11,7 +11,7 @@
 #include "ResMaterialHelper.h"
 #include "ResMaterialInstanceHelper.h"
 #include "ResSceneHelper.h"
-#include "ResInstancesHelper.h"
+#include "ResSceneTileHelper.h"
 #include "PlatformUtils.h"
 #include "ResMultiThreadTask.h"
 
@@ -220,11 +220,11 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 				TStream& MIStream = Resfile.GetChunk(ECL_SCENE);
 				TResSceneHelper::LoadScene(JsonDoc, MIStream, Resfile.Strings);
 			}
-			else if (strcmp(type, "instances") == 0)
+			else if (strcmp(type, "scene_tile") == 0)
 			{
 				// Instances
-				TStream& InsStream = Resfile.GetChunk(ECL_INSTANCES);
-				TResInstancesHelper::LoadInstances(JsonDoc, InsStream, Resfile.Strings);
+				TStream& InsStream = Resfile.GetChunk(ECL_SCENETILE);
+				TResSceneTileHelper::LoadSceneTile(JsonDoc, InsStream, Resfile.Strings);
 			}
 			else
 			{

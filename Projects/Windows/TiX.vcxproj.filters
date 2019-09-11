@@ -265,6 +265,9 @@
     <ClCompile Include="..\..\Sources\Engine\TVTTextureLoader.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TSceneTile.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -629,6 +632,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TVTTextureLoader.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TSceneTile.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -60,11 +60,7 @@ namespace tix
 		int32 VTSize;
 		int32 PageSize;
 
-		TVector<TString> AssetTextures;
-		TVector<TString> AssetMaterialInstances;
-		TVector<TString> AssetMaterials;
-		TVector<TString> AssetMeshes;
-		TVector<TString> AssetInstances;
+		TVector<vector2di> AssetSceneTiles;
 		THMap<TString, TVTRegionInfo> VTRegionInfo;
 	};
 }

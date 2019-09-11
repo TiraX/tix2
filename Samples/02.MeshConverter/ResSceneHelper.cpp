@@ -94,46 +94,17 @@ namespace tix
 			}
 		}
 
-		// Load asset list
+		// Load tiles
 		{
-			TJSONNode JAssetList = Doc["dependency"];
-			TJSONNode JAssetTextures = JAssetList["textures"];
-			TJSONNode JAssetMaterials = JAssetList["materials"];
-			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
-			TJSONNode JAssetMeshes = JAssetList["meshes"];
-			TJSONNode JAssetInstances = Doc["instances"];
+			TJSONNode JTileList = Doc["tiles"];
 
-			Helper.AssetTextures.reserve(JAssetTextures.Size());
-			for (int32 i = 0; i < JAssetTextures.Size(); ++i)
+			Helper.AssetSceneTiles.reserve(JTileList.Size());
+			for (int32 i = 0; i < JTileList.Size(); ++i)
 			{
-				TJSONNode JTexture = JAssetTextures[i];
-				Helper.AssetTextures.push_back(JTexture.GetString());
-			}
-			TI_ASSERT(Helper.AssetTextures.size() == Helper.VTRegionInfo.size());
-
-			Helper.AssetMaterials.reserve(JAssetMaterials.Size());
-			for (int32 i = 0; i < JAssetMaterials.Size(); ++i)
-			{
-				TJSONNode JMaterial = JAssetMaterials[i];
-				Helper.AssetMaterials.push_back(JMaterial.GetString());
-			}
-			Helper.AssetMaterialInstances.reserve(JAssetMaterialInstances.Size());
-			for (int32 i = 0; i < JAssetMaterialInstances.Size(); ++i)
-			{
-				TJSONNode JMI = JAssetMaterialInstances[i];
-				Helper.AssetMaterialInstances.push_back(JMI.GetString());
-			}
-			Helper.AssetMeshes.reserve(JAssetMeshes.Size());
-			for (int32 i = 0; i < JAssetMeshes.Size(); ++i)
-			{
-				TJSONNode JMesh = JAssetMeshes[i];
-				Helper.AssetMeshes.push_back(JMesh.GetString());
-			}
-			Helper.AssetInstances.reserve(JAssetInstances.Size());
-			for (int32 i = 0; i < JAssetInstances.Size(); ++i)
-			{
-				TJSONNode JInstances = JAssetInstances[i];
-				Helper.AssetInstances.push_back(JInstances.GetString());
+				TJSONNode JTile = JTileList[i];
+				vector2di TilePos = vector2di(JTile[0].GetInt(), JTile[1].GetInt());
+				Helper.AssetSceneTiles.push_back(TilePos);
+				TI_ASSERT(ti_abs(TilePos.X) <= 32760 && ti_abs(TilePos.Y) <= 32760);
 			}
 		}
 
@@ -165,51 +136,17 @@ namespace tix
 				DataStream.Put(&C, sizeof(THeaderCameraInfo));
 			}
 
-			// Assets Info
-			Define.NumTextures = (int32)AssetTextures.size();
-			Define.NumMaterials = (int32)AssetMaterials.size();
-			Define.NumMaterialInstances = (int32)AssetMaterialInstances.size();
-			Define.NumMeshes = (int32)AssetMeshes.size();
-			Define.NumInstances = (int32)AssetInstances.size();
+			// Tile Info
+			Define.NumTiles = (int32)AssetSceneTiles.size();
 
-			// Fill Assets Names
-			for (const auto& A : AssetTextures)
+			// Fill Tile Positions
+			for (const auto& A : AssetSceneTiles)
 			{
-				int32 Name = AddStringToList(OutStrings, A);
-				DataStream.Put(&Name, sizeof(int32));
+				vector2di16 Pos;
+				Pos.X = (int16)(A.X);
+				Pos.Y = (int16)(A.Y);
+				DataStream.Put(&Pos, sizeof(vector2di16));
 			}
-			for (const auto& A : AssetTextures)
-			{
-				uint32 InfoValue = 0;
-				if (VTRegionInfo.find(A) != VTRegionInfo.end())
-				{
-					const TVTRegionInfo& Info = VTRegionInfo[A];
-					InfoValue = Info.Value;
-				}
-				DataStream.Put(&InfoValue, sizeof(uint32));
-			}
-			for (const auto& A : AssetMaterials)
-			{
-				int32 Name = AddStringToList(OutStrings, A);
-				DataStream.Put(&Name, sizeof(int32));
-			}
-			for (const auto& A : AssetMaterialInstances)
-			{
-				int32 Name = AddStringToList(OutStrings, A);
-				DataStream.Put(&Name, sizeof(int32));
-			}
-			for (const auto& A : AssetMeshes)
-			{
-				int32 Name = AddStringToList(OutStrings, A);
-				DataStream.Put(&Name, sizeof(int32));
-			}
-			for (const auto& A : AssetInstances)
-			{
-				int32 Name = AddStringToList(OutStrings, A);
-				DataStream.Put(&Name, sizeof(int32));
-			}
-
-			TI_ASSERT(AssetMeshes.size() == AssetInstances.size());
 			
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderScene));

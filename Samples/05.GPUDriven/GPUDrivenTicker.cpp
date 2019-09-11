@@ -23,6 +23,6 @@ void TGPUDrivenTicker::Tick(float Dt)
 void TGPUDrivenTicker::SetupScene()
 {
 	// Load scene
-	//const TString TargetSceneAsset = "showcase_04.tasset";
-	//TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
+	const TString TargetSceneAsset = "Slum01.tasset";
+	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }

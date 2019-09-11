@@ -27,9 +27,9 @@ for /r . %%i in (*.tjs) do (
 )
 
 rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256
-%VTBaker% showcase_04.tjs Cooked/Windows
+rem %VTBaker% showcase_04.tjs Cooked/Windows
 rem Convert scene file again with vt_info
-%Converter% showcase_04.tjs Cooked\Windows\showcase_04.tasset -VTInfo=showcase_04_vt.tjs
+rem %Converter% showcase_04.tjs Cooked\Windows\showcase_04.tasset -VTInfo=showcase_04_vt.tjs
 
 echo copy Config
 pushd "Cooked\Windows"
@@ -38,11 +38,5 @@ if not exist "Config" (
 )
 popd
 copy Config\*.ini Cooked\Windows\Config\
-
-echo copy others data files
-for %%i in (*.bn) do (
-echo copying - %%i
-copy %%i Cooked\Windows\%%i
-)
 
 pause

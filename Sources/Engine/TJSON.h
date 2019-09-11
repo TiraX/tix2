@@ -184,7 +184,7 @@ namespace tix
 	public:
 		static vector2di JsonArrayToVector2di(TJSONNode ArrayNode)
 		{
-			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 3);
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 2);
 			vector2di Result;
 			Result.X = ArrayNode[0].GetInt();
 			Result.Y = ArrayNode[1].GetInt();
@@ -220,6 +220,19 @@ namespace tix
 			Result.G = ArrayNode[1].GetFloat();
 			Result.B = ArrayNode[2].GetFloat();
 			Result.A = ArrayNode[3].GetFloat();
+
+			return Result;
+		}
+		static aabbox3df JsonArrayToAABBox(TJSONNode ArrayNode)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == 6);
+			aabbox3df Result;
+			Result.MinEdge.X = ArrayNode[0].GetFloat();
+			Result.MinEdge.Y = ArrayNode[1].GetFloat();
+			Result.MinEdge.Z = ArrayNode[2].GetFloat();
+			Result.MaxEdge.X = ArrayNode[3].GetFloat();
+			Result.MaxEdge.Y = ArrayNode[4].GetFloat();
+			Result.MaxEdge.Z = ArrayNode[5].GetFloat();
 
 			return Result;
 		}

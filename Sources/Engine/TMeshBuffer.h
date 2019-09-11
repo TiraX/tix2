@@ -142,6 +142,9 @@ namespace tix
 		static const int8* SemanticName[EISI_TOTAL];
 		static const int32 SemanticIndex[EISI_TOTAL];
 
+		static const uint32 InstanceFormat;
+		static const uint32 InstanceStride;
+
 	public:
 		FInstanceBufferPtr InstanceResource;
 

@@ -32,7 +32,7 @@ namespace tix
 		void CreateMaterial(TVector<TResourcePtr>& OutResources);
 		void CreateMaterialInstance(TVector<TResourcePtr>& OutResources);
 		void CreateScene();
-		void CreateInstances(TVector<TResourcePtr>& OutResources);
+		void CreateSceneTile(TVector<TResourcePtr>& OutResources);
 		
 		TI_API const int8* GetString(int32 StringIndex);
 

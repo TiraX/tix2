@@ -59,6 +59,7 @@ using namespace std;
 #include "TShader.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
+#include "TSceneTile.h"
 #include "TAssetFileDef.h"
 #include "TAssetFile.h"
 #include "TAsset.h"

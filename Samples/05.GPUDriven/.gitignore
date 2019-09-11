@@ -1,2 +1,8 @@
 Content/Cooked/
 x64/
+Content/Slums/
+Content/Slum01/
+Content/Slum01-Landscape1_sections/
+Content/*.tjs
+Content/*.tga
+Content/*.zip

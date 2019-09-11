@@ -15,7 +15,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_MATERIAL = 1,
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		TIRES_VERSION_CHUNK_SCENE = 1,
-		TIRES_VERSION_CHUNK_INSTANCES = 1,
+		TIRES_VERSION_CHUNK_SCENETILE = 1,
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -53,7 +53,7 @@ namespace tix
 		TIRES_ID_CHUNK_MATERIAL		= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'R'),
 		TIRES_ID_CHUNK_MINSTANCE	= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'I'),
 		TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
-		TIRES_ID_CHUNK_INSTANCES	= TI_MAKE_IDENTIFIER('I', 'N', 'S', 'T'),
+		TIRES_ID_CHUNK_SCENETILE	= TI_MAKE_IDENTIFIER('S', 'T', 'I', 'L'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
 		//TIRES_ID_CHUNK_CONTROLLER	= TI_MAKE_IDENTIFIER('C', 'T', 'R', 'L'),
@@ -76,7 +76,10 @@ namespace tix
 		ECL_MATERIAL,
 		ECL_MATERIAL_INSTANCE,
 		ECL_SCENE,
-		ECL_INSTANCES,
+
+		// Contain mesh instances information
+		ECL_SCENETILE,
+
 		//ECL_MATERIALS,
 		//ECL_CONTROLLERS,
 		//ECL_SHADERS,
@@ -225,12 +228,8 @@ namespace tix
 		// Camera Info
 		int32 NumCameras;
 		
-		// Scene Meshes and Instances
-		int32 NumTextures;
-		int32 NumMaterials;
-		int32 NumMaterialInstances;
-		int32 NumMeshes;
-		int32 NumInstances;
+		// Scene Tiles
+		int32 NumTiles;
 
 		// VT Info
 		int32 VTSize;
@@ -262,11 +261,17 @@ namespace tix
 		float Aspect;
 	};
 
-	struct THeaderInstances
+	struct THeaderSceneTile
 	{
-		int32 LinkedMeshNameIndex;
+		vector2di16 Position;
+		aabbox3df BBox;
+
+		// Dependency num
+		int32 NumTextures;
+		int32 NumMaterials;
+		int32 NumMaterialInstances;
+		int32 NumMeshes;
 		int32 NumInstances;
-		uint32 InsFormat;
 	};
 
 	struct THeaderSceneMeshInstance

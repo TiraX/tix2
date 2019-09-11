@@ -111,6 +111,13 @@ namespace tix
 
 	///////////////////////////////////////////////////////////
 
+	const uint32 TInstanceBuffer::InstanceFormat = EINSSEG_TRANSITION | EINSSEG_ROT_SCALE_MAT0 | EINSSEG_ROT_SCALE_MAT1 | EINSSEG_ROT_SCALE_MAT2;
+	const uint32 TInstanceBuffer::InstanceStride =
+		TInstanceBuffer::SemanticSize[EISI_TRANSITION] +
+		TInstanceBuffer::SemanticSize[EISI_ROT_SCALE_MAT0] +
+		TInstanceBuffer::SemanticSize[EISI_ROT_SCALE_MAT1] +
+		TInstanceBuffer::SemanticSize[EISI_ROT_SCALE_MAT2];
+
 	TInstanceBuffer::TInstanceBuffer()
 		: TResource(ERES_INSTANCE)
 		, InsFormat(0)

@@ -134,9 +134,9 @@ namespace tix
 				ChunkHeader[ECL_SCENE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SCENE);
 				break;
-			case TIRES_ID_CHUNK_INSTANCES:
-				ChunkHeader[ECL_INSTANCES] = chunkHeader;
-				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_INSTANCES);
+			case TIRES_ID_CHUNK_SCENETILE:
+				ChunkHeader[ECL_SCENETILE] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SCENETILE);
 				break;
 			default:
 				TI_ASSERT(0);
@@ -164,8 +164,8 @@ namespace tix
 		if (ChunkHeader[ECL_SCENE] != nullptr)
 			CreateScene();
 
-		if (ChunkHeader[ECL_INSTANCES] != nullptr)
-			CreateInstances(OutResources);
+		if (ChunkHeader[ECL_SCENETILE] != nullptr)
+			CreateSceneTile(OutResources);
 
 		for (auto& Res : OutResources)
 		{
@@ -498,39 +498,63 @@ namespace tix
 			}
 
 			// Load assets names
-			const int32* AssetsTextures = (const int32*)(SceneDataStart + sizeof(THeaderCameraInfo) * Header->NumCameras);
-			const uint32* TextureVTInfos = (const uint32*)(AssetsTextures + Header->NumTextures);
-			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures * 2;
-			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
-			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* AssetsInstances = AssetsMeshes + Header->NumMeshes;
+			const vector2di16* AssetsTiles = (const vector2di16*)(SceneDataStart + sizeof(THeaderCameraInfo) * Header->NumCameras);
 
 			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
-			// Textures
-			if (FVTSystem::IsEnabled())
+			
+			TVector<TAssetPtr> Tiles;
+			Tiles.reserve(Header->NumTiles);
+			int8 TileName[128];
+			const int8* SceneName = GetString(Header->NameIndex);
+			for (int32 t = 0; t < Header->NumTiles; ++t)
 			{
-#if VT_PRELOADED_REGIONS
-				// Load VT Info
-				for (int32 t = 0; t < Header->NumTextures; ++t)
-				{
-					TString TextureName = GetString(AssetsTextures[t]);
-					//AssetLib->LoadAssetAysc(TextureName);
+				const vector2di16& Point = AssetsTiles[t];
+				sprintf(TileName, "%s/t%d_%d.tasset", SceneName, Point.X, Point.Y);
 
-					TVTRegionInfo Info;
-					Info.Value = TextureVTInfos[t];
-					FVTSystem::Get()->InitLoadedTextureRegion(TextureName, vector4di(Info.X, Info.Y, Info.W, Info.H));
-				}
-#endif
+				AssetLib->LoadAssetAysc(TileName);
 			}
-			else
+		}
+	}
+
+	void TAssetFile::CreateSceneTile(TVector<TResourcePtr>& OutResources)
+	{
+		if (ChunkHeader[ECL_SCENETILE] == nullptr)
+		{
+			_LOG(Error, "Can not find scene tile chunk when loading scene %s.", Filename.c_str());
+			return;
+		}
+
+		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_SCENETILE];
+		TI_ASSERT(ChunkHeader[ECL_SCENETILE]->ElementCount == 1);
+
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* SceneTileDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderSceneTile)) * 1;
+
+		{
+			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);
+			TSceneTilePtr SceneTile = ti_new TSceneTile;
+			SceneTile->Position.X = Header->Position.X;
+			SceneTile->Position.Y = Header->Position.Y;
+			SceneTile->BBox = Header->BBox;
+
+			// Load assets names
+			const int32* AssetsTextures = (const int32*)(SceneTileDataStart);
+			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
+			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
+			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
+			const int32* MeshInstanceCount = AssetsMeshes + Header->NumMeshes;
+			const int32* AssetsInstances = MeshInstanceCount + Header->NumMeshes;
+
+			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(AssetsInstances);
+
+			TAssetLibrary * AssetLib = TAssetLibrary::Get();
+
+			// Textures
+			for (int32 t = 0; t < Header->NumTextures; ++t)
 			{
-				// Virtual texture delay load texture
-				for (int32 t = 0; t < Header->NumTextures; ++t)
-				{
-					TString TextureName = GetString(AssetsTextures[t]);
-					AssetLib->LoadAssetAysc(TextureName);
-				}
+				TString TextureName = GetString(AssetsTextures[t]);
+				AssetLib->LoadAssetAysc(TextureName);
 			}
 			// Materials
 			for (int32 m = 0; m < Header->NumMaterials; ++m)
@@ -545,84 +569,55 @@ namespace tix
 				AssetLib->LoadAssetAysc(MIName);
 			}
 			// Meshes
-			TVector<TAssetPtr> Meshes;
-			Meshes.reserve(Header->NumMeshes);
+			SceneTile->Meshes.reserve(Header->NumMeshes);
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
 				TString MeshName = GetString(AssetsMeshes[m]);
 				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
-				Meshes.push_back(MeshAsset);
+				SceneTile->Meshes.push_back(MeshAsset);
 			}
-			TI_ASSERT(Header->NumMeshes == Header->NumInstances);
+
 			// Instances
-			for (int32 i = 0; i < Header->NumInstances; ++i)
+			SceneTile->MeshInstances.reserve(Header->NumMeshes);
+			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				TNodeStaticMesh * NodeSM = TNodeFactory::CreateNode<TNodeStaticMesh>(nullptr);
-				NodeSM->SetMeshAsset(Meshes[i]);
-				TString InstancesName = GetString(AssetsInstances[i]);
-				AssetLib->LoadAssetAysc(InstancesName, NodeSM);
+				TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
+				const int32 InstanceCount = MeshInstanceCount[m];
+				int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * InstanceCount];
+
+				int32 Offset = 0;
+				for (int32 i = 0; i < InstanceCount; ++i)
+				{
+					const THeaderSceneMeshInstance& Instance = InstanceData[i];
+					matrix4 MatInstanceTrans;
+					Instance.Rotation.getMatrix(MatInstanceTrans);
+					MatInstanceTrans.postScale(Instance.Scale);
+					MatInstanceTrans = MatInstanceTrans.getTransposed();
+					FMatrix Mat = MatInstanceTrans;
+					FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
+					FHalf4 RotScaleMat[3];
+					RotScaleMat[0].X = Mat[0];
+					RotScaleMat[0].Y = Mat[1];
+					RotScaleMat[0].Z = Mat[2];
+					RotScaleMat[0].W = Mat[3];
+					RotScaleMat[1].X = Mat[4];
+					RotScaleMat[1].Y = Mat[5];
+					RotScaleMat[1].Z = Mat[6];
+					RotScaleMat[1].W = Mat[7];
+					RotScaleMat[2].X = Mat[8];
+					RotScaleMat[2].Y = Mat[9];
+					RotScaleMat[2].Z = Mat[10];
+					RotScaleMat[2].W = Mat[11];
+					memcpy(Data + Offset, &Transition, sizeof(FFloat4));
+					Offset += sizeof(FFloat4);
+					memcpy(Data + Offset, RotScaleMat, sizeof(RotScaleMat));
+					Offset += sizeof(RotScaleMat);
+				}
+				InstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, InstanceCount);
+				SceneTile->MeshInstances.push_back(InstanceBuffer);
 			}
-		}
-	}
 
-	void TAssetFile::CreateInstances(TVector<TResourcePtr>& OutResources)
-	{
-		if (ChunkHeader[ECL_INSTANCES] == nullptr)
-		{
-			_LOG(Error, "Can not find instances chunk when loading scene %s.", Filename.c_str());
-			return;
-		}
-
-		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_INSTANCES];
-		TI_ASSERT(ChunkHeader[ECL_INSTANCES]->ElementCount == 1);
-
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* InstancesDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderInstances)) * 1;
-
-		{
-			const THeaderInstances* Header = (const THeaderInstances*)(HeaderStart);
-
-			// Link mesh
-			TString MeshAssetName = GetString(Header->LinkedMeshNameIndex);
-			TAssetPtr Mesh = TAssetLibrary::Get()->LoadAsset(MeshAssetName);
-			if (Mesh == nullptr)
-			{
-				_LOG(Error, "Failed to load mesh [%s] for Instances [%s].\n", MeshAssetName.c_str(), Filename.c_str());
-			}
-
-			OutResources.reserve(1);
-			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(InstancesDataStart);
-
-			TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
-			const int32 InsStride = TInstanceBuffer::GetStrideFromFormat(Header->InsFormat);
-			TStream InsBufferData(InsStride * Header->NumInstances);
-			for (int32 i = 0; i < Header->NumInstances; ++i)
-			{
-				const THeaderSceneMeshInstance& Instance = InstanceData[i];
-				matrix4 MatInstanceTrans;
-				Instance.Rotation.getMatrix(MatInstanceTrans);
-				MatInstanceTrans.postScale(Instance.Scale);
-				MatInstanceTrans = MatInstanceTrans.getTransposed();
-				FMatrix Mat = MatInstanceTrans;
-				FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
-				FHalf4 RotScaleMat[3];
-				RotScaleMat[0].X = Mat[0];
-				RotScaleMat[0].Y = Mat[1];
-				RotScaleMat[0].Z = Mat[2];
-				RotScaleMat[0].W = Mat[3];
-				RotScaleMat[1].X = Mat[4];
-				RotScaleMat[1].Y = Mat[5];
-				RotScaleMat[1].Z = Mat[6];
-				RotScaleMat[1].W = Mat[7];
-				RotScaleMat[2].X = Mat[8];
-				RotScaleMat[2].Y = Mat[9];
-				RotScaleMat[2].Z = Mat[10];
-				RotScaleMat[2].W = Mat[11];
-				InsBufferData.Put(&Transition, sizeof(FFloat4));
-				InsBufferData.Put(RotScaleMat, sizeof(RotScaleMat));
-			}
-			InstanceBuffer->SetInstanceStreamData(Header->InsFormat, InsBufferData.GetBuffer(), Header->NumInstances);
-			OutResources.push_back(InstanceBuffer);
+			OutResources.push_back(SceneTile);
 		}
 	}
 }
