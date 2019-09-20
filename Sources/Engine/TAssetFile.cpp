@@ -500,19 +500,27 @@ namespace tix
 			// Load assets names
 			const vector2di16* AssetsTiles = (const vector2di16*)(SceneDataStart + sizeof(THeaderCameraInfo) * Header->NumCameras);
 
-			// Send Assets to loading thread
 			TAssetLibrary * AssetLib = TAssetLibrary::Get();
 			
+			// Create a level node
+			TString LevelName = GetString(Header->NameIndex);
+			TNodeLevel * NodeLevel = TNodeFactory::CreateNode<TNodeLevel>(TEngine::Get()->GetScene()->GetRoot(), LevelName);
+
+			// Load scene tiles
 			TVector<TAssetPtr> Tiles;
 			Tiles.reserve(Header->NumTiles);
-			int8 TileName[128];
+			int8 TileFileName[128];
 			const int8* SceneName = GetString(Header->NameIndex);
 			for (int32 t = 0; t < Header->NumTiles; ++t)
 			{
 				const vector2di16& Point = AssetsTiles[t];
-				sprintf(TileName, "%s/t%d_%d.tasset", SceneName, Point.X, Point.Y);
+				sprintf(TileFileName, "t%d_%d", Point.X, Point.Y);
+				TString TileName = TileFileName;
 
-				AssetLib->LoadAssetAysc(TileName);
+				sprintf(TileFileName, "%s/%s.tasset", SceneName, TileName.c_str());
+
+				TNodeSceneTile * NodeSceneTile = TNodeFactory::CreateNode<TNodeSceneTile>(NodeLevel, TileName);
+				AssetLib->LoadAssetAysc(TileFileName, NodeSceneTile);
 			}
 		}
 	}
@@ -533,7 +541,8 @@ namespace tix
 
 		{
 			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);
-			TSceneTilePtr SceneTile = ti_new TSceneTile;
+			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
+			SceneTile->LevelName = GetString(Header->LevelNameIndex);
 			SceneTile->Position.X = Header->Position.X;
 			SceneTile->Position.Y = Header->Position.Y;
 			SceneTile->BBox = Header->BBox;
@@ -568,12 +577,21 @@ namespace tix
 				TString MIName = GetString(AssetsMaterialInstances[mi]);
 				AssetLib->LoadAssetAysc(MIName);
 			}
-			// Meshes
+			// Meshes, find corresponding scene tile node as the parent of static mesh node
+			int8 SceneTileNodePath[128];
+			sprintf(SceneTileNodePath, "%s.t%d_%d", SceneTile->LevelName.c_str(), SceneTile->Position.X, SceneTile->Position.Y);
+			TNode* NodeFromPath = TEngine::Get()->GetScene()->GetRoot()->GetNodeByPath(SceneTileNodePath);
+			TI_ASSERT(NodeFromPath->GetType() == ENT_SceneTile);
+			TNodeSceneTile* NodeSceneTile = static_cast<TNodeSceneTile*>(NodeFromPath);
+
 			SceneTile->Meshes.reserve(Header->NumMeshes);
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
+				TNodeStaticMesh* NodeStaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeSceneTile);
+				NodeStaticMesh->SetMeshIndexInTile(m);
+
 				TString MeshName = GetString(AssetsMeshes[m]);
-				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
+				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName, NodeStaticMesh);
 				SceneTile->Meshes.push_back(MeshAsset);
 			}
 

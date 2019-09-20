@@ -112,6 +112,38 @@ namespace tix
 		}
 	}
 
+	TNode* TNode::GetNodeByPath(const TString& NodePath)
+	{
+		TString Path = NodePath;
+		TVector<TString> NodeIds;
+		TString::size_type Start = 0;
+		TString::size_type Pos;
+		Pos = Path.find('.');
+		TString S;
+		while (Pos != TString::npos)
+		{
+			S = Path.substr(Start, Pos - Start);
+			NodeIds.push_back(S);
+
+			Start = Pos + 1;
+			Pos = Path.find('.', Start);
+		}
+		S = Path.substr(Start);
+		NodeIds.push_back(S);
+
+		TNode* Current = this;
+		for (uint32 i = 0; i < NodeIds.size(); ++i)
+		{
+			if (Current)
+				Current = Current->GetNodeById(NodeIds[i]);
+		}
+
+		if (Current == this)
+			return nullptr;
+		else
+			return Current;
+	}
+
 	TNode* TNode::IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection)
 	{
 		// test children

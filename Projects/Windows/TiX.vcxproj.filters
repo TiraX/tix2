@@ -265,7 +265,10 @@
     <ClCompile Include="..\..\Sources\Engine\TVTTextureLoader.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TSceneTile.cpp">
+    <ClCompile Include="..\..\Sources\Engine\TNodeSceneTile.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TSceneTileResource.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
   </ItemGroup>
@@ -633,7 +636,10 @@
     <ClInclude Include="..\..\Sources\Engine\TVTTextureLoader.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TSceneTile.h">
+    <ClInclude Include="..\..\Sources\Engine\TNodeSceneTile.h">
+      <Filter>Sources\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TSceneTileResource.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>

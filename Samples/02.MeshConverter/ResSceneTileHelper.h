@@ -22,6 +22,7 @@ namespace tix
 		static bool LoadSceneTile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		void OutputTiles(TStream& OutStream, TVector<TString>& OutStrings);
 
+		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
 		

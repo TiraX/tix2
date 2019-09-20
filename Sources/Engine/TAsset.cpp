@@ -64,7 +64,7 @@ namespace tix
 			}
 			if (Asset->LoadingNotifier != nullptr)
 			{
-				Asset->LoadingNotifier->NotifyLoadingFinished(Asset.get());
+				Asset->LoadingNotifier->NotifyLoadingFinished(Asset);
 			}
 #if (TIX_DEBUG_AYNC_LOADING)
 			_LOG(Log, "TFinish: %s\n", Asset->GetName().c_str());

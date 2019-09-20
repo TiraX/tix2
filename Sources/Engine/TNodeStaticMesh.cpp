@@ -10,6 +10,7 @@ namespace tix
 {
 	TNodeStaticMesh::TNodeStaticMesh(TNode* parent)
 		: TNode(TNodeStaticMesh::NODE_TYPE, parent)
+		, MeshIndexInTile(-1)
 	{
 	}
 
@@ -137,31 +138,39 @@ namespace tix
 		//}
 	}
 
-	void TNodeStaticMesh::NotifyLoadingFinished(void * Context)
+	void TNodeStaticMesh::NotifyLoadingFinished(TAssetPtr InAsset)
 	{
 		TI_ASSERT(IsGameThread());
 
-		TAssetPtr MeshRes = nullptr;
 		// Mesh asset load finished add it to TScene
-		TAssetPtr InAsset = static_cast<TAsset*>(Context);
 		const TVector<TResourcePtr>& Resources = InAsset->GetResources();
 		TI_ASSERT(Resources.size() > 0);
 		TResourcePtr FirstResource = Resources[0];
-		TInstanceBufferPtr InstanceBuffer = nullptr;
-		if (FirstResource->GetType() == ERES_INSTANCE)
-		{
-			TI_ASSERT(Resources.size() == 1);
-			InstanceBuffer = static_cast<TInstanceBuffer*>(FirstResource.get());
-			TI_ASSERT(MeshAsset != nullptr && MeshAsset->GetResources().size() > 0);
-			MeshRes = MeshAsset;
-		}
-		else
-		{
-			TI_ASSERT(FirstResource->GetType() == ERES_MESH);
-			MeshRes = InAsset;
-		}
+		TI_ASSERT(FirstResource->GetType() == ERES_MESH);
+		TAssetPtr MeshRes = InAsset;
+		/*
+				TInstanceBufferPtr InstanceBuffer = nullptr;
+				if (FirstResource->GetType() == ERES_INSTANCE)
+				{
+					TI_ASSERT(Resources.size() == 1);
+					InstanceBuffer = static_cast<TInstanceBuffer*>(FirstResource.get());
+					TI_ASSERT(MeshAsset != nullptr && MeshAsset->GetResources().size() > 0);
+					MeshRes = MeshAsset;
+				}
+				else
+				{
+					TI_ASSERT(FirstResource->GetType() == ERES_MESH);
+					MeshRes = InAsset;
+				}
+		*/
 
-		// Gather mesh resources
+		// Get Instance Buffer from SceneTile
+		TI_ASSERT(Parent->GetType() == ENT_SceneTile);
+		TI_ASSERT(MeshIndexInTile >= 0);
+		TNodeSceneTile* NodeSceneTile = static_cast<TNodeSceneTile*>(GetParent());
+		TInstanceBufferPtr InstanceBuffer = NodeSceneTile->GetInstanceBufferByIndex(MeshIndexInTile);
+
+		// Gather loaded mesh resources
 		TVector<TMeshBufferPtr> Meshes;
 		Meshes.reserve(MeshRes->GetResources().size());
 		for (auto Res : MeshRes->GetResources())
@@ -171,10 +180,8 @@ namespace tix
 		}
 		LinkMesh(Meshes, InstanceBuffer, false, false);
 
-		// Add to scene root
-		TEngine::Get()->GetScene()->AddStaticMeshNode(this);
 #if (TIX_DEBUG_AYNC_LOADING)
-		_LOG(Log, "Notify ~ %s.\n", InAsset->GetName().c_str());
+		_LOG(Log, "StaticMesh Notify ~ %s.\n", InAsset->GetName().c_str());
 #endif
 	}
 }

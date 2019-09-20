@@ -43,9 +43,6 @@
     <ClInclude Include="..\..\Sources\Engine\TFile.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TCrc.h">
-      <Filter>Source Files\TiX2</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TJSON.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
@@ -73,6 +70,7 @@
     <ClInclude Include="ResSceneTileHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -111,9 +109,6 @@
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp">
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
-      <Filter>Source Files\TiX2</Filter>
-    </ClCompile>
     <ClCompile Include="ResTextureHelperAstc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -145,6 +140,9 @@
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
     <ClCompile Include="ResSceneTileHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

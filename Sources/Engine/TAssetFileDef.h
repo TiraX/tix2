@@ -263,6 +263,7 @@ namespace tix
 
 	struct THeaderSceneTile
 	{
+		int32 LevelNameIndex;
 		vector2di16 Position;
 		aabbox3df BBox;
 

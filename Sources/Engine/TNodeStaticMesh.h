@@ -18,13 +18,13 @@ namespace tix
 		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) override;
 		void LinkMesh(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
 
-		void SetMeshAsset(TAssetPtr InMeshAsset)
+		void SetMeshIndexInTile(int32 Index)
 		{
-			MeshAsset = InMeshAsset;
+			MeshIndexInTile = Index;
 		}
 
 		// interface from ILoadingTaskNotifier
-		virtual void NotifyLoadingFinished(void * Context) override;
+		virtual void NotifyLoadingFinished(TAssetPtr InAsset) override;
 
 	protected:
 		virtual void UpdateAbsoluteTransformation() override;
@@ -34,7 +34,8 @@ namespace tix
 		aabbox3df TransformedBBox;
 		TVector<TNodeLight*> BindedLights;
 
-		TAssetPtr MeshAsset;
+		// Remember the mesh index in scene tile in order to find instance buffer stored in scene tile node.
+		int32 MeshIndexInTile;
 	};
 
 } // end namespace tix

@@ -23,6 +23,7 @@ namespace tix
 
 		// Instances Name
 		TString TileName = Doc["name"].GetString();
+		Helper.LevelName = Doc["level"].GetString();
 		const int32 MeshCount = Doc["mesh_total"].GetInt();
 		const int32 InsTotalCount = Doc["instances_total"].GetInt();
 
@@ -122,6 +123,7 @@ namespace tix
 		{
 			// init header
 			THeaderSceneTile SceneTileHeader;
+			SceneTileHeader.LevelNameIndex = AddStringToList(OutStrings, LevelName);
 			SceneTileHeader.Position.X = (int16)Position.X;
 			SceneTileHeader.Position.Y = (int16)Position.Y;
 			SceneTileHeader.BBox = BBox;

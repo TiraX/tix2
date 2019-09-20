@@ -13,9 +13,10 @@ namespace tix
 	{
 	public:
 		template<class T>
-		static T* CreateNode(TNode* Parent)
+		static T* CreateNode(TNode* Parent, const TString& NodeId = TString())
 		{
 			T* Node = ti_new T(Parent);
+			Node->SetId(NodeId);
 			return Node;
 		}
 	};
@@ -41,9 +42,9 @@ namespace tix
 		{
 			return NodeId;
 		}
-		virtual void SetId(const char* name)
+		virtual void SetId(const TString& InNodeId)
 		{
-			NodeId = name;
+			NodeId = InNodeId;
 		}
 
 		virtual void AddChild(TNode* child);		// add child at the end of children
@@ -55,6 +56,7 @@ namespace tix
 		
 		virtual TNode* GetNodeById(const TString& uid);
 		virtual void GetNodesByType(E_NODE_TYPE type, TVector<TNode*>& elements);
+		virtual TNode* GetNodeByPath(const TString& NodePath);
 		
 		virtual TNode* IsIntersectWithRay(const line3df& ray, aabbox3df& outBBox, vector3df& outIntersection);
 		virtual TNode* IsIntersectWithPoint(const vector3df& p, aabbox3df& outBBox, vector3df& outIntersection);

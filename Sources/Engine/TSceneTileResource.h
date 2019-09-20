@@ -7,11 +7,13 @@
 
 namespace tix
 {
-	class TSceneTile : public TResource
+	class TSceneTileResource : public TResource
 	{
 	public:
-		TSceneTile();
-		~TSceneTile();
+		TSceneTileResource();
+		~TSceneTileResource();
+
+		TInstanceBufferPtr GetInstanceBufferByIndex(int32 Index);
 
 	public:
 		virtual void InitRenderThreadResource() override;
@@ -20,11 +22,13 @@ namespace tix
 	protected:
 
 	protected:
+		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
 		TVector<TAssetPtr> Meshes;
 		TVector<TInstanceBufferPtr> MeshInstances;
 
 		friend class TAssetFile;
+		friend class TNodeSceneTile;
 	};
 }

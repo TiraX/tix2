@@ -59,7 +59,7 @@ using namespace std;
 #include "TShader.h"
 #include "TMaterial.h"
 #include "TMaterialInstance.h"
-#include "TSceneTile.h"
+#include "TSceneTileResource.h"
 #include "TAssetFileDef.h"
 #include "TAssetFile.h"
 #include "TAsset.h"
@@ -69,6 +69,7 @@ using namespace std;
 #include "TNodeEnvironment.h"
 #include "TNodeStaticMesh.h"
 #include "TNodeLight.h"
+#include "TNodeSceneTile.h"
 #include "TScene.h"
 
 // RHI things
