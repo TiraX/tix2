@@ -54,13 +54,13 @@ namespace tix
 		}
 	}
 
-	TAssetPtr TAssetLibrary::LoadAssetAysc(const TString& AssetFilename, ILoadingTaskNotifier * Notifier)
+	TAssetPtr TAssetLibrary::LoadAssetAysc(const TString& AssetFilename, ILoadingFinishDelegate * InDelegate)
 	{
 		if (AssetsLoaded.find(AssetFilename) == AssetsLoaded.end())
 		{
 			// Load resource to library
 			TAssetPtr Asset = ti_new TAsset(AssetFilename);
-			Asset->SetLoadingNotifier(Notifier);
+			Asset->SetLoadingFinishDelegate(InDelegate);
 			AddAsset(AssetFilename, Asset);
 
 			Asset->Load(true);

@@ -510,17 +510,16 @@ namespace tix
 			TVector<TAssetPtr> Tiles;
 			Tiles.reserve(Header->NumTiles);
 			int8 TileFileName[128];
-			const int8* SceneName = GetString(Header->NameIndex);
 			for (int32 t = 0; t < Header->NumTiles; ++t)
 			{
 				const vector2di16& Point = AssetsTiles[t];
 				sprintf(TileFileName, "t%d_%d", Point.X, Point.Y);
 				TString TileName = TileFileName;
+				sprintf(TileFileName, "%s/t%d_%d.tasset", LevelName.c_str(), Point.X, Point.Y);
+				TString TileFilePath = TileFileName;
 
-				sprintf(TileFileName, "%s/%s.tasset", SceneName, TileName.c_str());
-
-				TNodeSceneTile * NodeSceneTile = TNodeFactory::CreateNode<TNodeSceneTile>(NodeLevel, TileName);
-				AssetLib->LoadAssetAysc(TileFileName, NodeSceneTile);
+				TSceneTileLoadingFinishDelegate * SceneTileLoadingFinishDelegate = ti_new TSceneTileLoadingFinishDelegate(LevelName, TileName);
+				AssetLib->LoadAssetAysc(TileFilePath, SceneTileLoadingFinishDelegate);
 			}
 		}
 	}
@@ -577,21 +576,18 @@ namespace tix
 				TString MIName = GetString(AssetsMaterialInstances[mi]);
 				AssetLib->LoadAssetAysc(MIName);
 			}
-			// Meshes, find corresponding scene tile node as the parent of static mesh node
-			int8 SceneTileNodePath[128];
-			sprintf(SceneTileNodePath, "%s.t%d_%d", SceneTile->LevelName.c_str(), SceneTile->Position.X, SceneTile->Position.Y);
-			TNode* NodeFromPath = TEngine::Get()->GetScene()->GetRoot()->GetNodeByPath(SceneTileNodePath);
-			TI_ASSERT(NodeFromPath->GetType() == ENT_SceneTile);
-			TNodeSceneTile* NodeSceneTile = static_cast<TNodeSceneTile*>(NodeFromPath);
 
+			// Load meshes, add it to scene tile node when loading finished.
 			SceneTile->Meshes.reserve(Header->NumMeshes);
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				TNodeStaticMesh* NodeStaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeSceneTile);
-				NodeStaticMesh->SetMeshIndexInTile(m);
+				TStaticMeshLoadingFinishDelegate * SMLoadingFinishDelegate = ti_new TStaticMeshLoadingFinishDelegate(
+					SceneTile->LevelName,
+					SceneTile->Position,
+					m);
 
 				TString MeshName = GetString(AssetsMeshes[m]);
-				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName, NodeStaticMesh);
+				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName, SMLoadingFinishDelegate);
 				SceneTile->Meshes.push_back(MeshAsset);
 			}
 

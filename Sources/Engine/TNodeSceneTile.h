@@ -7,6 +7,19 @@
 
 namespace tix
 {
+	class TSceneTileLoadingFinishDelegate : public ILoadingFinishDelegate
+	{
+	public:
+		TSceneTileLoadingFinishDelegate(const TString& InLevelName, const TString& InTileName);
+		virtual ~TSceneTileLoadingFinishDelegate();
+		virtual void LoadingFinished(TAssetPtr InAsset) override;
+
+	private:
+		TString LevelName;
+		TString TileName;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 
 	class TNodeLevel : public TNode
 	{
@@ -25,7 +38,7 @@ namespace tix
 
 	//////////////////////////////////////////////////////////////////////////
 
-	class TNodeSceneTile : public TNode, public ILoadingTaskNotifier
+	class TNodeSceneTile : public TNode
 	{
 		DECLARE_NODE_WITH_CONSTRUCTOR(SceneTile);
 
@@ -36,14 +49,12 @@ namespace tix
 		{
 			return SceneTileResource->GetInstanceBufferByIndex(Index);
 		}
-
-		// interface from ILoadingTaskNotifier
-		virtual void NotifyLoadingFinished(TAssetPtr InAsset) override;
 	protected:
 
 	protected:
 		TSceneTileResourcePtr SceneTileResource;
 
+		friend class TSceneTileLoadingFinishDelegate;
 	};
 
 } // end namespace tix

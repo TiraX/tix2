@@ -8,9 +8,62 @@
 
 namespace tix
 {
+	TStaticMeshLoadingFinishDelegate::TStaticMeshLoadingFinishDelegate(
+		const TString& InLevelName, 
+		const vector2di& InSceneTilePos, 
+		int32 InMeshIndex)
+		: LevelName(InLevelName)
+		, SceneTilePos(InSceneTilePos)
+		, MeshIndexInTile(InMeshIndex)
+	{}
+
+	TStaticMeshLoadingFinishDelegate::~TStaticMeshLoadingFinishDelegate()
+	{}
+
+	void TStaticMeshLoadingFinishDelegate::LoadingFinished(TAssetPtr InAsset)
+	{
+		TI_ASSERT(IsGameThread());
+
+		// Find the scene tile node it belongs to.
+		int8 SceneTilePath[128];
+		sprintf(SceneTilePath, "%s.t%d_%d", LevelName.c_str(), SceneTilePos.X, SceneTilePos.Y);
+		TNode * NodeFromPath = TEngine::Get()->GetScene()->GetRoot()->GetNodeByPath(SceneTilePath);
+
+		if (NodeFromPath != nullptr)
+		{
+			TI_ASSERT(NodeFromPath->GetType() == ENT_SceneTile);
+			TNodeSceneTile * NodeSceneTile = static_cast<TNodeSceneTile*>(NodeFromPath);
+
+			// Mesh asset load finished add it to TScene
+			const TVector<TResourcePtr>& Resources = InAsset->GetResources();
+			TI_ASSERT(Resources.size() > 0);
+			TResourcePtr FirstResource = Resources[0];
+			TI_ASSERT(FirstResource->GetType() == ERES_MESH);
+			TAssetPtr MeshRes = InAsset;
+
+			// Get Instance Buffer from SceneTile
+			TI_ASSERT(MeshIndexInTile >= 0);
+			TInstanceBufferPtr InstanceBuffer = NodeSceneTile->GetInstanceBufferByIndex(MeshIndexInTile);
+
+			// Gather loaded mesh resources
+			TVector<TMeshBufferPtr> Meshes;
+			Meshes.reserve(MeshRes->GetResources().size());
+			for (auto Res : MeshRes->GetResources())
+			{
+				TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(Res.get());
+				Meshes.push_back(Mesh);
+			}
+
+			// Create static mesh node
+			TNodeStaticMesh * NodeStaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeSceneTile, MeshRes->GetName());
+			NodeStaticMesh->LinkMesh(Meshes, InstanceBuffer, false, false);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	TNodeStaticMesh::TNodeStaticMesh(TNode* parent)
 		: TNode(TNodeStaticMesh::NODE_TYPE, parent)
-		, MeshIndexInTile(-1)
 	{
 	}
 
@@ -136,52 +189,5 @@ namespace tix
 		//			BindLightResource_RenderThread(Primitives, BindedLightResources);
 		//		});
 		//}
-	}
-
-	void TNodeStaticMesh::NotifyLoadingFinished(TAssetPtr InAsset)
-	{
-		TI_ASSERT(IsGameThread());
-
-		// Mesh asset load finished add it to TScene
-		const TVector<TResourcePtr>& Resources = InAsset->GetResources();
-		TI_ASSERT(Resources.size() > 0);
-		TResourcePtr FirstResource = Resources[0];
-		TI_ASSERT(FirstResource->GetType() == ERES_MESH);
-		TAssetPtr MeshRes = InAsset;
-		/*
-				TInstanceBufferPtr InstanceBuffer = nullptr;
-				if (FirstResource->GetType() == ERES_INSTANCE)
-				{
-					TI_ASSERT(Resources.size() == 1);
-					InstanceBuffer = static_cast<TInstanceBuffer*>(FirstResource.get());
-					TI_ASSERT(MeshAsset != nullptr && MeshAsset->GetResources().size() > 0);
-					MeshRes = MeshAsset;
-				}
-				else
-				{
-					TI_ASSERT(FirstResource->GetType() == ERES_MESH);
-					MeshRes = InAsset;
-				}
-		*/
-
-		// Get Instance Buffer from SceneTile
-		TI_ASSERT(Parent->GetType() == ENT_SceneTile);
-		TI_ASSERT(MeshIndexInTile >= 0);
-		TNodeSceneTile* NodeSceneTile = static_cast<TNodeSceneTile*>(GetParent());
-		TInstanceBufferPtr InstanceBuffer = NodeSceneTile->GetInstanceBufferByIndex(MeshIndexInTile);
-
-		// Gather loaded mesh resources
-		TVector<TMeshBufferPtr> Meshes;
-		Meshes.reserve(MeshRes->GetResources().size());
-		for (auto Res : MeshRes->GetResources())
-		{
-			TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(Res.get());
-			Meshes.push_back(Mesh);
-		}
-		LinkMesh(Meshes, InstanceBuffer, false, false);
-
-#if (TIX_DEBUG_AYNC_LOADING)
-		_LOG(Log, "StaticMesh Notify ~ %s.\n", InAsset->GetName().c_str());
-#endif
 	}
 }

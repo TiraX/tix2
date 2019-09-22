@@ -13,7 +13,7 @@ namespace tix
 		TI_API static TAssetLibrary* Get();
 
 		TI_API TAssetPtr LoadAsset(const TString& AssetFilename);
-		TI_API TAssetPtr LoadAssetAysc(const TString& AssetFilename, ILoadingTaskNotifier * Notifier = nullptr);
+		TI_API TAssetPtr LoadAssetAysc(const TString& AssetFilename, ILoadingFinishDelegate * InDelegate = nullptr);
 
 		TI_API void RemoveUnusedResources();
 

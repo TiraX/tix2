@@ -62,9 +62,11 @@ namespace tix
 			{
 				Res->InitRenderThreadResource();
 			}
-			if (Asset->LoadingNotifier != nullptr)
+			if (Asset->LoadingFinishDelegate != nullptr)
 			{
-				Asset->LoadingNotifier->NotifyLoadingFinished(Asset);
+				Asset->LoadingFinishDelegate->LoadingFinished(Asset);
+				ti_delete Asset->LoadingFinishDelegate;
+				Asset->LoadingFinishDelegate = nullptr;
 			}
 #if (TIX_DEBUG_AYNC_LOADING)
 			_LOG(Log, "TFinish: %s\n", Asset->GetName().c_str());

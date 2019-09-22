@@ -19,16 +19,11 @@ namespace tix
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
 
-	protected:
-
-	protected:
+	public:
 		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
 		TVector<TAssetPtr> Meshes;
 		TVector<TInstanceBufferPtr> MeshInstances;
-
-		friend class TAssetFile;
-		friend class TNodeSceneTile;
 	};
 }

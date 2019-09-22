@@ -7,10 +7,12 @@
 
 namespace tix
 {
-	class ILoadingTaskNotifier
+	class ILoadingFinishDelegate
 	{
 	public:
-		virtual void NotifyLoadingFinished(TAssetPtr InAsset) = 0;
+		ILoadingFinishDelegate() {}
+		virtual ~ILoadingFinishDelegate() {}
+		virtual void LoadingFinished(TAssetPtr InAsset) = 0;
 	};
 
 	class TLoadingTask : public TTask
