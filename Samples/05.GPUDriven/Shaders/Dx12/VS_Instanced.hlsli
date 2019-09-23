@@ -4,11 +4,13 @@ cbuffer EB_View : register(b0)
 	float4x4 ViewProjection;
 	float3 ViewDir;
 	float3 ViewPos;
+	float3 MainLightDirection;
+	float3 MainLightColor;
 };
 
 cbuffer EB_Primitive : register(b1)
 {
-	float4x4 WorldTransform;
+	float4x4 LocalToWorld;
 	float4 VTUVTransform;
 	float4 VTDebugInfo;
 };
@@ -34,13 +36,24 @@ struct VSOutput
 	float3 view : TexCoord1;
 };
 
+half3x3 GetWorldRotationMat(in VSInput vsInput)
+{
+	return half3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
+}
+
 float3 GetWorldPosition(in VSInput vsInput)
 {
 	float3x3 RotMat = float3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
 	float3 position = mul(vsInput.position, RotMat);
+	//float3 position = vsInput.position;
 	position += vsInput.ins_transition.xyz;
 
 	return position;
+}
+
+half3 TransformNormal(in half3 Normal, in half3x3 RotMat)
+{
+	return mul(Normal, RotMat);
 }
 
 float2 GetTextureCoords(in VSInput vsInput)

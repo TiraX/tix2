@@ -20,11 +20,15 @@ namespace tix
 		{
 			ViewProjectionDirty = 1 << 0,
 			ScenePrimitivesDirty = 1 << 1,
+			EnvironmentDirty = 1 << 2,
+
+			ViewUniformDirty = (ViewProjectionDirty | EnvironmentDirty),
 		};
 
 		virtual void PrepareViewUniforms();
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
+		void SetEnvironmentInfo(const FEnvironmentInfo& Info);
 		void AddPrimitives(const TVector<FPrimitivePtr>& Primitives);
 		void RemovePrimitives(const TVector<FPrimitivePtr>& Primitives);
 
@@ -53,6 +57,11 @@ namespace tix
 			return ViewProjection;
 		}
 
+		const FEnvironmentInfo& GetEnvironmentInfo() const
+		{
+			return EnvInfo;
+		}
+
 		const TVector<FPrimitivePtr>& GetStaticDrawList(E_DRAWLIST_TYPE List) const
 		{
 			return StaticDrawLists[List];
@@ -71,6 +80,7 @@ namespace tix
 		uint32 SceneFlags;
 
 		FViewProjectionInfo ViewProjection;
+		FEnvironmentInfo EnvInfo;
 
 		FViewUniformBufferPtr ViewUniformBuffer;
 	};

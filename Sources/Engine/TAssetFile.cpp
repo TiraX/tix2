@@ -593,16 +593,17 @@ namespace tix
 
 			// Instances
 			SceneTile->MeshInstances.reserve(Header->NumMeshes);
+			int32 InstanceOffset = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
 				TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
 				const int32 InstanceCount = MeshInstanceCount[m];
 				int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * InstanceCount];
 
-				int32 Offset = 0;
+				int32 DataOffset = 0;
 				for (int32 i = 0; i < InstanceCount; ++i)
 				{
-					const THeaderSceneMeshInstance& Instance = InstanceData[i];
+					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffset];
 					matrix4 MatInstanceTrans;
 					Instance.Rotation.getMatrix(MatInstanceTrans);
 					MatInstanceTrans.postScale(Instance.Scale);
@@ -622,11 +623,12 @@ namespace tix
 					RotScaleMat[2].Y = Mat[9];
 					RotScaleMat[2].Z = Mat[10];
 					RotScaleMat[2].W = Mat[11];
-					memcpy(Data + Offset, &Transition, sizeof(FFloat4));
-					Offset += sizeof(FFloat4);
-					memcpy(Data + Offset, RotScaleMat, sizeof(RotScaleMat));
-					Offset += sizeof(RotScaleMat);
+					memcpy(Data + DataOffset, &Transition, sizeof(FFloat4));
+					DataOffset += sizeof(FFloat4);
+					memcpy(Data + DataOffset, RotScaleMat, sizeof(RotScaleMat));
+					DataOffset += sizeof(RotScaleMat);
 				}
+				InstanceOffset += InstanceCount;
 				InstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, InstanceCount);
 				SceneTile->MeshInstances.push_back(InstanceBuffer);
 				ti_delete[] Data;

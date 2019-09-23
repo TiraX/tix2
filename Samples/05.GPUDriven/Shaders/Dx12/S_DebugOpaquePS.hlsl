@@ -5,5 +5,7 @@
 [RootSignature(BasePass_RootSig)]
 float4 main(VSOutput input) : SV_Target0
 {
-	return float4(1,0,1,1);
+	float Light = saturate(dot(MainLightDirection, input.normal));
+	//return float4(Light, Light, Light,1);
+	return float4(input.normal * 0.5 + 0.5, 1.0);
 }

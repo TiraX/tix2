@@ -27,6 +27,13 @@ namespace tix
 		SetSceneFlag(ViewProjectionDirty);
 	}
 
+	void FScene::SetEnvironmentInfo(const FEnvironmentInfo& Info)
+	{
+		TI_ASSERT(IsRenderThread());
+		EnvInfo = Info;
+		SetSceneFlag(EnvironmentDirty);
+	}
+
 	void FScene::AddPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
 	{
 		// Send different primitives to different draw list
@@ -69,7 +76,7 @@ namespace tix
 
 	void FScene::PrepareViewUniforms()
 	{
-		if (HasSceneFlag(FScene::ViewProjectionDirty))
+		if (HasSceneFlag(FScene::ViewUniformDirty))
 		{
 			// Always make a new View uniform buffer for on-the-fly rendering
 			ViewUniformBuffer = ti_new FViewUniformBuffer();
@@ -78,6 +85,8 @@ namespace tix
 			ViewUniformBuffer->UniformBufferData[0].ViewProjection = VPInfo.MatProj * VPInfo.MatView;
 			ViewUniformBuffer->UniformBufferData[0].ViewDir = VPInfo.CamDir;
 			ViewUniformBuffer->UniformBufferData[0].ViewPos = VPInfo.CamPos;
+			ViewUniformBuffer->UniformBufferData[0].MainLightDirection = EnvInfo.MainLightDir;
+			ViewUniformBuffer->UniformBufferData[0].MainLightColor = EnvInfo.MainLightColor * EnvInfo.MainLightIntensity;
 
 			ViewUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 		}

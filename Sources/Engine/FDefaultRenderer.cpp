@@ -58,8 +58,8 @@ namespace tix
 		for (const auto& Primitive : Primitives)
 		{
 			FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
-			RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
 			RHI->SetGraphicsPipeline(Primitive->GetPipeline());
+			RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
 			ApplyShaderParameter(RHI, Scene, Primitive);
 
 			RHI->DrawPrimitiveIndexedInstanced(Primitive->GetMeshBuffer(), InstanceBuffer == nullptr ? 1 : InstanceBuffer->GetInstancesCount());

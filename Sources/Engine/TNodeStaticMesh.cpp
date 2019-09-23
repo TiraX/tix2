@@ -119,11 +119,11 @@ namespace tix
 			// Init uniform buffer resource in render thread
 			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdatePrimitiveBuffer,
 				TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
-				matrix4, WorldTransform, AbsoluteTransformation,
+				matrix4, LocalToWorld, AbsoluteTransformation,
 				{
 					for (auto P : Primitives)
 					{
-						P->SetWorldTransform(WorldTransform);
+						P->SetLocalToWorld(LocalToWorld);
 					}
 				});
 		}

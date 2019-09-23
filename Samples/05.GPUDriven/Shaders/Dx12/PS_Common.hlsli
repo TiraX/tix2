@@ -5,11 +5,13 @@ struct VSOutput
 	float3 normal : Normal;
 	float3 tangent : Tangent;
 	float3 view : TexCoord1;
-};
+}; 
 
-cbuffer EB_Primitive : register(b2)
+cbuffer EB_View : register(b2)
 {
-	float4x4 WorldTransform;
-	float4 VTUVTransform;
-	float4 VTDebugInfo;
+	float4x4 ViewProjection;
+	float3 ViewDir;
+	float3 ViewPos;
+	float3 MainLightDirection;
+	float3 MainLightColor;
 };

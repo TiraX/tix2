@@ -14,9 +14,7 @@ namespace tix
 	{}
 
 	TSceneTileLoadingFinishDelegate::~TSceneTileLoadingFinishDelegate()
-	{
-		_LOG(Log, "TSceneTileLoadingFinishDelegate destructor.\n");
-	}
+	{}
 
 	void TSceneTileLoadingFinishDelegate::LoadingFinished(TAssetPtr InAsset)
 	{

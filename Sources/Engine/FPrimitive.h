@@ -8,7 +8,7 @@
 namespace tix
 {
 	BEGIN_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, WorldTransform)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, LocalToWorld)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTUVTransform)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTDebugInfo)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
@@ -57,7 +57,7 @@ namespace tix
 		{
 			return (PrimitiveFlag & PrimitiveUniformBufferDirty) != 0;
 		}
-		void SetWorldTransform(const matrix4 InWorldTransform);
+		void SetLocalToWorld(const matrix4 InLocalToWorld);
 		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
 		void SetVTDebugInfo(float A, float B, float C, float D);
 

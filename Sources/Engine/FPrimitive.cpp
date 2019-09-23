@@ -55,10 +55,10 @@ namespace tix
 		}
 	}
 
-	void FPrimitive::SetWorldTransform(const matrix4 InWorldTransform)
+	void FPrimitive::SetLocalToWorld(const matrix4 InLocalToWorld)
 	{
 		TI_ASSERT(IsRenderThread());
-		PrimitiveUniformBuffer->UniformBufferData[0].WorldTransform = InWorldTransform;
+		PrimitiveUniformBuffer->UniformBufferData[0].LocalToWorld = InLocalToWorld;
 		PrimitiveFlag |= PrimitiveUniformBufferDirty;
 	}
 

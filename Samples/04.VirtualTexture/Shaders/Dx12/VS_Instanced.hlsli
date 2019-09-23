@@ -8,7 +8,7 @@ cbuffer EB_View : register(b0)
 
 cbuffer EB_Primitive : register(b1)
 {
-	float4x4 WorldTransform;
+	float4x4 LocalToWorld;
 	float4 VTUVTransform;
 	float4 VTDebugInfo;
 };

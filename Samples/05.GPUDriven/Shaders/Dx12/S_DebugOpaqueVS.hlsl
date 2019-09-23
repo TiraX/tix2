@@ -11,8 +11,9 @@ VSOutput main(VSInput vsInput)
 	vsOutput.position = mul(float4(WorldPosition, 1.0), ViewProjection);
 	vsOutput.texcoord0 = GetTextureCoords(vsInput);
 
-    vsOutput.normal = vsInput.normal * 2.0 - 1.0;
-    vsOutput.tangent = vsInput.tangent * 2.0 - 1.0;
+	half3x3 RotMat = GetWorldRotationMat(vsInput);
+    vsOutput.normal = TransformNormal(vsInput.normal * 2.0 - 1.0, RotMat);
+    vsOutput.tangent = TransformNormal(vsInput.tangent * 2.0 - 1.0, RotMat);
 	vsOutput.view = ViewPos - vsInput.position;
 
     return vsOutput;
