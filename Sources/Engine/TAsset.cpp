@@ -25,6 +25,7 @@ namespace tix
 			}
 		}
 		AssetFile = nullptr;
+		InAsset->MarkAsLoaded();
 	}
 
 	class TAssetAyncLoadTask : public TLoadingTask
@@ -68,6 +69,7 @@ namespace tix
 				ti_delete Asset->LoadingFinishDelegate;
 				Asset->LoadingFinishDelegate = nullptr;
 			}
+			Asset->MarkAsLoaded();
 #if (TIX_DEBUG_AYNC_LOADING)
 			_LOG(Log, "TFinish: %s\n", Asset->GetName().c_str());
 #endif

@@ -581,13 +581,8 @@ namespace tix
 			SceneTile->Meshes.reserve(Header->NumMeshes);
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				TStaticMeshLoadingFinishDelegate * SMLoadingFinishDelegate = ti_new TStaticMeshLoadingFinishDelegate(
-					SceneTile->LevelName,
-					SceneTile->Position,
-					m);
-
 				TString MeshName = GetString(AssetsMeshes[m]);
-				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName, SMLoadingFinishDelegate);
+				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
 				SceneTile->Meshes.push_back(MeshAsset);
 			}
 

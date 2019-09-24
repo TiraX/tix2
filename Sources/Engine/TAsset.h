@@ -28,11 +28,17 @@ namespace tix
 	};
 
 	//////////////////////////////////////////////////////////////////
+	enum E_ASSET_LOADING_STATE
+	{
+		ASSET_LOADING,
+		ASSET_LOADED
+	};
 	class TAsset : public IReferenceCounted
 	{
 	public:
 		TAsset(const TString& InName)
 			: AssetName(InName)
+			, LoadingState(ASSET_LOADING)
 			, Loader(nullptr)
 			, LoadingFinishDelegate(nullptr)
 		{}
@@ -105,9 +111,26 @@ namespace tix
 		{
 			return Resources;
 		}
+
+		E_ASSET_LOADING_STATE GetLoadingState() const 
+		{
+			return LoadingState;
+		}
+
+		bool IsLoaded() const
+		{
+			return LoadingState != ASSET_LOADING;
+		}
 		
 	private:
+		void MarkAsLoaded()
+		{
+			LoadingState = ASSET_LOADED;
+		}
+
+	private:
 		TString AssetName;
+		E_ASSET_LOADING_STATE LoadingState;
 
 		// Hold an source file for asynchronous loading
 		TAssetLoader * Loader;

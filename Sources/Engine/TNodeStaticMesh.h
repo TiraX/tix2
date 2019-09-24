@@ -7,22 +7,6 @@
 
 namespace tix
 {
-	class TStaticMeshLoadingFinishDelegate : public ILoadingFinishDelegate
-	{
-	public:
-		TStaticMeshLoadingFinishDelegate(const TString& InLevelName, const vector2di& InSceneTilePos, int32 InMeshIndex);
-		virtual ~TStaticMeshLoadingFinishDelegate();
-
-		virtual void LoadingFinished(TAssetPtr InAsset) override;
-
-	private:
-		TString LevelName;
-		vector2di SceneTilePos;
-		int32 MeshIndexInTile;
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-
 	class TNodeLight;
 	class TNodeStaticMesh : public TNode
 	{
@@ -31,8 +15,11 @@ namespace tix
 	public:
 		virtual ~TNodeStaticMesh();
 
+		virtual void UpdateAllTransformation() override;
+
 		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) override;
-		void LinkMesh(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
+		void LinkMeshAsset(TAssetPtr InMeshAsset, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
+		void LinkMeshBuffer(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
 
 	protected:
 		virtual void UpdateAbsoluteTransformation() override;
@@ -41,6 +28,9 @@ namespace tix
 		TVector<FPrimitivePtr> LinkedPrimitives;
 		aabbox3df TransformedBBox;
 		TVector<TNodeLight*> BindedLights;
+
+		TAssetPtr MeshAsset;
+		TInstanceBufferPtr MeshInstance;
 	};
 
 } // end namespace tix
