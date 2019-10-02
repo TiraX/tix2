@@ -38,6 +38,7 @@ namespace tix
 	{
 		// Send different primitives to different draw list
 		TI_ASSERT(IsRenderThread());
+		// Combine all mesh buffers into a big buffer collection
 		for (auto& P : InPrimitives)
 		{
 			// Allocate virtual texture position for this primitive
@@ -72,6 +73,11 @@ namespace tix
 			// Mark flag primitives dirty
 			SetSceneFlag(ScenePrimitivesDirty);
 		}
+	}
+
+	void FScene::InitRenderFrame()
+	{
+		PrepareViewUniforms();
 	}
 
 	void FScene::PrepareViewUniforms()

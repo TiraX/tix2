@@ -12,17 +12,24 @@ namespace tix
 	{
 	public:
 		FMeshBuffer();
+		FMeshBuffer(
+			E_PRIMITIVE_TYPE InPrimType,
+			uint32 InVSFormat,
+			uint32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			uint32 InIndexCount
+		);
 		virtual ~FMeshBuffer();
 
 	public:
 		void TI_API SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer);
 
-		int32 GetVerticesCount() const
+		uint32 GetVerticesCount() const
 		{
 			return VsDataCount;
 		}
 
-		int32 GetIndicesCount() const
+		uint32 GetIndicesCount() const
 		{
 			return PsDataCount;
 		}
@@ -51,18 +58,21 @@ namespace tix
 		{
 			return Stride;
 		}
+
+		uint32 GetUsage() const
+		{
+			return Usage;
+		}
 	protected:
 
 	protected:
 		E_PRIMITIVE_TYPE	PrimitiveType;
-		int32				Usage;
+		uint32				Usage;
 
-		uint32				MeshFlag;
-
-		int32				VsDataCount;
+		uint32				VsDataCount;
 
 		E_INDEX_TYPE		IndexType;
-		int32				PsDataCount;
+		uint32				PsDataCount;
 
 		uint32				VsFormat;
 		uint32				Stride;

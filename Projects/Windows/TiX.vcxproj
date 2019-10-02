@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUCommandBufferDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUCommandSignatureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FPipelineDx12.cpp" />
@@ -36,8 +38,11 @@
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FGPUCommandBuffer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FGPUCommandSignature.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FMeshCollection.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPostProcess.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
@@ -52,6 +57,7 @@
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FStats.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FTexture.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FUniformBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FVTSystem.cpp" />
@@ -108,6 +114,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUCommandBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUCommandSignatureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUResourceDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FMeshBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FPipelineDx12.h" />
@@ -124,8 +132,11 @@
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h" />
     <ClInclude Include="..\..\Sources\Engine\FFrameResources.h" />
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h" />
+    <ClInclude Include="..\..\Sources\Engine\FGPUCommandBuffer.h" />
+    <ClInclude Include="..\..\Sources\Engine\FGPUCommandSignature.h" />
     <ClInclude Include="..\..\Sources\Engine\FLight.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
+    <ClInclude Include="..\..\Sources\Engine\FMeshCollection.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\FPostProcess.h" />
@@ -142,6 +153,7 @@
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h" />
+    <ClInclude Include="..\..\Sources\Engine\FStats.h" />
     <ClInclude Include="..\..\Sources\Engine\FTexture.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FUniformBufferView.h" />

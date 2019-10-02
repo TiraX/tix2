@@ -89,6 +89,13 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) = 0;
 		virtual FMeshBufferPtr CreateMeshBuffer() = 0;
+		virtual FMeshBufferPtr CreateEmptyMeshBuffer(
+			E_PRIMITIVE_TYPE InPrimType,
+			uint32 InVSFormat,
+			uint32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			uint32 InIndexCount
+		) = 0;
 		virtual FInstanceBufferPtr CreateInstanceBuffer() = 0;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) = 0;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) = 0;
@@ -96,8 +103,17 @@ namespace tix
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) = 0;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) = 0;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedSlots) = 0;
+		virtual FGPUCommandSignaturePtr CreateGPUCommandSignature(FPipelinePtr Pipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure) = 0;
+		virtual FGPUCommandBufferPtr CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount) = 0;
 
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
+		virtual bool UpdateHardwareResourceMesh(
+			FMeshBufferPtr MeshBuffer, 
+			uint32 VertexDataSize, 
+			uint32 VertexDataStride, 
+			uint32 IndexDataSize, 
+			E_INDEX_TYPE IndexType,
+			const TString& BufferName) = 0;
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) = 0;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) = 0;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) = 0;
@@ -108,9 +124,20 @@ namespace tix
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) = 0;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) = 0;
 		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex = -1) = 0;
+		virtual bool UpdateHardwareResourceGPUCommandSig(FGPUCommandSignaturePtr GPUCommandSignature) = 0;
+		virtual bool UpdateHardwareResourceGPUCommandBuffer(FGPUCommandBufferPtr GPUCommandBuffer) = 0;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) = 0;
 		virtual bool CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture) = 0;
 		virtual bool CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length) = 0;
+		virtual bool CopyBufferRegion(
+			FMeshBufferPtr DstBuffer, 
+			uint32 DstVertexOffset, 
+			uint32 DstIndexOffset,
+			FMeshBufferPtr SrcBuffer, 
+			uint32 SrcVertexOffset, 
+			uint32 VertexLength,
+			uint32 SrcIndexOffset,
+			uint32 IndexLength) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
@@ -146,9 +173,10 @@ namespace tix
 		virtual void DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount) = 0;
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
 
+		// GPU Command buffer
+		virtual void ExecuteGPUCommands(FGPUCommandBufferPtr GPUCommandBuffer) = 0;
+
 		virtual void SetViewport(const FViewport& InViewport);
-        
-        // TileWidth, TileHeight, ThreadGroupMemoryLength for iOS Metal when use tile shader.
 		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass");
 
 		E_RHI_TYPE GetRHIType() const

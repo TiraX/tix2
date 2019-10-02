@@ -10,7 +10,7 @@ namespace tix
 	class TStream : public IReferenceCounted
 	{
 	public:
-		TStream(int32 buf_size = 0)
+		TStream(uint32 buf_size = 0)
 			: Buffer(nullptr)
 			, BufferSize(buf_size)
 			, Pos(0)
@@ -25,7 +25,7 @@ namespace tix
 			}
 		}
 
-		TStream(void* buf, int32 buf_size)
+		TStream(void* buf, uint32 buf_size)
 			: Buffer(nullptr)
 			, BufferSize(buf_size)
 			, Pos(buf_size)
@@ -68,7 +68,8 @@ namespace tix
 			return *this;
 		}
 
-		void Put(const void* buf, int32 size)
+		// Put data in this stream, increase 'Pos'
+		void Put(const void* buf, uint32 size)
 		{
 			if (size == 0)
 				return;
@@ -89,12 +90,28 @@ namespace tix
 			Pos += File.Read(Buffer, BufferSize, File.GetSize());
 		}
 
+		// Set data in this stream, keep 'Pos' not changed.
+		void Set(const void* buf, uint32 size)
+		{
+			if (size == 0)
+				return;
+			TI_ASSERT(Pos + size <= BufferSize);
+			memcpy(Buffer + Pos, buf, size);
+		}
+		
+		// Seek 'Pos' to position in buffer
+		void Seek(uint32 NewPos)
+		{
+			TI_ASSERT(NewPos < BufferSize);
+			Pos = NewPos;
+		}
+
 		void Reset()
 		{
 			Pos = 0;
 		}
 
-		void ReserveAndClear(int32 InSize)
+		void ReserveAndClear(uint32 InSize)
 		{
 			TI_ASSERT(InSize > 0);
 			if (InSize != BufferSize)
@@ -115,7 +132,7 @@ namespace tix
 				memset(Buffer, 0, InSize);
 		}
 
-		void ReserveAndFill(int32 InSize)
+		void ReserveAndFill(uint32 InSize)
 		{
 			TI_ASSERT(InSize > 0);
 			if (InSize != BufferSize)
@@ -157,18 +174,18 @@ namespace tix
 			return Buffer;
 		}
 
-		int32 GetLength() const
+		uint32 GetLength() const
 		{
 			return Pos;
 		}
 
-		int32 GetBufferSize() const
+		uint32 GetBufferSize() const
 		{
 			return BufferSize;
 		}
 
 	protected:
-		void IncreaseBuffer(int32 size)
+		void IncreaseBuffer(uint32 size)
 		{
 			if (size < BufferSize * 2)
 			{
@@ -178,7 +195,7 @@ namespace tix
 			ReallocBuffer(size);
 		}
 
-		void ReallocBuffer(int32 size)
+		void ReallocBuffer(uint32 size)
 		{
 			size = ti_align4(size);
 			if (size < BufferSize)
@@ -198,7 +215,7 @@ namespace tix
 
 	protected:
 		int8* Buffer;
-		int32 Pos;
-		int32 BufferSize;
+		uint32 Pos;
+		uint32 BufferSize;
 	};
 }

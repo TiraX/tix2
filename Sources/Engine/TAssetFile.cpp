@@ -203,6 +203,9 @@ namespace tix
 			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride) 
 				+ ti_align4((int32)(((Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32)) * Header->PrimitiveCount * 3));
 
+			FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
+			FStats::Stats.IndexDataInBytes += ti_align4((int32)(((Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32)) * Header->PrimitiveCount * 3));
+
 			// Load material
 			TString MaterialResName = GetString(Header->StrMaterialInstance);
 			TAssetPtr MIRes = TAssetLibrary::Get()->LoadAsset(MaterialResName);

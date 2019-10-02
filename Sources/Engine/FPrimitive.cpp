@@ -79,7 +79,7 @@ namespace tix
 	void FPrimitive::UpdatePrimitiveBuffer_RenderThread()
 	{
 		TI_ASSERT(IsRenderThread());
-		PrimitiveUniformBuffer->InitUniformBuffer();
+		PrimitiveUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 		PrimitiveFlag &= ~PrimitiveUniformBufferDirty;
 	}
 }

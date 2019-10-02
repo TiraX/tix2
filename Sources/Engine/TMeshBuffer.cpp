@@ -12,6 +12,7 @@ namespace tix
 	TMeshBuffer::TMeshBuffer()
 		: TResource(ERES_MESH)
 		, PrimitiveType(EPT_TRIANGLELIST)
+		, Usage(USAGE_DEFAULT)
 		, VsData(nullptr)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
@@ -19,7 +20,6 @@ namespace tix
 		, PsDataCount(0)
 		, VsFormat(0)
 		, Stride(0)
-		, MeshFlag(0)
 	{
 	}
 
@@ -29,10 +29,10 @@ namespace tix
 		SAFE_DELETE(PsData);
 	}
 
-	int32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
+	uint32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
 	{
 		// Calculate stride
-		int32 Stride = 0;
+		uint32 Stride = 0;
 		for (uint32 seg = 1, i = 0; seg <= EVSSEG_TOTAL; seg <<= 1, ++i)
 		{
 			if ((Format & seg) != 0)

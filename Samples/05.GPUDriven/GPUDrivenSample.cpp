@@ -17,12 +17,12 @@ int main()
 
 		TEngine::InitEngine(Desc);
 
+		// Setup scenes
+		TGPUDrivenTicker::SetupScene();
+
 		// before tick and render
 		TEngine::Get()->AddTicker(ti_new TGPUDrivenTicker());
 		TEngine::Get()->AddRenderer(ti_new FGPUDrivenRenderer());
-
-		// Setup scenes
-		TGPUDrivenTicker::SetupScene();
 
 		// start tick and render
 

@@ -73,6 +73,7 @@ namespace tix
 
 		// For metal, do not create buffer (usually less than 4k bytes), bind raw memory to gpu as apple doc recommended.
 		// https://developer.apple.com/library/archive/documentation/3DDrawing/Conceptual/MTLBestPracticesGuide/BufferBindings.html
+		// For Dx12, use a D3D12_HEAP_TYPE_UPLOAD heap to manage data directly
 		UB_FLAG_INTERMEDIATE = 1 << 3,	
 	};
 	class FUniformBuffer : public FRenderResource

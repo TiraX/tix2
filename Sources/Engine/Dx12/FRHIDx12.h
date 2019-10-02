@@ -39,14 +39,30 @@ namespace tix
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) override;
 		virtual FMeshBufferPtr CreateMeshBuffer() override;
+		virtual FMeshBufferPtr CreateEmptyMeshBuffer(
+			E_PRIMITIVE_TYPE InPrimType,
+			uint32 InVSFormat,
+			uint32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			uint32 InIndexCount
+		) override;
 		virtual FInstanceBufferPtr CreateInstanceBuffer() override;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
 		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedSlots) override;
+		virtual FGPUCommandSignaturePtr CreateGPUCommandSignature(FPipelinePtr Pipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure) override;
+		virtual FGPUCommandBufferPtr CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount) override;
 
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
+		virtual bool UpdateHardwareResourceMesh(
+			FMeshBufferPtr MeshBuffer, 
+			uint32 VertexDataSize, 
+			uint32 VertexDataStride, 
+			uint32 IndexDataSize,
+			E_INDEX_TYPE IndexType,
+			const TString& BufferName) override;
 		virtual bool UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture) override;
 		virtual bool UpdateHardwareResourceTexture(FTexturePtr Texture, TTexturePtr InTexData) override;
@@ -57,9 +73,20 @@ namespace tix
 		virtual bool UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget) override;
 		virtual bool UpdateHardwareResourceShader(FShaderPtr ShaderResource, TShaderPtr InShaderSource) override;
 		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex = -1) override;
+		virtual bool UpdateHardwareResourceGPUCommandSig(FGPUCommandSignaturePtr GPUCommandSignature) override;
+		virtual bool UpdateHardwareResourceGPUCommandBuffer(FGPUCommandBufferPtr GPUCommandBuffer) override;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) override;
 		virtual bool CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture) override;
 		virtual bool CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length) override;
+		virtual bool CopyBufferRegion(
+			FMeshBufferPtr DstBuffer,
+			uint32 DstVertexOffset,
+			uint32 DstIndexOffset,
+			FMeshBufferPtr SrcBuffer,
+			uint32 SrcVertexOffset,
+			uint32 VertexLength,
+			uint32 SrcIndexOffset,
+			uint32 IndexLength) override;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
@@ -94,6 +121,9 @@ namespace tix
 
 		virtual void DispatchCompute(const vector3di& GroupSize, const vector3di& GroupCount) override;
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
+
+		// GPU Command buffer
+		virtual void ExecuteGPUCommands(FGPUCommandBufferPtr GPUCommandBuffer) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
 		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass") override;

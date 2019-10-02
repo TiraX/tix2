@@ -15,7 +15,15 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
+	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
+	void DrawGPUCommandBuffer(FRHI * RHI);
+
+private:
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 	FArgumentBufferPtr AB_Result;
+
+	FPipelinePtr DebugPipeline;
+	FGPUCommandSignaturePtr GPUCommandSignature;
+	FGPUCommandBufferPtr GPUCommandBuffer;
 };

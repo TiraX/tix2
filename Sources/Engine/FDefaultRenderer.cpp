@@ -25,7 +25,7 @@ namespace tix
 	void FDefaultRenderer::InitRenderFrame(FScene* Scene)
 	{
 		// Prepare frame view uniform buffer
-		Scene->PrepareViewUniforms();
+		Scene->InitRenderFrame();
 
 		// Prepare frame primitive uniform buffers
 		for (int32 List = 0; List < LIST_COUNT; ++List)

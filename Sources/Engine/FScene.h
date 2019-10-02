@@ -16,6 +16,7 @@ namespace tix
 		FScene();
 		~FScene();
 
+		// Scene flags clear every frames
 		enum SceneFlag
 		{
 			ViewProjectionDirty = 1 << 0,
@@ -25,7 +26,7 @@ namespace tix
 			ViewUniformDirty = (ViewProjectionDirty | EnvironmentDirty),
 		};
 
-		virtual void PrepareViewUniforms();
+		void InitRenderFrame();
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
 		void SetEnvironmentInfo(const FEnvironmentInfo& Info);
@@ -71,10 +72,11 @@ namespace tix
 		{
 			return ViewUniformBuffer;
 		}
-	protected:
-		FSceneLights * SceneLights;
+	private:
+		void PrepareViewUniforms();
 
-		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
+	private:
+		FSceneLights * SceneLights;
 
 		// Scene flags per frame, will be cleared by the end of this frame
 		uint32 SceneFlags;
@@ -82,6 +84,9 @@ namespace tix
 		FViewProjectionInfo ViewProjection;
 		FEnvironmentInfo EnvInfo;
 
+		// Uniform buffers
 		FViewUniformBufferPtr ViewUniformBuffer;
+
+		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
 	};
 } // end namespace tix

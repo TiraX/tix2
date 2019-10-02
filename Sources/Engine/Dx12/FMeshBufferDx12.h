@@ -13,6 +13,13 @@ namespace tix
 	{
 	public:
 		FMeshBufferDx12();
+		FMeshBufferDx12(
+			E_PRIMITIVE_TYPE InPrimType,
+			uint32 InVSFormat,
+			uint32 InVertexCount,
+			E_INDEX_TYPE InIndexType,
+			uint32 InIndexCount
+		);
 		virtual ~FMeshBufferDx12();
 	protected:
 
@@ -24,6 +31,7 @@ namespace tix
 		D3D12_INDEX_BUFFER_VIEW IndexBufferView;
 
 		friend class FRHIDx12;
+		friend class FGPUCommandBufferDx12;
 	};
 
 	/////////////////////////////////////////////////////////////
@@ -40,6 +48,7 @@ namespace tix
 		D3D12_VERTEX_BUFFER_VIEW InstanceBufferView;
 
 		friend class FRHIDx12;
+		friend class FGPUCommandBufferDx12;
 	};
 }
 

@@ -73,6 +73,8 @@ namespace tix
         ListExecuteOrder.clear();
         CurrentRenderTarget = nullptr;
         CurrentBoundResource.Reset();
+
+		FStats::ResetPerFrame();
     }
     
 	FRenderResourceTablePtr FRHI::CreateRenderResourceTable(uint32 InSize, E_RENDER_RESOURCE_HEAP_TYPE InHeap)

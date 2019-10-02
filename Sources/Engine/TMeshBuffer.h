@@ -18,10 +18,20 @@ namespace tix
 		static const int8* SemanticName[ESSI_TOTAL];
 		static const int32 SemanticIndex[ESSI_TOTAL];
 
+		enum E_USAGE
+		{
+			// By default, 
+			// vertex data is D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, 
+			// index data is D3D12_RESOURCE_STATE_INDEX_BUFFER
+			USAGE_DEFAULT,
+
+			// vertex and index data used as copy source
+			USAGE_COPY_SOURCE
+		};
 	public:
 		FMeshBufferPtr MeshBufferResource;
 
-		static int32 GetStrideFromFormat(uint32 Format);
+		static uint32 GetStrideFromFormat(uint32 Format);
 		static TVector<E_MESH_STREAM_INDEX> GetSteamsFromFormat(uint32 Format);
 
 		virtual void InitRenderThreadResource() override;
@@ -33,12 +43,17 @@ namespace tix
 			E_INDEX_TYPE InIndexType,
 			const void* InIndexData, int32 InIndexCount);
 
-		int32 GetVerticesCount() const
+		void SetUsage(E_USAGE InUsage)
+		{
+			Usage = InUsage;
+		}
+
+		uint32 GetVerticesCount() const
 		{
 			return VsDataCount;
 		}
 
-		int32 GetIndicesCount() const
+		uint32 GetIndicesCount() const
 		{
 			return PsDataCount;
 		}
@@ -53,14 +68,9 @@ namespace tix
 			return IndexType;
 		}
 
-		int32 GetUsage() const
+		E_USAGE GetUsage() const
 		{
 			return Usage;
-		}
-
-		uint32 GetFlag() const
-		{
-			return MeshFlag;
 		}
 
 		void SetPrimitiveType(E_PRIMITIVE_TYPE type)
@@ -111,17 +121,15 @@ namespace tix
 
 	protected:
 		E_PRIMITIVE_TYPE PrimitiveType;
-		int32 Usage;
+		E_USAGE Usage;
 		aabbox3df BBox;
 
-		uint32 MeshFlag;
-
 		uint8* VsData;
-		int32 VsDataCount;
+		uint32 VsDataCount;
 
 		E_INDEX_TYPE IndexType;
 		uint8* PsData;
-		int32 PsDataCount;
+		uint32 PsDataCount;
 
 		uint32 VsFormat;
 		uint32 Stride;

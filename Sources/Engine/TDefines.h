@@ -89,3 +89,4 @@ void * operator new (std::size_t count);
 // FOR DEBUGS
 
 #define VT_PRELOADED_REGIONS (1)
+#define GPU_DRIVEN_TEST (1)
