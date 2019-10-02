@@ -24,6 +24,7 @@ namespace tix
 
 	FGPUCommandBufferDx12::~FGPUCommandBufferDx12()
 	{
+		TI_ASSERT(IsRenderThread());
 		CommandBufferData = nullptr;
 	}
 
@@ -69,7 +70,7 @@ namespace tix
 			CommandPos += sizeof(D3D12_INDEX_BUFFER_VIEW);
 		}
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex);
+		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetDrawIndexed(
@@ -100,7 +101,7 @@ namespace tix
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->Set(&DrawIndexed, sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex);
+		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
 }
 #endif

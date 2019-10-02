@@ -68,6 +68,10 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 		return;
 	}
 	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount);
+	// Add binding arguments
+	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
+	// Add draw calls
 	for (uint32 i = 0 ; i < PrimsCount ; ++ i)
 	{
 		FPrimitivePtr Primitive = Primitives[i];
@@ -80,11 +84,6 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 			MeshBuffer->GetIndicesCount(),
 			InstanceBuffer->GetInstancesCount(),
 			0, 0, 0);
-		//RHI->SetGraphicsPipeline(Primitive->GetPipeline());
-		//RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
-		//ApplyShaderParameter(RHI, Scene, Primitive);
-
-		//RHI->DrawPrimitiveIndexedInstanced(Primitive->GetMeshBuffer(), InstanceBuffer == nullptr ? 1 : InstanceBuffer->GetInstancesCount());
 	}
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
@@ -106,9 +105,17 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 	// Render Base Pass
     RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	//RenderDrawList(RHI, Scene, LIST_OPAQUE);
-	//RenderDrawList(RHI, Scene, LIST_MASK);
-	DrawGPUCommandBuffer(RHI);
+
+	bool Indirect = !false;
+	if (!Indirect)
+	{
+		RenderDrawList(RHI, Scene, LIST_OPAQUE);
+		//RenderDrawList(RHI, Scene, LIST_MASK);
+	}
+	else
+	{
+		DrawGPUCommandBuffer(RHI);
+	}
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

@@ -17,4 +17,20 @@ namespace tix
 	FGPUCommandBuffer::~FGPUCommandBuffer()
 	{
 	}
+
+	void FGPUCommandBuffer::AddVSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer)
+	{
+		FBindingArgument BindingArgument;
+		BindingArgument.BindingIndex = InBindingIndex;
+		BindingArgument.UniformBuffer = InUniformBuffer;
+		VSPublicArguments.push_back(BindingArgument);
+	}
+
+	void FGPUCommandBuffer::AddPSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer)
+	{
+		FBindingArgument BindingArgument;
+		BindingArgument.BindingIndex = InBindingIndex;
+		BindingArgument.UniformBuffer = InUniformBuffer;
+		PSPublicArguments.push_back(BindingArgument);
+	}
 }

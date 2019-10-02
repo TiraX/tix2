@@ -2595,6 +2595,18 @@ namespace tix
 			// Set pipeline state
 			SetGraphicsPipeline(SignatueDx12->GetPipeline());
 
+			// Set public binding arguments
+			const TVector<FGPUCommandBuffer::FBindingArgument>& VSArguments = GPUCommandBuffer->GetVSPublicArguments();
+			const TVector<FGPUCommandBuffer::FBindingArgument>& PSArguments = GPUCommandBuffer->GetPSPublicArguments();
+			for (const auto& Arg : VSArguments)
+			{
+				SetUniformBuffer(ESS_VERTEX_SHADER, Arg.BindingIndex, Arg.UniformBuffer);
+			}
+			for (const auto& Arg : PSArguments)
+			{
+				SetUniformBuffer(ESS_PIXEL_SHADER, Arg.BindingIndex, Arg.UniformBuffer);
+			}
+
 			// Set Primitive Topology
 			CurrentWorkingCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			
