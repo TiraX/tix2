@@ -1673,6 +1673,7 @@ namespace tix
 						Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 					}
 					FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+					HoldResourceReference(UniformBufferUpload);
 				}
 			}
 		}
