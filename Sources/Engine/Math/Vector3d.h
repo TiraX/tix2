@@ -313,7 +313,20 @@ namespace tix
 		return vector*(T)scalar;
 	}
 
-} // end namespace ti
+} // end namespace tix
 
+namespace std
+{
+	template <typename T>
+	struct hash < tix::vector3d<T> >
+	{
+		std::size_t operator() (const tix::vector3d<T>& K) const
+		{
+			return ((hash<T>()(K.X)
+				^ (hash<T>()(K.Y) << 1)) >> 1)
+				^ (hash<T>()(K.Z) << 1);
+		}
+	};
+}
 #endif
 

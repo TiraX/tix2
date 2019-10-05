@@ -271,9 +271,6 @@
     <ClCompile Include="..\..\Sources\Engine\TSceneTileResource.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\FMeshCollection.cpp">
-      <Filter>Sources\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\FStats.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
@@ -288,6 +285,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUCommandSignatureDx12.cpp">
       <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FSceneMetaInfos.cpp">
+      <Filter>Sources\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -660,9 +660,6 @@
     <ClInclude Include="..\..\Sources\Engine\TSceneTileResource.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FMeshCollection.h">
-      <Filter>Sources\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FStats.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
@@ -677,6 +674,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUCommandSignatureDx12.h">
       <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FSceneMetaInfos.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

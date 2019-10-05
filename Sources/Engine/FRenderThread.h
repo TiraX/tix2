@@ -136,7 +136,7 @@ namespace tix
 	public:
 		static void CreateRenderThread(bool ForceDisableThread = false);
 		static void DestroyRenderThread();
-		static FRenderThread* Get();
+		TI_API static FRenderThread* Get();
 		static bool IsInited();
 		static uint32 GetFrameNum()
 		{
@@ -151,7 +151,7 @@ namespace tix
 		{
 			return TriggerNum;
 		}
-		void AddTaskToFrame(TTask* Task);
+		TI_API void AddTaskToFrame(TTask* Task);
 
 		// Functions run on render thread
 		virtual void Run() override;

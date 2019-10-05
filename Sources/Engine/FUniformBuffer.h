@@ -50,6 +50,10 @@ namespace tix
 			return sizeof(StructTypeName::FUniformBufferStruct); \
 		} \
 		FUniformBufferStruct UniformBufferData[StructTypeName::Elements]; \
+		void InitToZero() \
+		{ \
+			memset(UniformBufferData, 0, sizeof(UniformBufferData)); \
+		} \
 		FUniformBufferPtr UniformBuffer; \
 		FUniformBufferPtr InitUniformBuffer(uint32 UBFlag = 0) \
 		{ \

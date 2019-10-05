@@ -28,7 +28,7 @@ namespace tix
 			// Create scene tile node
 			TNodeSceneTile * NodeSceneTile = TNodeFactory::CreateNode<TNodeSceneTile>(NodeLevel, TileName);
 
-			// Hold references of Instances		
+			// Hold references of Instances
 			const TVector<TResourcePtr>& Resources = InAsset->GetResources();
 			TI_ASSERT(Resources.size() == 1);
 			TResourcePtr FirstResource = Resources[0];
@@ -36,6 +36,13 @@ namespace tix
 
 			NodeSceneTile->SceneTileResource = static_cast<TSceneTileResource*>(FirstResource.get());
 			TI_ASSERT(NodeSceneTile->SceneTileResource->Meshes.size() == NodeSceneTile->SceneTileResource->MeshInstances.size());
+
+			// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
+			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RegisterSceneTileMetaInfo,
+				TSceneTileResourcePtr, SceneTileRes, NodeSceneTile->SceneTileResource,
+				{
+					FRenderThread::Get()->GetRenderScene()->RegisterSceneTileMetaInfo(SceneTileRes);
+				});
 
 			// Create static mesh nodes , assign mesh and instance res to it.
 			const int32 MeshesCount = (int32)NodeSceneTile->SceneTileResource->Meshes.size();

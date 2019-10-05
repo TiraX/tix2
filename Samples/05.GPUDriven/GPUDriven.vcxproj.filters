@@ -22,6 +22,12 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GPUInstanceFrustumCullCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GPUTileFrustumCullCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUDrivenRenderer.h">
@@ -31,6 +37,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUInstanceFrustumCullCS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUTileFrustumCullCS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUCameraFrustum.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,6 +68,12 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaqueVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_InstanceFrustumCullCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TileFrustumCullCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

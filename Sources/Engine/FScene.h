@@ -33,6 +33,9 @@ namespace tix
 		void AddPrimitives(const TVector<FPrimitivePtr>& Primitives);
 		void RemovePrimitives(const TVector<FPrimitivePtr>& Primitives);
 
+		void RegisterSceneTileMetaInfo(TSceneTileResourcePtr SceneTileResource);
+		void UnregisterSceneTileMetaInfo();
+
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
 			return (SceneFlags & Flag) != 0;
@@ -46,6 +49,7 @@ namespace tix
 		void ClearSceneFlags()
 		{
 			SceneFlags = 0;
+			MetaInfos.ClearMetaFlags();
 		}
 
 		FSceneLights * GetSceneLights()
@@ -72,8 +76,14 @@ namespace tix
 		{
 			return ViewUniformBuffer;
 		}
+
+		FSceneMetaInfos& GetMetaInfos()
+		{
+			return MetaInfos;
+		}
 	private:
 		void PrepareViewUniforms();
+		void PrepareMetaInfos();
 
 	private:
 		FSceneLights * SceneLights;
@@ -88,5 +98,7 @@ namespace tix
 		FViewUniformBufferPtr ViewUniformBuffer;
 
 		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
+
+		FSceneMetaInfos MetaInfos;
 	};
 } // end namespace tix

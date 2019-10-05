@@ -324,7 +324,19 @@ typedef vector2d<int16> vector2di16;
 template<class S, class T>
 vector2d<T> operator*(const S scalar, const vector2d<T>& vector) { return vector*scalar; }
 
-} // end namespace ti
+} // end namespace tix
 
+namespace std
+{
+	template <typename T>
+	struct hash < tix::vector2d<T> >
+	{
+		std::size_t operator() (const tix::vector2d<T>& K) const
+		{
+			return ((hash<T>()(K.X)
+				^ (hash<T>()(K.Y) << 1)) >> 1);
+		}
+	};
+}
 #endif
 

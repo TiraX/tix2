@@ -93,7 +93,7 @@ using namespace std;
 #include "FPrimitive.h"
 #include "FLight.h"
 #include "FSceneLights.h"
-#include "FMeshCollection.h"
+#include "FSceneMetaInfos.h"
 #include "FScene.h"
 #include "FVTSystem.h"
 #include "FRenderer.h"

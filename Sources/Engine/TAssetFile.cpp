@@ -590,6 +590,7 @@ namespace tix
 			}
 
 			// Instances
+			TI_TODO("Create a whole instance buffer for one scene tile, each mesh use an offset to indicate where instances started.");
 			SceneTile->MeshInstances.reserve(Header->NumMeshes);
 			int32 InstanceOffset = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)

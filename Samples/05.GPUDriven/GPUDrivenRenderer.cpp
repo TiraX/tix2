@@ -6,12 +6,20 @@
 #include "stdafx.h"
 #include "GPUDrivenRenderer.h"
 
+FGPUDrivenRenderer * GPUDrivenRenderer = nullptr;
+FGPUDrivenRenderer * FGPUDrivenRenderer::Get()
+{
+	return GPUDrivenRenderer;
+}
+
 FGPUDrivenRenderer::FGPUDrivenRenderer()
 {
+	GPUDrivenRenderer = this;
 }
 
 FGPUDrivenRenderer::~FGPUDrivenRenderer()
 {
+	GPUDrivenRenderer = nullptr;
 }
 
 void FGPUDrivenRenderer::InitInRenderThread()
@@ -54,6 +62,15 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	CommandStructure.push_back(GPU_COMMAND_DRAW_INDEXED);
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
+
+	// Create frustum uniform buffer
+	FrustumUniform = ti_new FCameraFrustumUniform;
+
+	// Prepare compute cull tasks
+	FScene * Scene = FRenderThread::Get()->GetRenderScene();
+	TileCullCS = ti_new FGPUTileFrustumCullCS();
+	TileCullCS->Finalize();
+	TileCullCS->PrepareResources(RHI);
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -68,6 +85,9 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 		return;
 	}
 	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount);
+#if defined (TIX_DEBUG)
+	GPUCommandBuffer->SetResourceName("DrawListCB");
+#endif
 	// Add binding arguments
 	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
@@ -88,6 +108,17 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
 
+void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& Frustum)
+{
+	FrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(Frustum.BoundingBox.MinEdge.X, Frustum.BoundingBox.MinEdge.Y, Frustum.BoundingBox.MinEdge.Z, 1.f);
+	FrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(Frustum.BoundingBox.MaxEdge.X, Frustum.BoundingBox.MaxEdge.Y, Frustum.BoundingBox.MaxEdge.Z, 1.f);
+	for (int32 i = SViewFrustum::VF_FAR_PLANE ; i < SViewFrustum::VF_PLANE_COUNT ; ++ i)
+	{
+		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(Frustum.Planes[i].Normal.X, Frustum.Planes[i].Normal.Y, Frustum.Planes[i].Normal.Z, Frustum.Planes[i].D);
+	}
+	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+}
+
 void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI)
 {
 	if (GPUCommandBuffer != nullptr)
@@ -98,23 +129,37 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI)
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	// Set meta data every frame.
+	if (Scene->GetMetaInfos().HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
+	{
+		TileCullCS->UpdateComputeArguments(RHI, Scene, FrustumUniform->UniformBuffer);
+	}
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
 		// Update GPU Command Buffer
 		UpdateGPUCommandBuffer(RHI, Scene);
 	}
-	// Render Base Pass
-    RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 
-	bool Indirect = !false;
-	if (!Indirect)
+	// Do GPU culling
 	{
-		RenderDrawList(RHI, Scene, LIST_OPAQUE);
-		//RenderDrawList(RHI, Scene, LIST_MASK);
+		RHI->BeginComputeTask(TileCullCS);
+		RHI->EndComputeTask(TileCullCS);
 	}
-	else
+
 	{
-		DrawGPUCommandBuffer(RHI);
+		// Render Base Pass
+		RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+
+		bool Indirect = false;
+		if (!Indirect)
+		{
+			RenderDrawList(RHI, Scene, LIST_OPAQUE);
+			//RenderDrawList(RHI, Scene, LIST_MASK);
+		}
+		else
+		{
+			DrawGPUCommandBuffer(RHI);
+		}
 	}
 
 	RHI->BeginRenderToFrameBuffer();

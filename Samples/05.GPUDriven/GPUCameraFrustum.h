@@ -1,0 +1,12 @@
+/*
+	TiX Engine v2.0 Copyright (C) 2018~2019
+	By ZhaoShuai tirax.cn@gmail.com
+*/
+
+#pragma once
+
+BEGIN_UNIFORM_BUFFER_STRUCT(FCameraFrustumUniform)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, BBoxMin)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, BBoxMax)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_ARRAY(FFloat4, Planes, [6])
+END_UNIFORM_BUFFER_STRUCT(FCameraFrustumUniform)

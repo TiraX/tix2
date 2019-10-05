@@ -78,6 +78,7 @@ namespace tix
 	void FScene::InitRenderFrame()
 	{
 		PrepareViewUniforms();
+		PrepareMetaInfos();
 	}
 
 	void FScene::PrepareViewUniforms()
@@ -96,5 +97,20 @@ namespace tix
 
 			ViewUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 		}
+	}
+
+	void FScene::PrepareMetaInfos()
+	{
+		MetaInfos.UpdateGPUResources();
+	}
+
+	void FScene::RegisterSceneTileMetaInfo(TSceneTileResourcePtr SceneTileResource)
+	{
+		MetaInfos.RegisterSceneTile(SceneTileResource->Position, SceneTileResource->BBox);
+	}
+
+	void FScene::UnregisterSceneTileMetaInfo()
+	{
+		TI_ASSERT(0);
 	}
 }

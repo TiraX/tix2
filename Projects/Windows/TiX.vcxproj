@@ -42,7 +42,6 @@
     <ClCompile Include="..\..\Sources\Engine\FGPUCommandSignature.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FMeshBuffer.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FMeshCollection.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPostProcess.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FPrimitive.cpp" />
@@ -54,6 +53,7 @@
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FSceneLights.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FSceneMetaInfos.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp" />
@@ -136,7 +136,6 @@
     <ClInclude Include="..\..\Sources\Engine\FGPUCommandSignature.h" />
     <ClInclude Include="..\..\Sources\Engine\FLight.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshBuffer.h" />
-    <ClInclude Include="..\..\Sources\Engine\FMeshCollection.h" />
     <ClInclude Include="..\..\Sources\Engine\FMeshRelevance.h" />
     <ClInclude Include="..\..\Sources\Engine\FPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\FPostProcess.h" />
@@ -150,6 +149,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
+    <ClInclude Include="..\..\Sources\Engine\FSceneMetaInfos.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h" />

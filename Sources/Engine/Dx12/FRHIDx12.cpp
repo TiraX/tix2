@@ -2240,6 +2240,7 @@ namespace tix
 			D3D12_HEAP_FLAG_NONE,
 			&CommandBufferDesc,
 			D3D12_RESOURCE_STATE_COPY_DEST);
+		DX_SETNAME(GPUCommandBufferDx12->CommandBufferResource.GetResource().Get(), GPUCommandBuffer->GetResourceName());
 
 		ComPtr<ID3D12Resource> CommandBufferUpload;
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(

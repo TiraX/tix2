@@ -4,6 +4,10 @@
 */
 
 #pragma once
+#include "GPUCameraFrustum.h"
+#include "GPUTileFrustumCullCS.h"
+#include "GPUInstanceFrustumCullCS.h"
+#include "GPUCameraFrustum.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -11,8 +15,12 @@ public:
 	FGPUDrivenRenderer();
 	virtual ~FGPUDrivenRenderer();
 
+	static FGPUDrivenRenderer* Get();
+
 	virtual void InitInRenderThread() override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
+
+	void UpdateFrustumUniform(const SViewFrustum& Frustum);
 
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
@@ -26,4 +34,9 @@ private:
 	FPipelinePtr DebugPipeline;
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
+
+	FCameraFrustumUniformPtr FrustumUniform;
+
+	FGPUTileFrustumCullCSPtr TileCullCS;
+	FGPUInstanceFrustumCullCSPtr InstanceCullCS;
 };
