@@ -11,6 +11,7 @@ namespace tix
 	FSceneMetaInfos::FSceneMetaInfos()
 		: SceneMetaFlags(0)
 		, ActiveSceneTileInfos(0)
+		, ActiveScenePrimitiveInfos(0)
 	{
 		Init();
 	}
@@ -28,6 +29,10 @@ namespace tix
 		SceneTileMetaInfo = ti_new FSceneTileMetaInfo;
 		SceneTileMetaInfo->InitToZero();
 		ActiveSceneTileInfos = 0;
+
+		ScenePrimitiveMetaInfo = ti_new FScenePrimitiveMetaInfo;
+		ScenePrimitiveMetaInfo->InitToZero();
+		ActiveScenePrimitiveInfos = 0;
 	}
 
 	void FSceneMetaInfos::RegisterSceneTile(const vector2di& TilePos, const aabbox3df& TileBBox)
@@ -42,8 +47,24 @@ namespace tix
 		++ActiveSceneTileInfos;
 		TI_ASSERT(ActiveSceneTileInfos < MAX_SCENE_TILE_META_NUM);
 
-		// Mark as dirty
+		// Mark tile as dirty
 		SceneMetaFlags |= MetaFlag_SceneTileMetaDirty;
+	}
+
+	void FSceneMetaInfos::RegisterPrimitive(FPrimitivePtr InPrimitive)
+	{
+		FUInt4 PrimitiveInfo;
+
+		const vector2di& ParentTilePosition = InPrimitive->GetParentTilePosition();
+		TI_ASSERT(SceneTileMetaIndexMap.find(ParentTilePosition) != SceneTileMetaIndexMap.end());
+		PrimitiveInfo.X = (int32)SceneTileMetaIndexMap[ParentTilePosition];	// Scene tile meta info index
+
+		ScenePrimitiveMetaInfo->UniformBufferData[ActiveScenePrimitiveInfos].Info = PrimitiveInfo;
+		++ActiveScenePrimitiveInfos;
+		TI_ASSERT(ActiveScenePrimitiveInfos < MAX_DRAW_CALL_IN_SCENE);
+
+		// Mark primitives as dirty
+		SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
 	}
 
 	void FSceneMetaInfos::UpdateGPUResources()
@@ -51,7 +72,11 @@ namespace tix
 		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
 		{
 			SceneTileMetaInfo->InitUniformBuffer();
-			// SceneMetaFlags &= ~MetaFlag_SceneTileMetaDirty;
+			// MetaFlag Clear at FScene::ClearSceneFlags();
+		}
+		if (HasMetaFlag(MetaFlag_ScenePrimitiveMetaDirty))
+		{
+			ScenePrimitiveMetaInfo->InitUniformBuffer();
 		}
 	}
 

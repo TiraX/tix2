@@ -114,20 +114,21 @@ namespace tix
 	typedef FVec4<float> FFloat4;
 	typedef FVec4<half> FHalf4;
 
-	class FInt4
+	template < typename T >
+	class FVecI4
 	{
 	public:
-		FInt4()
+		FVecI4()
 			: X(0)
 			, Y(0)
 			, Z(0)
 			, W(0)
 		{}
 
-		~FInt4()
+		~FVecI4()
 		{}
 
-		FInt4& operator = (const vector3di& Other)
+		FVecI4& operator = (const vector3di& Other)
 		{
 			X = Other.X;
 			Y = Other.Y;
@@ -136,7 +137,7 @@ namespace tix
 			return *this;
 		}
 
-		FInt4& operator = (const SColor& Other)
+		FVecI4& operator = (const SColor& Other)
 		{
 			X = Other.R;
 			Y = Other.G;
@@ -146,28 +147,31 @@ namespace tix
 			return *this;
 		}
 
-		int32* getDataPtr()
+		T* getDataPtr()
 		{
-			return reinterpret_cast<int32*>(this);
+			return reinterpret_cast<T*>(this);
 		}
 
-		const int32* getDataPtr() const
+		const T* getDataPtr() const
 		{
-			return reinterpret_cast<const int32*>(this);
+			return reinterpret_cast<const T*>(this);
 		}
 
-		int32& operator [] (uint32 i)
+		T& operator [] (uint32 i)
 		{
 			TI_ASSERT(i < 4);
 			return getDataPtr()[i];
 		}
 
-		const int32& operator [] (uint32 i) const
+		const T& operator [] (uint32 i) const
 		{
 			TI_ASSERT(i < 4);
 			return getDataPtr()[i];
 		}
 	public:
-		int32 X, Y, Z, W;
+		T X, Y, Z, W;
 	};
+
+	typedef FVecI4<int32> FInt4;
+	typedef FVecI4<uint32> FUInt4;
 }

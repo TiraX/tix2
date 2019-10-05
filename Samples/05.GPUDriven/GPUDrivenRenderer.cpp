@@ -71,6 +71,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TileCullCS = ti_new FGPUTileFrustumCullCS();
 	TileCullCS->Finalize();
 	TileCullCS->PrepareResources(RHI);
+
+	// Prepare copy visible command buffer tasks
+	CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
+	CopyVisibleCommandBuffer->Finalize();
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -136,6 +140,9 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
+		// Update Copy command buffer params
+		CopyVisibleCommandBuffer->UpdateComputeArguments(RHI, Scene, nullptr, nullptr, nullptr);
+
 		// Update GPU Command Buffer
 		UpdateGPUCommandBuffer(RHI, Scene);
 	}
@@ -144,6 +151,12 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		RHI->BeginComputeTask(TileCullCS);
 		RHI->EndComputeTask(TileCullCS);
+	}
+
+	// Copy visible tile command buffers
+	{
+		RHI->BeginComputeTask(CopyVisibleCommandBuffer);
+		RHI->EndComputeTask(CopyVisibleCommandBuffer);
 	}
 
 	{

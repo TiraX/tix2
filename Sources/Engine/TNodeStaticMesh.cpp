@@ -64,11 +64,15 @@ namespace tix
 		// Create Primitives
 		LinkedPrimitives.empty();
 		LinkedPrimitives.reserve(InMeshes.size());
+
+		TNode* SceneTileParent = GetParent(ENT_SceneTile);
+		TNodeSceneTile * SceneTileNode = static_cast<TNodeSceneTile *>(SceneTileParent);
 		for (const auto& M : InMeshes)
 		{
 			TI_ASSERT(M->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
 			Primitive->SetMesh(M->MeshBufferResource, M->GetBBox(), M->GetDefaultMaterial(), InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr);
+			Primitive->SetParentTilePosition(SceneTileNode->GetTilePosition());
 			LinkedPrimitives.push_back(Primitive);
 		}
 

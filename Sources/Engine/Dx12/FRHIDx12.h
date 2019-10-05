@@ -91,6 +91,7 @@ namespace tix
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
+		virtual void PutBufferInHeap(FGPUCommandBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 

@@ -165,6 +165,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CopyVisibleTileCommandBuffer.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
     <ClCompile Include="GPUDrivenTicker.cpp" />
@@ -176,6 +177,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CopyVisibleTileCommandBuffer.h" />
     <ClInclude Include="GPUCameraFrustum.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
     <ClInclude Include="GPUDrivenTicker.h" />
@@ -190,6 +192,12 @@
     <None Include="Shaders\Dx12\VS_Instanced.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_CopyVisibleTileCommandBuffer.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>

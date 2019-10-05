@@ -2423,6 +2423,49 @@ namespace tix
 		}
 	}
 
+	void FRHIDx12::PutBufferInHeap(FGPUCommandBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		TI_ASSERT(0);
+		//FGPUCommandBufferDx12 * CBDx12 = static_cast<FGPUCommandBufferDx12*>(InBuffer.get());
+
+		//if ((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
+		//{
+		//	// Create unordered access view
+		//	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+		//	UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		//	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		//	UAVDesc.Buffer.FirstElement = 0;
+		//	UAVDesc.Buffer.NumElements = InBuffer->GetElements();
+		//	UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+		//	UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
+		//		InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes() : 0;
+		//	UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+		//	D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+
+		//	D3dDevice->CreateUnorderedAccessView(
+		//		UBDx12->BufferResource.GetResource().Get(),
+		//		(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
+		//		UBDx12->BufferResource.GetResource().Get() : nullptr,
+		//		&UAVDesc,
+		//		Descriptor);
+		//}
+		//else
+		//{
+		//	// Create shader resource view
+		//	D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		//	SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		//	SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		//	SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		//	SRVDesc.Buffer.NumElements = InBuffer->GetElements();
+		//	SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+		//	SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		//	D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		//	D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+		//}
+	}
+
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
 	{
 		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());

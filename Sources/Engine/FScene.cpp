@@ -47,6 +47,9 @@ namespace tix
 			// Add to draw list
 			StaticDrawLists[P->GetDrawList()].push_back(P);
 
+			// Register meta info
+			MetaInfos.RegisterPrimitive(P);
+
 			// Mark flag primitives dirty
 			SetSceneFlag(ScenePrimitivesDirty);
 		}
@@ -69,6 +72,8 @@ namespace tix
 
 			// Remove from virtual texture
 			FVTSystem::Get()->RemovePositionForPrimitive(P);
+
+			TI_TODO("Unregister primitive from scene meta infos");
 
 			// Mark flag primitives dirty
 			SetSceneFlag(ScenePrimitivesDirty);
@@ -111,6 +116,7 @@ namespace tix
 
 	void FScene::UnregisterSceneTileMetaInfo()
 	{
+		TI_TODO("Add scene tile unregister.");
 		TI_ASSERT(0);
 	}
 }

@@ -13,6 +13,11 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 	END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
 
+	#define MAX_DRAW_CALL_IN_SCENE (2048)
+	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FScenePrimitiveMetaInfo, MAX_DRAW_CALL_IN_SCENE)
+		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
+	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveMetaInfo)
+
 	class FSceneMetaInfos
 	{
 	public:
@@ -20,12 +25,14 @@ namespace tix
 		~FSceneMetaInfos();
 
 		void RegisterSceneTile(const vector2di& TilePos, const aabbox3df& TileBBox);
+		void RegisterPrimitive(FPrimitivePtr InPrimitive);
 		void UpdateGPUResources();
 		void ClearMetaFlags();
 
 		enum FSceneMetaFlag
 		{
 			MetaFlag_SceneTileMetaDirty = 1 << 0,
+			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
 		};
 		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
 		{
@@ -49,6 +56,10 @@ namespace tix
 		// Scene tile meta info
 		FSceneTileMetaInfoPtr SceneTileMetaInfo;
 		uint32 ActiveSceneTileInfos;
+
+		// Scene primitive meta info
+		FScenePrimitiveMetaInfoPtr ScenePrimitiveMetaInfo;
+		uint32 ActiveScenePrimitiveInfos;
 
 		friend class FScene;
 	};

@@ -13,7 +13,7 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTDebugInfo)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
-		class FPrimitive : public IReferenceCounted
+	class FPrimitive : public IReferenceCounted
 	{
 	public:
 		enum {
@@ -24,6 +24,10 @@ namespace tix
 		~FPrimitive();
 
 		void SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
+		void SetParentTilePosition(const vector2di& InTilePos)
+		{
+			ParentTilePos = InTilePos;
+		}
 
 		FMeshBufferPtr GetMeshBuffer()
 		{
@@ -57,6 +61,10 @@ namespace tix
 		{
 			return (PrimitiveFlag & PrimitiveUniformBufferDirty) != 0;
 		}
+		const vector2di& GetParentTilePosition() const
+		{
+			return ParentTilePos;
+		}
 		void SetLocalToWorld(const matrix4 InLocalToWorld);
 		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
 		void SetVTDebugInfo(float A, float B, float C, float D);
@@ -76,6 +84,7 @@ namespace tix
 		aabbox3df BBox;
 
 		E_DRAWLIST_TYPE DrawList;
+		vector2di ParentTilePos;
 	};
 } // end namespace tix
 
