@@ -12,14 +12,15 @@
 #if COMPILE_WITH_RHI_DX12
 namespace tix
 {
-	FGPUCommandBufferDx12::FGPUCommandBufferDx12(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount)
-		: FGPUCommandBuffer(Signature, InCommandsCount)
+	FGPUCommandBufferDx12::FGPUCommandBufferDx12(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount, uint32 InBufferFlag)
+		: FGPUCommandBuffer(Signature, InCommandsCount, InBufferFlag)
 		, CommandsEncoded(0)
 	{
 		// Alloc data for command buffer data
 		FGPUCommandSignatureDx12 * GPUCommandSignatureDx12 = static_cast<FGPUCommandSignatureDx12*>(GetGPUCommandSignature().get());
 		TI_ASSERT(GPUCommandSignatureDx12->GetCommandStrideInBytes() != 0);
 		CommandBufferData = ti_new TStream(GPUCommandSignatureDx12->GetCommandStrideInBytes() * InCommandsCount);
+		CommandBuffer = FRHI::Get()->CreateUniformBuffer(GPUCommandSignatureDx12->GetCommandStrideInBytes(), InCommandsCount, InBufferFlag);
 	}
 
 	FGPUCommandBufferDx12::~FGPUCommandBufferDx12()

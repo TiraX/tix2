@@ -11,7 +11,7 @@ namespace tix
 	class FGPUCommandBuffer : public FRenderResource
 	{
 	public:
-		FGPUCommandBuffer(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount);
+		FGPUCommandBuffer(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount, uint32 InBufferFlag);
 		virtual ~FGPUCommandBuffer();
 
 		FGPUCommandSignaturePtr GetGPUCommandSignature()
@@ -51,6 +51,10 @@ namespace tix
 		{
 			return PSPublicArguments;
 		}
+		FUniformBufferPtr GetCommandBuffer()
+		{
+			return CommandBuffer;
+		}
 	private:
 
 	protected:
@@ -58,5 +62,6 @@ namespace tix
 		TVector<FBindingArgument> VSPublicArguments;
 		TVector<FBindingArgument> PSPublicArguments;
 
+		FUniformBufferPtr CommandBuffer;
 	};
 } // end namespace tix

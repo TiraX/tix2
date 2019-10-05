@@ -14,7 +14,7 @@ namespace tix
 	class FGPUCommandBufferDx12 : public FGPUCommandBuffer
 	{
 	public:
-		FGPUCommandBufferDx12(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount);
+		FGPUCommandBufferDx12(FGPUCommandSignaturePtr Signature, uint32 InCommandsCount, uint32 InBufferFlag);
 		virtual ~FGPUCommandBufferDx12();
 
 		virtual uint32 GetEncodedCommandsCount() const override;
@@ -38,8 +38,6 @@ namespace tix
 	private:
 		uint32 CommandsEncoded;
 		TStreamPtr CommandBufferData;
-
-		FGPUResourceDx12 CommandBufferResource;
 
 		friend class FRHIDx12;
 	};

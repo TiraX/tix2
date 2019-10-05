@@ -578,9 +578,9 @@ namespace tix
 		return ti_new FGPUCommandSignatureDx12(Pipeline, CommandStructure);
 	}
 
-	FGPUCommandBufferPtr FRHIDx12::CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount)
+	FGPUCommandBufferPtr FRHIDx12::CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount, uint32 Flag)
 	{
-		return ti_new FGPUCommandBufferDx12(GPUCommandSignature, CommandsCount);
+		return ti_new FGPUCommandBufferDx12(GPUCommandSignature, CommandsCount, Flag);
 	}
 
 	int32 FRHIDx12::GetCurrentEncodingFrameIndex()
@@ -1670,7 +1670,18 @@ namespace tix
 
 						UpdateSubresources(CurrentWorkingCommandList.Get(), UniformBufferDx12->BufferResource.GetResource().Get(), UniformBufferUpload.Get(), 0, 0, 1, &UniformData);
 
-						Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+						if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
+						{
+							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+						}
+						else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
+						{
+							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+						}
+						else
+						{
+							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+						}
 					}
 					FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 					HoldResourceReference(UniformBufferUpload);
@@ -2230,44 +2241,10 @@ namespace tix
 		FGPUCommandBufferDx12 * GPUCommandBufferDx12 = static_cast<FGPUCommandBufferDx12*>(GPUCommandBuffer.get());
 		FGPUCommandSignatureDx12 * SignatueDx12 = static_cast<FGPUCommandSignatureDx12*>(GPUCommandBuffer->GetGPUCommandSignature().get());
 
-		const uint32 CommandBufferSize = GPUCommandBufferDx12->GetEncodedCommandsCount() * SignatueDx12->GetCommandStrideInBytes();
-
-		D3D12_RESOURCE_DESC CommandBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(CommandBufferSize);
-
-		GPUCommandBufferDx12->CommandBufferResource.CreateResource(
-			D3dDevice.Get(),
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&CommandBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST);
-		DX_SETNAME(GPUCommandBufferDx12->CommandBufferResource.GetResource().Get(), GPUCommandBuffer->GetResourceName());
-
-		ComPtr<ID3D12Resource> CommandBufferUpload;
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(CommandBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&CommandBufferUpload)));
-
-		// Copy data to the intermediate upload heap and then schedule a copy
-		// from the upload heap to the command buffer.
-		D3D12_SUBRESOURCE_DATA CommandData = {};
-		CommandData.pData = reinterpret_cast<UINT8*>(GPUCommandBufferDx12->CommandBufferData->GetBuffer());
-		CommandData.RowPitch = CommandBufferSize;
-		CommandData.SlicePitch = CommandData.RowPitch;
-
-		UpdateSubresources(
-			CurrentWorkingCommandList.Get(), 
-			GPUCommandBufferDx12->CommandBufferResource.GetResource().Get(),
-			CommandBufferUpload.Get(), 
-			0, 0, 1, &CommandData);
-
-		Transition(&GPUCommandBufferDx12->CommandBufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		TI_ASSERT(GPUCommandBuffer->GetCommandBuffer() != nullptr);
+		UpdateHardwareResourceUB(GPUCommandBuffer->GetCommandBuffer(), GPUCommandBufferDx12->CommandBufferData->GetBuffer());
 
 		HoldResourceReference(GPUCommandBuffer);
-		HoldResourceReference(CommandBufferUpload);
 		return true;
 	}
 
@@ -2656,10 +2633,11 @@ namespace tix
 			CurrentWorkingCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			
 			// Execute indirect draw.
+			FUniformBufferDx12 * CommandBuffer = static_cast<FUniformBufferDx12*>(GPUCommandBuffer->GetCommandBuffer().get());
 			CurrentWorkingCommandList->ExecuteIndirect(
 				SignatueDx12->CommandSignature.Get(),
 				GPUCommandBuffer->GetEncodedCommandsCount(),
-				GPUCommandBufferDx12->CommandBufferResource.GetResource().Get(),
+				CommandBuffer->BufferResource.GetResource().Get(),
 				0,
 				nullptr,
 				0);

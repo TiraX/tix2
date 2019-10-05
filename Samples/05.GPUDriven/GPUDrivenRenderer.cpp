@@ -88,7 +88,7 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	{
 		return;
 	}
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount);
+	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount, UB_FLAG_GPU_COMMAND_BUFFER);
 #if defined (TIX_DEBUG)
 	GPUCommandBuffer->SetResourceName("DrawListCB");
 #endif
@@ -141,7 +141,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
 		// Update Copy command buffer params
-		CopyVisibleCommandBuffer->UpdateComputeArguments(RHI, Scene, nullptr, nullptr, nullptr);
+		//CopyVisibleCommandBuffer->UpdateComputeArguments(RHI, Scene, nullptr, nullptr, nullptr);
 
 		// Update GPU Command Buffer
 		UpdateGPUCommandBuffer(RHI, Scene);
@@ -163,7 +163,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		// Render Base Pass
 		RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 
-		bool Indirect = false;
+		bool Indirect = !false;
 		if (!Indirect)
 		{
 			RenderDrawList(RHI, Scene, LIST_OPAQUE);
