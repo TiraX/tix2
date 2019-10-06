@@ -21,6 +21,11 @@ void FCopyVisibleTileCommandBuffer::PrepareResources(FRHI * RHI)
 
 	// Resource table for Compute cull shader
 	ResourceTable = RHI->CreateRenderResourceTable(4, EHT_SHADER_RESOURCE);
+	
+	// Create counter reset
+	CounterReset = ti_new FCounterReset;
+	CounterReset->UniformBufferData[0].Zero = 0;
+	CounterReset->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FCopyVisibleTileCommandBuffer::UpdateComputeArguments(
@@ -28,7 +33,8 @@ void FCopyVisibleTileCommandBuffer::UpdateComputeArguments(
 	FScene * Scene,
 	FUniformBufferPtr TileVisibleInfo,
 	FUniformBufferPtr PrimitiveMetaInfo,
-	FGPUCommandBufferPtr CommandBuffer)
+	FGPUCommandBufferPtr GPUCommandBuffer,
+	FGPUCommandBufferPtr InProcessedGPUCommandBuffer)
 {
 	// Total commands count
 	CopyParams->UniformBufferData[0].Info.X = (uint32)Scene->GetStaticDrawList(LIST_OPAQUE).size();
@@ -41,10 +47,28 @@ void FCopyVisibleTileCommandBuffer::UpdateComputeArguments(
 	// Set primitive meta info
 	ResourceTable->PutBufferInTable(PrimitiveMetaInfo, 1);
 	// Set commands buffer
-	TI_ASSERT(0);
+	ResourceTable->PutBufferInTable(GPUCommandBuffer->GetCommandBuffer(), 2);
 	// Set processed buffer UAV
+	ResourceTable->PutBufferInTable(InProcessedGPUCommandBuffer->GetCommandBuffer(), 3);
+	ProcessedCommandBuffer = InProcessedGPUCommandBuffer;
 }
 
 void FCopyVisibleTileCommandBuffer::Run(FRHI * RHI)
 {
+	const uint32 BlockSize = 128;
+	const uint32 DispatchSize = MAX_DRAW_CALL_IN_SCENE / BlockSize;
+
+	// Reset command buffer counter
+	RHI->ComputeCopyBuffer(
+		ProcessedCommandBuffer->GetCommandBuffer(), 
+		ProcessedCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
+		CounterReset->UniformBuffer, 
+		0, 
+		sizeof(uint32));
+
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeBuffer(0, CopyParams->UniformBuffer);
+	RHI->SetComputeResourceTable(1, ResourceTable);
+
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }

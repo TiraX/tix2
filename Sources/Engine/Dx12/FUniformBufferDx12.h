@@ -16,6 +16,20 @@ namespace tix
 		FUniformBufferDx12(uint32 InStructureSizeInBytes, uint32 Elements, uint32 InFlag);
 		virtual ~FUniformBufferDx12();
 
+		static uint32 AlignForUavCounter(uint32 InSize)
+		{
+			const uint32 Alignment = D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
+			return (InSize + (Alignment - 1)) & ~(Alignment - 1);
+		}
+
+		virtual uint32 GetCounterOffset() const override
+		{
+			if ((Flag & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+			{
+				return AlignForUavCounter(GetElements() * GetStructureSizeInBytes());
+			}
+			return 0;
+		}
 	protected:
 
 	protected:

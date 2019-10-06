@@ -9,6 +9,10 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FCopyCommandsParams)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 END_UNIFORM_BUFFER_STRUCT(FCopyCommandsParams)
 
+BEGIN_UNIFORM_BUFFER_STRUCT(FCounterReset)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(uint32, Zero)
+END_UNIFORM_BUFFER_STRUCT(FCounterReset)
+
 class FCopyVisibleTileCommandBuffer : public FComputeTask
 {
 public:
@@ -21,12 +25,15 @@ public:
 		FScene * Scene, 
 		FUniformBufferPtr TileVisibleInfo, 
 		FUniformBufferPtr PrimitiveMetaInfo, 
-		FGPUCommandBufferPtr CommandBuffer);
+		FGPUCommandBufferPtr GPUCommandBuffer,
+		FGPUCommandBufferPtr ProcessedGPUCommandBuffer);
 	virtual void Run(FRHI * RHI) override;
 private:
 
 private:
 	FCopyCommandsParamsPtr CopyParams;
+	FCounterResetPtr CounterReset;
+	FGPUCommandBufferPtr ProcessedCommandBuffer;
 
 	FRenderResourceTablePtr ResourceTable;
 };

@@ -19,7 +19,16 @@ namespace tix
 		// Alloc data for command buffer data
 		FGPUCommandSignatureDx12 * GPUCommandSignatureDx12 = static_cast<FGPUCommandSignatureDx12*>(GetGPUCommandSignature().get());
 		TI_ASSERT(GPUCommandSignatureDx12->GetCommandStrideInBytes() != 0);
-		CommandBufferData = ti_new TStream(GPUCommandSignatureDx12->GetCommandStrideInBytes() * InCommandsCount);
+		if ((InBufferFlag & UB_FLAG_COMPUTE_WRITABLE) == 0)
+		{
+			// UAV do not need command data
+			CommandBufferData = ti_new TStream(GPUCommandSignatureDx12->GetCommandStrideInBytes() * InCommandsCount);
+		}
+		else
+		{
+			// UAV use counter for command count, take CommandsEncoded as the MAX count of commands
+			CommandsEncoded = InCommandsCount;
+		}
 		CommandBuffer = FRHI::Get()->CreateUniformBuffer(GPUCommandSignatureDx12->GetCommandStrideInBytes(), InCommandsCount, InBufferFlag);
 	}
 

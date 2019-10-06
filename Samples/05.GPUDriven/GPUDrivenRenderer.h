@@ -25,7 +25,7 @@ public:
 
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
-	void DrawGPUCommandBuffer(FRHI * RHI);
+	void DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer);
 
 private:
 	FFullScreenRender FSRender;
@@ -35,6 +35,7 @@ private:
 	FPipelinePtr DebugPipeline;
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
+	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
 
 	FCameraFrustumUniformPtr FrustumUniform;
 

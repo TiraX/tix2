@@ -35,19 +35,15 @@ namespace tix
 			uint32 StartInstanceLocation
 		) = 0;
 
-		struct FBindingArgument
-		{
-			uint32 BindingIndex;
-			FUniformBufferPtr UniformBuffer;
-		};
+		static const uint32 MAX_BINDING_UNIFORMS = 4;
 		TI_API void AddVSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);
 		TI_API void AddPSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);
 
-		const TVector<FBindingArgument>& GetVSPublicArguments() const
+		const TVector<FUniformBufferPtr>& GetVSPublicArguments() const
 		{
 			return VSPublicArguments;
 		}
-		const TVector<FBindingArgument>& GetPSPublicArguments() const
+		const TVector<FUniformBufferPtr>& GetPSPublicArguments() const
 		{
 			return PSPublicArguments;
 		}
@@ -59,8 +55,8 @@ namespace tix
 
 	protected:
 		FGPUCommandSignaturePtr GPUCommandSignature;
-		TVector<FBindingArgument> VSPublicArguments;
-		TVector<FBindingArgument> PSPublicArguments;
+		TVector<FUniformBufferPtr> VSPublicArguments;
+		TVector<FUniformBufferPtr> PSPublicArguments;
 
 		FUniformBufferPtr CommandBuffer;
 	};

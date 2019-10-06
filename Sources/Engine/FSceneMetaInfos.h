@@ -42,6 +42,10 @@ namespace tix
 		{
 			return SceneTileMetaInfo->UniformBuffer;
 		}
+		FUniformBufferPtr GetPrimitiveMetaUniform()
+		{
+			return ScenePrimitiveMetaInfo->UniformBuffer;
+		}
 
 	private:
 		void Init();

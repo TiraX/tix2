@@ -455,7 +455,6 @@ namespace tix
 		CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
-	// No use of param ComputeTask, it's for metal.
 	void FRHIDx12::BeginComputeTask(FComputeTaskPtr ComputeTask)
 	{
 		// Switch from graphics command list to compute command list.
@@ -1598,7 +1597,11 @@ namespace tix
 			// Add a counter for UAV
 			int32 BufferSize = UniformBuffer->GetTotalBufferSize();
 			if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+			{
+				// With counter, counter offset must be aligned with D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT
+				BufferSize = FUniformBufferDx12::AlignForUavCounter(BufferSize);
 				BufferSize += sizeof(uint32);
+			}
 			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 			UniformBufferDx12->BufferResource.CreateResource(
@@ -2242,7 +2245,7 @@ namespace tix
 		FGPUCommandSignatureDx12 * SignatueDx12 = static_cast<FGPUCommandSignatureDx12*>(GPUCommandBuffer->GetGPUCommandSignature().get());
 
 		TI_ASSERT(GPUCommandBuffer->GetCommandBuffer() != nullptr);
-		UpdateHardwareResourceUB(GPUCommandBuffer->GetCommandBuffer(), GPUCommandBufferDx12->CommandBufferData->GetBuffer());
+		UpdateHardwareResourceUB(GPUCommandBuffer->GetCommandBuffer(), GPUCommandBufferDx12->CommandBufferData != nullptr ? GPUCommandBufferDx12->CommandBufferData->GetBuffer() : nullptr);
 
 		HoldResourceReference(GPUCommandBuffer);
 		return true;
@@ -2372,7 +2375,7 @@ namespace tix
 			UAVDesc.Buffer.NumElements = InBuffer->GetElements();
 			UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
 			UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ? 
-				InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes() : 0;
+				FUniformBufferDx12::AlignForUavCounter(InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes()) : 0;
 			UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
@@ -2398,49 +2401,6 @@ namespace tix
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 			D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
 		}
-	}
-
-	void FRHIDx12::PutBufferInHeap(FGPUCommandBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
-	{
-		TI_ASSERT(0);
-		//FGPUCommandBufferDx12 * CBDx12 = static_cast<FGPUCommandBufferDx12*>(InBuffer.get());
-
-		//if ((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
-		//{
-		//	// Create unordered access view
-		//	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
-		//	UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
-		//	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-		//	UAVDesc.Buffer.FirstElement = 0;
-		//	UAVDesc.Buffer.NumElements = InBuffer->GetElements();
-		//	UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-		//	UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
-		//		InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes() : 0;
-		//	UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-
-		//	D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-
-		//	D3dDevice->CreateUnorderedAccessView(
-		//		UBDx12->BufferResource.GetResource().Get(),
-		//		(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
-		//		UBDx12->BufferResource.GetResource().Get() : nullptr,
-		//		&UAVDesc,
-		//		Descriptor);
-		//}
-		//else
-		//{
-		//	// Create shader resource view
-		//	D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-		//	SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		//	SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
-		//	SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-		//	SRVDesc.Buffer.NumElements = InBuffer->GetElements();
-		//	SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-		//	SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-
-		//	D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-		//	D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
-		//}
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
@@ -2618,15 +2578,21 @@ namespace tix
 			SetGraphicsPipeline(SignatueDx12->GetPipeline());
 
 			// Set public binding arguments
-			const TVector<FGPUCommandBuffer::FBindingArgument>& VSArguments = GPUCommandBuffer->GetVSPublicArguments();
-			const TVector<FGPUCommandBuffer::FBindingArgument>& PSArguments = GPUCommandBuffer->GetPSPublicArguments();
-			for (const auto& Arg : VSArguments)
+			const TVector<FUniformBufferPtr>& VSArguments = GPUCommandBuffer->GetVSPublicArguments();
+			const TVector<FUniformBufferPtr>& PSArguments = GPUCommandBuffer->GetPSPublicArguments();
+			for (int32 i = 0 ; i < FGPUCommandBuffer::MAX_BINDING_UNIFORMS ; ++ i)
 			{
-				SetUniformBuffer(ESS_VERTEX_SHADER, Arg.BindingIndex, Arg.UniformBuffer);
+				if (VSArguments[i] != nullptr)
+				{
+					SetUniformBuffer(ESS_VERTEX_SHADER, i, VSArguments[i]);
+				}
 			}
-			for (const auto& Arg : PSArguments)
+			for (int32 i = 0; i < FGPUCommandBuffer::MAX_BINDING_UNIFORMS; ++i)
 			{
-				SetUniformBuffer(ESS_PIXEL_SHADER, Arg.BindingIndex, Arg.UniformBuffer);
+				if (PSArguments[i] != nullptr)
+				{
+					SetUniformBuffer(ESS_PIXEL_SHADER, i, PSArguments[i]);
+				}
 			}
 
 			// Set Primitive Topology
@@ -2634,13 +2600,27 @@ namespace tix
 			
 			// Execute indirect draw.
 			FUniformBufferDx12 * CommandBuffer = static_cast<FUniformBufferDx12*>(GPUCommandBuffer->GetCommandBuffer().get());
-			CurrentWorkingCommandList->ExecuteIndirect(
-				SignatueDx12->CommandSignature.Get(),
-				GPUCommandBuffer->GetEncodedCommandsCount(),
-				CommandBuffer->BufferResource.GetResource().Get(),
-				0,
-				nullptr,
-				0);
+			if ((CommandBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+			{
+				uint32 CounterOffset = CommandBuffer->GetCounterOffset();
+				CurrentWorkingCommandList->ExecuteIndirect(
+					SignatueDx12->CommandSignature.Get(),
+					GPUCommandBuffer->GetEncodedCommandsCount(),
+					CommandBuffer->BufferResource.GetResource().Get(),
+					0,
+					CommandBuffer->BufferResource.GetResource().Get(),
+					CounterOffset);
+			}
+			else
+			{
+				CurrentWorkingCommandList->ExecuteIndirect(
+					SignatueDx12->CommandSignature.Get(),
+					GPUCommandBuffer->GetEncodedCommandsCount(),
+					CommandBuffer->BufferResource.GetResource().Get(),
+					0,
+					nullptr,
+					0);
+			}
 
 			HoldResourceReference(GPUCommandBuffer);
 		}

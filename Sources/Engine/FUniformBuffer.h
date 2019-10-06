@@ -97,7 +97,6 @@ namespace tix
 		{
 			return StructureSizeInBytes * Elements;
 		}
-
 		uint32 GetStructureSizeInBytes() const
 		{
 			return StructureSizeInBytes;
@@ -109,6 +108,11 @@ namespace tix
 		uint32 GetFlag() const
 		{
 			return Flag;
+		}
+		virtual uint32 GetCounterOffset() const
+		{
+			TI_ASSERT(0);
+			return 0;
 		}
 	protected:
 

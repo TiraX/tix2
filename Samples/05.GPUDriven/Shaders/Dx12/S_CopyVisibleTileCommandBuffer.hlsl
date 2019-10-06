@@ -26,18 +26,33 @@ struct FPrimitiveMetaInfo
 {
 	uint4 Info;
 };
+struct VBView
+{
+	uint2 Address;
+	uint SizeInBytes;
+	uint StrideInBytes;
+};
+struct IBView
+{
+	uint2 Address;
+	uint SizeInBytes;
+	uint Format;
+};
 struct IndirectCommand
 {
-	uint2 cbvAddress;
-	uint4 drawArguments;
+	uint4 VertexBufferView;
+	uint4 InstanceBufferView;
+	uint4 IndexBufferView;
+	uint4 DrawArguments0;
+	uint DrawArguments1;
 };
 
 StructuredBuffer<FTileVisibleInfo> TileVisibles		: register(t0);	// Tile visible infos
 StructuredBuffer<FPrimitiveMetaInfo> PrimitiveInfos	: register(t1); // Primitive info , include tile index
 StructuredBuffer<IndirectCommand> InputCommands		: register(t2);	// All commands buffer
-RWStructuredBuffer<IndirectCommand> OutputCommands	: register(u0);	// Cull result, if this tile is visible
+AppendStructuredBuffer<IndirectCommand> OutputCommands	: register(u0);	// Cull result, if this tile is visible
 
-#define threadBlockSize 16
+#define threadBlockSize 128
 
 [RootSignature(CopyVisibleCommands_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
@@ -46,33 +61,10 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint Index = groupId.x * threadBlockSize + threadIDInGroup.x;
 	if (Index < Info.x)
 	{
-	//	// Test if this tile intersect with frustum
-	//	// 1, test BBox
-	//	if (TileInfos[Index].MinEdge.x <= BBoxMax.x &&
-	//		TileInfos[Index].MinEdge.y <= BBoxMax.y &&
-	//		TileInfos[Index].MinEdge.z <= BBoxMax.z &&
-	//		TileInfos[Index].MaxEdge.x >= BBoxMin.x &&
-	//		TileInfos[Index].MaxEdge.y >= BBoxMin.y &&
-	//		TileInfos[Index].MaxEdge.z >= BBoxMin.z)
-	//	{
-	//		// 2, test frustum
-	//		if (IntersectPlaneBBox(Planes[0], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[1], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[2], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[3], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[4], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[5], TileInfos[Index].MinEdge, TileInfos[Index].MaxEdge))
-	//		{
-	//			VisibleInfo[Index].Visible = 1;
-	//		}
-	//		else
-	//		{
-	//			VisibleInfo[Index].Visible = 0;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		VisibleInfo[Index].Visible = 0;
-	//	}
+		uint TileIndex = PrimitiveInfos[Index].Info.x;
+		if (TileVisibles[TileIndex].Visible > 0)
+		{
+			OutputCommands.Append(InputCommands[Index]);
+		}
 	}
 }

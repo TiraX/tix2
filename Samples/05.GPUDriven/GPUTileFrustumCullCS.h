@@ -14,6 +14,11 @@ public:
 	void PrepareResources(FRHI * RHI);
 	void UpdateComputeArguments(FRHI * RHI, FScene * Scene, FUniformBufferPtr InFrustumUniform);
 	virtual void Run(FRHI * RHI) override;
+
+	FUniformBufferPtr GetVisibilityResult()
+	{
+		return VisibilityResult;
+	}
 private:
 
 private:
