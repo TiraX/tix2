@@ -213,9 +213,10 @@ void FVirtualTextureRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		//if (false)
 		{
-			RHI->BeginComputeTask(ComputeTileDetermination);
+			RHI->BeginComputeTask(ComputeTileDetermination->HasFlag(COMPUTE_TILE));
+			ComputeTileDetermination->Run(RHI);
 			ComputeTileDetermination->PrepareDataForCPU(RHI);
-			RHI->EndComputeTask(ComputeTileDetermination);
+			RHI->EndComputeTask(ComputeTileDetermination->HasFlag(COMPUTE_TILE));
 		}
 	}
 

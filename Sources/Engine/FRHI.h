@@ -79,8 +79,8 @@ namespace tix
 		virtual void EndFrame() = 0;
         virtual void BeginRenderToFrameBuffer() {};
 
-		virtual void BeginComputeTask(FComputeTaskPtr ComputTask) = 0;
-		virtual void EndComputeTask(FComputeTaskPtr ComputTask) = 0;
+		virtual void BeginComputeTask(bool IsTileComputeShader = false) = 0;
+		virtual void EndComputeTask(bool IsTileComputeShader = false) = 0;
 
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;

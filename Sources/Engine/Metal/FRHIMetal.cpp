@@ -180,9 +180,9 @@ namespace tix
         CurrentCommandListState.ListType = EPL_GRAPHICS;
     }
     
-    void FRHIMetal::BeginComputeTask(FComputeTaskPtr ComputTask)
+    void FRHIMetal::BeginComputeTask(bool IsTileComputeShader)
     {
-        if (ComputTask->HasFlag(COMPUTE_TILE))
+        if (IsTileComputeShader)
         {
             // Tile compute. Stay with render encoder
             TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS && RenderEncoder != nil);
@@ -210,14 +210,11 @@ namespace tix
                 TI_ASSERT(ComputeEncoder != nil);
             }
         }
-        
-        // Run compute shader
-        ComputTask->Run(this);
     }
     
-    void FRHIMetal::EndComputeTask(FComputeTaskPtr ComputTask)
+    void FRHIMetal::EndComputeTask(bool IsTileComputeShader)
     {
-        if (ComputTask->HasFlag(COMPUTE_TILE))
+        if (IsTileComputeShader)
         {
             // Tile compute. Stay with render encoder
             TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS && RenderEncoder != nil);

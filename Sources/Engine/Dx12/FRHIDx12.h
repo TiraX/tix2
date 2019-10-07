@@ -29,8 +29,8 @@ namespace tix
 		virtual void EndFrame() override;
 		virtual void BeginRenderToFrameBuffer() override;
 
-		virtual void BeginComputeTask(FComputeTaskPtr ComputeTask) override;
-		virtual void EndComputeTask(FComputeTaskPtr ComputeTask) override;
+		virtual void BeginComputeTask(bool IsTileComputeShader = false) override;
+		virtual void EndComputeTask(bool IsTileComputeShader = false) override;
 
 		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;

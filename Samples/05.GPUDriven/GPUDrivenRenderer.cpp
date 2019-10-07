@@ -176,19 +176,18 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 
 		// Do GPU culling
+		RHI->BeginComputeTask();
 		{
-			RHI->BeginComputeTask(TileCullCS);
-			RHI->EndComputeTask(TileCullCS);
+			TileCullCS->Run(RHI);
 		}
-		TI_TODO("ComputeTask->Run should run inside BeginComputeTask / EndComputeTask");
-
 		// Copy visible tile command buffers
 		static bool CopyVisibleBuffer = true;
 		if (CopyVisibleBuffer)
 		{
-			RHI->BeginComputeTask(CopyVisibleCommandBuffer);
-			RHI->EndComputeTask(CopyVisibleCommandBuffer);
+			CopyVisibleCommandBuffer->Run(RHI);
 		}
+		RHI->EndComputeTask();
+
 
 		{
 			// Render Base Pass

@@ -455,7 +455,7 @@ namespace tix
 		CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 
-	void FRHIDx12::BeginComputeTask(FComputeTaskPtr ComputeTask)
+	void FRHIDx12::BeginComputeTask(bool IsTileComputeShader)
 	{
 		// Switch from graphics command list to compute command list.
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
@@ -491,13 +491,10 @@ namespace tix
 		// Set the descriptor heaps to be used by this frame.
 		ID3D12DescriptorHeap* ppHeaps[] = { DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].GetHeap() };
 		CurrentWorkingCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-		// Run compute task.
-		ComputeTask->Run(this);
 	}
 
 	// No use of param ComputeTask, it's for metal.
-	void FRHIDx12::EndComputeTask(FComputeTaskPtr ComputeTask)
+	void FRHIDx12::EndComputeTask(bool IsTileComputeShader)
 	{
 		// Switch from compute command list to graphics command list.
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
