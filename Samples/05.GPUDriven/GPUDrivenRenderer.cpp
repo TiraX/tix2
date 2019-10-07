@@ -158,7 +158,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		}
 		// Set meta data every frame.
-		if (Scene->GetMetaInfos().HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
+			Scene->GetMetaInfos().HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
 		{
 			TileCullCS->UpdateComputeArguments(RHI, Scene, FrustumUniform->UniformBuffer);
 		}
