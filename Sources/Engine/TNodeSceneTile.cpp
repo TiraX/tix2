@@ -35,7 +35,7 @@ namespace tix
 			TI_ASSERT(FirstResource->GetType() == ERES_SCENE_TILE);
 
 			NodeSceneTile->SceneTileResource = static_cast<TSceneTileResource*>(FirstResource.get());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->Meshes.size() == NodeSceneTile->SceneTileResource->MeshInstances.size());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->Meshes.size() == NodeSceneTile->SceneTileResource->InstanceOffsetAndCount.size());
 
 			// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RegisterSceneTileMetaInfo,
@@ -49,10 +49,11 @@ namespace tix
 			for (int32 m = 0 ; m < MeshesCount ; ++ m)
 			{
 				TAssetPtr MeshAsset = NodeSceneTile->SceneTileResource->Meshes[m];
-				TInstanceBufferPtr Instance = NodeSceneTile->SceneTileResource->MeshInstances[m];
+				TInstanceBufferPtr Instance = NodeSceneTile->SceneTileResource->MeshInstanceBuffer;
+				const vector2di& InstanceOffsetAndCount = NodeSceneTile->SceneTileResource->InstanceOffsetAndCount[m];
 
 				TNodeStaticMesh * NodeStaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeSceneTile, MeshAsset->GetName());
-				NodeStaticMesh->LinkMeshAsset(MeshAsset, Instance, false, false);
+				NodeStaticMesh->LinkMeshAsset(MeshAsset, Instance, InstanceOffsetAndCount.Y, InstanceOffsetAndCount.X, false, false);
 			}
 
 			TI_TODO("Hold a scene tile resource temp, hold instances only in futher.");

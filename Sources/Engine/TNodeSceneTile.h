@@ -45,9 +45,9 @@ namespace tix
 	public:
 		virtual ~TNodeSceneTile();
 
-		TInstanceBufferPtr GetInstanceBufferByIndex(int32 Index)
+		TInstanceBufferPtr GetInstanceBuffer()
 		{
-			return SceneTileResource->GetInstanceBufferByIndex(Index);
+			return SceneTileResource->GetInstanceBuffer();
 		}
 
 		const vector2di& GetTilePosition() const

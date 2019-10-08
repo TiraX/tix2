@@ -107,8 +107,10 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 		GPUCommandBuffer->EncodeSetDrawIndexed(i,
 			GPU_COMMAND_DRAW_INDEXED,
 			MeshBuffer->GetIndicesCount(),
-			InstanceBuffer->GetInstancesCount(),
-			0, 0, 0);
+			Primitive->GetInstanceCount(),
+			0, 
+			0, 
+			Primitive->GetInstanceOffset());
 	}
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 
@@ -175,18 +177,17 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				ProcessedGPUCommandBuffer);
 		}
 
-		// Do GPU culling
-		RHI->BeginComputeTask();
 		{
+			RHI->BeginComputeTask();
+			// Do GPU culling
 			TileCullCS->Run(RHI);
+
+			// Copy visible tile command buffers
+			static bool CopyVisibleBuffer = true;
+			if (CopyVisibleBuffer)
+				CopyVisibleCommandBuffer->Run(RHI);
+			RHI->EndComputeTask();
 		}
-		// Copy visible tile command buffers
-		static bool CopyVisibleBuffer = true;
-		if (CopyVisibleBuffer)
-		{
-			CopyVisibleCommandBuffer->Run(RHI);
-		}
-		RHI->EndComputeTask();
 
 
 		{

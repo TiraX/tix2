@@ -62,7 +62,10 @@ namespace tix
 			RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
 			ApplyShaderParameter(RHI, Scene, Primitive);
 
-			RHI->DrawPrimitiveIndexedInstanced(Primitive->GetMeshBuffer(), InstanceBuffer == nullptr ? 1 : InstanceBuffer->GetInstancesCount());
+			RHI->DrawPrimitiveIndexedInstanced(
+				Primitive->GetMeshBuffer(), 
+				InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(), 
+				Primitive->GetInstanceOffset());
 		}
 	}
 

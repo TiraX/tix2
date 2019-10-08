@@ -13,7 +13,7 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTDebugInfo)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
-	class FPrimitive : public IReferenceCounted
+		class FPrimitive : public IReferenceCounted
 	{
 	public:
 		enum {
@@ -23,7 +23,14 @@ namespace tix
 		FPrimitive();
 		~FPrimitive();
 
-		void SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer);
+		void SetMesh(
+			FMeshBufferPtr InMeshBuffer,
+			const aabbox3df& InMeshBBox,
+			TMaterialInstancePtr InMInstance,
+			FInstanceBufferPtr InInstanceBuffer,
+			uint32 InInstanceCount,
+			uint32 InInstanceOffset
+		);
 		void SetParentTilePosition(const vector2di& InTilePos)
 		{
 			ParentTilePos = InTilePos;
@@ -36,6 +43,14 @@ namespace tix
 		FInstanceBufferPtr GetInstanceBuffer()
 		{
 			return InstanceBuffer;
+		}
+		uint32 GetInstanceCount() const
+		{
+			return InstanceCount;
+		}
+		uint32 GetInstanceOffset() const
+		{
+			return InstanceOffset;
 		}
 		FPipelinePtr GetPipeline()
 		{
@@ -75,6 +90,8 @@ namespace tix
 
 		FMeshBufferPtr MeshBuffer;
 		FInstanceBufferPtr InstanceBuffer;
+		uint32 InstanceCount;
+		uint32 InstanceOffset;
 
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;

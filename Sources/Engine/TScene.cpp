@@ -86,7 +86,7 @@ namespace tix
 		// Link primitive to node
 		TVector<TMeshBufferPtr> Meshes;
 		Meshes.push_back(InMesh);
-		StaticMesh->LinkMeshBuffer(Meshes, nullptr, bCastShadow, bReceiveShadow);
+		StaticMesh->LinkMeshBuffer(Meshes, nullptr, 0, 0, bCastShadow, bReceiveShadow);
 		
 		return StaticMesh;
 	}

@@ -10,6 +10,8 @@ namespace tix
 {
 	TNodeStaticMesh::TNodeStaticMesh(TNode* parent)
 		: TNode(TNodeStaticMesh::NODE_TYPE, parent)
+		, InstanceCount(0)
+		, InstanceOffset(0)
 	{
 	}
 
@@ -44,7 +46,7 @@ namespace tix
 				}
 
 				// Create static mesh node
-				LinkMeshBuffer(Meshes, MeshInstance, false, false);
+				LinkMeshBuffer(Meshes, MeshInstance, InstanceCount, InstanceOffset, false, false);
 
 				// Remove the reference holder
 				MeshAsset = nullptr;
@@ -59,7 +61,13 @@ namespace tix
 		}
 	}
 
-	void TNodeStaticMesh::LinkMeshBuffer(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow)
+	void TNodeStaticMesh::LinkMeshBuffer(
+		const TVector<TMeshBufferPtr>& InMeshes, 
+		TInstanceBufferPtr InInstanceBuffer,
+		uint32 InInstanceCount,
+		uint32 InInstanceOffset, 
+		bool bCastShadow, 
+		bool bReceiveShadow)
 	{
 		// Create Primitives
 		LinkedPrimitives.empty();
@@ -71,7 +79,14 @@ namespace tix
 		{
 			TI_ASSERT(M->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
-			Primitive->SetMesh(M->MeshBufferResource, M->GetBBox(), M->GetDefaultMaterial(), InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr);
+			Primitive->SetMesh(
+				M->MeshBufferResource, 
+				M->GetBBox(), 
+				M->GetDefaultMaterial(), 
+				InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr,
+				InInstanceCount,
+				InInstanceOffset
+			);
 			Primitive->SetParentTilePosition(SceneTileNode->GetTilePosition());
 			LinkedPrimitives.push_back(Primitive);
 		}
@@ -84,11 +99,19 @@ namespace tix
 			});
 	}
 
-	void TNodeStaticMesh::LinkMeshAsset(TAssetPtr InMeshAsset, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow)
+	void TNodeStaticMesh::LinkMeshAsset(
+		TAssetPtr InMeshAsset, 
+		TInstanceBufferPtr InInstanceBuffer, 
+		uint32 InInstanceCount, 
+		uint32 InInstanceOffset, 
+		bool bCastShadow, 
+		bool bReceiveShadow)
 	{
 		// Save mesh asset
 		MeshAsset = InMeshAsset;
 		MeshInstance = InInstanceBuffer;
+		InstanceCount = InInstanceCount;
+		InstanceOffset = InInstanceOffset;
 	}
 
 	void TNodeStaticMesh::UpdateAbsoluteTransformation()

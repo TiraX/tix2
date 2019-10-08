@@ -10,6 +10,8 @@ namespace tix
 {
 	FPrimitive::FPrimitive()
 		: PrimitiveFlag(0)
+		, InstanceCount(0)
+		, InstanceOffset(0)
 		, DrawList(LIST_INVALID)
 	{
 		PrimitiveUniformBuffer = ti_new FPrimitiveUniformBuffer;
@@ -21,7 +23,13 @@ namespace tix
 		PrimitiveUniformBuffer = nullptr;
 	}
 
-	void FPrimitive::SetMesh(FMeshBufferPtr InMeshBuffer, const aabbox3df& InMeshBBox, TMaterialInstancePtr InMInstance, FInstanceBufferPtr InInstanceBuffer)
+	void FPrimitive::SetMesh(
+		FMeshBufferPtr InMeshBuffer, 
+		const aabbox3df& InMeshBBox, 
+		TMaterialInstancePtr InMInstance, 
+		FInstanceBufferPtr InInstanceBuffer,
+		uint32 InInstanceCount,
+		uint32 InInstanceOffset)
 	{
 		// Add bounding box
 		BBox = InMeshBBox;
@@ -31,6 +39,8 @@ namespace tix
 
 		// Add instance buffer
 		InstanceBuffer = InInstanceBuffer;
+		InstanceCount = InInstanceCount;
+		InstanceOffset = InInstanceOffset;
 
 		// Add pipeline
 		TMaterialPtr Material = InMInstance->LinkedMaterial;

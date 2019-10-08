@@ -17,26 +17,16 @@ namespace tix
 	{
 	}
 
-	TInstanceBufferPtr TSceneTileResource::GetInstanceBufferByIndex(int32 Index)
-	{
-		return MeshInstances[Index];
-	}
-
 	void TSceneTileResource::InitRenderThreadResource()
 	{
 		// Init all instances render resource
-		for (auto Ins : MeshInstances)
-		{
-			Ins->InitRenderThreadResource();
-		}
+		TI_ASSERT(MeshInstanceBuffer != nullptr);
+		MeshInstanceBuffer->InitRenderThreadResource();
 	}
 
 	void TSceneTileResource::DestroyRenderThreadResource()
 	{
-		for (auto Ins : MeshInstances)
-		{
-			Ins->DestroyRenderThreadResource();
-		}
+		MeshInstanceBuffer->DestroyRenderThreadResource();
 	}
 
 }

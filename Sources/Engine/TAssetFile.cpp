@@ -590,16 +590,15 @@ namespace tix
 			}
 
 			// Instances
-			TI_TODO("Create a whole instance buffer for one scene tile, each mesh use an offset to indicate where instances started.");
-			SceneTile->MeshInstances.reserve(Header->NumMeshes);
+			TI_ASSERT(Header->NumMeshes > 0);
+			SceneTile->InstanceOffsetAndCount.reserve(Header->NumMeshes);
+			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
+			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * Header->NumInstances];
 			int32 InstanceOffset = 0;
+			int32 DataOffset = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
-				TInstanceBufferPtr InstanceBuffer = ti_new TInstanceBuffer;
 				const int32 InstanceCount = MeshInstanceCount[m];
-				int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * InstanceCount];
-
-				int32 DataOffset = 0;
 				for (int32 i = 0; i < InstanceCount; ++i)
 				{
 					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffset];
@@ -627,11 +626,12 @@ namespace tix
 					memcpy(Data + DataOffset, RotScaleMat, sizeof(RotScaleMat));
 					DataOffset += sizeof(RotScaleMat);
 				}
+				SceneTile->InstanceOffsetAndCount.push_back(vector2di(InstanceOffset, InstanceCount));
 				InstanceOffset += InstanceCount;
-				InstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, InstanceCount);
-				SceneTile->MeshInstances.push_back(InstanceBuffer);
-				ti_delete[] Data;
 			}
+			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, Header->NumInstances);
+			TI_ASSERT(InstanceOffset == Header->NumInstances);
+			ti_delete[] Data;
 
 			OutResources.push_back(SceneTile);
 		}

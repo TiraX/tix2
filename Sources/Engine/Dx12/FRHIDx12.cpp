@@ -2646,10 +2646,10 @@ namespace tix
 		CurrentWorkingCommandList->OMSetStencilRef(InRefValue);
 	}
 
-	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount)
+	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset)
 	{
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
-		CurrentWorkingCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, 0);
+		CurrentWorkingCommandList->DrawIndexedInstanced(MeshBuffer->GetIndicesCount(), InstanceCount, 0, 0, InstanceOffset);
 
 		FStats::Stats.TrianglesRendered += MeshBuffer->GetIndicesCount() / 3 * InstanceCount;
 	}

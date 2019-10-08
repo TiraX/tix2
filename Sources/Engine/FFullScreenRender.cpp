@@ -83,7 +83,7 @@ namespace tix
         RHI->SetMeshBuffer(FullScreenQuad, nullptr);
         RHI->SetShaderTexture(0, Texture);
         
-        RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
+        RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1, 0);
 	}
 
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FRenderResourceTablePtr TextureTable)
@@ -93,7 +93,7 @@ namespace tix
 		RHI->SetGraphicsPipeline(FullScreenPipeline);
 		RHI->SetRenderResourceTable(0, TextureTable);
 
-		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
+		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1, 0);
 	}
 
 	void FFullScreenRender::DrawFullScreenTexture(FRHI* RHI, FArgumentBufferPtr ArgumentBuffer)
@@ -103,13 +103,13 @@ namespace tix
 		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
 		RHI->SetArgumentBuffer(0, ArgumentBuffer);
 
-		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
+		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1, 0);
 	}
 
 	void FFullScreenRender::DrawFullScreenQuad(FRHI* RHI)
 	{
 		TI_ASSERT(bInited);
 		RHI->SetMeshBuffer(FullScreenQuad, nullptr);
-		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1);
+		RHI->DrawPrimitiveIndexedInstanced(FullScreenQuad, 1, 0);
 	}
 }

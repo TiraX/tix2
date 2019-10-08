@@ -18,8 +18,20 @@ namespace tix
 		virtual void UpdateAllTransformation() override;
 
 		virtual void BindLights(TVector<TNode*>& Lights, bool ForceRebind) override;
-		void LinkMeshAsset(TAssetPtr InMeshAsset, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
-		void LinkMeshBuffer(const TVector<TMeshBufferPtr>& InMeshes, TInstanceBufferPtr InInstanceBuffer, bool bCastShadow, bool bReceiveShadow);
+		void LinkMeshAsset(
+			TAssetPtr InMeshAsset, 
+			TInstanceBufferPtr InInstanceBuffer, 
+			uint32 InInstanceCount, 
+			uint32 InInstanceOffset, 
+			bool bCastShadow, 
+			bool bReceiveShadow);
+		void LinkMeshBuffer(
+			const TVector<TMeshBufferPtr>& InMeshes, 
+			TInstanceBufferPtr InInstanceBuffer,
+			uint32 InInstanceCount,
+			uint32 InInstanceOffset, 
+			bool bCastShadow, 
+			bool bReceiveShadow);
 
 	protected:
 		virtual void UpdateAbsoluteTransformation() override;
@@ -31,6 +43,8 @@ namespace tix
 
 		TAssetPtr MeshAsset;
 		TInstanceBufferPtr MeshInstance;
+		uint32 InstanceCount;
+		uint32 InstanceOffset;
 	};
 
 } // end namespace tix

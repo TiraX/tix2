@@ -13,7 +13,10 @@ namespace tix
 		TSceneTileResource();
 		~TSceneTileResource();
 
-		TInstanceBufferPtr GetInstanceBufferByIndex(int32 Index);
+		TInstanceBufferPtr GetInstanceBuffer()
+		{
+			return MeshInstanceBuffer;
+		}
 
 	public:
 		virtual void InitRenderThreadResource() override;
@@ -24,6 +27,8 @@ namespace tix
 		vector2di Position;
 		aabbox3df BBox;
 		TVector<TAssetPtr> Meshes;
-		TVector<TInstanceBufferPtr> MeshInstances;
+		// X is Offset, Y is Count
+		TVector<vector2di> InstanceOffsetAndCount;
+		TInstanceBufferPtr MeshInstanceBuffer;
 	};
 }
