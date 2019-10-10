@@ -9,43 +9,119 @@
 //
 //*********************************************************
 
-#define UVDiscard_RootSig \
+#define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0)),"
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0)),"
 
-cbuffer RootConstants : register(b0)
+
+struct FVisibleInfo
 {
-	float4 Info;	// x, y groups
+	uint Visible;
 };
 
-struct UVBuffer
+struct FPrimitiveBBox
 {
-	float4 color;
+	float4 MinEdge;
+	float4 MaxEdge;
 };
-//StructuredBuffer<UVBuffer> inputUVs : register(t0);	// SRV: Indirect commands
-Texture2D<float4> inputUVs : register(t0);
-RWStructuredBuffer<UVBuffer> outputUVs : register(u0);	// UAV: Processed indirect commands
 
-#define threadBlockSize 8
+struct FInstanceMetaInfo
+{
+	// x = primitive index
+	// y = scene tile index
+	uint4 Info;
+};
 
-static const float vt_mips[7] = { 64.f, 32.f, 16.f, 8.f, 4.f, 2.f, 1.f };
+struct FInstanceTransform
+{
+	float4 ins_transition;
+	float4 ins_transform0;
+	float4 ins_transform1;
+	float4 ins_transform2;
+};
 
-[RootSignature(UVDiscard_RootSig)]
-[numthreads(threadBlockSize, threadBlockSize, 1)]
+cbuffer FFrustum : register(b0)
+{
+	float4 BBoxMin;
+	float4 BBoxMax;
+	float4 Planes[6];
+};
+
+StructuredBuffer<FVisibleInfo> TileVisibleInfo : register(t0);
+StructuredBuffer<FPrimitiveBBox> PrimitiveBBoxes : register(t1);
+StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t2);
+StructuredBuffer<FInstanceTransform> InstanceData : register(t3);
+
+RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
+
+inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
+{
+	float3 P;
+	P.x = Plane.x >= 0.0 ? MinEdge.x : MaxEdge.x;
+	P.y = Plane.y >= 0.0 ? MinEdge.y : MaxEdge.y;
+	P.z = Plane.z >= 0.0 ? MinEdge.z : MaxEdge.z;
+
+	float dis = dot(Plane.xyz, P) + Plane.w;
+	return dis <= 0.0;
+}
+
+inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout float4 MaxEdge)
+{
+	float3 VecMin = MinEdge.xyz;
+	float3 VecMax = MaxEdge.xyz;
+
+	float3 Origin = (VecMax + VecMin) * 0.5;
+	float3 Extent = (VecMax - VecMin) * 0.5;
+
+	float3 NewOrigin = Origin.xxx * Trans.ins_transform0.xyz;
+	NewOrigin = Origin.yyy * Trans.ins_transform1.xyz + NewOrigin;
+	NewOrigin = Origin.zzz * Trans.ins_transform2.xyz + NewOrigin;
+	NewOrigin += Trans.ins_transition.xyz;
+
+	float3 NewExtent = Extent.xxx * Trans.ins_transform0.xyz;
+	NewExtent += abs(Extent.yyy * Trans.ins_transform1.xyz);
+	NewExtent += abs(Extent.zzz * Trans.ins_transform2.xyz);
+
+	MinEdge.xyz = NewOrigin - NewExtent;
+	MaxEdge.xyz = NewOrigin + NewExtent;
+}
+
+#define threadBlockSize 128
+
+[RootSignature(InstanceFrustumCull_RootSig)]
+[numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	if (threadIDInGroup.x == 0 && threadIDInGroup.y == 0)
+	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
+	uint TileIndex = InstanceMetaInfo[InstanceIndex].Info.y;
+	uint TileVisible = TileVisibleInfo[TileIndex].Visible;
+	if (TileVisible == 2)
 	{
-		uint GroupW = uint(Info.x);
-		uint input_index = (groupId.y * threadBlockSize + threadIDInGroup.y) * threadBlockSize * GroupW + groupId.x * threadBlockSize + threadIDInGroup.x;
-		uint output_index = groupId.y * GroupW + groupId.x;
+		// This tile intersect view frustum, need to cull instances one by one
+		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
 
-		float4 result = inputUVs[dispatchThreadId.xy];
-		uint mip_level = uint(result.z);
-		result.xy = min(float2(0.999f, 0.999f), result.xy);
-		result.xy = result.xy * vt_mips[mip_level];
+		// Transform primitive bbox
+		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
+		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
-		//outputUVs[output_index].color = inputUVs[dispatchThreadId.xy];
-		outputUVs[output_index].color = result;
+		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+		{
+			VisibleInfo[InstanceIndex].Visible = 1;
+		}
+		else
+		{
+			VisibleInfo[InstanceIndex].Visible = 0;
+		}
+	}
+	else
+	{
+		// This tile is totally in or out of view frustum, keep the same visible with scene tile
+		VisibleInfo[InstanceIndex].Visible = TileVisible;
 	}
 }

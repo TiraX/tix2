@@ -11,7 +11,8 @@ namespace tix
 	FSceneMetaInfos::FSceneMetaInfos()
 		: SceneMetaFlags(0)
 		, ActiveSceneTileInfos(0)
-		, ActiveScenePrimitiveInfos(0)
+		, ActiveScenePrimitiveBBoxes(0)
+		, ActiveSceneInstanceInfos(0)
 	{
 		Init();
 	}
@@ -30,9 +31,13 @@ namespace tix
 		SceneTileMetaInfo->InitToZero();
 		ActiveSceneTileInfos = 0;
 
-		ScenePrimitiveMetaInfo = ti_new FScenePrimitiveMetaInfo;
-		ScenePrimitiveMetaInfo->InitToZero();
-		ActiveScenePrimitiveInfos = 0;
+		ScenePrimitiveBBoxes = ti_new FScenePrimitiveBBoxes;
+		ScenePrimitiveBBoxes->InitToZero();
+		ActiveScenePrimitiveBBoxes = 0;
+
+		SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo;
+		SceneInstancesMetaInfo->InitToZero();
+		ActiveSceneInstanceInfos = 0;
 	}
 
 	void FSceneMetaInfos::OnAddPrimitive(FPrimitivePtr InPrimitive)

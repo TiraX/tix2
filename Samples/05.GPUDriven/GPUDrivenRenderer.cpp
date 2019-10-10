@@ -13,6 +13,15 @@ FGPUDrivenRenderer * FGPUDrivenRenderer::Get()
 	return GPUDrivenRenderer;
 }
 
+
+inline vector3df ti_abs(const vector3df& x)
+{
+	vector3df Ret;
+	Ret.X = ti_abs(x.X);
+	Ret.Y = ti_abs(x.Y);
+	Ret.Z = ti_abs(x.Z);
+	return Ret;
+}
 FGPUDrivenRenderer::FGPUDrivenRenderer()
 	: SceneMetaInfo(nullptr)
 {
@@ -20,6 +29,37 @@ FGPUDrivenRenderer::FGPUDrivenRenderer()
 	SceneMetaInfo = ti_new FSceneMetaInfos();
 
 	FRenderThread::Get()->GetRenderScene()->RegisterSceneDelegate(SceneMetaInfo);
+
+	// Test
+
+	aabbox3df BBox0, BBox1, BBox2;
+	matrix4 Mat;
+	quaternion q;
+	q.fromAngleAxis(DEG_TO_RAD(45), vector3df(0, 0, 1));
+	q.getMatrix(Mat);
+	Mat.setTranslation(vector3df(2.f, 2.f, 2.f));
+
+	Mat.transformBox(BBox0);
+	Mat.transformBoxEx(BBox1);
+
+	aabbox3df NewBBox;
+	vector3df Origin = (BBox2.MinEdge + BBox2.MaxEdge) * 0.5f;
+	vector3df Extent = (BBox2.MaxEdge - BBox2.MinEdge) * 0.5f;
+
+	vector3df NewOrigin;
+	//NewOrigin = vector3df() * Mat[0];
+	// Since origin is zero
+	NewOrigin = vector3df(Mat[12], Mat[13], Mat[14]);
+	vector3df NewExtent;
+	NewExtent = vector3df(Extent.X, Extent.X, Extent.X) * vector3df(Mat[0], Mat[1], Mat[2]);
+	NewExtent = ti_abs(NewExtent);
+	NewExtent = NewExtent + ti_abs(vector3df(Extent.Y, Extent.Y, Extent.Y) * vector3df(Mat[4], Mat[5], Mat[6]));
+	NewExtent = NewExtent + ti_abs(vector3df(Extent.Z, Extent.Z, Extent.Z) * vector3df(Mat[8], Mat[9], Mat[10]));
+
+	NewBBox.MinEdge = NewOrigin - NewExtent;
+	NewBBox.MaxEdge = NewOrigin + NewExtent;
+
+
 }
 
 FGPUDrivenRenderer::~FGPUDrivenRenderer()
@@ -76,6 +116,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TileCullCS = ti_new FGPUTileFrustumCullCS();
 	TileCullCS->Finalize();
 	TileCullCS->PrepareResources(RHI);
+
+	InstanceCullCS = ti_new FGPUInstanceFrustumCullCS();
+	InstanceCullCS->Finalize();
+	InstanceCullCS->PrepareResources(RHI);
 
 	// Prepare copy visible command buffer tasks
 	CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
@@ -190,17 +234,23 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			TileCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
 		}
-		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
+			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_ScenePrimitiveMetaDirty))
 		{
-			// Update Copy command buffer params
-			CopyVisibleCommandBuffer->UpdateComputeArguments(
-				RHI,
-				Scene,
-				TileCullCS->GetVisibilityResult(),
-				SceneMetaInfo->GetPrimitiveMetaUniform(),
-				GPUCommandBuffer,
-				ProcessedGPUCommandBuffer);
+			TI_ASSERT(0);
+			InstanceCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
 		}
+		//if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		//{
+		//	// Update Copy command buffer params
+		//	CopyVisibleCommandBuffer->UpdateComputeArguments(
+		//		RHI,
+		//		Scene,
+		//		TileCullCS->GetVisibilityResult(),
+		//		SceneMetaInfo->GetPrimitiveMetaUniform(),
+		//		GPUCommandBuffer,
+		//		ProcessedGPUCommandBuffer);
+		//}
 
 		{
 			RHI->BeginComputeTask();
@@ -219,7 +269,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			// Render Base Pass
 			RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 
-			bool Indirect = !false;
+			bool Indirect = false;
 			bool DrawCulled = !false;
 			if (!Indirect)
 			{

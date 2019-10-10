@@ -11,9 +11,22 @@ public:
 	FGPUInstanceFrustumCullCS();
 	virtual ~FGPUInstanceFrustumCullCS();
 
+	void PrepareResources(FRHI * RHI);
+	void UpdateComputeArguments(
+		FRHI * RHI,
+		FUniformBufferPtr InTileVisbleInfo,
+		FUniformBufferPtr PrimitiveBBoxes,
+		FUniformBufferPtr InstanceMetaInfo,
+		FInstanceBufferPtr SceneInstanceData,
+		FUniformBufferPtr InFrustumUniform);
 	virtual void Run(FRHI * RHI) override;
+
 private:
 
 private:
+	FRenderResourceTablePtr ResourceTable;
+	FUniformBufferPtr VisibilityResult;
+
+	FUniformBufferPtr FrustumUniform;
 };
 typedef TI_INTRUSIVE_PTR(FGPUInstanceFrustumCullCS) FGPUInstanceFrustumCullCSPtr;

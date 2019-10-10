@@ -46,7 +46,7 @@ inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
 	return dis <= 0.0;
 }
 
-#define threadBlockSize 16
+#define threadBlockSize 128
 
 [RootSignature(TileFrustumCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]

@@ -38,7 +38,7 @@ void FGPUTileFrustumCullCS::UpdateComputeArguments(FRHI * RHI, FUniformBufferPtr
 
 void FGPUTileFrustumCullCS::Run(FRHI * RHI)
 {
-	const uint32 BlockSize = 16;
+	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = MAX_SCENE_TILE_META_NUM / BlockSize;
 
 	if (FrustumUniform != nullptr)
