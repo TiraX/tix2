@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "GPUDrivenRenderer.h"
+#include "SceneMetaInfos.h"
 
 FGPUDrivenRenderer * GPUDrivenRenderer = nullptr;
 FGPUDrivenRenderer * FGPUDrivenRenderer::Get()
@@ -13,8 +14,12 @@ FGPUDrivenRenderer * FGPUDrivenRenderer::Get()
 }
 
 FGPUDrivenRenderer::FGPUDrivenRenderer()
+	: SceneMetaInfo(nullptr)
 {
 	GPUDrivenRenderer = this;
+	SceneMetaInfo = ti_new FSceneMetaInfos();
+
+	FRenderThread::Get()->GetRenderScene()->RegisterSceneDelegate(SceneMetaInfo);
 }
 
 FGPUDrivenRenderer::~FGPUDrivenRenderer()
@@ -76,6 +81,20 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
 	CopyVisibleCommandBuffer->Finalize();
 	CopyVisibleCommandBuffer->PrepareResources(RHI);
+}
+
+void FGPUDrivenRenderer::InitRenderFrame(FScene* Scene)
+{
+	FDefaultRenderer::InitRenderFrame(Scene);
+
+	SceneMetaInfo->UpdateGPUResources();
+}
+
+void FGPUDrivenRenderer::EndRenderFrame(FScene* Scene)
+{
+	FDefaultRenderer::EndRenderFrame(Scene);
+
+	SceneMetaInfo->ClearMetaFlags();
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -151,6 +170,12 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		UpdateGPUCommandBuffer(RHI, Scene);
 	}
 
+	//bool test = false;
+	//if (test)
+	//{
+	//	_LOG(Log, "instances loaded = %d\n", FStats::Stats.InstancesLoaded);
+	//}
+
 	if (GPUCommandBuffer != nullptr)
 	{
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
@@ -161,9 +186,9 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 		// Set meta data every frame.
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
-			Scene->GetMetaInfos().HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
+			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
 		{
-			TileCullCS->UpdateComputeArguments(RHI, Scene, FrustumUniform->UniformBuffer);
+			TileCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
 		}
 		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
@@ -172,7 +197,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI,
 				Scene,
 				TileCullCS->GetVisibilityResult(),
-				Scene->GetMetaInfos().GetPrimitiveMetaUniform(),
+				SceneMetaInfo->GetPrimitiveMetaUniform(),
 				GPUCommandBuffer,
 				ProcessedGPUCommandBuffer);
 		}

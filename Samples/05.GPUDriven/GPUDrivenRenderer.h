@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "SceneMetaInfos.h"
 #include "GPUCameraFrustum.h"
 #include "GPUTileFrustumCullCS.h"
 #include "GPUInstanceFrustumCullCS.h"
@@ -19,7 +20,9 @@ public:
 	static FGPUDrivenRenderer* Get();
 
 	virtual void InitInRenderThread() override;
+	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
+	virtual void EndRenderFrame(FScene* Scene) override;
 
 	void UpdateFrustumUniform(const SViewFrustum& Frustum);
 
@@ -28,6 +31,8 @@ private:
 	void DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer);
 
 private:
+	FSceneMetaInfos * SceneMetaInfo;
+
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 	FArgumentBufferPtr AB_Result;

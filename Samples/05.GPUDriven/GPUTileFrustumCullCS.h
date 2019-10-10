@@ -12,7 +12,7 @@ public:
 	virtual ~FGPUTileFrustumCullCS();
 
 	void PrepareResources(FRHI * RHI);
-	void UpdateComputeArguments(FRHI * RHI, FScene * Scene, FUniformBufferPtr InFrustumUniform);
+	void UpdateComputeArguments(FRHI * RHI, FUniformBufferPtr SceneTileMetaInfoUniformBuffer, FUniformBufferPtr InFrustumUniform);
 	virtual void Run(FRHI * RHI) override;
 
 	FUniformBufferPtr GetVisibilityResult()

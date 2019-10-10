@@ -6,6 +6,7 @@
 #pragma once
 
 #include "FUniformBufferView.h"
+#include "FSceneDelegate.h"
 
 namespace tix
 {
@@ -33,8 +34,10 @@ namespace tix
 		void AddPrimitives(const TVector<FPrimitivePtr>& Primitives);
 		void RemovePrimitives(const TVector<FPrimitivePtr>& Primitives);
 
-		void RegisterSceneTileMetaInfo(TSceneTileResourcePtr SceneTileResource);
-		void UnregisterSceneTileMetaInfo();
+		void AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource);
+		void RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource);
+
+		TI_API void RegisterSceneDelegate(FSceneDelegate * InSceneDelegate);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
@@ -49,7 +52,6 @@ namespace tix
 		void ClearSceneFlags()
 		{
 			SceneFlags = 0;
-			MetaInfos.ClearMetaFlags();
 		}
 
 		FSceneLights * GetSceneLights()
@@ -76,16 +78,11 @@ namespace tix
 		{
 			return ViewUniformBuffer;
 		}
-
-		FSceneMetaInfos& GetMetaInfos()
-		{
-			return MetaInfos;
-		}
 	private:
 		void PrepareViewUniforms();
-		void PrepareMetaInfos();
 
 	private:
+		FSceneDelegate * SceneDelegate;
 		FSceneLights * SceneLights;
 
 		// Scene flags per frame, will be cleared by the end of this frame
@@ -98,7 +95,5 @@ namespace tix
 		FViewUniformBufferPtr ViewUniformBuffer;
 
 		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
-
-		FSceneMetaInfos MetaInfos;
 	};
 } // end namespace tix

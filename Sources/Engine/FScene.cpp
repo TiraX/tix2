@@ -10,14 +10,23 @@
 namespace tix
 {
 	FScene::FScene()
-		: SceneFlags(0)
+		: SceneDelegate(nullptr)
+		, SceneLights(nullptr)
+		, SceneFlags(0)
 	{
 		SceneLights = ti_new FSceneLights;
 	}
 
 	FScene::~FScene()
 	{
+		SAFE_DELETE(SceneDelegate);
 		SAFE_DELETE(SceneLights);
+	}
+
+	void FScene::RegisterSceneDelegate(FSceneDelegate * InSceneDelegate)
+	{
+		SAFE_DELETE(SceneDelegate);
+		SceneDelegate = InSceneDelegate;
 	}
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)
@@ -47,11 +56,11 @@ namespace tix
 			// Add to draw list
 			StaticDrawLists[P->GetDrawList()].push_back(P);
 
-			// Register meta info
-			MetaInfos.RegisterPrimitive(P);
-
 			// Mark flag primitives dirty
 			SetSceneFlag(ScenePrimitivesDirty);
+
+			if (SceneDelegate)
+				SceneDelegate->OnAddPrimitive(P);
 		}
 	}
 
@@ -83,7 +92,6 @@ namespace tix
 	void FScene::InitRenderFrame()
 	{
 		PrepareViewUniforms();
-		PrepareMetaInfos();
 	}
 
 	void FScene::PrepareViewUniforms()
@@ -104,17 +112,15 @@ namespace tix
 		}
 	}
 
-	void FScene::PrepareMetaInfos()
+	void FScene::AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource)
 	{
-		MetaInfos.UpdateGPUResources();
+		TI_TODO("Hold scene tile resources.");
+
+		if (SceneDelegate)
+			SceneDelegate->OnAddSceneTile(SceneTileResource);
 	}
 
-	void FScene::RegisterSceneTileMetaInfo(TSceneTileResourcePtr SceneTileResource)
-	{
-		MetaInfos.RegisterSceneTile(SceneTileResource->Position, SceneTileResource->BBox);
-	}
-
-	void FScene::UnregisterSceneTileMetaInfo()
+	void FScene::RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource)
 	{
 		TI_TODO("Add scene tile unregister.");
 		TI_ASSERT(0);

@@ -20,5 +20,6 @@ namespace tix
 		uint32 VertexDataInBytes;
 		uint32 IndexDataInBytes;
 		uint32 TrianglesRendered;
+		uint32 InstancesLoaded;
 	};
 } // end namespace tix

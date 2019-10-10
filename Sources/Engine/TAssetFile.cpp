@@ -632,6 +632,7 @@ namespace tix
 			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, Header->NumInstances);
 			TI_ASSERT(InstanceOffset == Header->NumInstances);
 			ti_delete[] Data;
+			FStats::Stats.InstancesLoaded += Header->NumInstances;
 
 			OutResources.push_back(SceneTile);
 		}

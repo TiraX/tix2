@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "CopyVisibleTileCommandBuffer.h"
+#include "SceneMetaInfos.h"
 
 FCopyVisibleTileCommandBuffer::FCopyVisibleTileCommandBuffer()
 	: FComputeTask("S_CopyVisibleTileCommandBuffer")

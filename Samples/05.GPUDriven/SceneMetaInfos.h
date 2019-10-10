@@ -18,11 +18,14 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveMetaInfo)
 
-	class FSceneMetaInfos
+	class FSceneMetaInfos : public FSceneDelegate
 	{
 	public:
 		FSceneMetaInfos();
-		~FSceneMetaInfos();
+		virtual ~FSceneMetaInfos();
+
+		virtual void OnAddPrimitive(FPrimitivePtr InPrimitive) override;
+		virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
 
 		void RegisterSceneTile(const vector2di& TilePos, const aabbox3df& TileBBox);
 		void RegisterPrimitive(FPrimitivePtr InPrimitive);

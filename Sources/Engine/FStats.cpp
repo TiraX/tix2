@@ -14,6 +14,7 @@ namespace tix
 		: VertexDataInBytes(0)
 		, IndexDataInBytes(0)
 		, TrianglesRendered(0)
+		, InstancesLoaded(0)
 	{
 	}
 

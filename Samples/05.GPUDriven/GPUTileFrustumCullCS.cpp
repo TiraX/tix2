@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "GPUTileFrustumCullCS.h"
+#include "SceneMetaInfos.h"
 
 FGPUTileFrustumCullCS::FGPUTileFrustumCullCS()
 	: FComputeTask("S_TileFrustumCullCS")
@@ -26,10 +27,10 @@ void FGPUTileFrustumCullCS::PrepareResources(FRHI * RHI)
 	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
 }
 
-void FGPUTileFrustumCullCS::UpdateComputeArguments(FRHI * RHI, FScene * Scene, FUniformBufferPtr InFrustumUniform)
+void FGPUTileFrustumCullCS::UpdateComputeArguments(FRHI * RHI, FUniformBufferPtr SceneTileMetaInfoUniformBuffer, FUniformBufferPtr InFrustumUniform)
 {
 	TI_TODO("Does this resource table, need to re-create?");
-	ResourceTable->PutBufferInTable(Scene->GetMetaInfos().GetTileMetaUniform(), 0);
+	ResourceTable->PutBufferInTable(SceneTileMetaInfoUniformBuffer, 0);
 	ResourceTable->PutBufferInTable(VisibilityResult, 1);
 
 	FrustumUniform = InFrustumUniform;

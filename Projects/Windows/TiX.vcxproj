@@ -53,7 +53,6 @@
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FSceneLights.cpp" />
-    <ClCompile Include="..\..\Sources\Engine\FSceneMetaInfos.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FShaderParamValue.cpp" />
@@ -148,8 +147,8 @@
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
+    <ClInclude Include="..\..\Sources\Engine\FSceneDelegate.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
-    <ClInclude Include="..\..\Sources\Engine\FSceneMetaInfos.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderParamValue.h" />

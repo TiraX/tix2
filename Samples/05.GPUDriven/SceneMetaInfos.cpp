@@ -4,7 +4,7 @@
 */
 
 #include "stdafx.h"
-#include "FSceneMetaInfos.h"
+#include "SceneMetaInfos.h"
 
 namespace tix
 {
@@ -33,6 +33,16 @@ namespace tix
 		ScenePrimitiveMetaInfo = ti_new FScenePrimitiveMetaInfo;
 		ScenePrimitiveMetaInfo->InitToZero();
 		ActiveScenePrimitiveInfos = 0;
+	}
+
+	void FSceneMetaInfos::OnAddPrimitive(FPrimitivePtr InPrimitive)
+	{
+		RegisterPrimitive(InPrimitive);
+	}
+
+	void FSceneMetaInfos::OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes)
+	{
+		RegisterSceneTile(InSceneTileRes->Position, InSceneTileRes->BBox);
 	}
 
 	void FSceneMetaInfos::RegisterSceneTile(const vector2di& TilePos, const aabbox3df& TileBBox)
