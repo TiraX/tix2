@@ -31,10 +31,6 @@ namespace tix
 			uint32 InInstanceCount,
 			uint32 InInstanceOffset
 		);
-		void SetParentTilePosition(const vector2di& InTilePos)
-		{
-			ParentTilePos = InTilePos;
-		}
 
 		FMeshBufferPtr GetMeshBuffer()
 		{
@@ -76,10 +72,6 @@ namespace tix
 		{
 			return (PrimitiveFlag & PrimitiveUniformBufferDirty) != 0;
 		}
-		const vector2di& GetParentTilePosition() const
-		{
-			return ParentTilePos;
-		}
 		void SetLocalToWorld(const matrix4 InLocalToWorld);
 		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
 		void SetVTDebugInfo(float A, float B, float C, float D);
@@ -101,7 +93,6 @@ namespace tix
 		aabbox3df BBox;
 
 		E_DRAWLIST_TYPE DrawList;
-		vector2di ParentTilePos;
 	};
 } // end namespace tix
 

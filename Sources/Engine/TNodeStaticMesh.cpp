@@ -87,7 +87,6 @@ namespace tix
 				InInstanceCount,
 				InInstanceOffset
 			);
-			Primitive->SetParentTilePosition(SceneTileNode->GetTilePosition());
 			LinkedPrimitives.push_back(Primitive);
 		}
 

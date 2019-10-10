@@ -37,15 +37,14 @@ namespace tix
 		virtual void OnAddPrimitive(FPrimitivePtr InPrimitive) override;
 		virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
 
-		void RegisterSceneTile(const vector2di& TilePos, const aabbox3df& TileBBox);
-		void RegisterPrimitive(FPrimitivePtr InPrimitive);
 		void UpdateGPUResources();
 		void ClearMetaFlags();
 
 		enum FSceneMetaFlag
 		{
 			MetaFlag_SceneTileMetaDirty = 1 << 0,
-			MetaFlag_SceneInstanceMetaDirty = 1 << 1,
+			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
+			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
 		};
 		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
 		{
@@ -71,20 +70,18 @@ namespace tix
 	private:
 		uint32 SceneMetaFlags;
 
-		// Scene tile meta index map, key is tile pos, value is the meta index in SceneTileMetaInfos
-		THMap<vector2di, uint32> SceneTileMetaIndexMap;
-
 		// Scene tile meta info
 		FSceneTileMetaInfoPtr SceneTileMetaInfo;
 		uint32 ActiveSceneTileInfos;
-
-		// Scene primitive meta info
-		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;
-		uint32 ActiveScenePrimitiveBBoxes;
+		uint32 ScenePrimitivesAdded;
 
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;
 		uint32 ActiveSceneInstanceInfos;
+
+		// Scene primitive meta info
+		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;
+		uint32 ActiveScenePrimitiveBBoxes;
 
 		friend class FScene;
 	};

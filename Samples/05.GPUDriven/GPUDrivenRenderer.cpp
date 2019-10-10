@@ -235,10 +235,16 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			TileCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
 		}
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
-			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_ScenePrimitiveMetaDirty))
+			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
 		{
-			TI_ASSERT(0);
-			InstanceCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
+			InstanceCullCS->UpdateComputeArguments(
+				RHI,
+				TileCullCS->GetVisibilityResult(),
+				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
+				SceneMetaInfo->GetInstanceMetaUniform(),
+				nullptr,
+				FrustumUniform->UniformBuffer
+			);
 		}
 		//if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		//{
