@@ -28,28 +28,29 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FSceneInstanceMetaInfo)
 
-	class FSceneMetaInfos : public FSceneDelegate
+	class FSceneMetaInfos
 	{
 	public:
 		FSceneMetaInfos();
-		virtual ~FSceneMetaInfos();
+		~FSceneMetaInfos();
 
-		virtual void OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives) override;
-		virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
+		void UpdateSceneInfos(FScene * Scene);
+		//virtual void OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives) override;
+		//virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
 
-		void UpdateGPUResources();
-		void ClearMetaFlags();
+		//void UpdateGPUResources();
+		//void ClearMetaFlags();
 
-		enum FSceneMetaFlag
-		{
-			MetaFlag_SceneTileMetaDirty = 1 << 0,
-			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
-			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
-		};
-		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
-		{
-			return (SceneMetaFlags & InMetaFlag) != 0;
-		}
+		//enum FSceneMetaFlag
+		//{
+		//	MetaFlag_SceneTileMetaDirty = 1 << 0,
+		//	MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
+		//	MetaFlag_SceneInstanceMetaDirty = 1 << 2,
+		//};
+		//bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
+		//{
+		//	return (SceneMetaFlags & InMetaFlag) != 0;
+		//}
 		FUniformBufferPtr GetTileMetaUniform()
 		{
 			return SceneTileMetaInfo->UniformBuffer;
@@ -68,7 +69,7 @@ namespace tix
 
 
 	private:
-		uint32 SceneMetaFlags;
+		//uint32 SceneMetaFlags;
 
 		// Scene tile meta info
 		FSceneTileMetaInfoPtr SceneTileMetaInfo;

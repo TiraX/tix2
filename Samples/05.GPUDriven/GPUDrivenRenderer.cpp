@@ -27,8 +27,6 @@ FGPUDrivenRenderer::FGPUDrivenRenderer()
 {
 	GPUDrivenRenderer = this;
 	SceneMetaInfo = ti_new FSceneMetaInfos();
-
-	FRenderThread::Get()->GetRenderScene()->RegisterSceneDelegate(SceneMetaInfo);
 }
 
 FGPUDrivenRenderer::~FGPUDrivenRenderer()
@@ -94,20 +92,6 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
 	CopyVisibleCommandBuffer->Finalize();
 	CopyVisibleCommandBuffer->PrepareResources(RHI);
-}
-
-void FGPUDrivenRenderer::InitRenderFrame(FScene* Scene)
-{
-	FDefaultRenderer::InitRenderFrame(Scene);
-
-	SceneMetaInfo->UpdateGPUResources();
-}
-
-void FGPUDrivenRenderer::EndRenderFrame(FScene* Scene)
-{
-	FDefaultRenderer::EndRenderFrame(Scene);
-
-	SceneMetaInfo->ClearMetaFlags();
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -177,6 +161,8 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	SceneMetaInfo->UpdateSceneInfos(Scene);
+
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
 		// Update GPU Command Buffer

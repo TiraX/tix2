@@ -10,23 +10,22 @@
 namespace tix
 {
 	FScene::FScene()
-		: SceneDelegate(nullptr)
-		, SceneLights(nullptr)
+		: SceneLights(nullptr)
 		, SceneFlags(0)
 	{
 		SceneLights = ti_new FSceneLights;
+
+		// Reserve memory for containers
+		SceneTiles.reserve(128);
+		for (int32 l = 0 ; l < LIST_COUNT ; ++ l)
+		{
+			StaticDrawLists[l].reserve(128);
+		}
 	}
 
 	FScene::~FScene()
 	{
-		SAFE_DELETE(SceneDelegate);
 		SAFE_DELETE(SceneLights);
-	}
-
-	void FScene::RegisterSceneDelegate(FSceneDelegate * InSceneDelegate)
-	{
-		SAFE_DELETE(SceneDelegate);
-		SceneDelegate = InSceneDelegate;
 	}
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)
@@ -58,13 +57,7 @@ namespace tix
 
 			// Mark flag primitives dirty
 			SetSceneFlag(ScenePrimitivesDirty);
-
-			if (SceneDelegate)
-				SceneDelegate->OnAddPrimitive(P);
 		}
-
-		if (SceneDelegate)
-			SceneDelegate->OnAddStaticMeshPrimitives(InPrimitives);
 	}
 
 	void FScene::RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
@@ -117,10 +110,13 @@ namespace tix
 
 	void FScene::AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource)
 	{
-		TI_TODO("Hold scene tile resources.");
+		if (SceneTileResource != nullptr)
+		{
+			SceneTiles.push_back(SceneTileResource);
 
-		if (SceneDelegate)
-			SceneDelegate->OnAddSceneTile(SceneTileResource);
+			// Mark flag scene tile dirty
+			SetSceneFlag(SceneTileDirty);
+		}
 	}
 
 	void FScene::RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource)

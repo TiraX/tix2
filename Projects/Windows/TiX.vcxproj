@@ -147,7 +147,6 @@
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
-    <ClInclude Include="..\..\Sources\Engine\FSceneDelegate.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
     <ClInclude Include="..\..\Sources\Engine\FShader.h" />
     <ClInclude Include="..\..\Sources\Engine\FShaderBinding.h" />

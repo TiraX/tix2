@@ -672,9 +672,6 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUCommandSignatureDx12.h">
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\FSceneDelegate.h">
-      <Filter>Sources\Scene</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">

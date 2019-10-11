@@ -20,9 +20,7 @@ public:
 	static FGPUDrivenRenderer* Get();
 
 	virtual void InitInRenderThread() override;
-	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
-	virtual void EndRenderFrame(FScene* Scene) override;
 
 	void UpdateFrustumUniform(const SViewFrustum& Frustum);
 
