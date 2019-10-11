@@ -527,6 +527,31 @@ namespace tix
 		}
 	}
 
+	inline void GetInstanceRotationScaleMatrix(FMatrix& OutMatrix, const quaternion& Rotation, const vector3df& Scale)
+	{
+		matrix4 MatInstanceTrans;
+		Rotation.getMatrix(MatInstanceTrans);
+		MatInstanceTrans.postScale(Scale);
+		MatInstanceTrans = MatInstanceTrans.getTransposed();
+		OutMatrix = MatInstanceTrans;
+	}
+
+	inline void MatrixRotationScaleToHalf3(const FMatrix& Mat, FHalf4& Rot0, FHalf4& Rot1, FHalf4& Rot2)
+	{
+		Rot0.X = Mat[0];
+		Rot0.Y = Mat[1];
+		Rot0.Z = Mat[2];
+		Rot0.W = Mat[3];
+		Rot1.X = Mat[4];
+		Rot1.Y = Mat[5];
+		Rot1.Z = Mat[6];
+		Rot1.W = Mat[7];
+		Rot2.X = Mat[8];
+		Rot2.Y = Mat[9];
+		Rot2.Z = Mat[10];
+		Rot2.W = Mat[11];
+	}
+
 	void TAssetFile::CreateSceneTile(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_SCENETILE] == nullptr)
@@ -554,7 +579,8 @@ namespace tix
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* MeshInstanceCount = AssetsMeshes + Header->NumMeshes;
+			const int32* MeshSections = AssetsMeshes + Header->NumMeshes;
+			const int32* MeshInstanceCount = MeshSections + Header->NumMeshes;
 			const int32* AssetsInstances = MeshInstanceCount + Header->NumMeshes;
 
 			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(AssetsInstances);
@@ -589,50 +615,84 @@ namespace tix
 				SceneTile->Meshes.push_back(MeshAsset);
 			}
 
+			// false = all mesh sections in a model share the same instance buffer
+			// true = all sections use a separate instance buffer, for GPU cull system
+			static const bool ExpandInstanceForEachMeshSections = !true;
+
 			// Instances
-			TI_ASSERT(Header->NumMeshes > 0);
-			SceneTile->InstanceOffsetAndCount.reserve(Header->NumMeshes);
+			TI_ASSERT(Header->NumMeshes > 0 && Header->NumInstances > 0);
+			uint32 TotalInstances = 0;
+			uint32 TotalMeshSections = 0;
+			if (ExpandInstanceForEachMeshSections)
+			{
+				// Calculate expanded instance count
+				for (int32 m = 0; m < Header->NumMeshes; ++m)
+				{
+					const int32 MeshSectionCount = MeshSections[m];
+					const int32 InstanceCount = MeshInstanceCount[m];
+
+					TotalInstances += MeshSectionCount * InstanceCount;
+					TotalMeshSections += MeshSectionCount;
+				}
+			}
+			else
+			{
+				TotalInstances = Header->NumInstances;
+				TotalMeshSections = Header->NumMeshes;
+			}
+
+			SceneTile->InstanceOffsetAndCount.reserve(TotalMeshSections);
 			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
-			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * Header->NumInstances];
+			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * TotalInstances];
+
 			int32 InstanceOffset = 0;
 			int32 DataOffset = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
 				const int32 InstanceCount = MeshInstanceCount[m];
+				
+				// Compute instance data for the 1st mesh section
+				const int32 InstanceDataStart = DataOffset;
 				for (int32 i = 0; i < InstanceCount; ++i)
 				{
 					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffset];
-					matrix4 MatInstanceTrans;
-					Instance.Rotation.getMatrix(MatInstanceTrans);
-					MatInstanceTrans.postScale(Instance.Scale);
-					MatInstanceTrans = MatInstanceTrans.getTransposed();
-					FMatrix Mat = MatInstanceTrans;
+
 					FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
+					FMatrix RotationScaleMat;
+					GetInstanceRotationScaleMatrix(RotationScaleMat, Instance.Rotation, Instance.Scale);
 					FHalf4 RotScaleMat[3];
-					RotScaleMat[0].X = Mat[0];
-					RotScaleMat[0].Y = Mat[1];
-					RotScaleMat[0].Z = Mat[2];
-					RotScaleMat[0].W = Mat[3];
-					RotScaleMat[1].X = Mat[4];
-					RotScaleMat[1].Y = Mat[5];
-					RotScaleMat[1].Z = Mat[6];
-					RotScaleMat[1].W = Mat[7];
-					RotScaleMat[2].X = Mat[8];
-					RotScaleMat[2].Y = Mat[9];
-					RotScaleMat[2].Z = Mat[10];
-					RotScaleMat[2].W = Mat[11];
+					MatrixRotationScaleToHalf3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
+
 					memcpy(Data + DataOffset, &Transition, sizeof(FFloat4));
 					DataOffset += sizeof(FFloat4);
 					memcpy(Data + DataOffset, RotScaleMat, sizeof(RotScaleMat));
 					DataOffset += sizeof(RotScaleMat);
 				}
+				const int32 InstanceDataLength = DataOffset - InstanceDataStart;
+				// Save instance offset and count
 				SceneTile->InstanceOffsetAndCount.push_back(vector2di(InstanceOffset, InstanceCount));
 				InstanceOffset += InstanceCount;
+
+				if (ExpandInstanceForEachMeshSections)
+				{
+					// Copy the same instance data for other mesh sections
+					const int32 MeshSectionCount = MeshSections[m];
+					TI_ASSERT(MeshSectionCount > 0);
+
+					for (int32 s = 1; s < MeshSectionCount; ++s)
+					{
+						memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
+						DataOffset += InstanceDataLength;
+						// Save instance offset and count
+						SceneTile->InstanceOffsetAndCount.push_back(vector2di(InstanceOffset, InstanceCount));
+						InstanceOffset += InstanceCount;
+					}
+				}
 			}
-			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, Header->NumInstances);
-			TI_ASSERT(InstanceOffset == Header->NumInstances);
+			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalInstances);
+			TI_ASSERT(InstanceOffset == TotalInstances);
 			ti_delete[] Data;
-			FStats::Stats.InstancesLoaded += Header->NumInstances;
+			FStats::Stats.InstancesLoaded += TotalInstances;
 
 			OutResources.push_back(SceneTile);
 		}

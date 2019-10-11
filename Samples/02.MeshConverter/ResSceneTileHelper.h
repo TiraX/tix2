@@ -31,6 +31,7 @@ namespace tix
 		TVector<TString> AssetMaterials;
 		TVector<TString> AssetMeshes;
 		TVector<int32> MeshInstanceCount;
+		TVector<int32> MeshSections;
 		TVector<TResInstance> Instances;
 	};
 }

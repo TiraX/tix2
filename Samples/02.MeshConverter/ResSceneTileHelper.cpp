@@ -74,15 +74,18 @@ namespace tix
 			TI_ASSERT(JInstanceObjects.IsArray());
 			Helper.Instances.reserve(InsTotalCount);
 			Helper.MeshInstanceCount.resize(JInstanceObjects.Size());
+			Helper.MeshSections.resize(JInstanceObjects.Size());
 			for (int32 obj = 0; obj < JInstanceObjects.Size(); ++obj)
 			{
 				TJSONNode JInstanceObj = JInstanceObjects[obj];
 				TJSONNode JLinkedMesh = JInstanceObj["linked_mesh"];
+				TJSONNode JMeshSections = JInstanceObj["mesh_sections"];
 				TJSONNode JInstances = JInstanceObj["instances"];
 
 				// Make sure InstanceObject has the same order with dependency-mesh
 				TI_ASSERT(JLinkedMesh.GetString() == Helper.AssetMeshes[obj]);
 				Helper.MeshInstanceCount[obj] = JInstances.Size();
+				Helper.MeshSections[obj] = JMeshSections.GetInt();
 
 				for (int32 ins = 0 ; ins < JInstances.Size(); ++ ins)
 				{
@@ -153,6 +156,12 @@ namespace tix
 			{
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
+			}
+			TI_ASSERT(AssetMeshes.size() == MeshSections.size());
+			for (const auto& A : MeshSections)
+			{
+				int32 Count = A;
+				DataStream.Put(&Count, sizeof(int32));
 			}
 			TI_ASSERT(AssetMeshes.size() == MeshInstanceCount.size());
 			int32 TotalInstances = 0;

@@ -60,6 +60,12 @@ namespace tix
 			return M[Index];
 		}
 
+		float operator [] (uint32 Index) const
+		{
+			TI_ASSERT(Index < 16);
+			return M[Index];
+		}
+
 		float* Data()
 		{
 			return M;
