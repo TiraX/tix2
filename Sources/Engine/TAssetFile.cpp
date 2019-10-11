@@ -641,7 +641,7 @@ namespace tix
 				TotalMeshSections = Header->NumMeshes;
 			}
 
-			SceneTile->InstanceOffsetAndCount.reserve(TotalMeshSections);
+			SceneTile->InstanceCountAndOffset.reserve(TotalMeshSections);
 			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
 			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * TotalInstances];
 
@@ -670,7 +670,7 @@ namespace tix
 				}
 				const int32 InstanceDataLength = DataOffset - InstanceDataStart;
 				// Save instance offset and count
-				SceneTile->InstanceOffsetAndCount.push_back(vector2di(InstanceOffset, InstanceCount));
+				SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffset));
 				InstanceOffset += InstanceCount;
 
 				if (ExpandInstanceForEachMeshSections)
@@ -684,7 +684,7 @@ namespace tix
 						memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
 						DataOffset += InstanceDataLength;
 						// Save instance offset and count
-						SceneTile->InstanceOffsetAndCount.push_back(vector2di(InstanceOffset, InstanceCount));
+						SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffset));
 						InstanceOffset += InstanceCount;
 					}
 				}

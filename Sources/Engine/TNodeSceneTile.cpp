@@ -35,7 +35,10 @@ namespace tix
 			TI_ASSERT(FirstResource->GetType() == ERES_SCENE_TILE);
 
 			NodeSceneTile->SceneTileResource = static_cast<TSceneTileResource*>(FirstResource.get());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->Meshes.size() == NodeSceneTile->SceneTileResource->InstanceOffsetAndCount.size());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->Meshes.size() == NodeSceneTile->SceneTileResource->InstanceCountAndOffset.size());
+			TI_ASSERT(NodeSceneTile->LoadedMeshAssets.empty());
+			// Init Loaded mesh asset array.
+			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
 
 			// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileRes,
@@ -43,22 +46,6 @@ namespace tix
 				{
 					FRenderThread::Get()->GetRenderScene()->AddSceneTileInfo(SceneTileRes);
 				});
-
-			TI_TODO("Remove static mesh node creation, send meshes to FScene by NodeSceneTile directly.");
-			// Create static mesh nodes , assign mesh and instance res to it.
-			const int32 MeshesCount = (int32)NodeSceneTile->SceneTileResource->Meshes.size();
-			for (int32 m = 0 ; m < MeshesCount ; ++ m)
-			{
-				TAssetPtr MeshAsset = NodeSceneTile->SceneTileResource->Meshes[m];
-				TInstanceBufferPtr Instance = NodeSceneTile->SceneTileResource->MeshInstanceBuffer;
-				const vector2di& InstanceOffsetAndCount = NodeSceneTile->SceneTileResource->InstanceOffsetAndCount[m];
-
-				TNodeStaticMesh * NodeStaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeSceneTile, MeshAsset->GetName());
-				NodeStaticMesh->LinkMeshAsset(MeshAsset, Instance, InstanceOffsetAndCount.Y, InstanceOffsetAndCount.X, false, false);
-			}
-
-			TI_TODO("Hold a scene tile resource temp, hold instances only in futher.");
-			TI_TODO("Scene tile resource do not need to hold TVector<TAssetPtr> Meshes, remove it in futher");
 		}
 		else
 		{
@@ -88,5 +75,73 @@ namespace tix
 
 	TNodeSceneTile::~TNodeSceneTile()
 	{
+	}
+
+	void TNodeSceneTile::UpdateAllTransformation()
+	{
+		TNode::UpdateAllTransformation();
+
+		// check if Asset is loaded
+		if (SceneTileResource != nullptr)
+		{
+			const uint32 MeshCount = (uint32)SceneTileResource->Meshes.size();
+			if (MeshCount > 0)
+			{
+				uint32 LoadedMeshCount = 0;
+				for (uint32 m = 0; m < MeshCount; ++m)
+				{
+					TAssetPtr MeshAsset = SceneTileResource->Meshes[m];
+
+					if (MeshAsset != nullptr)
+					{
+						if (MeshAsset->IsLoaded())
+						{
+							// Gather loaded mesh resources
+							TVector<FPrimitivePtr> LinkedPrimitives;
+							LinkedPrimitives.reserve(MeshAsset->GetResources().size());
+							for (auto Res : MeshAsset->GetResources())
+							{
+								TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(Res.get());
+								TI_ASSERT(Mesh->MeshBufferResource != nullptr);
+
+								FPrimitivePtr Primitive = ti_new FPrimitive;
+								Primitive->SetMesh(
+									Mesh->MeshBufferResource,
+									Mesh->GetBBox(),
+									Mesh->GetDefaultMaterial(),
+									SceneTileResource->MeshInstanceBuffer->InstanceResource,
+									SceneTileResource->InstanceCountAndOffset[m].X,
+									SceneTileResource->InstanceCountAndOffset[m].Y
+								);
+								LinkedPrimitives.push_back(Primitive);
+							}
+
+							// Add primitive to scene
+							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitivesToScene,
+								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+								{
+									FRenderThread::Get()->GetRenderScene()->AddPrimitives(Primitives);
+								});
+
+							// Remove the reference holder
+							TI_ASSERT(LoadedMeshAssets[m] == nullptr);
+							LoadedMeshAssets[m] = MeshAsset;
+							SceneTileResource->Meshes[m] = nullptr;
+
+							++LoadedMeshCount;
+						}
+					}
+					else
+					{
+						++LoadedMeshCount;
+					}
+				}
+				TI_ASSERT(LoadedMeshCount <= MeshCount);
+				if (LoadedMeshCount == MeshCount)
+				{
+					SceneTileResource->Meshes.clear();
+				}
+			}
+		}
 	}
 }

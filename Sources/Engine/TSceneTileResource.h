@@ -27,8 +27,8 @@ namespace tix
 		vector2di Position;
 		aabbox3df BBox;
 		TVector<TAssetPtr> Meshes;
-		// X is Offset, Y is Count
-		TVector<vector2di> InstanceOffsetAndCount;
+		// X is Count, Y is Offset
+		TVector<vector2di> InstanceCountAndOffset;
 		TInstanceBufferPtr MeshInstanceBuffer;
 	};
 }

@@ -45,6 +45,8 @@ namespace tix
 	public:
 		virtual ~TNodeSceneTile();
 
+		virtual void UpdateAllTransformation() override;
+
 		TInstanceBufferPtr GetInstanceBuffer()
 		{
 			return SceneTileResource->GetInstanceBuffer();
@@ -58,6 +60,7 @@ namespace tix
 
 	protected:
 		TSceneTileResourcePtr SceneTileResource;
+		TVector<TAssetPtr> LoadedMeshAssets;
 
 		friend class TSceneTileLoadingFinishDelegate;
 	};
