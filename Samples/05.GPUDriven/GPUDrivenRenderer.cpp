@@ -29,37 +29,6 @@ FGPUDrivenRenderer::FGPUDrivenRenderer()
 	SceneMetaInfo = ti_new FSceneMetaInfos();
 
 	FRenderThread::Get()->GetRenderScene()->RegisterSceneDelegate(SceneMetaInfo);
-
-	// Test
-
-	aabbox3df BBox0, BBox1, BBox2;
-	matrix4 Mat;
-	quaternion q;
-	q.fromAngleAxis(DEG_TO_RAD(45), vector3df(0, 0, 1));
-	q.getMatrix(Mat);
-	Mat.setTranslation(vector3df(2.f, 2.f, 2.f));
-
-	Mat.transformBox(BBox0);
-	Mat.transformBoxEx(BBox1);
-
-	aabbox3df NewBBox;
-	vector3df Origin = (BBox2.MinEdge + BBox2.MaxEdge) * 0.5f;
-	vector3df Extent = (BBox2.MaxEdge - BBox2.MinEdge) * 0.5f;
-
-	vector3df NewOrigin;
-	//NewOrigin = vector3df() * Mat[0];
-	// Since origin is zero
-	NewOrigin = vector3df(Mat[12], Mat[13], Mat[14]);
-	vector3df NewExtent;
-	NewExtent = vector3df(Extent.X, Extent.X, Extent.X) * vector3df(Mat[0], Mat[1], Mat[2]);
-	NewExtent = ti_abs(NewExtent);
-	NewExtent = NewExtent + ti_abs(vector3df(Extent.Y, Extent.Y, Extent.Y) * vector3df(Mat[4], Mat[5], Mat[6]));
-	NewExtent = NewExtent + ti_abs(vector3df(Extent.Z, Extent.Z, Extent.Z) * vector3df(Mat[8], Mat[9], Mat[10]));
-
-	NewBBox.MinEdge = NewOrigin - NewExtent;
-	NewBBox.MaxEdge = NewOrigin + NewExtent;
-
-
 }
 
 FGPUDrivenRenderer::~FGPUDrivenRenderer()

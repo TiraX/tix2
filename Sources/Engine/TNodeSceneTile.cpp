@@ -117,10 +117,10 @@ namespace tix
 							}
 
 							// Add primitive to scene
-							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddPrimitivesToScene,
+							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileMeshPrimitivesToScene,
 								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 								{
-									FRenderThread::Get()->GetRenderScene()->AddPrimitives(Primitives);
+									FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
 								});
 
 							// Remove the reference holder

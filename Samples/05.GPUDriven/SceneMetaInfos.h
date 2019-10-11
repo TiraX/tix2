@@ -34,7 +34,7 @@ namespace tix
 		FSceneMetaInfos();
 		virtual ~FSceneMetaInfos();
 
-		virtual void OnAddPrimitive(FPrimitivePtr InPrimitive) override;
+		virtual void OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives) override;
 		virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
 
 		void UpdateGPUResources();

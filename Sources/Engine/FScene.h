@@ -31,8 +31,10 @@ namespace tix
 
 		void SetViewProjection(const FViewProjectionInfo& Info);
 		void SetEnvironmentInfo(const FEnvironmentInfo& Info);
-		void AddPrimitives(const TVector<FPrimitivePtr>& Primitives);
-		void RemovePrimitives(const TVector<FPrimitivePtr>& Primitives);
+
+		// Add / Remove primitives from the same static mesh
+		void AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
+		void RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
 
 		void AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource);
 		void RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource);

@@ -43,7 +43,7 @@ namespace tix
 		SetSceneFlag(EnvironmentDirty);
 	}
 
-	void FScene::AddPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
+	void FScene::AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
 	{
 		// Send different primitives to different draw list
 		TI_ASSERT(IsRenderThread());
@@ -62,9 +62,12 @@ namespace tix
 			if (SceneDelegate)
 				SceneDelegate->OnAddPrimitive(P);
 		}
+
+		if (SceneDelegate)
+			SceneDelegate->OnAddStaticMeshPrimitives(InPrimitives);
 	}
 
-	void FScene::RemovePrimitives(const TVector<FPrimitivePtr>& InPrimitives)
+	void FScene::RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
 	{
 		TI_ASSERT(IsRenderThread());
 		TI_TODO("Find a fast way to locate Primitive in draw list.");

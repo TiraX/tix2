@@ -16,6 +16,8 @@ namespace tix
 		virtual void OnAddPrimitive(FPrimitivePtr InPrimitive) {};
 		virtual void OnRemovePrimitive(FPrimitivePtr InPrimitive) {};
 
+		virtual void OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitive) {};
+
 		virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) {};
 		virtual void OnRemoveSceneTile(TSceneTileResourcePtr InSceneTileRes) {};
 

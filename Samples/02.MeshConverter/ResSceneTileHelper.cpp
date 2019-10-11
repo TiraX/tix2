@@ -157,12 +157,12 @@ namespace tix
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
-			TI_ASSERT(AssetMeshes.size() == MeshSections.size());
-			for (const auto& A : MeshSections)
-			{
-				int32 Count = A;
-				DataStream.Put(&Count, sizeof(int32));
-			}
+			//TI_ASSERT(AssetMeshes.size() == MeshSections.size());
+			//for (const auto& A : MeshSections)
+			//{
+			//	int32 Count = A;
+			//	DataStream.Put(&Count, sizeof(int32));
+			//}
 			TI_ASSERT(AssetMeshes.size() == MeshInstanceCount.size());
 			int32 TotalInstances = 0;
 			for (const auto& A : MeshInstanceCount)
