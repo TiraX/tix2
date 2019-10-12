@@ -15,14 +15,15 @@ namespace tix
 	END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
 
 	// Primitive BBox info
-	#define MAX_DRAW_CALL_IN_SCENE (2048)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FScenePrimitiveBBoxes, MAX_DRAW_CALL_IN_SCENE)
+	#define MAX_STATIC_MESH_IN_SCENE (2048)
+	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FScenePrimitiveBBoxes, MAX_STATIC_MESH_IN_SCENE)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
 
 	// Info.x = primitive index this instance link to
 	// Info.y = scene tile index this instance belongs to
+	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
 	#define MAX_INSTANCES_IN_SCENE (40 * 1024)
 	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FSceneInstanceMetaInfo, MAX_INSTANCES_IN_SCENE)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
@@ -34,23 +35,19 @@ namespace tix
 		FSceneMetaInfos();
 		~FSceneMetaInfos();
 
-		void UpdateSceneInfos(FScene * Scene);
-		//virtual void OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives) override;
-		//virtual void OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes) override;
+		void CollectSceneMetaInfos(FScene * Scene);
+		void ClearMetaFlags();
 
-		//void UpdateGPUResources();
-		//void ClearMetaFlags();
-
-		//enum FSceneMetaFlag
-		//{
-		//	MetaFlag_SceneTileMetaDirty = 1 << 0,
-		//	MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
-		//	MetaFlag_SceneInstanceMetaDirty = 1 << 2,
-		//};
-		//bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
-		//{
-		//	return (SceneMetaFlags & InMetaFlag) != 0;
-		//}
+		enum FSceneMetaFlag
+		{
+			MetaFlag_SceneTileMetaDirty = 1 << 0,
+			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
+			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
+		};
+		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
+		{
+			return (SceneMetaFlags & InMetaFlag) != 0;
+		}
 		FUniformBufferPtr GetTileMetaUniform()
 		{
 			return SceneTileMetaInfo->UniformBuffer;
@@ -66,23 +63,25 @@ namespace tix
 
 	private:
 		void Init();
+		void UpdateGPUResources();
 
 
 	private:
-		//uint32 SceneMetaFlags;
+		uint32 SceneMetaFlags;
 
 		// Scene tile meta info
 		FSceneTileMetaInfoPtr SceneTileMetaInfo;
-		uint32 ActiveSceneTileInfos;
 		uint32 ScenePrimitivesAdded;
+		uint32 SceneInstancesAdded;
+		// Scene tile primitive count infos map.
+		// Key is tile position, value is {PritmivesCount, PrimitivesOffset in ScenePrimitiveBBox, InstancesCount, InstancesOffset in SceneInstancesMetaInfo};
+		THMap<vector2di, FUInt4> SceneTileInfoMap;
 
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;
-		uint32 ActiveSceneInstanceInfos;
 
 		// Scene primitive meta info
 		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;
-		uint32 ActiveScenePrimitiveBBoxes;
 
 		friend class FScene;
 	};

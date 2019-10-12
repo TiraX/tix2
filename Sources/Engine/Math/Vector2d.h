@@ -318,6 +318,7 @@ typedef vector2d<float16> vector2df16;
 typedef vector2d<float64> vector2df64;
 //! Typedef for integer 2d vector.
 typedef vector2d<int32> vector2di;
+typedef vector2d<uint32> vector2du;
 typedef vector2d<uint16> vector2du16;
 typedef vector2d<int16> vector2di16;
 

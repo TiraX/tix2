@@ -108,18 +108,18 @@ namespace tix
 		}
 	}
 
-	void FScene::AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource)
+	void FScene::AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource)
 	{
 		if (SceneTileResource != nullptr)
 		{
-			SceneTiles.push_back(SceneTileResource);
+			SceneTiles[SceneTileResource->GetTilePosition()] = SceneTileResource;
 
 			// Mark flag scene tile dirty
 			SetSceneFlag(SceneTileDirty);
 		}
 	}
 
-	void FScene::RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource)
+	void FScene::RemoveSceneTileInfo(FSceneTileResourcePtr SceneTileResource)
 	{
 		TI_TODO("Add scene tile unregister.");
 		TI_ASSERT(0);

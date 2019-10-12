@@ -9,10 +9,9 @@
 namespace tix
 {
 	FSceneMetaInfos::FSceneMetaInfos()
-		: ActiveSceneTileInfos(0)
+		: SceneMetaFlags(0)
 		, ScenePrimitivesAdded(0)
-		, ActiveSceneInstanceInfos(0)
-		, ActiveScenePrimitiveBBoxes(0)
+		, SceneInstancesAdded(0)
 	{
 		Init();
 	}
@@ -24,153 +23,185 @@ namespace tix
 
 	void FSceneMetaInfos::Init()
 	{
+		SceneTileInfoMap.reserve(128);
+
 		// Create a mesh buffer
 		FRHI * RHI = FRHI::Get();
 
 		SceneTileMetaInfo = ti_new FSceneTileMetaInfo;
 		SceneTileMetaInfo->InitToZero();
-		ActiveSceneTileInfos = 0;
 
 		ScenePrimitiveBBoxes = ti_new FScenePrimitiveBBoxes;
 		ScenePrimitiveBBoxes->InitToZero();
-		ActiveScenePrimitiveBBoxes = 0;
 
 		SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo;
 		SceneInstancesMetaInfo->InitToZero();
-		ActiveSceneInstanceInfos = 0;
 	}
 
-	void FSceneMetaInfos::UpdateSceneInfos(FScene * Scene)
+	void FSceneMetaInfos::CollectSceneMetaInfos(FScene * Scene)
 	{
 		if (Scene->HasSceneFlag(FScene::SceneTileDirty))
 		{
 			// Update scene tile meta infos	
-			const TVector<TSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 			const uint32 TilesCount = (uint32)SceneTileResources.size();
-			for (uint32 t = 0; t < TilesCount ; ++ t)
+			TI_ASSERT(TilesCount < MAX_SCENE_TILE_META_NUM);
+			
+			uint32 TileIndex = 0;
+			ScenePrimitivesAdded = 0;
+			SceneInstancesAdded = 0;
+			SceneTileInfoMap.clear();
+			for (const auto& T : SceneTileResources)
 			{
-				TSceneTileResourcePtr TileRes = SceneTileResources[t];
+				const vector2di& TilePos = T.first;
+				FSceneTileResourcePtr TileRes = T.second;
+				const aabbox3df& TileBBox = TileRes->GetTileBBox();
 
-				TI_ASSERT(0);
-				//const vector2di& TilePos = InSceneTileRes->Position;
-				//const aabbox3df& TileBBox = InSceneTileRes->BBox;
+				// Collect tile meta info data
+				SceneTileMetaInfo->UniformBufferData[TileIndex].MinEdge = FFloat4(TileBBox.MinEdge.X, TileBBox.MinEdge.Y, TileBBox.MinEdge.Z, 1.f);
+				SceneTileMetaInfo->UniformBufferData[TileIndex].MaxEdge = FFloat4(TileBBox.MaxEdge.X, TileBBox.MaxEdge.Y, TileBBox.MaxEdge.Z, 1.f);
 
-				//// Collect tile meta info data
-				//SceneTileMetaInfo->UniformBufferData[ActiveSceneTileInfos].MinEdge = FFloat4(TileBBox.MinEdge.X, TileBBox.MinEdge.Y, TileBBox.MinEdge.Z, 1.f);
-				//SceneTileMetaInfo->UniformBufferData[ActiveSceneTileInfos].MaxEdge = FFloat4(TileBBox.MaxEdge.X, TileBBox.MaxEdge.Y, TileBBox.MaxEdge.Z, 1.f);
+				// Mark tile as dirty
+				SceneMetaFlags |= MetaFlag_SceneTileMetaDirty;
 
-				//// Remember the meta index of this tile
-				//uint32 TileIndex = ActiveSceneInstanceInfos;
-				//++ActiveSceneTileInfos;
-				//TI_ASSERT(ActiveSceneTileInfos < MAX_SCENE_TILE_META_NUM);
+				// Get the available Primitive range of this tile
+				const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;
+				ScenePrimitivesAdded += (uint32)TileRes->GetInstanceCountAndOffset().size();
+				TI_ASSERT(ScenePrimitivesAdded <= MAX_STATIC_MESH_IN_SCENE);
 
-				//// Mark tile as dirty
-				//SceneMetaFlags |= MetaFlag_SceneTileMetaDirty;
+				// Get the available Instances range of this tile
+				const uint32 InstancesStartIndex = SceneInstancesAdded;
+				SceneInstancesAdded += TileRes->GetInstanceBuffer()->GetInstancesCount();
+				TI_ASSERT(SceneInstancesAdded <= MAX_INSTANCES_IN_SCENE);
 
-				//// Get the available Primitive range
-				//const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;
-				//ScenePrimitivesAdded += (uint32)InSceneTileRes->Meshes.size();
+				// Remember the offset of this tile
+				TI_ASSERT(SceneTileInfoMap.find(TilePos) == SceneTileInfoMap.end());
+				FUInt4 PrimInfo(
+					(uint32)TileRes->GetInstanceCountAndOffset().size(),
+					PrimitiveStartIndex,
+					TileRes->GetInstanceBuffer()->GetInstancesCount(),
+					InstancesStartIndex);
+				SceneTileInfoMap[TilePos] = PrimInfo;
 
-				//// Collect instance meta info data.
-				//const TVector<vector2di>& InstancesCountAndOffset = InSceneTileRes->InstanceCountAndOffset;
-				//for (uint32 i = 0; i < (uint32)InstancesCountAndOffset.size(); ++i)
-				//{
-				//	uint32 PrimitiveIndex = i + PrimitiveStartIndex;
-				//	for (int32 c = 0; c < InstancesCountAndOffset[i].X; ++c)
-				//	{
-				//		SceneInstancesMetaInfo->UniformBufferData[ActiveSceneInstanceInfos].Info.X = PrimitiveIndex;	// primitive index this instance link to
-				//		SceneInstancesMetaInfo->UniformBufferData[ActiveSceneInstanceInfos].Info.Y = TileIndex;
-				//		++ActiveSceneInstanceInfos;
-				//		TI_ASSERT(ActiveSceneInstanceInfos < MAX_INSTANCES_IN_SCENE);
-				//	}
-				//}
+				// Collect instance meta info data.
+				const TVector<vector2di>& InstancesCountAndOffset = TileRes->GetInstanceCountAndOffset();
+				uint32 InstanceIndex = InstancesStartIndex;
+				for (uint32 i = 0; i < (uint32)InstancesCountAndOffset.size(); ++i)
+				{
+					uint32 PrimitiveIndex = i + PrimitiveStartIndex;
+					for (int32 c = 0; c < InstancesCountAndOffset[i].X; ++c)
+					{
+						uint32 Index = InstanceIndex + c;
+						// Primitive index this instance link to, in order to get primitive bbox
+						SceneInstancesMetaInfo->UniformBufferData[Index].Info.X = PrimitiveIndex;
+						SceneInstancesMetaInfo->UniformBufferData[Index].Info.Y = TileIndex;
+						// Mark as loading, change this when primitive loaded
+						SceneInstancesMetaInfo->UniformBufferData[Index].Info.W = 0;
+					}
+					InstanceIndex += InstancesCountAndOffset[i].X;
+					TI_ASSERT(InstanceIndex < MAX_INSTANCES_IN_SCENE);
+				}
+				// Mark instance as dirty
+				SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
+
+				++TileIndex;
 			}
 		}
 		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 		{
-			// Update scene primitive meta infos
+			// Update scene primitive meta infos by scene order
+			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
+			
+			struct _PrimitiveInfo
+			{
+				vector2di TilePos;
+				uint32 IndexInTile;
+				uint32 InstancesStartIndex;
+				aabbox3df BBox;
+			};
+
+			// Key is index in ScenePrimitiveBBoxes, value is multi-primitives bbox union
+			THMap<uint32, _PrimitiveInfo> PrimtiveBBoxes;
+			for (auto P : Primitives)
+			{
+				const vector2di& TilePos = P->GetSceneTilePos();
+				uint32 IndexInTile = P->GetIndexInSceneTile();
+				const aabbox3df& BBox = P->GetBBox();
+
+				TI_ASSERT(SceneTileInfoMap.find(TilePos) != SceneTileInfoMap.end());
+				const FUInt4& PosInfo = SceneTileInfoMap[TilePos];
+
+				const uint32 PrimitivesCount = PosInfo.X;
+				const uint32 PrimitivesStartIndex = PosInfo.Y;
+				const uint32 InstancesCount = PosInfo.Z;
+				const uint32 InstancesStartIndex = PosInfo.W;
+
+				const uint32 Index = PrimitivesStartIndex + IndexInTile;
+				if (PrimtiveBBoxes.find(Index) == PrimtiveBBoxes.end())
+				{
+					PrimtiveBBoxes[Index].TilePos = TilePos;
+					PrimtiveBBoxes[Index].IndexInTile = IndexInTile;
+					PrimtiveBBoxes[Index].InstancesStartIndex = InstancesStartIndex;
+					PrimtiveBBoxes[Index].BBox = BBox;
+				}
+				else
+				{
+					TI_ASSERT(PrimtiveBBoxes[Index].TilePos == TilePos && 
+						PrimtiveBBoxes[Index].IndexInTile == IndexInTile &&
+						PrimtiveBBoxes[Index].InstancesStartIndex == InstancesStartIndex);
+					PrimtiveBBoxes[Index].BBox.addInternalBox(BBox);
+				}
+			}
+
+			for (const auto& PI : PrimtiveBBoxes)
+			{
+				const uint32 PrimitiveIndex = PI.first;
+				const _PrimitiveInfo& PrimInfo = PI.second;
+				const vector2di& TilePos = PrimInfo.TilePos;
+				const uint32 IndexInTile = PrimInfo.IndexInTile;
+				const uint32 InstancesStartIndex = PrimInfo.InstancesStartIndex;
+				const aabbox3df& BBox = PrimInfo.BBox;
+
+				// Update primitive bboxes in meta data
+				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MinEdge = FFloat4(BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z, 0);
+				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0);
+				SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
+
+				// Update instance meta data Info.W as loaded (1)
+				FSceneTileResourcePtr SceneTile = SceneTiles.find(TilePos)->second;
+				const vector2di& InstancesCountAndOffset = SceneTile->GetInstanceCountAndOffset()[IndexInTile];
+				const uint32 PrimitiveInstanceStart = InstancesCountAndOffset.Y + InstancesStartIndex;
+				const uint32 PrimitiveInstanceEnd = PrimitiveInstanceStart + InstancesCountAndOffset.X;
+				for (uint32 i = PrimitiveInstanceStart; i < PrimitiveInstanceEnd; ++i)
+				{
+					SceneInstancesMetaInfo->UniformBufferData[i].Info.W = 1;
+				}
+				SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
+			}
+		}
+
+		UpdateGPUResources();
+	}
+
+	void FSceneMetaInfos::UpdateGPUResources()
+	{
+		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
+		{
+			SceneTileMetaInfo->InitUniformBuffer();
+		}
+		if (HasMetaFlag(MetaFlag_ScenePrimitiveMetaDirty))
+		{
+			ScenePrimitiveBBoxes->InitUniformBuffer();
+		}
+		if (HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
+		{
+			SceneInstancesMetaInfo->InitUniformBuffer();
 		}
 	}
 
-	//void FSceneMetaInfos::OnAddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
-	//{
-	//	TI_ASSERT(0);
-	//	// Add static primitives in order
-	//	if (InPrimitives.size() > 0)
-	//	{
-	//		// Get All bboxes
-	//		aabbox3df BBox = InPrimitives[0]->GetBBox();
-	//		for (uint32 p = 1 ; p < (uint32)InPrimitives.size() ; ++ p)
-	//		{
-	//			BBox.addInternalBox(InPrimitives[p]->GetBBox());
-	//		}
-
-	//		FUInt4 PrimitiveInfo;
-
-	//		ScenePrimitiveBBoxes->UniformBufferData[ActiveScenePrimitiveBBoxes].MinEdge = BBox.MinEdge;
-	//		ScenePrimitiveBBoxes->UniformBufferData[ActiveScenePrimitiveBBoxes].MaxEdge = BBox.MaxEdge;
-	//		++ActiveScenePrimitiveBBoxes;
-	//		TI_ASSERT(ActiveScenePrimitiveBBoxes < MAX_DRAW_CALL_IN_SCENE);
-
-	//		// Mark primitives as dirty
-	//		SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
-	//	}
-	//}
-
-	//void FSceneMetaInfos::OnAddSceneTile(TSceneTileResourcePtr InSceneTileRes)
-	//{
-	//	const vector2di& TilePos = InSceneTileRes->Position;
-	//	const aabbox3df& TileBBox = InSceneTileRes->BBox;
-
-	//	// Collect tile meta info data
-	//	SceneTileMetaInfo->UniformBufferData[ActiveSceneTileInfos].MinEdge = FFloat4(TileBBox.MinEdge.X, TileBBox.MinEdge.Y, TileBBox.MinEdge.Z, 1.f);
-	//	SceneTileMetaInfo->UniformBufferData[ActiveSceneTileInfos].MaxEdge = FFloat4(TileBBox.MaxEdge.X, TileBBox.MaxEdge.Y, TileBBox.MaxEdge.Z, 1.f);
-
-	//	// Remember the meta index of this tile
-	//	uint32 TileIndex = ActiveSceneInstanceInfos;
-	//	++ActiveSceneTileInfos;
-	//	TI_ASSERT(ActiveSceneTileInfos < MAX_SCENE_TILE_META_NUM);
-
-	//	// Mark tile as dirty
-	//	SceneMetaFlags |= MetaFlag_SceneTileMetaDirty;
-
-	//	// Get the available Primitive range
-	//	const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;
-	//	ScenePrimitivesAdded += (uint32)InSceneTileRes->Meshes.size();
-
-	//	// Collect instance meta info data.
-	//	const TVector<vector2di>& InstancesCountAndOffset = InSceneTileRes->InstanceCountAndOffset;
-	//	for (uint32 i = 0 ; i < (uint32)InstancesCountAndOffset.size() ; ++ i)
-	//	{
-	//		uint32 PrimitiveIndex = i + PrimitiveStartIndex;
-	//		for (int32 c = 0 ; c < InstancesCountAndOffset[i].X; ++ c)
-	//		{
-	//			SceneInstancesMetaInfo->UniformBufferData[ActiveSceneInstanceInfos].Info.X = PrimitiveIndex;	// primitive index this instance link to
-	//			SceneInstancesMetaInfo->UniformBufferData[ActiveSceneInstanceInfos].Info.Y = TileIndex;
-	//			++ActiveSceneInstanceInfos;
-	//			TI_ASSERT(ActiveSceneInstanceInfos < MAX_INSTANCES_IN_SCENE);
-	//		}
-	//	}
-	//	
-	//	// Mark instance as dirty
-	//	SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
-	//}
-
-	//void FSceneMetaInfos::UpdateGPUResources()
-	//{
-	//	// MetaFlag Clear at FScene::ClearSceneFlags();
-	//	if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
-	//	{
-	//		SceneTileMetaInfo->InitUniformBuffer();
-	//	}
-	//	if (HasMetaFlag(MetaFlag_ScenePrimitiveMetaDirty))
-	//	{
-	//		ScenePrimitiveBBoxes->InitUniformBuffer();
-	//	}
-	//}
-
-	//void FSceneMetaInfos::ClearMetaFlags()
-	//{
-	//	SceneMetaFlags = 0;
-	//}
+	void FSceneMetaInfos::ClearMetaFlags()
+	{
+		SceneMetaFlags = 0;
+	}
 }

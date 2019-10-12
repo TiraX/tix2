@@ -28,5 +28,4 @@ namespace tix
 	{
 		MeshInstanceBuffer->DestroyRenderThreadResource();
 	}
-
 }

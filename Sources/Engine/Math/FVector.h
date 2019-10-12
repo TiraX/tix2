@@ -125,8 +125,32 @@ namespace tix
 			, W(0)
 		{}
 
+		FVecI4(T x, T y, T z, T w)
+			: X(x)
+			, Y(y)
+			, Z(z)
+			, W(w)
+		{}
+
+		FVecI4(const FVecI4<T>& Other)
+			: X(Other.X)
+			, Y(Other.Y)
+			, Z(Other.Z)
+			, W(Other.W)
+		{}
+
 		~FVecI4()
 		{}
+
+		FVecI4& operator = (const FVecI4<T>& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+			Z = Other.Z;
+			W = Other.W;
+
+			return *this;
+		}
 
 		FVecI4& operator = (const vector3di& Other)
 		{

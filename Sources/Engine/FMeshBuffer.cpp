@@ -55,6 +55,8 @@ namespace tix
 	///////////////////////////////////////////////////////////
 	FInstanceBuffer::FInstanceBuffer()
 		: FRenderResource(RRT_INSTANCE_BUFFER)
+		, InstanceCount(0)
+		, Stride(0)
 	{
 	}
 

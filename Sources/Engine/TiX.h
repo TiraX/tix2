@@ -76,6 +76,7 @@ using namespace std;
 #include "FRenderResource.h"
 #include "FRenderResourceTable.h"
 #include "FMeshBuffer.h"
+#include "FSceneTileResource.h"
 #include "FShader.h"
 #include "FShaderBinding.h"
 #include "FTexture.h"

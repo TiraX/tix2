@@ -41,8 +41,9 @@ namespace tix
 			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
 
 			// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
+			FSceneTileResourcePtr RenderThreadTileResource = ti_new FSceneTileResource(NodeSceneTile->SceneTileResource);
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileRes,
-				TSceneTileResourcePtr, SceneTileRes, NodeSceneTile->SceneTileResource,
+				FSceneTileResourcePtr, SceneTileRes, RenderThreadTileResource,
 				{
 					FRenderThread::Get()->GetRenderScene()->AddSceneTileInfo(SceneTileRes);
 				});
@@ -113,6 +114,8 @@ namespace tix
 									SceneTileResource->InstanceCountAndOffset[m].X,
 									SceneTileResource->InstanceCountAndOffset[m].Y
 								);
+								Primitive->SetIndexInSceneTile(m);
+								Primitive->SetSceneTilePos(SceneTileResource->Position);
 								LinkedPrimitives.push_back(Primitive);
 							}
 

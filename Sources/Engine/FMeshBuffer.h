@@ -89,7 +89,7 @@ namespace tix
 
 		void TI_API SetFromTInstanceBuffer(TInstanceBufferPtr InstanceData);
 
-		int32 GetInstancesCount() const
+		uint32 GetInstancesCount() const
 		{
 			return InstanceCount;
 		}
@@ -100,7 +100,7 @@ namespace tix
 		}
 
 	private:
-		int32 InstanceCount;
+		uint32 InstanceCount;
 		uint32 Stride;
 	};
 }

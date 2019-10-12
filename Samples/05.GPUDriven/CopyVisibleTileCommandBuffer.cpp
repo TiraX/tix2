@@ -56,20 +56,21 @@ void FCopyVisibleTileCommandBuffer::UpdateComputeArguments(
 
 void FCopyVisibleTileCommandBuffer::Run(FRHI * RHI)
 {
-	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = MAX_DRAW_CALL_IN_SCENE / BlockSize;
+	TI_ASSERT(0);
+	//const uint32 BlockSize = 128;
+	//const uint32 DispatchSize = MAX_DRAW_CALL_IN_SCENE / BlockSize;
 
-	// Reset command buffer counter
-	RHI->ComputeCopyBuffer(
-		ProcessedCommandBuffer->GetCommandBuffer(), 
-		ProcessedCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
-		CounterReset->UniformBuffer, 
-		0, 
-		sizeof(uint32));
+	//// Reset command buffer counter
+	//RHI->ComputeCopyBuffer(
+	//	ProcessedCommandBuffer->GetCommandBuffer(), 
+	//	ProcessedCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
+	//	CounterReset->UniformBuffer, 
+	//	0, 
+	//	sizeof(uint32));
 
-	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeBuffer(0, CopyParams->UniformBuffer);
-	RHI->SetComputeResourceTable(1, ResourceTable);
+	//RHI->SetComputePipeline(ComputePipeline);
+	//RHI->SetComputeBuffer(0, CopyParams->UniformBuffer);
+	//RHI->SetComputeResourceTable(1, ResourceTable);
 
-	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
+	//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }

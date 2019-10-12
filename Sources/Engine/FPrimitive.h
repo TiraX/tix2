@@ -72,9 +72,25 @@ namespace tix
 		{
 			return (PrimitiveFlag & PrimitiveUniformBufferDirty) != 0;
 		}
+		const vector2di& GetSceneTilePos() const
+		{
+			return SceneTilePos;
+		}
+		uint32 GetIndexInSceneTile() const
+		{
+			return IndexInSceneTile;
+		}
 		void SetLocalToWorld(const matrix4 InLocalToWorld);
 		void SetUVTransform(float UOffset, float VOffset, float UScale, float VScale);
 		void SetVTDebugInfo(float A, float B, float C, float D);
+		void SetSceneTilePos(const vector2di& InPos)
+		{
+			SceneTilePos = InPos;
+		}
+		void SetIndexInSceneTile(uint32 InIndex)
+		{
+			IndexInSceneTile = InIndex;
+		}
 
 		void UpdatePrimitiveBuffer_RenderThread();
 	private:
@@ -91,6 +107,9 @@ namespace tix
 		// Every primitive has a unique Primitive uniform buffer, because VT UVTransform
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 		aabbox3df BBox;
+
+		vector2di SceneTilePos;
+		uint32 IndexInSceneTile;
 
 		E_DRAWLIST_TYPE DrawList;
 	};

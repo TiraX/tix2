@@ -36,8 +36,8 @@ namespace tix
 		void AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
 		void RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
 
-		void AddSceneTileInfo(TSceneTileResourcePtr SceneTileResource);
-		void RemoveSceneTileInfo(TSceneTileResourcePtr SceneTileResource);
+		void AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
+		void RemoveSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
@@ -74,7 +74,7 @@ namespace tix
 			return StaticDrawLists[List];
 		}
 
-		const TVector<TSceneTileResourcePtr>& GetSceneTiles() const
+		const THMap<vector2di, FSceneTileResourcePtr>& GetSceneTiles() const
 		{
 			return SceneTiles;
 		}
@@ -99,7 +99,7 @@ namespace tix
 		FViewUniformBufferPtr ViewUniformBuffer;
 
 		// Scene tiles
-		TVector<TSceneTileResourcePtr> SceneTiles;
+		THMap<vector2di, FSceneTileResourcePtr> SceneTiles;
 
 		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
 	};

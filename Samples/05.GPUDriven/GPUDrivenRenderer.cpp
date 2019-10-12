@@ -161,7 +161,7 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	SceneMetaInfo->UpdateSceneInfos(Scene);
+	SceneMetaInfo->CollectSceneMetaInfos(Scene);
 
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
@@ -246,4 +246,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+
+	SceneMetaInfo->ClearMetaFlags();
 }
