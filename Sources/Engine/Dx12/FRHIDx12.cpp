@@ -2546,6 +2546,7 @@ namespace tix
 	{
 		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
 
+		TI_TODO("Remove duplicated IASetPrimitiveTopology and IASetVertexBuffers call similar as SetGraphicsPipeline()");
 		CurrentWorkingCommandList->IASetPrimitiveTopology(k_PRIMITIVE_TYPE_MAP[InMeshBuffer->GetPrimitiveType()]);
 		if (InInstanceBuffer == nullptr)
 		{

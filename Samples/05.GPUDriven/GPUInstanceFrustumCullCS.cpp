@@ -48,7 +48,7 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 void FGPUInstanceFrustumCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = MAX_SCENE_TILE_META_NUM / BlockSize;
+	const uint32 DispatchSize = MAX_INSTANCES_IN_SCENE / BlockSize;
 
 	if (FrustumUniform != nullptr)
 	{
