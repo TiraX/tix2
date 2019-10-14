@@ -7,12 +7,12 @@
 
 namespace tix
 {
-	// MinEdge.w is 1 means this tile info is valid, 0 for empty data
-	#define MAX_SCENE_TILE_META_NUM (256)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FSceneTileMetaInfo, MAX_SCENE_TILE_META_NUM)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
-	END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
+	//// MinEdge.w is 1 means this tile info is valid, 0 for empty data
+	//#define MAX_SCENE_TILE_META_NUM (256)
+	//BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FSceneTileMetaInfo, MAX_SCENE_TILE_META_NUM)
+	//	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
+	//	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
+	//END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
 
 	// Primitive BBox info
 	#define MAX_STATIC_MESH_IN_SCENE (2048)
@@ -35,6 +35,7 @@ namespace tix
 		FSceneMetaInfos();
 		~FSceneMetaInfos();
 
+		void DoSceneTileCulling(FScene * Scene, const SViewFrustum& ViewFrustum);
 		void CollectSceneMetaInfos(FScene * Scene);
 		void CollectInstanceBuffers(FScene * Scene);
 		void ClearMetaFlags();
@@ -48,10 +49,6 @@ namespace tix
 		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
 		{
 			return (SceneMetaFlags & InMetaFlag) != 0;
-		}
-		FUniformBufferPtr GetTileMetaUniform()
-		{
-			return SceneTileMetaInfo->UniformBuffer;
 		}
 		FUniformBufferPtr GetPrimitiveBBoxesUniform()
 		{
@@ -75,12 +72,13 @@ namespace tix
 		uint32 SceneMetaFlags;
 
 		// Scene tile meta info
-		FSceneTileMetaInfoPtr SceneTileMetaInfo;
+		//FSceneTileMetaInfoPtr SceneTileMetaInfo;
+		THMap<vector2di, uint32> SceneTileVisibleInfo;
 		uint32 ScenePrimitivesAdded;
 		uint32 SceneInstancesAdded;
 		// Scene tile primitive count infos map.
 		// Key is tile position, value is {PritmivesCount, PrimitivesOffset in ScenePrimitiveBBox, InstancesCount, InstancesOffset in SceneInstancesMetaInfo};
-		THMap<vector2di, FUInt4> SceneTileInfoMap;
+		THMap<vector2di, FUInt4> ActiveSceneTileInfoMap;
 
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;

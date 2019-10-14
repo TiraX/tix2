@@ -40,9 +40,10 @@ private:
 	FGPUCommandBufferPtr GPUCommandBuffer;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
 
+	SViewFrustum Frustum;
 	FCameraFrustumUniformPtr FrustumUniform;
 
-	FGPUTileFrustumCullCSPtr TileCullCS;
+	//FGPUTileFrustumCullCSPtr TileCullCS;
 	FGPUInstanceFrustumCullCSPtr InstanceCullCS;
 
 	FCopyVisibleTileCommandBufferPtr CopyVisibleCommandBuffer;

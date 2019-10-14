@@ -81,9 +81,9 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	// Prepare compute cull tasks
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
-	TileCullCS = ti_new FGPUTileFrustumCullCS();
-	TileCullCS->Finalize();
-	TileCullCS->PrepareResources(RHI);
+	//TileCullCS = ti_new FGPUTileFrustumCullCS();
+	//TileCullCS->Finalize();
+	//TileCullCS->PrepareResources(RHI);
 
 	InstanceCullCS = ti_new FGPUInstanceFrustumCullCS();
 	InstanceCullCS->Finalize();
@@ -141,13 +141,18 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 }
 
-void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& Frustum)
+void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 {
-	FrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(Frustum.BoundingBox.MinEdge.X, Frustum.BoundingBox.MinEdge.Y, Frustum.BoundingBox.MinEdge.Z, 1.f);
-	FrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(Frustum.BoundingBox.MaxEdge.X, Frustum.BoundingBox.MaxEdge.Y, Frustum.BoundingBox.MaxEdge.Z, 1.f);
+	Frustum = InFrustum;
+	FrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(InFrustum.BoundingBox.MinEdge.X, InFrustum.BoundingBox.MinEdge.Y, InFrustum.BoundingBox.MinEdge.Z, 1.f);
+	FrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(InFrustum.BoundingBox.MaxEdge.X, InFrustum.BoundingBox.MaxEdge.Y, InFrustum.BoundingBox.MaxEdge.Z, 1.f);
 	for (int32 i = SViewFrustum::VF_FAR_PLANE ; i < SViewFrustum::VF_PLANE_COUNT ; ++ i)
 	{
-		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(Frustum.Planes[i].Normal.X, Frustum.Planes[i].Normal.Y, Frustum.Planes[i].Normal.Z, Frustum.Planes[i].D);
+		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
+			InFrustum.Planes[i].Normal.X, 
+			InFrustum.Planes[i].Normal.Y, 
+			InFrustum.Planes[i].Normal.Z, 
+			InFrustum.Planes[i].D);
 	}
 	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
@@ -163,6 +168,7 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	TI_TODO("Cull Scene tile in render thread. Then only collect visible scene tile resources");
+	SceneMetaInfo->DoSceneTileCulling(Scene, Frustum);
 
 	SceneMetaInfo->CollectSceneMetaInfos(Scene);
 	SceneMetaInfo->CollectInstanceBuffers(Scene);
@@ -189,16 +195,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 		// Set meta data every frame.
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
-			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
-		{
-			TileCullCS->UpdateComputeArguments(RHI, SceneMetaInfo->GetTileMetaUniform(), FrustumUniform->UniformBuffer);
-		}
-		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
 			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
 		{
 			InstanceCullCS->UpdateComputeArguments(
 				RHI,
-				TileCullCS->GetVisibilityResult(),
+				nullptr,
 				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
 				SceneMetaInfo->GetInstanceMetaUniform(),
 				SceneMetaInfo->GetMergedInstanceBuffer(),
@@ -219,8 +220,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		{
 			RHI->BeginComputeTask();
-			// Do GPU tile frustum culling
-			TileCullCS->Run(RHI);
+			// Do GPU tile frustum culling(Move to CPU tile culling)
+			//TileCullCS->Run(RHI);
 
 			// Do GPU Instance frustum culling
 			InstanceCullCS->Run(RHI);

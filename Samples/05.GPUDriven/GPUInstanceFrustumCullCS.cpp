@@ -35,7 +35,6 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	FUniformBufferPtr InFrustumUniform)
 {
 	TI_TODO("Does this resource table, need to re-create?");
-	//ResourceTable->PutBufferInTable(SceneTileMetaInfoUniformBuffer, 0);
 	ResourceTable->PutUniformBufferInTable(InTileVisbleInfo, 0);
 	ResourceTable->PutUniformBufferInTable(PrimitiveBBoxes, 1);
 	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 2);
