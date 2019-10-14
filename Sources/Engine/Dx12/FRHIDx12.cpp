@@ -544,6 +544,11 @@ namespace tix
 		return ti_new FInstanceBufferDx12();
 	}
 
+	FInstanceBufferPtr FRHIDx12::CreateEmptyInstanceBuffer(uint32 InstanceCount, uint32 InstanceStride)
+	{
+		return ti_new FInstanceBufferDx12(InstanceCount, InstanceStride);
+	}
+
 	FPipelinePtr FRHIDx12::CreatePipeline(FShaderPtr InShader)
 	{
 		return ti_new FPipelineDx12(InShader);
@@ -827,11 +832,11 @@ namespace tix
 
 			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
-			if (MeshBuffer->GetUsage() == TMeshBuffer::USAGE_DEFAULT)
+			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
 				Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 			}
-			else if (MeshBuffer->GetUsage() == TMeshBuffer::USAGE_COPY_SOURCE)
+			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
 				Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			}
@@ -875,11 +880,11 @@ namespace tix
 
 			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
-			if (MeshBuffer->GetUsage() == TMeshBuffer::USAGE_DEFAULT)
+			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
 				Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 			}
-			else if (MeshBuffer->GetUsage() == TMeshBuffer::USAGE_COPY_SOURCE)
+			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
 				Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			}
@@ -971,15 +976,16 @@ namespace tix
 	bool FRHIDx12::UpdateHardwareResourceIB(FInstanceBufferPtr InstanceBuffer, TInstanceBufferPtr InInstanceData)
 	{
 #if defined (TIX_DEBUG)
-		InstanceBuffer->SetResourceName(InInstanceData->GetResourceName());
+		if (InInstanceData != nullptr)
+			InstanceBuffer->SetResourceName(InInstanceData->GetResourceName());
 #endif
 		FInstanceBufferDx12 * InsDx12 = static_cast<FInstanceBufferDx12*>(InstanceBuffer.get());
 
 		// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
 		// The upload resource must not be released until after the GPU has finished using it.
-		ComPtr<ID3D12Resource> VertexBufferUpload;
-
-		const int32 BufferSize = InInstanceData->GetInstanceCount() * InInstanceData->GetStride();
+		
+		const int32 BufferSize = InstanceBuffer->GetInstancesCount() * InstanceBuffer->GetStride();
+		TI_ASSERT(BufferSize > 0);
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -990,39 +996,55 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&InsDx12->InstanceBuffer)));
 
-		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&uploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&VertexBufferUpload)));
-
-		DX_SETNAME(InsDx12->InstanceBuffer.Get(), InstanceBuffer->GetResourceName() + "-INSB");
-
-		// Upload the vertex buffer to the GPU.
+		if (InInstanceData != nullptr)
 		{
-			D3D12_SUBRESOURCE_DATA VertexData = {};
-			VertexData.pData = reinterpret_cast<const uint8*>(InInstanceData->GetInstanceData());
-			VertexData.RowPitch = BufferSize;
-			VertexData.SlicePitch = VertexData.RowPitch;
+			ComPtr<ID3D12Resource> VertexBufferUpload;
+			CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+				&uploadHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&vertexBufferDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&VertexBufferUpload)));
 
-			UpdateSubresources(CurrentWorkingCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+			DX_SETNAME(InsDx12->InstanceBuffer.Get(), InstanceBuffer->GetResourceName() + "-INSB");
 
-			Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			// Upload the instance buffer to the GPU.
+			{
+				D3D12_SUBRESOURCE_DATA VertexData = {};
+				VertexData.pData = reinterpret_cast<const uint8*>(InInstanceData->GetInstanceData());
+				VertexData.RowPitch = BufferSize;
+				VertexData.SlicePitch = VertexData.RowPitch;
+
+				UpdateSubresources(CurrentWorkingCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+
+				if (InstanceBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
+				{
+					Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+				}
+				else if (InstanceBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
+				{
+					Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				}
+				else
+				{
+					TI_ASSERT(0);
+				}
+			}
+
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+			HoldResourceReference(VertexBufferUpload);
 		}
 
-		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		// Create vertex/index buffer views.
 		InsDx12->InstanceBufferView.BufferLocation = InsDx12->InstanceBuffer->GetGPUVirtualAddress();
-		InsDx12->InstanceBufferView.StrideInBytes = InInstanceData->GetStride();
+		InsDx12->InstanceBufferView.StrideInBytes = InstanceBuffer->GetStride();
 		InsDx12->InstanceBufferView.SizeInBytes = BufferSize;
 
 		// Hold resources used here
 		HoldResourceReference(InstanceBuffer);
-		HoldResourceReference(VertexBufferUpload);
 
 		return true;
 	}
@@ -1810,6 +1832,33 @@ namespace tix
 		return true;
 	}
 
+	bool FRHIDx12::CopyBufferRegion(
+		FInstanceBufferPtr DstBuffer,
+		uint32 DstInstanceOffset,
+		FInstanceBufferPtr SrcBuffer,
+		uint32 SrcInstanceOffset,
+		uint32 InstanceCount)
+	{
+		FInstanceBufferDx12 * DstBufferDx12 = static_cast<FInstanceBufferDx12*>(DstBuffer.get());
+		FInstanceBufferDx12 * SrcBufferDx12 = static_cast<FInstanceBufferDx12*>(SrcBuffer.get());
+
+		// Copy vertex data
+		const uint32 InstanceStride = DstBuffer->GetStride();
+		TI_ASSERT(DstBuffer->GetStride() == SrcBuffer->GetStride());
+		TI_ASSERT(DstInstanceOffset + InstanceCount <= DstBuffer->GetInstancesCount());
+		CurrentWorkingCommandList->CopyBufferRegion(
+			DstBufferDx12->InstanceBuffer.Get(), 
+			DstInstanceOffset * InstanceStride, 
+			SrcBufferDx12->InstanceBuffer.Get(), 
+			SrcInstanceOffset * InstanceStride, 
+			InstanceCount * InstanceStride);
+
+		HoldResourceReference(DstBuffer);
+		HoldResourceReference(SrcBuffer);
+
+		return true;
+	}
+
 	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
 	{
 		FUniformBufferReadableDx12 * UniformBufferDx12 = static_cast<FUniformBufferReadableDx12*>(InUniformBuffer.get());
@@ -2141,7 +2190,7 @@ namespace tix
 			if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
 			{
 				FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
-				ArgumentDx12->ResourceTable->PutBufferInTable(ArgUB, i);
+				ArgumentDx12->ResourceTable->PutUniformBufferInTable(ArgUB, i);
 			}
 			else if (Arg->GetResourceType() == RRT_TEXTURE)
 			{
@@ -2358,7 +2407,7 @@ namespace tix
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource().Get(), &SRVDesc, Descriptor);
 	}
 
-	void FRHIDx12::PutBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
 		FUniformBufferDx12 * UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
 		
@@ -2398,6 +2447,24 @@ namespace tix
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 			D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
 		}
+	}
+
+	void FRHIDx12::PutInstanceBufferInHeap(FInstanceBufferPtr InInstanceBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		TI_TODO("Refactor this with PutUniformBufferInHeap().");
+		FInstanceBufferDx12 * IBDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
+
+		// Create shader resource view
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		SRVDesc.Buffer.NumElements = InInstanceBuffer->GetInstancesCount();
+		SRVDesc.Buffer.StructureByteStride = InInstanceBuffer->GetStride();
+		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateShaderResourceView(IBDx12->InstanceBuffer.Get(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)

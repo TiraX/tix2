@@ -32,6 +32,7 @@ FGPUDrivenRenderer::FGPUDrivenRenderer()
 FGPUDrivenRenderer::~FGPUDrivenRenderer()
 {
 	GPUDrivenRenderer = nullptr;
+	ti_delete SceneMetaInfo;
 }
 
 void FGPUDrivenRenderer::InitInRenderThread()
@@ -161,7 +162,10 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	TI_TODO("Cull Scene tile in render thread. Then only collect visible scene tile resources");
+
 	SceneMetaInfo->CollectSceneMetaInfos(Scene);
+	SceneMetaInfo->CollectInstanceBuffers(Scene);
 
 	if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
 	{
@@ -197,7 +201,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				TileCullCS->GetVisibilityResult(),
 				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
 				SceneMetaInfo->GetInstanceMetaUniform(),
-				nullptr,
+				SceneMetaInfo->GetMergedInstanceBuffer(),
 				FrustumUniform->UniformBuffer
 			);
 		}
@@ -215,13 +219,16 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		{
 			RHI->BeginComputeTask();
-			// Do GPU culling
+			// Do GPU tile frustum culling
 			TileCullCS->Run(RHI);
 
+			// Do GPU Instance frustum culling
+			InstanceCullCS->Run(RHI);
+
 			// Copy visible tile command buffers
-			static bool CopyVisibleBuffer = true;
-			if (CopyVisibleBuffer)
-				CopyVisibleCommandBuffer->Run(RHI);
+			//static bool CopyVisibleBuffer = true;
+			//if (CopyVisibleBuffer)
+			//	CopyVisibleCommandBuffer->Run(RHI);
 			RHI->EndComputeTask();
 		}
 

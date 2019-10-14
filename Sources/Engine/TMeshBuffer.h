@@ -17,17 +17,6 @@ namespace tix
 		static const int32 SemanticSize[ESSI_TOTAL];
 		static const int8* SemanticName[ESSI_TOTAL];
 		static const int32 SemanticIndex[ESSI_TOTAL];
-
-		enum E_USAGE
-		{
-			// By default, 
-			// vertex data is D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, 
-			// index data is D3D12_RESOURCE_STATE_INDEX_BUFFER
-			USAGE_DEFAULT,
-
-			// vertex and index data used as copy source
-			USAGE_COPY_SOURCE
-		};
 	public:
 		FMeshBufferPtr MeshBufferResource;
 
@@ -42,11 +31,6 @@ namespace tix
 			const void* InVertexData, int32 InVertexCount,
 			E_INDEX_TYPE InIndexType,
 			const void* InIndexData, int32 InIndexCount);
-
-		void SetUsage(E_USAGE InUsage)
-		{
-			Usage = InUsage;
-		}
 
 		uint32 GetVerticesCount() const
 		{
@@ -66,11 +50,6 @@ namespace tix
 		E_INDEX_TYPE GetIndexType() const
 		{
 			return IndexType;
-		}
-
-		E_USAGE GetUsage() const
-		{
-			return Usage;
 		}
 
 		void SetPrimitiveType(E_PRIMITIVE_TYPE type)
@@ -121,7 +100,6 @@ namespace tix
 
 	protected:
 		E_PRIMITIVE_TYPE PrimitiveType;
-		E_USAGE Usage;
 		aabbox3df BBox;
 
 		uint8* VsData;

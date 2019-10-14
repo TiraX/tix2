@@ -36,6 +36,7 @@ namespace tix
 		~FSceneMetaInfos();
 
 		void CollectSceneMetaInfos(FScene * Scene);
+		void CollectInstanceBuffers(FScene * Scene);
 		void ClearMetaFlags();
 
 		enum FSceneMetaFlag
@@ -60,6 +61,10 @@ namespace tix
 		{
 			return SceneInstancesMetaInfo->UniformBuffer;
 		}
+		FInstanceBufferPtr GetMergedInstanceBuffer()
+		{
+			return MergedInstanceBuffer;
+		}
 
 	private:
 		void Init();
@@ -79,6 +84,7 @@ namespace tix
 
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;
+		FInstanceBufferPtr MergedInstanceBuffer;
 
 		// Scene primitive meta info
 		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;

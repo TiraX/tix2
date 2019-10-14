@@ -44,11 +44,18 @@ namespace tix
 		FRHI::Get()->PutTextureInHeap(InTexture, HeapType, Start + Index);
 	}
 
-	void FRenderResourceTable::PutBufferInTable(FUniformBufferPtr InBuffer, uint32 Index)
+	void FRenderResourceTable::PutUniformBufferInTable(FUniformBufferPtr InBuffer, uint32 Index)
 	{
 		TI_ASSERT(HeapType == EHT_SHADER_RESOURCE);
 		TI_ASSERT(Index < Size);
-		FRHI::Get()->PutBufferInHeap(InBuffer, HeapType, Start + Index);
+		FRHI::Get()->PutUniformBufferInHeap(InBuffer, HeapType, Start + Index);
+	}
+
+	void FRenderResourceTable::PutInstanceBufferInTable(FInstanceBufferPtr InBuffer, uint32 Index)
+	{
+		TI_ASSERT(HeapType == EHT_SHADER_RESOURCE);
+		TI_ASSERT(Index < Size);
+		FRHI::Get()->PutInstanceBufferInHeap(InBuffer, HeapType, Start + Index);
 	}
 
 	void FRenderResourceTable::PutRTColorInTable(FTexturePtr InTexture, uint32 Index)

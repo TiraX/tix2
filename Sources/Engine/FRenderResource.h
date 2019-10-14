@@ -34,8 +34,21 @@ namespace tix
 	class FRenderResource : public IReferenceCounted
 	{
 	public:
+		enum E_USAGE
+		{
+			// By default, 
+			// vertex data is D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, 
+			// index data is D3D12_RESOURCE_STATE_INDEX_BUFFER
+			// instance data is D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+			USAGE_DEFAULT,
+
+			// vertex and index data used as copy source
+			USAGE_COPY_SOURCE
+		};
+
 		FRenderResource(E_RENDER_RESOURCE_TYPE InResourceType)
 			: ResourceType(InResourceType)
+			, Usage(USAGE_DEFAULT)
 		{}
 		virtual ~FRenderResource() 
 		{}
@@ -43,6 +56,16 @@ namespace tix
 		E_RENDER_RESOURCE_TYPE GetResourceType() const
 		{
 			return ResourceType;
+		}
+
+		E_USAGE GetUsage() const
+		{
+			return Usage;
+		}
+
+		void SetUsage(E_USAGE InUsage)
+		{
+			Usage = InUsage;
 		}
 
 #if defined (TIX_DEBUG)
@@ -58,6 +81,7 @@ namespace tix
 
 	protected:
 		E_RENDER_RESOURCE_TYPE ResourceType;
+		E_USAGE Usage;
 
 #if defined (TIX_DEBUG)
 		TString ResourceName;

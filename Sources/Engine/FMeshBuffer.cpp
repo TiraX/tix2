@@ -10,7 +10,6 @@ namespace tix
 	FMeshBuffer::FMeshBuffer()
 		: FRenderResource(RRT_VERTEX_BUFFER)
 		, PrimitiveType(EPT_TRIANGLELIST)
-		, Usage(TMeshBuffer::USAGE_DEFAULT)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
 		, PsDataCount(0)
@@ -27,7 +26,6 @@ namespace tix
 		uint32 InIndexCount)
 		: FRenderResource(RRT_VERTEX_BUFFER)
 		, PrimitiveType(InPrimType)
-		, Usage(TMeshBuffer::USAGE_DEFAULT)
 		, VsDataCount(InVertexCount)
 		, IndexType(InIndexType)
 		, PsDataCount(InIndexCount)
@@ -44,7 +42,6 @@ namespace tix
 	void FMeshBuffer::SetFromTMeshBuffer(TMeshBufferPtr InMeshBuffer)
 	{
 		PrimitiveType = InMeshBuffer->GetPrimitiveType();
-		Usage = InMeshBuffer->GetUsage();
 		VsDataCount = InMeshBuffer->GetVerticesCount();
 		IndexType = InMeshBuffer->GetIndexType();
 		PsDataCount = InMeshBuffer->GetIndicesCount();
@@ -57,6 +54,13 @@ namespace tix
 		: FRenderResource(RRT_INSTANCE_BUFFER)
 		, InstanceCount(0)
 		, Stride(0)
+	{
+	}
+
+	FInstanceBuffer::FInstanceBuffer(uint32 TotalInstancesCount, uint32 InstanceStride)
+		: FRenderResource(RRT_INSTANCE_BUFFER)
+		, InstanceCount(TotalInstancesCount)
+		, Stride(InstanceStride)
 	{
 	}
 

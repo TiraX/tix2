@@ -40,6 +40,7 @@ namespace tix
 	{
 	public:
 		FInstanceBufferDx12();
+		FInstanceBufferDx12(uint32 TotalInstancesCount, uint32 InstanceStride);
 		virtual ~FInstanceBufferDx12();
 	protected:
 

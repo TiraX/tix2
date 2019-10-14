@@ -67,7 +67,6 @@ namespace tix
 
 	protected:
 		E_PRIMITIVE_TYPE	PrimitiveType;
-		uint32				Usage;
 
 		uint32				VsDataCount;
 
@@ -85,6 +84,7 @@ namespace tix
 	{
 	public:
 		FInstanceBuffer();
+		FInstanceBuffer(uint32 TotalInstancesCount, uint32 InstanceStride);
 		virtual ~FInstanceBuffer();
 
 		void TI_API SetFromTInstanceBuffer(TInstanceBufferPtr InstanceData);

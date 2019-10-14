@@ -44,13 +44,13 @@ void FCopyVisibleTileCommandBuffer::UpdateComputeArguments(
 	// Set command buffer resources
 	TI_TODO("Does this resource table, need to re-create?");
 	// Set tile visible info
-	ResourceTable->PutBufferInTable(TileVisibleInfo, 0);
+	ResourceTable->PutUniformBufferInTable(TileVisibleInfo, 0);
 	// Set primitive meta info
-	ResourceTable->PutBufferInTable(PrimitiveMetaInfo, 1);
+	ResourceTable->PutUniformBufferInTable(PrimitiveMetaInfo, 1);
 	// Set commands buffer
-	ResourceTable->PutBufferInTable(GPUCommandBuffer->GetCommandBuffer(), 2);
+	ResourceTable->PutUniformBufferInTable(GPUCommandBuffer->GetCommandBuffer(), 2);
 	// Set processed buffer UAV
-	ResourceTable->PutBufferInTable(InProcessedGPUCommandBuffer->GetCommandBuffer(), 3);
+	ResourceTable->PutUniformBufferInTable(InProcessedGPUCommandBuffer->GetCommandBuffer(), 3);
 	ProcessedCommandBuffer = InProcessedGPUCommandBuffer;
 }
 

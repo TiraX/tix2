@@ -48,6 +48,11 @@ namespace tix
 	{
 	}
 
+	FInstanceBufferDx12::FInstanceBufferDx12(uint32 TotalInstancesCount, uint32 InstanceStride)
+		: FInstanceBuffer(TotalInstancesCount, InstanceStride)
+	{
+	}
+
 	FInstanceBufferDx12::~FInstanceBufferDx12()
 	{
 		TI_ASSERT(IsRenderThread());

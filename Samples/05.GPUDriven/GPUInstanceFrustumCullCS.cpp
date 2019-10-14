@@ -36,12 +36,11 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 {
 	TI_TODO("Does this resource table, need to re-create?");
 	//ResourceTable->PutBufferInTable(SceneTileMetaInfoUniformBuffer, 0);
-	ResourceTable->PutBufferInTable(InTileVisbleInfo, 0);
-	ResourceTable->PutBufferInTable(PrimitiveBBoxes, 1);
-	ResourceTable->PutBufferInTable(InstanceMetaInfo, 2);
-	TI_ASSERT(0);	// Put scene instance data in buffer.
-	//ResourceTable->PutBufferInTable(SceneInstanceData, 3);
-	ResourceTable->PutBufferInTable(VisibilityResult, 4);
+	ResourceTable->PutUniformBufferInTable(InTileVisbleInfo, 0);
+	ResourceTable->PutUniformBufferInTable(PrimitiveBBoxes, 1);
+	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 2);
+	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 3);
+	ResourceTable->PutUniformBufferInTable(VisibilityResult, 4);
 
 	FrustumUniform = InFrustumUniform;
 }

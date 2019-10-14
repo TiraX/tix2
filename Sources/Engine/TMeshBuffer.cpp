@@ -12,7 +12,6 @@ namespace tix
 	TMeshBuffer::TMeshBuffer()
 		: TResource(ERES_MESH)
 		, PrimitiveType(EPT_TRIANGLELIST)
-		, Usage(USAGE_DEFAULT)
 		, VsData(nullptr)
 		, VsDataCount(0)
 		, IndexType(EIT_16BIT)
@@ -178,6 +177,9 @@ namespace tix
 	{
 		TI_ASSERT(InstanceResource == nullptr);
 		InstanceResource = FRHI::Get()->CreateInstanceBuffer();
+		// Set Instance Resource Usage to USAGE_COPY_SOURCE, 
+		// as GPU Driven pipeline need to copy these instance buffer into a merged instance buffer
+		InstanceResource->SetUsage(FRenderResource::USAGE_COPY_SOURCE);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TInstanceBufferUpdateFInstanceBuffer,
 			FInstanceBufferPtr, InstanceBuffer, InstanceResource,

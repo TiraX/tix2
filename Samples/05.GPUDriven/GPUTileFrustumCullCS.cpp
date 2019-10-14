@@ -30,8 +30,8 @@ void FGPUTileFrustumCullCS::PrepareResources(FRHI * RHI)
 void FGPUTileFrustumCullCS::UpdateComputeArguments(FRHI * RHI, FUniformBufferPtr SceneTileMetaInfoUniformBuffer, FUniformBufferPtr InFrustumUniform)
 {
 	TI_TODO("Does this resource table, need to re-create?");
-	ResourceTable->PutBufferInTable(SceneTileMetaInfoUniformBuffer, 0);
-	ResourceTable->PutBufferInTable(VisibilityResult, 1);
+	ResourceTable->PutUniformBufferInTable(SceneTileMetaInfoUniformBuffer, 0);
+	ResourceTable->PutUniformBufferInTable(VisibilityResult, 1);
 
 	FrustumUniform = InFrustumUniform;
 }

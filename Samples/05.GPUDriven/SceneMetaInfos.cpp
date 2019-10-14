@@ -184,6 +184,38 @@ namespace tix
 		UpdateGPUResources();
 	}
 
+	void FSceneMetaInfos::CollectInstanceBuffers(FScene * Scene)
+	{
+		if (Scene->HasSceneFlag(FScene::SceneTileDirty))
+		{
+			FRHI * RHI = FRHI::Get();
+
+			// Merge all instance buffers from scene tile node into a BIG one.
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+			const uint32 TilesCount = (uint32)SceneTileResources.size();
+
+			// SceneInstancesAdded calculated in CollectSceneMetaInfos().
+			const uint32 TotalInstances = SceneInstancesAdded;
+			MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
+#if defined (TIX_DEBUG)
+			MergedInstanceBuffer->SetResourceName("SceneMergedIB");
+#endif
+			RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
+
+			uint32 InstanceDstOffset = 0;
+			for (const auto& T : SceneTileResources)
+			{
+				const vector2di& TilePos = T.first;
+				FSceneTileResourcePtr TileRes = T.second;
+				FInstanceBufferPtr TileInstances = TileRes->GetInstanceBuffer();
+
+				RHI->CopyBufferRegion(MergedInstanceBuffer, InstanceDstOffset, TileInstances, 0, TileInstances->GetInstancesCount());
+				InstanceDstOffset += TileInstances->GetInstancesCount();
+			}
+			TI_ASSERT(InstanceDstOffset == TotalInstances);
+		}
+	}
+
 	void FSceneMetaInfos::UpdateGPUResources()
 	{
 		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
