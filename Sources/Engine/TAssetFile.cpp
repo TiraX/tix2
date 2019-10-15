@@ -573,6 +573,8 @@ namespace tix
 			SceneTile->Position.X = Header->Position.X;
 			SceneTile->Position.Y = Header->Position.Y;
 			SceneTile->BBox = Header->BBox;
+			TI_ASSERT(0);
+			// Add mesh sections info to scene tile 
 
 			// Load assets names
 			const int32* AssetsTextures = (const int32*)(SceneTileDataStart);

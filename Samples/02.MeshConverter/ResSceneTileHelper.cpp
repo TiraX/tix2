@@ -10,6 +10,9 @@
 namespace tix
 {
 	TResSceneTileHelper::TResSceneTileHelper()
+		: MeshesTotal(0)
+		, MeshSectionsTotal(0)
+		, InstancesTotal(0)
 	{
 	}
 
@@ -24,8 +27,13 @@ namespace tix
 		// Instances Name
 		TString TileName = Doc["name"].GetString();
 		Helper.LevelName = Doc["level"].GetString();
-		const int32 MeshCount = Doc["mesh_total"].GetInt();
+		const int32 MeshCount = Doc["meshes_total"].GetInt();
 		const int32 InsTotalCount = Doc["instances_total"].GetInt();
+		const int32 MeshSectionsCount = Doc["mesh_sections_total"].GetInt();
+
+		Helper.MeshesTotal = MeshCount;
+		Helper.MeshSectionsTotal = MeshSectionsCount;
+		Helper.InstancesTotal = InsTotalCount;
 
 		Helper.Position = TJSONUtil::JsonArrayToVector2di(Doc["position"]);
 		Helper.BBox = TJSONUtil::JsonArrayToAABBox(Doc["bbox"]);
@@ -135,6 +143,7 @@ namespace tix
 			SceneTileHeader.NumMaterials = (int32)AssetMaterials.size();
 			SceneTileHeader.NumMaterialInstances = (int32)AssetMaterialInstances.size();
 			SceneTileHeader.NumMeshes = (int32)AssetMeshes.size();
+			SceneTileHeader.NumMeshSections = MeshSectionsTotal;
 			SceneTileHeader.NumInstances = (int32)Instances.size();
 
 			for (const auto& A : AssetTextures)

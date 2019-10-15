@@ -26,6 +26,11 @@ namespace tix
 		vector2di Position;
 		aabbox3df BBox;
 		
+		uint32 MeshesTotal;
+		uint32 MeshSectionsTotal;
+		uint32 InstancesTotal;
+
+		
 		TVector<TString> AssetTextures;
 		TVector<TString> AssetMaterialInstances;
 		TVector<TString> AssetMaterials;

@@ -102,7 +102,7 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 	const uint32 PrimsCount = (uint32)Primitives.size();
-	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
+	const uint32 PrimsAdded = SceneMetaInfo->GetSceneStaticMeshAdded();
 	if (PrimsAdded == 0)
 	{
 		return;
@@ -115,6 +115,7 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	// Add draw calls
+	uint32 CommandIndex = 0;
 	for (uint32 i = 0 ; i < PrimsCount ; ++ i)
 	{
 		FPrimitivePtr Primitive = Primitives[i];
@@ -127,14 +128,15 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 		FMeshBufferPtr MeshBuffer = Primitive->GetMeshBuffer();
 		FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
 		TI_ASSERT(MeshBuffer != nullptr && InstanceBuffer != nullptr);
-		GPUCommandBuffer->EncodeSetMeshBuffer(i, GPU_COMMAND_SET_MESH_BUFFER, MeshBuffer, InstanceBuffer);
-		GPUCommandBuffer->EncodeSetDrawIndexed(i,
+		GPUCommandBuffer->EncodeSetMeshBuffer(CommandIndex, GPU_COMMAND_SET_MESH_BUFFER, MeshBuffer, InstanceBuffer);
+		GPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
 			GPU_COMMAND_DRAW_INDEXED,
 			MeshBuffer->GetIndicesCount(),
 			Primitive->GetInstanceCount(),
 			0, 
 			0, 
 			Primitive->GetInstanceOffset());
+		++CommandIndex;
 	}
 	TI_ASSERT(GPUCommandBuffer->GetEncodedCommandsCount() <= PrimsAdded);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);

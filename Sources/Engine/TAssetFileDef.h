@@ -272,6 +272,7 @@ namespace tix
 		int32 NumMaterials;
 		int32 NumMaterialInstances;
 		int32 NumMeshes;
+		int32 NumMeshSections;
 		int32 NumInstances;
 	};
 
