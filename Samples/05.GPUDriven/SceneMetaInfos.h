@@ -61,6 +61,18 @@ namespace tix
 		{
 			return MergedInstanceBuffer;
 		}
+		uint32 GetScenePrimitivesAdded() const
+		{
+			return ScenePrimitivesAdded;
+		}
+		uint32 GetSceneInstancesAdded() const
+		{
+			return SceneInstancesAdded;
+		}
+		bool IsTileVisible(const vector2di& TilePos)
+		{
+			return SceneTileVisibleInfo[TilePos] != ECR_OUTSIDE;
+		}
 
 	private:
 		void UpdateGPUResources();
@@ -72,8 +84,12 @@ namespace tix
 		// Scene tile meta info
 		//FSceneTileMetaInfoPtr SceneTileMetaInfo;
 		THMap<vector2di, uint32> SceneTileVisibleInfo;
+		
+		// Primitives count that added to scene from visible scene tiles
 		uint32 ScenePrimitivesAdded;
+		// Instances Count that added to scene from visible scene tiles
 		uint32 SceneInstancesAdded;
+
 		TVector<vector2di> SortedTilePositions;
 
 		// Scene tiles count that intersects with frustum

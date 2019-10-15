@@ -102,11 +102,12 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 	const uint32 PrimsCount = (uint32)Primitives.size();
-	if (PrimsCount == 0)
+	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
+	if (PrimsAdded == 0)
 	{
 		return;
 	}
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 #if defined (TIX_DEBUG)
 	GPUCommandBuffer->SetResourceName("DrawListCB");
 #endif
@@ -117,6 +118,12 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	for (uint32 i = 0 ; i < PrimsCount ; ++ i)
 	{
 		FPrimitivePtr Primitive = Primitives[i];
+		const vector2di& TilePos = Primitive->GetSceneTilePos();
+		if (!SceneMetaInfo->IsTileVisible(TilePos))
+		{
+			continue;
+		}
+
 		FMeshBufferPtr MeshBuffer = Primitive->GetMeshBuffer();
 		FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
 		TI_ASSERT(MeshBuffer != nullptr && InstanceBuffer != nullptr);
@@ -129,6 +136,7 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 			0, 
 			Primitive->GetInstanceOffset());
 	}
+	TI_ASSERT(GPUCommandBuffer->GetEncodedCommandsCount() <= PrimsAdded);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 
 	// Create empty GPU command buffer, gather visible draw commands
