@@ -14,7 +14,6 @@ public:
 	void PrepareResources(FRHI * RHI);
 	void UpdateComputeArguments(
 		FRHI * RHI,
-		FUniformBufferPtr InTileVisbleInfo,
 		FUniformBufferPtr PrimitiveBBoxes,
 		FUniformBufferPtr InstanceMetaInfo,
 		FInstanceBufferPtr SceneInstanceData,

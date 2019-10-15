@@ -199,7 +199,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			InstanceCullCS->UpdateComputeArguments(
 				RHI,
-				nullptr,
 				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
 				SceneMetaInfo->GetInstanceMetaUniform(),
 				SceneMetaInfo->GetMergedInstanceBuffer(),

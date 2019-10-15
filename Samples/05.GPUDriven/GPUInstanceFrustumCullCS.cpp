@@ -18,28 +18,29 @@ FGPUInstanceFrustumCullCS::~FGPUInstanceFrustumCullCS()
 
 void FGPUInstanceFrustumCullCS::PrepareResources(FRHI * RHI)
 {
-	// Create visibility buffer to save tile visibility result
-	VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), MAX_INSTANCES_IN_SCENE, UB_FLAG_COMPUTE_WRITABLE);
-	RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
-
 	// Resource table for Compute cull shader
-	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(4, EHT_SHADER_RESOURCE);
 }
 
 void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	FRHI * RHI, 
-	FUniformBufferPtr InTileVisbleInfo,
 	FUniformBufferPtr PrimitiveBBoxes,
 	FUniformBufferPtr InstanceMetaInfo,
 	FInstanceBufferPtr SceneInstanceData,
 	FUniformBufferPtr InFrustumUniform)
 {
+	if (VisibilityResult == nullptr || VisibilityResult->GetElements() != InstanceMetaInfo->GetElements())
+	{
+		// Create visibility buffer to save tile visibility result
+		VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
+		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
+	}
+
 	TI_TODO("Does this resource table, need to re-create?");
-	ResourceTable->PutUniformBufferInTable(InTileVisbleInfo, 0);
-	ResourceTable->PutUniformBufferInTable(PrimitiveBBoxes, 1);
-	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 2);
-	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 3);
-	ResourceTable->PutUniformBufferInTable(VisibilityResult, 4);
+	ResourceTable->PutUniformBufferInTable(PrimitiveBBoxes, 0);
+	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 1);
+	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 2);
+	ResourceTable->PutUniformBufferInTable(VisibilityResult, 3);
 
 	FrustumUniform = InFrustumUniform;
 }
@@ -47,7 +48,7 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 void FGPUInstanceFrustumCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = MAX_INSTANCES_IN_SCENE / BlockSize;
+	const uint32 DispatchSize = VisibilityResult->GetElements() / BlockSize;
 
 	if (FrustumUniform != nullptr)
 	{

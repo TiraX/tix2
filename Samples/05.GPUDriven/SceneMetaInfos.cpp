@@ -12,27 +12,16 @@ namespace tix
 		: SceneMetaFlags(0)
 		, ScenePrimitivesAdded(0)
 		, SceneInstancesAdded(0)
+		, SceneTileIntersected(0)
+		, SceneTileInner(0)
 	{
-		Init();
+		ActiveSceneTileInfoMap.reserve(128);
+		SceneTileVisibleInfo.reserve(128);
+		SortedTilePositions.reserve(128);
 	}
 
 	FSceneMetaInfos::~FSceneMetaInfos()
 	{
-	}
-
-	void FSceneMetaInfos::Init()
-	{
-		ActiveSceneTileInfoMap.reserve(128);
-		SceneTileVisibleInfo.reserve(128);
-
-		// Create a mesh buffer
-		FRHI * RHI = FRHI::Get();
-
-		ScenePrimitiveBBoxes = ti_new FScenePrimitiveBBoxes;
-		ScenePrimitiveBBoxes->InitToZero();
-
-		SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo;
-		SceneInstancesMetaInfo->InitToZero();
 	}
 
 	void FSceneMetaInfos::DoSceneTileCulling(FScene * Scene, const SViewFrustum& ViewFrustum)
@@ -75,39 +64,46 @@ namespace tix
 	{
 		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
 		{
-			// Collect visible scene tile instances, collect ECR_INTERSECT tile in front.
-			TI_ASSERT(0);
-			// Update scene tile meta infos	
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
-			const uint32 TilesCount = (uint32)SceneTileResources.size();
+			// Collect visible scene tile instances, collect ECR_INTERSECT tile in front.
+			// Sort by visible info
+			SortedTilePositions.clear();
+			SceneTileIntersected = 0;
+			SceneTileInner = 0;
+			for (const auto& T : SceneTileVisibleInfo)
+			{
+				const vector2di& TilePos = T.first;
+				if (SceneTileVisibleInfo[TilePos] == ECR_INTERSECT)
+				{
+					SortedTilePositions.push_back(TilePos);
+					++SceneTileIntersected;
+				}
+			}
+			for (const auto& T : SceneTileVisibleInfo)
+			{
+				const vector2di& TilePos = T.first;
+				if (SceneTileVisibleInfo[TilePos] == ECR_INSIDE)
+				{
+					SortedTilePositions.push_back(TilePos);
+					++SceneTileInner;
+				}
+			}
 
-			
-			uint32 TileIndex = 0;
+			// Collect instances info, and remember meta infos
 			ScenePrimitivesAdded = 0;
 			SceneInstancesAdded = 0;
 			ActiveSceneTileInfoMap.clear();
-			for (const auto& T : SceneTileResources)
+			for (const auto& TilePos : SortedTilePositions)
 			{
-				const vector2di& TilePos = T.first;
-				FSceneTileResourcePtr TileRes = T.second;
-				const aabbox3df& TileBBox = TileRes->GetTileBBox();
-
-				// Collect tile meta info data
-				//SceneTileMetaInfo->UniformBufferData[TileIndex].MinEdge = FFloat4(TileBBox.MinEdge.X, TileBBox.MinEdge.Y, TileBBox.MinEdge.Z, 1.f);
-				//SceneTileMetaInfo->UniformBufferData[TileIndex].MaxEdge = FFloat4(TileBBox.MaxEdge.X, TileBBox.MaxEdge.Y, TileBBox.MaxEdge.Z, 1.f);
-
-				// Mark tile as dirty
-				SceneMetaFlags |= MetaFlag_SceneTileMetaDirty;
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
 				// Get the available Primitive range of this tile
 				const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;
 				ScenePrimitivesAdded += (uint32)TileRes->GetInstanceCountAndOffset().size();
-				TI_ASSERT(ScenePrimitivesAdded <= MAX_STATIC_MESH_IN_SCENE);
-
+				
 				// Get the available Instances range of this tile
 				const uint32 InstancesStartIndex = SceneInstancesAdded;
 				SceneInstancesAdded += TileRes->GetInstanceBuffer()->GetInstancesCount();
-				TI_ASSERT(SceneInstancesAdded <= MAX_INSTANCES_IN_SCENE);
 
 				// Remember the offset of this tile
 				TI_ASSERT(ActiveSceneTileInfoMap.find(TilePos) == ActiveSceneTileInfoMap.end());
@@ -117,6 +113,20 @@ namespace tix
 					TileRes->GetInstanceBuffer()->GetInstancesCount(),
 					InstancesStartIndex);
 				ActiveSceneTileInfoMap[TilePos] = PrimInfo;
+			}
+
+			// Create primitive bbox buffer
+			ScenePrimitiveBBoxes = ti_new FScenePrimitiveBBoxes(ScenePrimitivesAdded);
+
+			// Collect Instances
+			SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo(SceneInstancesAdded);
+			for (const auto& TilePos : SortedTilePositions)
+			{
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+
+				const FUInt4& TilePrimInfo = ActiveSceneTileInfoMap[TilePos];
+				const uint32 PrimitiveStartIndex = TilePrimInfo.Y;
+				const uint32 InstancesStartIndex = TilePrimInfo.W;
 
 				// Collect instance meta info data.
 				const TVector<vector2di>& InstancesCountAndOffset = TileRes->GetInstanceCountAndOffset();
@@ -129,20 +139,17 @@ namespace tix
 						uint32 Index = InstanceIndex + c;
 						// Primitive index this instance link to, in order to get primitive bbox
 						SceneInstancesMetaInfo->UniformBufferData[Index].Info.X = PrimitiveIndex;
-						SceneInstancesMetaInfo->UniformBufferData[Index].Info.Y = TileIndex;
 						// Mark as loading, change this when primitive loaded
 						SceneInstancesMetaInfo->UniformBufferData[Index].Info.W = 0;
 					}
 					InstanceIndex += InstancesCountAndOffset[i].X;
-					TI_ASSERT(InstanceIndex < MAX_INSTANCES_IN_SCENE);
+					TI_ASSERT(InstanceIndex <= SceneInstancesAdded);
+					SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
 				}
-				// Mark instance as dirty
-				SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
-
-				++TileIndex;
 			}
 		}
-		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty) ||
+			HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
 		{
 			// Update scene primitive meta infos by scene order
 			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
@@ -161,6 +168,10 @@ namespace tix
 			for (auto P : Primitives)
 			{
 				const vector2di& TilePos = P->GetSceneTilePos();
+				if (SceneTileVisibleInfo[TilePos] == ECR_OUTSIDE)
+				{
+					continue;
+				}
 				uint32 IndexInTile = P->GetIndexInSceneTile();
 				const aabbox3df& BBox = P->GetBBox();
 
@@ -188,6 +199,8 @@ namespace tix
 					PrimtiveBBoxes[Index].BBox.addInternalBox(BBox);
 				}
 			}
+
+			TI_ASSERT(PrimtiveBBoxes.size() <= ScenePrimitivesAdded);
 
 			for (const auto& PI : PrimtiveBBoxes)
 			{
@@ -221,7 +234,7 @@ namespace tix
 
 	void FSceneMetaInfos::CollectInstanceBuffers(FScene * Scene)
 	{
-		if (Scene->HasSceneFlag(FScene::SceneTileDirty))
+		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
 		{
 			FRHI * RHI = FRHI::Get();
 
@@ -238,10 +251,9 @@ namespace tix
 			RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
 
 			uint32 InstanceDstOffset = 0;
-			for (const auto& T : SceneTileResources)
+			for (const auto& TilePos : SortedTilePositions)
 			{
-				const vector2di& TilePos = T.first;
-				FSceneTileResourcePtr TileRes = T.second;
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 				FInstanceBufferPtr TileInstances = TileRes->GetInstanceBuffer();
 
 				RHI->CopyBufferRegion(MergedInstanceBuffer, InstanceDstOffset, TileInstances, 0, TileInstances->GetInstancesCount());

@@ -11,7 +11,7 @@
 
 #define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0)),"
+    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0)),"
 
 
 struct FVisibleInfo
@@ -47,10 +47,9 @@ cbuffer FFrustum : register(b0)
 	float4 Planes[6];
 };
 
-StructuredBuffer<FVisibleInfo> TileVisibleInfo : register(t0);
-StructuredBuffer<FPrimitiveBBox> PrimitiveBBoxes : register(t1);
-StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t2);
-StructuredBuffer<FInstanceTransform> InstanceData : register(t3);
+StructuredBuffer<FPrimitiveBBox> PrimitiveBBoxes : register(t0);
+StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
+StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 
 RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
 
@@ -93,35 +92,26 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint TileIndex = InstanceMetaInfo[InstanceIndex].Info.y;
-	uint TileVisible = TileVisibleInfo[TileIndex].Visible;
-	if (TileVisible == 2)
+
+	// This tile intersect view frustum, need to cull instances one by one
+	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+
+	// Transform primitive bbox
+	float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
+	float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+	TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
+
+	if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 	{
-		// This tile intersect view frustum, need to cull instances one by one
-		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
-
-		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
-		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
-
-		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
-		{
-			VisibleInfo[InstanceIndex].Visible = 1;
-		}
-		else
-		{
-			VisibleInfo[InstanceIndex].Visible = 0;
-		}
+		VisibleInfo[InstanceIndex].Visible = 1;
 	}
 	else
 	{
-		// This tile is totally in or out of view frustum, keep the same visible with scene tile
-		VisibleInfo[InstanceIndex].Visible = TileVisible;
+		VisibleInfo[InstanceIndex].Visible = 0;
 	}
 }

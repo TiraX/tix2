@@ -15,17 +15,16 @@ namespace tix
 	//END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
 
 	// Primitive BBox info
-	#define MAX_STATIC_MESH_IN_SCENE (2048)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FScenePrimitiveBBoxes, MAX_STATIC_MESH_IN_SCENE)
+	//#define MAX_STATIC_MESH_IN_SCENE (2048)
+	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FScenePrimitiveBBoxes)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
 
 	// Info.x = primitive index this instance link to
-	// Info.y = scene tile index this instance belongs to
 	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
-	#define MAX_INSTANCES_IN_SCENE (40 * 1024)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY(FSceneInstanceMetaInfo, MAX_INSTANCES_IN_SCENE)
+	//#define MAX_INSTANCES_IN_SCENE (40 * 1024)
+	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneInstanceMetaInfo)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FSceneInstanceMetaInfo)
 
@@ -64,7 +63,6 @@ namespace tix
 		}
 
 	private:
-		void Init();
 		void UpdateGPUResources();
 
 
@@ -76,6 +74,12 @@ namespace tix
 		THMap<vector2di, uint32> SceneTileVisibleInfo;
 		uint32 ScenePrimitivesAdded;
 		uint32 SceneInstancesAdded;
+		TVector<vector2di> SortedTilePositions;
+
+		// Scene tiles count that intersects with frustum
+		uint32 SceneTileIntersected;
+		// Scene tiles count that totally in frustum
+		uint32 SceneTileInner;
 		// Scene tile primitive count infos map.
 		// Key is tile position, value is {PritmivesCount, PrimitivesOffset in ScenePrimitiveBBox, InstancesCount, InstancesOffset in SceneInstancesMetaInfo};
 		THMap<vector2di, FUInt4> ActiveSceneTileInfoMap;
