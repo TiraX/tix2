@@ -18,11 +18,20 @@ namespace tix
 		virtual ~FGPUCommandBufferDx12();
 
 		virtual uint32 GetEncodedCommandsCount() const override;
-		virtual void EncodeSetMeshBuffer(
+		virtual void EncodeSetVertexBuffer(
 			uint32 CommandIndex,
 			uint32 ArgumentIndex,
-			FMeshBufferPtr MeshBuffer, 
+			FMeshBufferPtr MeshBuffer
+		) override;
+		virtual void EncodeSetInstanceBuffer(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
 			FInstanceBufferPtr InstanceBuffer
+		) override;
+		virtual void EncodeSetIndexBuffer(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
+			FMeshBufferPtr MeshBuffer
 		) override;
 		virtual void EncodeSetDrawIndexed(
 			uint32 CommandIndex,

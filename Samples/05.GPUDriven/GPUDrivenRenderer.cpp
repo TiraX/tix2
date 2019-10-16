@@ -71,7 +71,9 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
 	CommandStructure.reserve(2);
-	CommandStructure.push_back(GPU_COMMAND_SET_MESH_BUFFER);
+	CommandStructure.push_back(GPU_COMMAND_SET_VERTEX_BUFFER);
+	CommandStructure.push_back(GPU_COMMAND_SET_INSTANCE_BUFFER);
+	CommandStructure.push_back(GPU_COMMAND_SET_INDEX_BUFFER);
 	CommandStructure.push_back(GPU_COMMAND_DRAW_INDEXED);
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
@@ -128,7 +130,9 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 		FMeshBufferPtr MeshBuffer = Primitive->GetMeshBuffer();
 		FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
 		TI_ASSERT(MeshBuffer != nullptr && InstanceBuffer != nullptr);
-		GPUCommandBuffer->EncodeSetMeshBuffer(CommandIndex, GPU_COMMAND_SET_MESH_BUFFER, MeshBuffer, InstanceBuffer);
+		GPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, GPU_COMMAND_SET_VERTEX_BUFFER, MeshBuffer);
+		GPUCommandBuffer->EncodeSetInstanceBuffer(CommandIndex, GPU_COMMAND_SET_INSTANCE_BUFFER, InstanceBuffer);
+		GPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, GPU_COMMAND_SET_INDEX_BUFFER, MeshBuffer);
 		GPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
 			GPU_COMMAND_DRAW_INDEXED,
 			MeshBuffer->GetIndicesCount(),
@@ -171,6 +175,9 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 {
 	if (InGPUCommandBuffer != nullptr)
 	{
+		// Set merged instance buffer
+		//TI_ASSERT(0);
+		//RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->ExecuteGPUCommands(InGPUCommandBuffer);
 	}
 }
@@ -247,8 +254,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			// Render Base Pass
 			RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 
-			bool Indirect = false;
-			bool DrawCulled = !false;
+			bool Indirect = !false;
+			bool DrawCulled = false;
 			if (!Indirect)
 			{
 				RenderDrawList(RHI, Scene, LIST_OPAQUE);

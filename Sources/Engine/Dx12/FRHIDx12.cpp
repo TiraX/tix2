@@ -2213,56 +2213,42 @@ namespace tix
 		// Find arguments in command signature
 		const TVector<E_GPU_COMMAND_TYPE>& CommandStructure = GPUCommandSignature->GetCommandStructure();
 
-		uint32 ArgsCount = 0;
-		for (auto Element : CommandStructure)
-		{
-			if (Element == GPU_COMMAND_SET_MESH_BUFFER)
-			{
-				// Set mesh buffer command has 3 args, with set vertex buffer, instance buffer and index buffer
-				ArgsCount += 3;
-			}
-			else
-			{
-				++ArgsCount;
-			}
-		}
+		const uint32 ArgsCount = (uint32)CommandStructure.size();
+
 		// Fill D3D12 INDIRECT ARGUMENT DESC
 		D3D12_INDIRECT_ARGUMENT_DESC * ArgumentDescs = ti_new D3D12_INDIRECT_ARGUMENT_DESC[ArgsCount];
-		uint32 ArgIndex = 0;
 		uint32 ArgBytesStride = 0;
 		GPUCommandSignatureDx12->ArgumentStrideOffset.resize(CommandStructure.size());
 		for (uint32 i = 0 ; i < (uint32)CommandStructure.size() ; ++ i)
 		{
 			E_GPU_COMMAND_TYPE Command = CommandStructure[i];
-			if (Command == GPU_COMMAND_SET_MESH_BUFFER)
+			if (Command == GPU_COMMAND_SET_VERTEX_BUFFER)
 			{
 				// Vertex Buffer
-				ArgumentDescs[ArgIndex].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
-				ArgumentDescs[ArgIndex].VertexBuffer.Slot = 0;	// Vertex Buffer always has Slot 0
-				++ArgIndex;
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+				ArgumentDescs[i].VertexBuffer.Slot = 0;	// Vertex Buffer always has Slot 0
+			}
+			else if (Command == GPU_COMMAND_SET_INSTANCE_BUFFER)
+			{
 				// Instance Buffer
-				ArgumentDescs[ArgIndex].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
-				ArgumentDescs[ArgIndex].VertexBuffer.Slot = 1;	// Instance Buffer always has Slot 1
-				++ArgIndex;
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+				ArgumentDescs[i].VertexBuffer.Slot = 1;	// Instance Buffer always has Slot 1
+			}
+			else if (Command == GPU_COMMAND_SET_INDEX_BUFFER)
+			{
 				// Index Buffer
-				ArgumentDescs[ArgIndex].Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
-				++ArgIndex;
-
-				GPUCommandSignatureDx12->ArgumentStrideOffset[i] = ArgBytesStride;
-				ArgBytesStride += FGPUCommandSignatureDx12::GPU_COMMAND_STRIDE[i];
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
 			}
 			else if (Command == GPU_COMMAND_DRAW_INDEXED)
 			{
-				ArgumentDescs[ArgIndex].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
-				++ArgIndex;
-
-				GPUCommandSignatureDx12->ArgumentStrideOffset[i] = ArgBytesStride;
-				ArgBytesStride += FGPUCommandSignatureDx12::GPU_COMMAND_STRIDE[i];
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
 			}
 			else
 			{
 				TI_ASSERT(0);
 			}
+			GPUCommandSignatureDx12->ArgumentStrideOffset[i] = ArgBytesStride;
+			ArgBytesStride += FGPUCommandSignatureDx12::GPU_COMMAND_STRIDE[i];
 		}
 		GPUCommandSignatureDx12->CommandStrideInBytes = ArgBytesStride;
 
@@ -2566,6 +2552,18 @@ namespace tix
 		CurrentWorkingCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
 
 		HoldResourceReference(InMeshBuffer);
+	}
+
+	void FRHIDx12::SetMeshBufferAtSlot(uint32 StartSlot, FMeshBufferPtr InMeshBuffer)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FRHIDx12::SetInstanceBufferAtSlot(uint32 StartSlot, FInstanceBufferPtr InInstanceBuffer)
+	{
+		FInstanceBufferDx12* IBDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
+
+		CurrentWorkingCommandList->IASetVertexBuffers(StartSlot, 1, &IBDx12->InstanceBufferView);
 	}
 
 	void FRHIDx12::SetUniformBuffer(E_SHADER_STAGE , int32 BindIndex, FUniformBufferPtr InUniformBuffer)

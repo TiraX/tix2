@@ -20,11 +20,18 @@ namespace tix
 		}
 
 		TI_API virtual uint32 GetEncodedCommandsCount() const = 0;
-		TI_API virtual void EncodeSetMeshBuffer(
+		TI_API virtual void EncodeSetVertexBuffer(
 			uint32 CommandIndex, 
 			uint32 ArgumentIndex,
-			FMeshBufferPtr MeshBuffer, 
+			FMeshBufferPtr MeshBuffer) = 0;
+		TI_API virtual void EncodeSetInstanceBuffer(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
 			FInstanceBufferPtr InstanceBuffer) = 0;
+		TI_API virtual void EncodeSetIndexBuffer(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
+			FMeshBufferPtr MeshBuffer) = 0;
 		TI_API virtual void EncodeSetDrawIndexed(
 			uint32 CommandIndex,
 			uint32 ArgumentIndex,

@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#define CopyVisibleCommands_RootSig \
+#define CopyVisibleInstances_RootSig \
 	"CBV(b0) ," \
     "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0)),"
 
@@ -44,11 +44,18 @@ AppendStructuredBuffer<IndirectCommand> OutputCommands : register(u0);	// Cull r
 
 #define threadBlockSize 128
 
-[RootSignature(CopyVisibleCommands_RootSig)]
+[RootSignature(CopyVisibleInstances_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	uint Index = groupId.x * threadBlockSize + threadIDInGroup.x;
+	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
+	if (InstanceMetaInfos[InstanceIndex].Info.w > 0.0)
+	{
+		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.x;
+
+		IndirectCommand Command = InputCommands[PrimitiveIndex];
+
+	}
 	//if (Index < Info.x)
 	//{
 	//	uint TileIndex = PrimitiveInfos[Index].Info.x;
