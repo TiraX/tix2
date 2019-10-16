@@ -8,9 +8,15 @@
 
 namespace tix
 {
+#define LOG_LOADING_INFO (1)
+#if LOG_LOADING_INFO
+#	define SCENE_META_LOG _LOG
+#else
+#	define SCENE_META_LOG(...)
+#endif
+
 	FSceneMetaInfos::FSceneMetaInfos()
 		: SceneMetaFlags(0)
-		, SceneStaticMeshAdded(0)
 		, SceneInstancesAdded(0)
 		, ScenePrimitivesAdded(0)
 		, SceneTileIntersected(0)
@@ -91,7 +97,6 @@ namespace tix
 			}
 
 			// Collect instances info, and remember meta infos
-			SceneStaticMeshAdded = 0;
 			SceneInstancesAdded = 0;
 			ScenePrimitivesAdded = 0;
 			ActiveSceneTileInfoMap.clear();
@@ -99,21 +104,19 @@ namespace tix
 			{
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
-				// Get available Primitive range of this tile
-				const uint32 PrimitiveStartIndex = SceneStaticMeshAdded;
-				SceneStaticMeshAdded += (uint32)TileRes->GetInstanceCountAndOffset().size();
-				
 				// Get available Instances range of this tile
 				const uint32 InstancesStartIndex = SceneInstancesAdded;
 				SceneInstancesAdded += TileRes->GetInstanceBuffer()->GetInstancesCount();
 
-				// Get all primitives count
+				// Get available Primitive range of this tile
+				const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;
 				ScenePrimitivesAdded += TileRes->GetTotalMeshSections();
+				TI_ASSERT(TileRes->GetTotalMeshSections() == TileRes->GetInstanceCountAndOffset().size());
 
 				// Remember the offset of this tile
 				TI_ASSERT(ActiveSceneTileInfoMap.find(TilePos) == ActiveSceneTileInfoMap.end());
 				FUInt4 PrimInfo(
-					(uint32)TileRes->GetInstanceCountAndOffset().size(),
+					TileRes->GetTotalMeshSections(),
 					PrimitiveStartIndex,
 					TileRes->GetInstanceBuffer()->GetInstancesCount(),
 					InstancesStartIndex);
@@ -121,7 +124,7 @@ namespace tix
 			}
 
 			// Create primitive bbox buffer
-			SceneStaticMeshBBoxes = ti_new FSceneStaticMeshBBoxes(SceneStaticMeshAdded);
+			ScenePrimitiveBBoxes = ti_new FScenePrimitiveBBoxes(ScenePrimitivesAdded);
 
 			// Collect Instances
 			SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo(SceneInstancesAdded);
@@ -160,16 +163,6 @@ namespace tix
 			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
 			
-			struct _PrimitiveInfo
-			{
-				vector2di TilePos;
-				uint32 IndexInTile;
-				uint32 InstancesStartIndex;
-				aabbox3df BBox;
-			};
-
-			// Key is index in ScenePrimitiveBBoxes, value is multi-primitives bbox union
-			THMap<uint32, _PrimitiveInfo> StaticMeshBBoxes;
 			for (auto P : Primitives)
 			{
 				const vector2di& TilePos = P->GetSceneTilePos();
@@ -188,36 +181,10 @@ namespace tix
 				const uint32 InstancesCount = PosInfo.Z;
 				const uint32 InstancesStartIndex = PosInfo.W;
 
-				const uint32 Index = PrimitivesStartIndex + IndexInTile;
-				if (StaticMeshBBoxes.find(Index) == StaticMeshBBoxes.end())
-				{
-					StaticMeshBBoxes[Index].TilePos = TilePos;
-					StaticMeshBBoxes[Index].IndexInTile = IndexInTile;
-					StaticMeshBBoxes[Index].InstancesStartIndex = InstancesStartIndex;
-					StaticMeshBBoxes[Index].BBox = BBox;
-				}
-				else
-				{
-					TI_ASSERT(StaticMeshBBoxes[Index].TilePos == TilePos && 
-						StaticMeshBBoxes[Index].IndexInTile == IndexInTile &&
-						StaticMeshBBoxes[Index].InstancesStartIndex == InstancesStartIndex);
-					StaticMeshBBoxes[Index].BBox.addInternalBox(BBox);
-				}
-			}
-
-			TI_ASSERT(StaticMeshBBoxes.size() <= SceneStaticMeshAdded);
-			for (const auto& PI : StaticMeshBBoxes)
-			{
-				const uint32 PrimitiveIndex = PI.first;
-				const _PrimitiveInfo& PrimInfo = PI.second;
-				const vector2di& TilePos = PrimInfo.TilePos;
-				const uint32 IndexInTile = PrimInfo.IndexInTile;
-				const uint32 InstancesStartIndex = PrimInfo.InstancesStartIndex;
-				const aabbox3df& BBox = PrimInfo.BBox;
-
+				const uint32 PrimitiveIndex = PrimitivesStartIndex + IndexInTile;
 				// Update primitive bboxes in meta data
-				SceneStaticMeshBBoxes->UniformBufferData[PrimitiveIndex].MinEdge = FFloat4(BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z, 0);
-				SceneStaticMeshBBoxes->UniformBufferData[PrimitiveIndex].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0);
+				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MinEdge = FFloat4(BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z, 0);
+				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0);
 				SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
 
 				// Update instance meta data Info.W as loaded (1)
@@ -271,7 +238,7 @@ namespace tix
 	{
 		if (HasMetaFlag(MetaFlag_ScenePrimitiveMetaDirty))
 		{
-			SceneStaticMeshBBoxes->InitUniformBuffer();
+			ScenePrimitiveBBoxes->InitUniformBuffer();
 		}
 		if (HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
 		{

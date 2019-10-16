@@ -583,8 +583,8 @@ namespace tix
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* MeshSections = nullptr;// AssetsMeshes + Header->NumMeshes;
-			const int32* MeshInstanceCount = AssetsMeshes + Header->NumMeshes;
+			const int32* MeshSections = AssetsMeshes + Header->NumMeshes;
+			const int32* MeshInstanceCount = MeshSections + Header->NumMeshes;
 			const int32* AssetsInstances = MeshInstanceCount + Header->NumMeshes;
 
 			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(AssetsInstances);
@@ -621,7 +621,7 @@ namespace tix
 
 			// false = all mesh sections in a model share the same instance buffer
 			// true = all sections use a separate instance buffer, for GPU cull system
-			static const bool ExpandInstanceForEachMeshSections = false;
+			static const bool ExpandInstanceForEachMeshSections = true;
 
 			// Instances
 			TI_ASSERT(Header->NumMeshes > 0 && Header->NumInstances > 0);
@@ -638,6 +638,8 @@ namespace tix
 					TotalInstances += MeshSectionCount * InstanceCount;
 					TotalMeshSections += MeshSectionCount;
 				}
+				TI_ASSERT(TotalMeshSections == Header->NumMeshSections);
+				SceneTile->MeshSectionsCount.reserve(Header->NumMeshes);
 			}
 			else
 			{
@@ -649,7 +651,8 @@ namespace tix
 			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
 			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * TotalInstances];
 
-			int32 InstanceOffset = 0;
+			int32 InstanceOffsetSrc = 0;
+			int32 InstanceOffsetDst = 0;
 			int32 DataOffset = 0;
 			for (int32 m = 0; m < Header->NumMeshes; ++m)
 			{
@@ -659,7 +662,7 @@ namespace tix
 				const int32 InstanceDataStart = DataOffset;
 				for (int32 i = 0; i < InstanceCount; ++i)
 				{
-					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffset];
+					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffsetSrc];
 
 					FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
 					FMatrix RotationScaleMat;
@@ -674,8 +677,9 @@ namespace tix
 				}
 				const int32 InstanceDataLength = DataOffset - InstanceDataStart;
 				// Save instance offset and count
-				SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffset));
-				InstanceOffset += InstanceCount;
+				SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+				InstanceOffsetSrc += InstanceCount;
+				InstanceOffsetDst += InstanceCount;
 
 				if (ExpandInstanceForEachMeshSections)
 				{
@@ -688,13 +692,15 @@ namespace tix
 						memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
 						DataOffset += InstanceDataLength;
 						// Save instance offset and count
-						SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffset));
-						InstanceOffset += InstanceCount;
+						SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+						InstanceOffsetDst += InstanceCount;
 					}
+					SceneTile->MeshSectionsCount.push_back(MeshSectionCount);
 				}
 			}
+
 			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalInstances);
-			TI_ASSERT(InstanceOffset == TotalInstances);
+			TI_ASSERT(InstanceOffsetDst == TotalInstances);
 			ti_delete[] Data;
 			FStats::Stats.InstancesLoaded += TotalInstances;
 

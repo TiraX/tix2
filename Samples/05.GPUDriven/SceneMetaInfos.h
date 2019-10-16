@@ -16,10 +16,10 @@ namespace tix
 
 	// Primitive BBox info
 	//#define MAX_STATIC_MESH_IN_SCENE (2048)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneStaticMeshBBoxes)
+	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FScenePrimitiveBBoxes)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
-	END_UNIFORM_BUFFER_STRUCT(FSceneStaticMeshBBoxes)
+	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
 
 	// Info.x = primitive index this instance link to
 	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
@@ -51,7 +51,7 @@ namespace tix
 		}
 		FUniformBufferPtr GetPrimitiveBBoxesUniform()
 		{
-			return SceneStaticMeshBBoxes->UniformBuffer;
+			return ScenePrimitiveBBoxes->UniformBuffer;
 		}
 		FUniformBufferPtr GetInstanceMetaUniform()
 		{
@@ -60,10 +60,6 @@ namespace tix
 		FInstanceBufferPtr GetMergedInstanceBuffer()
 		{
 			return MergedInstanceBuffer;
-		}
-		uint32 GetSceneStaticMeshAdded() const
-		{
-			return SceneStaticMeshAdded;
 		}
 		uint32 GetSceneInstancesAdded() const
 		{
@@ -91,7 +87,7 @@ namespace tix
 		
 		// Static mesh count that added to scene from visible scene tiles
 		// A static mesh can contain 1 or more primitives
-		uint32 SceneStaticMeshAdded;
+		//uint32 SceneStaticMeshAdded;
 		// Instances Count that added to scene from visible scene tiles
 		uint32 SceneInstancesAdded;
 		// Primitives count that added to scene from visible scene tiles
@@ -113,7 +109,7 @@ namespace tix
 		FInstanceBufferPtr MergedInstanceBuffer;
 
 		// Scene primitive meta info
-		FSceneStaticMeshBBoxesPtr SceneStaticMeshBBoxes;
+		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;
 
 		friend class FScene;
 	};

@@ -32,6 +32,7 @@ namespace tix
 		TVector<TAssetPtr> Meshes;
 		// X is Count, Y is Offset
 		TVector<vector2di> InstanceCountAndOffset;
+		TVector<uint32> MeshSectionsCount;
 		TInstanceBufferPtr MeshInstanceBuffer;
 	};
 }

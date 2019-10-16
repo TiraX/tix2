@@ -93,22 +93,29 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 {
 	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
 
-	// This tile intersect view frustum, need to cull instances one by one
-	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
-
-	// Transform primitive bbox
-	float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-	float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
-	TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
-
-	if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+	if (InstanceMetaInfo[InstanceIndex].Info.w > 0)
 	{
-		VisibleInfo[InstanceIndex].Visible = 1;
+		// This tile intersect view frustum, need to cull instances one by one
+		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+
+		// Transform primitive bbox
+		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
+		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
+
+		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+		{
+			VisibleInfo[InstanceIndex].Visible = 1;
+		}
+		else
+		{
+			VisibleInfo[InstanceIndex].Visible = 0;
+		}
 	}
 	else
 	{
