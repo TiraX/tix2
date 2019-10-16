@@ -10,16 +10,22 @@ namespace tix
 {
 	FSceneTileResource::FSceneTileResource()
 		: FRenderResource(RRT_SCENE_TILE)
+		, TotalMeshes(0)
+		, TotalMeshSections(0)
+		, TotalInstances(0)
 	{
 	}
 
 	FSceneTileResource::FSceneTileResource(TSceneTileResourcePtr InSceneTileResource)
 		: FRenderResource(RRT_SCENE_TILE)
+		, Position(InSceneTileResource->Position)
+		, BBox(InSceneTileResource->BBox)
+		, TotalMeshes(InSceneTileResource->TotalMeshes)
+		, TotalMeshSections(InSceneTileResource->TotalMeshSections)
+		, TotalInstances(InSceneTileResource->TotalInstances)
+		, InstanceCountAndOffset(InSceneTileResource->InstanceCountAndOffset)
 	{
 		TI_ASSERT(IsGameThread());
-		Position = InSceneTileResource->Position;
-		BBox = InSceneTileResource->BBox;
-		InstanceCountAndOffset = InSceneTileResource->InstanceCountAndOffset;
 		InstanceBuffer = InSceneTileResource->MeshInstanceBuffer->InstanceResource;
 	}
 

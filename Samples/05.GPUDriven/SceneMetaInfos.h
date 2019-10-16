@@ -69,6 +69,10 @@ namespace tix
 		{
 			return SceneInstancesAdded;
 		}
+		uint32 GetScenePrimitivesAdded() const
+		{
+			return ScenePrimitivesAdded;
+		}
 		bool IsTileVisible(const vector2di& TilePos)
 		{
 			return SceneTileVisibleInfo[TilePos] != ECR_OUTSIDE;
@@ -90,6 +94,9 @@ namespace tix
 		uint32 SceneStaticMeshAdded;
 		// Instances Count that added to scene from visible scene tiles
 		uint32 SceneInstancesAdded;
+		// Primitives count that added to scene from visible scene tiles
+		// Each primitive is a mesh section
+		uint32 ScenePrimitivesAdded;
 
 		TVector<vector2di> SortedTilePositions;
 

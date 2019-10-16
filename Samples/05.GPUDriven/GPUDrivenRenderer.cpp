@@ -102,7 +102,7 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 	const uint32 PrimsCount = (uint32)Primitives.size();
-	const uint32 PrimsAdded = SceneMetaInfo->GetSceneStaticMeshAdded();
+	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
 	if (PrimsAdded == 0)
 	{
 		return;

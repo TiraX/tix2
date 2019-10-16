@@ -12,6 +12,7 @@ namespace tix
 		: SceneMetaFlags(0)
 		, SceneStaticMeshAdded(0)
 		, SceneInstancesAdded(0)
+		, ScenePrimitivesAdded(0)
 		, SceneTileIntersected(0)
 		, SceneTileInner(0)
 	{
@@ -92,18 +93,22 @@ namespace tix
 			// Collect instances info, and remember meta infos
 			SceneStaticMeshAdded = 0;
 			SceneInstancesAdded = 0;
+			ScenePrimitivesAdded = 0;
 			ActiveSceneTileInfoMap.clear();
 			for (const auto& TilePos : SortedTilePositions)
 			{
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
-				// Get the available Primitive range of this tile
+				// Get available Primitive range of this tile
 				const uint32 PrimitiveStartIndex = SceneStaticMeshAdded;
 				SceneStaticMeshAdded += (uint32)TileRes->GetInstanceCountAndOffset().size();
 				
-				// Get the available Instances range of this tile
+				// Get available Instances range of this tile
 				const uint32 InstancesStartIndex = SceneInstancesAdded;
 				SceneInstancesAdded += TileRes->GetInstanceBuffer()->GetInstancesCount();
+
+				// Get all primitives count
+				ScenePrimitivesAdded += TileRes->GetTotalMeshSections();
 
 				// Remember the offset of this tile
 				TI_ASSERT(ActiveSceneTileInfoMap.find(TilePos) == ActiveSceneTileInfoMap.end());

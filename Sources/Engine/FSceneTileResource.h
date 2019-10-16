@@ -34,9 +34,27 @@ namespace tix
 			return InstanceBuffer;
 		}
 
+		uint32 GetTotalMeshes() const
+		{
+			return TotalMeshes;
+		}
+
+		uint32 GetTotalMeshSections() const
+		{
+			return TotalMeshSections;
+		}
+
+		uint32 GetTotalInstances() const
+		{
+			return TotalInstances;
+		}
+
 	private:
 		vector2di Position;
 		aabbox3df BBox;
+		uint32 TotalMeshes;
+		uint32 TotalMeshSections;
+		uint32 TotalInstances;
 		// X is Count, Y is Offset
 		TVector<vector2di> InstanceCountAndOffset;
 		FInstanceBufferPtr InstanceBuffer;

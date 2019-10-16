@@ -26,6 +26,9 @@ namespace tix
 		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
+		uint32 TotalMeshes;
+		uint32 TotalMeshSections;
+		uint32 TotalInstances;
 		TVector<TAssetPtr> Meshes;
 		// X is Count, Y is Offset
 		TVector<vector2di> InstanceCountAndOffset;

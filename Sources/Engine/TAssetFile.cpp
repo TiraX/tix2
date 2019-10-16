@@ -570,10 +570,12 @@ namespace tix
 			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);
 			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
 			SceneTile->LevelName = GetString(Header->LevelNameIndex);
+			SceneTile->TotalMeshes = Header->NumMeshes;
+			SceneTile->TotalMeshSections = Header->NumMeshSections;
+			SceneTile->TotalInstances = Header->NumInstances;
 			SceneTile->Position.X = Header->Position.X;
 			SceneTile->Position.Y = Header->Position.Y;
 			SceneTile->BBox = Header->BBox;
-			TI_ASSERT(0);
 			// Add mesh sections info to scene tile 
 
 			// Load assets names
