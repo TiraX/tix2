@@ -12,6 +12,7 @@ namespace tix
 		: PrimitiveFlag(0)
 		, InstanceCount(0)
 		, InstanceOffset(0)
+		, GlobalInstanceOffset(0)
 		, DrawList(LIST_INVALID)
 		, IndexInSceneTile(uint32(-1))
 	{

@@ -2248,7 +2248,7 @@ namespace tix
 				TI_ASSERT(0);
 			}
 			GPUCommandSignatureDx12->ArgumentStrideOffset[i] = ArgBytesStride;
-			ArgBytesStride += FGPUCommandSignatureDx12::GPU_COMMAND_STRIDE[i];
+			ArgBytesStride += FGPUCommandSignatureDx12::GPU_COMMAND_STRIDE[Command];
 		}
 		GPUCommandSignatureDx12->CommandStrideInBytes = ArgBytesStride;
 

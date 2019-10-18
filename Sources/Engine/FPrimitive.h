@@ -32,6 +32,11 @@ namespace tix
 			uint32 InInstanceOffset
 		);
 
+		void SetGlobalInstanceOffset(uint32 InOffset)
+		{
+			GlobalInstanceOffset = InOffset;
+		}
+
 		FMeshBufferPtr GetMeshBuffer()
 		{
 			return MeshBuffer;
@@ -46,7 +51,7 @@ namespace tix
 		}
 		uint32 GetInstanceOffset() const
 		{
-			return InstanceOffset;
+			return InstanceOffset + GlobalInstanceOffset;
 		}
 		FPipelinePtr GetPipeline()
 		{
@@ -100,6 +105,7 @@ namespace tix
 		FInstanceBufferPtr InstanceBuffer;
 		uint32 InstanceCount;
 		uint32 InstanceOffset;
+		uint32 GlobalInstanceOffset;
 
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;

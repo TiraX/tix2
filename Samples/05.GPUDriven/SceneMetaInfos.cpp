@@ -33,9 +33,15 @@ namespace tix
 
 	void FSceneMetaInfos::DoSceneTileCulling(FScene * Scene, const SViewFrustum& ViewFrustum)
 	{
+		static bool CullEnabled = true;
+		if (!CullEnabled)
+		{
+			return;
+		}
 		if (Scene->HasSceneFlag(FScene::SceneTileDirty) ||
 			Scene->HasSceneFlag(FScene::ViewProjectionDirty))
 		{
+			SCENE_META_LOG(Log, "Cull tile. TileDirty %d; ViewDirty %d.\n", Scene->HasSceneFlag(FScene::SceneTileDirty) ? 1:0, Scene->HasSceneFlag(FScene::ViewProjectionDirty) ? 1:0);
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 			if (Scene->HasSceneFlag(FScene::SceneTileDirty))
 			{
@@ -71,6 +77,7 @@ namespace tix
 	{
 		if (HasMetaFlag(MetaFlag_SceneTileMetaDirty))
 		{
+			SCENE_META_LOG(Log, "Tile meta dirty.\n");
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 			// Collect visible scene tile instances, collect ECR_INTERSECT tile in front.
 			// Sort by visible info
@@ -159,6 +166,7 @@ namespace tix
 		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty) ||
 			HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
 		{
+			SCENE_META_LOG(Log, "Primitive dirty.\n");
 			// Update scene primitive meta infos by scene order
 			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
@@ -180,6 +188,9 @@ namespace tix
 				const uint32 PrimitivesStartIndex = PosInfo.Y;
 				const uint32 InstancesCount = PosInfo.Z;
 				const uint32 InstancesStartIndex = PosInfo.W;
+
+				// Mark a global instance offset for primitive in this merged instance buffer
+				P->SetGlobalInstanceOffset(InstancesStartIndex);
 
 				const uint32 PrimitiveIndex = PrimitivesStartIndex + IndexInTile;
 				// Update primitive bboxes in meta data
