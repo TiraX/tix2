@@ -231,7 +231,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			CopyVisibleInstances->UpdateComputeArguments(
 				RHI,
-				Scene,
+				SceneMetaInfo,
 				InstanceCullCS->GetVisibleResult(),
 				SceneMetaInfo->GetInstanceMetaUniform(),
 				GPUCommandBuffer,
@@ -273,8 +273,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			// Render Base Pass
 			RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 
-			bool Indirect = false;
-			bool DrawCulled = false;
+			static bool Indirect = !false;
+			static bool DrawCulled = false;
 			if (!Indirect)
 			{
 				RenderDrawList(RHI, Scene, LIST_OPAQUE);

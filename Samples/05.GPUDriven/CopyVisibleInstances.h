@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "SceneMetaInfos.h"
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FCopyCommandsParams)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
@@ -22,7 +23,7 @@ public:
 	void PrepareResources(FRHI * RHI);
 	void UpdateComputeArguments(
 		FRHI * RHI, 
-		FScene * Scene, 
+		FSceneMetaInfos * SceneMetaInfos,
 		FUniformBufferPtr InstanceVisibleInfo, 
 		FUniformBufferPtr InstanceMetaInfo, 
 		FGPUCommandBufferPtr GPUCommandBuffer,

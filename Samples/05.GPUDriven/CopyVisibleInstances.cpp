@@ -31,14 +31,14 @@ void FCopyVisibleInstances::PrepareResources(FRHI * RHI)
 
 void FCopyVisibleInstances::UpdateComputeArguments(
 	FRHI * RHI,
-	FScene * Scene,
+	FSceneMetaInfos * SceneSceneMetaInfos,
 	FUniformBufferPtr InstanceVisibleInfo,
 	FUniformBufferPtr InstanceMetaInfo,
 	FGPUCommandBufferPtr GPUCommandBuffer,
 	FGPUCommandBufferPtr InProcessedGPUCommandBuffer)
 {
 	// Total commands count
-	CopyParams->UniformBufferData[0].Info.X = (uint32)Scene->GetStaticDrawList(LIST_OPAQUE).size();
+	CopyParams->UniformBufferData[0].Info.X = SceneSceneMetaInfos->GetSceneInstancesAdded();
 	CopyParams->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
 	TI_ASSERT(InstanceMetaInfo->GetElements() == InstanceVisibleInfo->GetElements() &&
