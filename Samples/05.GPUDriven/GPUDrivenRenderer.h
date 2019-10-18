@@ -10,6 +10,7 @@
 #include "GPUInstanceFrustumCullCS.h"
 #include "GPUCameraFrustum.h"
 #include "CopyVisibleTileCommandBuffer.h"
+#include "CopyVisibleInstances.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -46,5 +47,6 @@ private:
 	//FGPUTileFrustumCullCSPtr TileCullCS;
 	FGPUInstanceFrustumCullCSPtr InstanceCullCS;
 
-	FCopyVisibleTileCommandBufferPtr CopyVisibleCommandBuffer;
+	//FCopyVisibleTileCommandBufferPtr CopyVisibleCommandBuffer;
+	FCopyVisibleInstancesPtr CopyVisibleInstances;
 };

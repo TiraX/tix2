@@ -92,9 +92,14 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceCullCS->PrepareResources(RHI);
 
 	// Prepare copy visible command buffer tasks
-	CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
-	CopyVisibleCommandBuffer->Finalize();
-	CopyVisibleCommandBuffer->PrepareResources(RHI);
+	//CopyVisibleCommandBuffer = ti_new FCopyVisibleTileCommandBuffer;
+	//CopyVisibleCommandBuffer->Finalize();
+	//CopyVisibleCommandBuffer->PrepareResources(RHI);
+
+	// Prepare copy visible instances
+	CopyVisibleInstances = ti_new FCopyVisibleInstances;
+	CopyVisibleInstances->Finalize();
+	CopyVisibleInstances->PrepareResources(RHI);
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -139,14 +144,15 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 			Primitive->GetInstanceCount(),
 			0, 
 			0, 
-			Primitive->GetInstanceOffset());
+			Primitive->GetGlobalInstanceOffset());
 		++CommandIndex;
 	}
 	TI_ASSERT(GPUCommandBuffer->GetEncodedCommandsCount() <= PrimsAdded);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 
-	// Create empty GPU command buffer, gather visible draw commands
-	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsCount, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	// Create empty GPU command buffer, gather visible draw commands, make it enough for all instances
+	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
+	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 #if defined (TIX_DEBUG)
 	ProcessedGPUCommandBuffer->SetResourceName("ProcessedCB");
 #endif
@@ -201,77 +207,85 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	//{
 	//	_LOG(Log, "instances loaded = %d\n", FStats::Stats.InstancesLoaded);
 	//}
-	if (SceneMetaInfo->GetPrimitiveBBoxesUniform() != nullptr)
+	if (GPUCommandBuffer != nullptr && SceneMetaInfo->IsPrimitiveDataReady())
 	{
-		//  BAD! force correct
-
-		if (GPUCommandBuffer != nullptr)
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
 		{
-			if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
+			// Add binding arguments
+			GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+			ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+		}
+		// Set meta data every frame.
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
+			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
+		{
+			InstanceCullCS->UpdateComputeArguments(
+				RHI,
+				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
+				SceneMetaInfo->GetInstanceMetaUniform(),
+				SceneMetaInfo->GetMergedInstanceBuffer(),
+				FrustumUniform->UniformBuffer
+			);
+		}
+		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
+		{
+			CopyVisibleInstances->UpdateComputeArguments(
+				RHI,
+				Scene,
+				InstanceCullCS->GetVisibleResult(),
+				SceneMetaInfo->GetInstanceMetaUniform(),
+				GPUCommandBuffer,
+				ProcessedGPUCommandBuffer);
+		}
+		//if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		//{
+		//	// Update Copy command buffer params
+		//	CopyVisibleCommandBuffer->UpdateComputeArguments(
+		//		RHI,
+		//		Scene,
+		//		TileCullCS->GetVisibilityResult(),
+		//		SceneMetaInfo->GetPrimitiveMetaUniform(),
+		//		GPUCommandBuffer,
+		//		ProcessedGPUCommandBuffer);
+		//}
+
+		{
+			RHI->BeginComputeTask();
+			// Do GPU tile frustum culling(Move to CPU tile culling)
+			//TileCullCS->Run(RHI);
+
+			// Do GPU Instance frustum culling
+			InstanceCullCS->Run(RHI);
+
+			// Copy visible tile command buffers
+			//static bool CopyVisibleBuffer = true;
+			//if (CopyVisibleBuffer)
+			//	CopyVisibleCommandBuffer->Run(RHI);
+
+			static bool bCopyVisibleInstance = true;
+			if (bCopyVisibleInstance)
+				CopyVisibleInstances->Run(RHI);
+
+			RHI->EndComputeTask();
+		}
+
+		{
+			// Render Base Pass
+			RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+
+			bool Indirect = false;
+			bool DrawCulled = false;
+			if (!Indirect)
 			{
-				// Add binding arguments
-				GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-				ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+				RenderDrawList(RHI, Scene, LIST_OPAQUE);
+				//RenderDrawList(RHI, Scene, LIST_MASK);
 			}
-			// Set meta data every frame.
-			if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
-				SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
+			else
 			{
-				InstanceCullCS->UpdateComputeArguments(
-					RHI,
-					SceneMetaInfo->GetPrimitiveBBoxesUniform(),
-					SceneMetaInfo->GetInstanceMetaUniform(),
-					SceneMetaInfo->GetMergedInstanceBuffer(),
-					FrustumUniform->UniformBuffer
-				);
-			}
-			//if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
-			//{
-			//	// Update Copy command buffer params
-			//	CopyVisibleCommandBuffer->UpdateComputeArguments(
-			//		RHI,
-			//		Scene,
-			//		TileCullCS->GetVisibilityResult(),
-			//		SceneMetaInfo->GetPrimitiveMetaUniform(),
-			//		GPUCommandBuffer,
-			//		ProcessedGPUCommandBuffer);
-			//}
-
-			{
-				RHI->BeginComputeTask();
-				// Do GPU tile frustum culling(Move to CPU tile culling)
-				//TileCullCS->Run(RHI);
-
-				// Do GPU Instance frustum culling
-				InstanceCullCS->Run(RHI);
-
-				// Copy visible tile command buffers
-				//static bool CopyVisibleBuffer = true;
-				//if (CopyVisibleBuffer)
-				//	CopyVisibleCommandBuffer->Run(RHI);
-				RHI->EndComputeTask();
-			}
-
-
-			{
-				// Render Base Pass
-				RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-
-				bool Indirect = !false;
-				bool DrawCulled = false;
-				if (!Indirect)
-				{
-					RenderDrawList(RHI, Scene, LIST_OPAQUE);
-					//RenderDrawList(RHI, Scene, LIST_MASK);
-				}
-				else
-				{
-					DrawGPUCommandBuffer(RHI, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
-				}
+				DrawGPUCommandBuffer(RHI, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
 			}
 		}
 	}
-
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

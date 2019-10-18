@@ -51,6 +51,10 @@ namespace tix
 		}
 		uint32 GetInstanceOffset() const
 		{
+			return InstanceOffset;
+		}
+		uint32 GetGlobalInstanceOffset() const
+		{
 			return InstanceOffset + GlobalInstanceOffset;
 		}
 		FPipelinePtr GetPipeline()

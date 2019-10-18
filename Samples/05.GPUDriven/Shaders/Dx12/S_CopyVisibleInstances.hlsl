@@ -10,14 +10,8 @@
 //*********************************************************
 
 #define CopyVisibleInstances_RootSig \
-	"CBV(b0) ," \
     "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0)),"
 
-cbuffer CopyParams : register(b0)
-{
-	// x: The number of commands to be processed.
-	uint4 Info;
-};
 struct FVisibleInfo
 {
 	uint Visible;
@@ -31,10 +25,9 @@ struct FInstanceMetaInfo
 struct IndirectCommand
 {
 	uint4 VertexBufferView;
-	uint4 InstanceBufferView;
 	uint4 IndexBufferView;
-	uint4 DrawArguments0;
-	uint DrawArguments1;
+	uint4 DrawArguments0;	// x=IndexCountPerInstance,y=InstanceCount,z=StartIndexLocation,w=BaseVertexLocation
+	uint DrawArguments1;	// x=StartInstanceLocation
 };
 
 StructuredBuffer<FVisibleInfo> InstanceVisibleInfos : register(t0);
@@ -49,19 +42,15 @@ AppendStructuredBuffer<IndirectCommand> OutputCommands : register(u0);	// Cull r
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
-	if (InstanceMetaInfos[InstanceIndex].Info.w > 0.0)
+	if (InstanceMetaInfos[InstanceIndex].Info.w > 0 &&
+		InstanceVisibleInfos[InstanceIndex].Visible > 0)
 	{
 		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.x;
 
 		IndirectCommand Command = InputCommands[PrimitiveIndex];
+		Command.DrawArguments0.y = 1;	// Change instance count to 1
+		Command.DrawArguments1.x = InstanceIndex;
 
+		OutputCommands.Append(Command);
 	}
-	//if (Index < Info.x)
-	//{
-	//	uint TileIndex = PrimitiveInfos[Index].Info.x;
-	//	if (TileVisibles[TileIndex].Visible > 0)
-	//	{
-	//		OutputCommands.Append(InputCommands[Index]);
-	//	}
-	//}
 }

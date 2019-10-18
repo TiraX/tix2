@@ -49,6 +49,11 @@ namespace tix
 		{
 			return (SceneMetaFlags & InMetaFlag) != 0;
 		}
+		bool IsPrimitiveDataReady() const
+		{
+			// Bad fix!
+			return ScenePrimitiveBBoxes != nullptr && ScenePrimitiveBBoxes->UniformBuffer != nullptr;
+		}
 		FUniformBufferPtr GetPrimitiveBBoxesUniform()
 		{
 			return ScenePrimitiveBBoxes->UniformBuffer;

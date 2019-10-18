@@ -23,8 +23,8 @@ public:
 	void UpdateComputeArguments(
 		FRHI * RHI, 
 		FScene * Scene, 
-		FUniformBufferPtr TileVisibleInfo, 
-		FUniformBufferPtr PrimitiveMetaInfo, 
+		FUniformBufferPtr InstanceVisibleInfo, 
+		FUniformBufferPtr InstanceMetaInfo, 
 		FGPUCommandBufferPtr GPUCommandBuffer,
 		FGPUCommandBufferPtr ProcessedGPUCommandBuffer);
 	virtual void Run(FRHI * RHI) override;

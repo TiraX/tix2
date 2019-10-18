@@ -32,8 +32,8 @@ void FCopyVisibleInstances::PrepareResources(FRHI * RHI)
 void FCopyVisibleInstances::UpdateComputeArguments(
 	FRHI * RHI,
 	FScene * Scene,
-	FUniformBufferPtr TileVisibleInfo,
-	FUniformBufferPtr PrimitiveMetaInfo,
+	FUniformBufferPtr InstanceVisibleInfo,
+	FUniformBufferPtr InstanceMetaInfo,
 	FGPUCommandBufferPtr GPUCommandBuffer,
 	FGPUCommandBufferPtr InProcessedGPUCommandBuffer)
 {
@@ -41,12 +41,14 @@ void FCopyVisibleInstances::UpdateComputeArguments(
 	CopyParams->UniformBufferData[0].Info.X = (uint32)Scene->GetStaticDrawList(LIST_OPAQUE).size();
 	CopyParams->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
+	TI_ASSERT(InstanceMetaInfo->GetElements() == InstanceVisibleInfo->GetElements() &&
+		InstanceMetaInfo->GetElements() == InProcessedGPUCommandBuffer->GetEncodedCommandsCount());
 	// Set command buffer resources
 	TI_TODO("Does this resource table, need to re-create?");
 	// Set tile visible info
-	ResourceTable->PutUniformBufferInTable(TileVisibleInfo, 0);
+	ResourceTable->PutUniformBufferInTable(InstanceVisibleInfo, 0);
 	// Set primitive meta info
-	ResourceTable->PutUniformBufferInTable(PrimitiveMetaInfo, 1);
+	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 1);
 	// Set commands buffer
 	ResourceTable->PutUniformBufferInTable(GPUCommandBuffer->GetCommandBuffer(), 2);
 	// Set processed buffer UAV
@@ -56,21 +58,20 @@ void FCopyVisibleInstances::UpdateComputeArguments(
 
 void FCopyVisibleInstances::Run(FRHI * RHI)
 {
-	TI_ASSERT(0);
-	//const uint32 BlockSize = 128;
-	//const uint32 DispatchSize = MAX_DRAW_CALL_IN_SCENE / BlockSize;
+	const uint32 BlockSize = 128;
+	const uint32 DispatchSize = ProcessedCommandBuffer->GetEncodedCommandsCount() / BlockSize;
 
-	//// Reset command buffer counter
-	//RHI->ComputeCopyBuffer(
-	//	ProcessedCommandBuffer->GetCommandBuffer(), 
-	//	ProcessedCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
-	//	CounterReset->UniformBuffer, 
-	//	0, 
-	//	sizeof(uint32));
+	// Reset command buffer counter
+	RHI->ComputeCopyBuffer(
+		ProcessedCommandBuffer->GetCommandBuffer(), 
+		ProcessedCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
+		CounterReset->UniformBuffer, 
+		0, 
+		sizeof(uint32));
 
-	//RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputePipeline(ComputePipeline);
 	//RHI->SetComputeBuffer(0, CopyParams->UniformBuffer);
-	//RHI->SetComputeResourceTable(1, ResourceTable);
+	RHI->SetComputeResourceTable(0, ResourceTable);
 
-	//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }

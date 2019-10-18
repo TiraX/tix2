@@ -20,6 +20,10 @@ public:
 		FUniformBufferPtr InFrustumUniform);
 	virtual void Run(FRHI * RHI) override;
 
+	FUniformBufferPtr GetVisibleResult()
+	{
+		return VisibilityResult;
+	}
 private:
 
 private:
