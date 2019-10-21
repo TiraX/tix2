@@ -6,6 +6,7 @@
 #pragma once
 
 #if COMPILE_WITH_RHI_DX12
+#include "FGPUResourceDx12.h"
 
 namespace tix
 {
@@ -24,8 +25,8 @@ namespace tix
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> VertexBuffer;
-		ComPtr<ID3D12Resource> IndexBuffer;
+		FGPUResourceDx12 VertexBuffer;
+		FGPUResourceDx12 IndexBuffer;
 
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 		D3D12_INDEX_BUFFER_VIEW IndexBufferView;
@@ -45,7 +46,7 @@ namespace tix
 	protected:
 
 	private:
-		ComPtr<ID3D12Resource> InstanceBuffer;
+		FGPUResourceDx12 InstanceBuffer;
 		D3D12_VERTEX_BUFFER_VIEW InstanceBufferView;
 
 		friend class FRHIDx12;

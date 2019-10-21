@@ -804,13 +804,13 @@ namespace tix
 		const int32 BufferSize = InMeshData->GetVerticesCount() * InMeshData->GetStride();
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+
+		MBDx12->VertexBuffer.CreateResource(
+			D3dDevice.Get(),
 			&defaultHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&MBDx12->VertexBuffer)));
+			D3D12_RESOURCE_STATE_COPY_DEST);
 
 		CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
@@ -821,7 +821,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&VertexBufferUpload)));
 
-		DX_SETNAME(MBDx12->VertexBuffer.Get(), MeshBuffer->GetResourceName() + "-VB");
+		DX_SETNAME(MBDx12->VertexBuffer.GetResource().Get(), MeshBuffer->GetResourceName() + "-VB");
 
 		// Upload the vertex buffer to the GPU.
 		{
@@ -830,15 +830,15 @@ namespace tix
 			VertexData.RowPitch = BufferSize;
 			VertexData.SlicePitch = VertexData.RowPitch;
 
-			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->VertexBuffer.GetResource().Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
 			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
-				Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+				Transition(&MBDx12->VertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 			}
 			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
-				Transition(MBDx12->VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				Transition(&MBDx12->VertexBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			}
 			else
 			{
@@ -853,13 +853,13 @@ namespace tix
 		ComPtr<ID3D12Resource> IndexBufferUpload;
 
 		CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+
+		MBDx12->IndexBuffer.CreateResource(
+			D3dDevice.Get(),
 			&defaultHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&IndexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&MBDx12->IndexBuffer)));
+			D3D12_RESOURCE_STATE_COPY_DEST);
 
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
 			&uploadHeapProperties,
@@ -869,7 +869,7 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&IndexBufferUpload)));
 
-		DX_SETNAME(MBDx12->IndexBuffer.Get(), MeshBuffer->GetResourceName() + "-ib");
+		DX_SETNAME(MBDx12->IndexBuffer.GetResource().Get(), MeshBuffer->GetResourceName() + "-ib");
 
 		// Upload the index buffer to the GPU.
 		{
@@ -878,15 +878,15 @@ namespace tix
 			IndexData.RowPitch = IndexBufferSize;
 			IndexData.SlicePitch = IndexData.RowPitch;
 
-			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
+			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->IndexBuffer.GetResource().Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
 			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
-				Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+				Transition(&MBDx12->IndexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 			}
 			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
-				Transition(MBDx12->IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				Transition(&MBDx12->IndexBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			}
 			else
 			{
@@ -897,11 +897,11 @@ namespace tix
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		// Create vertex/index buffer views.
-		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer->GetGPUVirtualAddress();
+		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer.GetResource()->GetGPUVirtualAddress();
 		MBDx12->VertexBufferView.StrideInBytes = InMeshData->GetStride();
 		MBDx12->VertexBufferView.SizeInBytes = BufferSize;
 
-		MBDx12->IndexBufferView.BufferLocation = MBDx12->IndexBuffer->GetGPUVirtualAddress();
+		MBDx12->IndexBufferView.BufferLocation = MBDx12->IndexBuffer.GetResource()->GetGPUVirtualAddress();
 		MBDx12->IndexBufferView.SizeInBytes = IndexBufferSize;
 		MBDx12->IndexBufferView.Format = InMeshData->GetIndexType() == EIT_16BIT ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
@@ -930,18 +930,18 @@ namespace tix
 		const int32 BufferSize = VertexDataSize;
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+
+		MBDx12->VertexBuffer.CreateResource(
+			D3dDevice.Get(),
 			&defaultHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&MBDx12->VertexBuffer)));
+			D3D12_RESOURCE_STATE_COPY_DEST);
 
-		DX_SETNAME(MBDx12->VertexBuffer.Get(), BufferName + "-VB");
+		DX_SETNAME(MBDx12->VertexBuffer.GetResource().Get(), BufferName + "-VB");
 
 		// Create vertex buffer views.
-		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer->GetGPUVirtualAddress();
+		MBDx12->VertexBufferView.BufferLocation = MBDx12->VertexBuffer.GetResource()->GetGPUVirtualAddress();
 		MBDx12->VertexBufferView.StrideInBytes = VertexDataStride;
 		MBDx12->VertexBufferView.SizeInBytes = BufferSize;
 
@@ -952,18 +952,18 @@ namespace tix
 
 			// Create the index buffer resource in the GPU's default heap 
 			CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
-			VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+
+			MBDx12->IndexBuffer.CreateResource(
+				D3dDevice.Get(),
 				&defaultHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&IndexBufferDesc,
-				D3D12_RESOURCE_STATE_COPY_DEST,
-				nullptr,
-				IID_PPV_ARGS(&MBDx12->IndexBuffer)));
+				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			DX_SETNAME(MBDx12->IndexBuffer.Get(), BufferName + "-ib");
+			DX_SETNAME(MBDx12->IndexBuffer.GetResource().Get(), BufferName + "-ib");
 
 			// Create index buffer views.
-			MBDx12->IndexBufferView.BufferLocation = MBDx12->IndexBuffer->GetGPUVirtualAddress();
+			MBDx12->IndexBufferView.BufferLocation = MBDx12->IndexBuffer.GetResource()->GetGPUVirtualAddress();
 			MBDx12->IndexBufferView.SizeInBytes = IndexBufferSize;
 			MBDx12->IndexBufferView.Format = IndexType == EIT_16BIT ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 		}
@@ -988,13 +988,13 @@ namespace tix
 		TI_ASSERT(BufferSize > 0);
 		CD3DX12_HEAP_PROPERTIES defaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
-		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+
+		InsDx12->InstanceBuffer.CreateResource(
+			D3dDevice.Get(),
 			&defaultHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&vertexBufferDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&InsDx12->InstanceBuffer)));
+			D3D12_RESOURCE_STATE_COPY_DEST);
 
 		if (InInstanceData != nullptr)
 		{
@@ -1008,7 +1008,7 @@ namespace tix
 				nullptr,
 				IID_PPV_ARGS(&VertexBufferUpload)));
 
-			DX_SETNAME(InsDx12->InstanceBuffer.Get(), InstanceBuffer->GetResourceName() + "-INSB");
+			DX_SETNAME(InsDx12->InstanceBuffer.GetResource().Get(), InstanceBuffer->GetResourceName() + "-INSB");
 
 			// Upload the instance buffer to the GPU.
 			{
@@ -1017,15 +1017,15 @@ namespace tix
 				VertexData.RowPitch = BufferSize;
 				VertexData.SlicePitch = VertexData.RowPitch;
 
-				UpdateSubresources(CurrentWorkingCommandList.Get(), InsDx12->InstanceBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+				UpdateSubresources(CurrentWorkingCommandList.Get(), InsDx12->InstanceBuffer.GetResource().Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
 				if (InstanceBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 				{
-					Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+					Transition(&InsDx12->InstanceBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 				}
 				else if (InstanceBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 				{
-					Transition(InsDx12->InstanceBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
+					Transition(&InsDx12->InstanceBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
 				}
 				else
 				{
@@ -1039,7 +1039,7 @@ namespace tix
 
 
 		// Create vertex/index buffer views.
-		InsDx12->InstanceBufferView.BufferLocation = InsDx12->InstanceBuffer->GetGPUVirtualAddress();
+		InsDx12->InstanceBufferView.BufferLocation = InsDx12->InstanceBuffer.GetResource()->GetGPUVirtualAddress();
 		InsDx12->InstanceBufferView.StrideInBytes = InstanceBuffer->GetStride();
 		InsDx12->InstanceBufferView.SizeInBytes = BufferSize;
 
@@ -1819,12 +1819,22 @@ namespace tix
 		// Copy vertex data
 		TI_ASSERT(DstBuffer->GetVSFormat() == SrcBuffer->GetVSFormat());
 		TI_ASSERT(DstVertexOffset + VertexLength <= DstBuffer->GetVerticesCount() * DstBuffer->GetStride());
-		CurrentWorkingCommandList->CopyBufferRegion(DstBufferDx12->VertexBuffer.Get(), DstVertexOffset, SrcBufferDx12->VertexBuffer.Get(), SrcVertexOffset, VertexLength);
+		CurrentWorkingCommandList->CopyBufferRegion(
+			DstBufferDx12->VertexBuffer.GetResource().Get(), 
+			DstVertexOffset, 
+			SrcBufferDx12->VertexBuffer.GetResource().Get(), 
+			SrcVertexOffset, 
+			VertexLength);
 
 		// Copy index data
 		TI_ASSERT(DstBuffer->GetIndexType() == SrcBuffer->GetIndexType());
 		TI_ASSERT(DstIndexOffset + IndexLength <= (uint32)(DstBuffer->GetIndicesCount() * (DstBuffer->GetIndexType() == EIT_16BIT ? 2 : 4)));
-		CurrentWorkingCommandList->CopyBufferRegion(DstBufferDx12->IndexBuffer.Get(), DstIndexOffset, SrcBufferDx12->IndexBuffer.Get(), SrcIndexOffset, IndexLength);
+		CurrentWorkingCommandList->CopyBufferRegion(
+			DstBufferDx12->IndexBuffer.GetResource().Get(), 
+			DstIndexOffset, 
+			SrcBufferDx12->IndexBuffer.GetResource().Get(), 
+			SrcIndexOffset, 
+			IndexLength);
 
 		HoldResourceReference(DstBuffer);
 		HoldResourceReference(SrcBuffer);
@@ -1847,9 +1857,9 @@ namespace tix
 		TI_ASSERT(DstBuffer->GetStride() == SrcBuffer->GetStride());
 		TI_ASSERT(DstInstanceOffset + InstanceCount <= DstBuffer->GetInstancesCount());
 		CurrentWorkingCommandList->CopyBufferRegion(
-			DstBufferDx12->InstanceBuffer.Get(), 
+			DstBufferDx12->InstanceBuffer.GetResource().Get(),
 			DstInstanceOffset * InstanceStride, 
-			SrcBufferDx12->InstanceBuffer.Get(), 
+			SrcBufferDx12->InstanceBuffer.GetResource().Get(),
 			SrcInstanceOffset * InstanceStride, 
 			InstanceCount * InstanceStride);
 
@@ -2450,7 +2460,7 @@ namespace tix
 		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-		D3dDevice->CreateShaderResourceView(IBDx12->InstanceBuffer.Get(), &SRVDesc, Descriptor);
+		D3dDevice->CreateShaderResourceView(IBDx12->InstanceBuffer.GetResource().Get(), &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot)

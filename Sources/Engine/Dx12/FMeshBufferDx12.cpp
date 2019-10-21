@@ -39,8 +39,6 @@ namespace tix
 	FMeshBufferDx12::~FMeshBufferDx12()
 	{
 		TI_ASSERT(IsRenderThread());
-		VertexBuffer = nullptr;
-		IndexBuffer = nullptr;
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -56,7 +54,6 @@ namespace tix
 	FInstanceBufferDx12::~FInstanceBufferDx12()
 	{
 		TI_ASSERT(IsRenderThread());
-		InstanceBuffer = nullptr;
 	}
 }
 
