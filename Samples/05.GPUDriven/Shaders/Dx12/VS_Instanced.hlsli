@@ -22,9 +22,9 @@ struct VSInput
     float2 texcoord0 : TEXCOORD;
     float3 tangent : TANGENT;
 	float4 ins_transition : INS_TRANSITION;
-	half4 ins_transform0 : INS_TRANSFORM0;
-	half4 ins_transform1 : INS_TRANSFORM1;
-	half4 ins_transform2 : INS_TRANSFORM2;
+	float4 ins_transform0 : INS_TRANSFORM0;
+	float4 ins_transform1 : INS_TRANSFORM1;
+	float4 ins_transform2 : INS_TRANSFORM2;
 };
 
 struct VSOutput
@@ -36,9 +36,9 @@ struct VSOutput
 	float3 view : TexCoord1;
 };
 
-half3x3 GetWorldRotationMat(in VSInput vsInput)
+float3x3 GetWorldRotationMat(in VSInput vsInput)
 {
-	return half3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
+	return float3x3(vsInput.ins_transform0.xyz, vsInput.ins_transform1.xyz, vsInput.ins_transform2.xyz);
 }
 
 float3 GetWorldPosition(in VSInput vsInput)

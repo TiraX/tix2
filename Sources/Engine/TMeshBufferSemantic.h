@@ -48,9 +48,15 @@ namespace tix
 	const int32 TInstanceBuffer::SemanticSize[EISI_TOTAL] =
 	{
 		16,	// EISI_TRANSITION,
+#if USE_HALF_FOR_INSTANCE_ROTATION
 		8,	// EISI_ROT_SCALE_MAT0,
 		8,	// EISI_ROT_SCALE_MAT1,
 		8,	// EISI_ROT_SCALE_MAT2,
+#else
+		16,	// EISI_ROT_SCALE_MAT0,
+		16,	// EISI_ROT_SCALE_MAT1,
+		16,	// EISI_ROT_SCALE_MAT2,
+#endif
 	};
 
 	const int8* TInstanceBuffer::SemanticName[EISI_TOTAL] =

@@ -552,6 +552,22 @@ namespace tix
 		Rot2.W = Mat[11];
 	}
 
+	inline void MatrixRotationScaleToFloat3(const FMatrix& Mat, FFloat4& Rot0, FFloat4& Rot1, FFloat4& Rot2)
+	{
+		Rot0.X = Mat[0];
+		Rot0.Y = Mat[1];
+		Rot0.Z = Mat[2];
+		Rot0.W = Mat[3];
+		Rot1.X = Mat[4];
+		Rot1.Y = Mat[5];
+		Rot1.Z = Mat[6];
+		Rot1.W = Mat[7];
+		Rot2.X = Mat[8];
+		Rot2.Y = Mat[9];
+		Rot2.Z = Mat[10];
+		Rot2.W = Mat[11];
+	}
+
 	void TAssetFile::CreateSceneTile(TVector<TResourcePtr>& OutResources)
 	{
 		if (ChunkHeader[ECL_SCENETILE] == nullptr)
@@ -667,8 +683,13 @@ namespace tix
 					FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
 					FMatrix RotationScaleMat;
 					GetInstanceRotationScaleMatrix(RotationScaleMat, Instance.Rotation, Instance.Scale);
+#if USE_HALF_FOR_INSTANCE_ROTATION
 					FHalf4 RotScaleMat[3];
 					MatrixRotationScaleToHalf3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
+#else
+					FFloat4 RotScaleMat[3];
+					MatrixRotationScaleToFloat3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
+#endif
 
 					memcpy(Data + DataOffset, &Transition, sizeof(FFloat4));
 					DataOffset += sizeof(FFloat4);
