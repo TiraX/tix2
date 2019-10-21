@@ -17,7 +17,7 @@ namespace tix
 		FGPUCommandSignatureDx12(FPipelinePtr InPipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure);
 		virtual ~FGPUCommandSignatureDx12();
 
-		uint32 GetCommandStrideInBytes() const
+		virtual uint32 GetCommandStrideInBytes() const
 		{
 			return CommandStrideInBytes;
 		}

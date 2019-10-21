@@ -171,6 +171,7 @@ namespace tix
 			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
 			
+			uint32 PrimitiveIndexInDrawList = 0;
 			for (auto P : Primitives)
 			{
 				const vector2di& TilePos = P->GetSceneTilePos();
@@ -205,8 +206,10 @@ namespace tix
 				const uint32 PrimitiveInstanceEnd = PrimitiveInstanceStart + InstancesCountAndOffset.X;
 				for (uint32 i = PrimitiveInstanceStart; i < PrimitiveInstanceEnd; ++i)
 				{
+					SceneInstancesMetaInfo->UniformBufferData[i].Info.Y = PrimitiveIndexInDrawList;
 					SceneInstancesMetaInfo->UniformBufferData[i].Info.W = 1;
 				}
+				++PrimitiveIndexInDrawList;
 				SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
 			}
 		}

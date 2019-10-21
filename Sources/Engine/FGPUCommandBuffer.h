@@ -42,6 +42,14 @@ namespace tix
 			uint32 StartInstanceLocation
 		) = 0;
 
+		// These two method for debug
+		TI_API virtual const void* GetCommandData(uint32 CommandIndex) const
+		{
+			return nullptr;
+		}
+		TI_API virtual void SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize)
+		{}
+
 		static const uint32 MAX_BINDING_UNIFORMS = 4;
 		TI_API void AddVSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);
 		TI_API void AddPSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);

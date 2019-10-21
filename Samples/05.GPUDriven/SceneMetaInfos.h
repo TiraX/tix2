@@ -21,7 +21,8 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
 
-	// Info.x = primitive index this instance link to
+	// Info.x = primitive index this instance link to, in scene tile order, to access primitive bbox
+	// Info.y = primitive index in FScene::StaticDrawList
 	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
 	//#define MAX_INSTANCES_IN_SCENE (40 * 1024)
 	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneInstanceMetaInfo)
@@ -58,9 +59,9 @@ namespace tix
 		{
 			return ScenePrimitiveBBoxes->UniformBuffer;
 		}
-		FUniformBufferPtr GetInstanceMetaUniform()
+		FSceneInstanceMetaInfoPtr GetInstanceMetaUniform()
 		{
-			return SceneInstancesMetaInfo->UniformBuffer;
+			return SceneInstancesMetaInfo;
 		}
 		FInstanceBufferPtr GetMergedInstanceBuffer()
 		{

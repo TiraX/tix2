@@ -27,6 +27,7 @@ public:
 
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
+	void UpdateGPUCommandBufferTest(FRHI* RHI, FScene * Scene);
 	void DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer);
 
 private:
@@ -39,6 +40,7 @@ private:
 	FPipelinePtr DebugPipeline;
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
+	FGPUCommandBufferPtr GPUCommandBufferTest;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
 
 	SViewFrustum Frustum;

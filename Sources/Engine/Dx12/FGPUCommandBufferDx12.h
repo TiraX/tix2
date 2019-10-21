@@ -42,6 +42,9 @@ namespace tix
 			uint32 BaseVertexLocation,
 			uint32 StartInstanceLocation
 		) override;
+
+		virtual const void* GetCommandData(uint32 CommandIndex) const override;
+		virtual void SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize) override;
 	private:
 
 	private:

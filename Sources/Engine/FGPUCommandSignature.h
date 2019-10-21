@@ -24,6 +24,10 @@ namespace tix
 		FGPUCommandSignature(FPipelinePtr InPipeline, const TVector<E_GPU_COMMAND_TYPE>& InCommandStructure);
 		virtual ~FGPUCommandSignature();
 
+		TI_API virtual uint32 GetCommandStrideInBytes() const
+		{
+			return 0;
+		}
 		const TVector<E_GPU_COMMAND_TYPE>& GetCommandStructure() const
 		{
 			return CommandStructure;

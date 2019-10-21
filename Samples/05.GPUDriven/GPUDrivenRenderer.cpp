@@ -161,6 +161,58 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 }
 
+void FGPUDrivenRenderer::UpdateGPUCommandBufferTest(FRHI* RHI, FScene * Scene)
+{
+	// Encode all draw command to GPU command buffer
+	TI_TODO("Process opaque list for now, encode other list in future.");
+
+	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
+	const uint32 PrimsCount = (uint32)Primitives.size();
+	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
+	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
+	if (PrimsAdded == 0)
+	{
+		return;
+	}
+
+	GPUCommandBufferTest = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+#if defined (TIX_DEBUG)
+	GPUCommandBufferTest->SetResourceName("DrawListCBTest");
+#endif
+	GPUCommandBufferTest->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
+	// Copy instance as single draw call in gpu command buffer
+	typedef struct IndirectCommand
+	{
+		FUInt4 VBView;
+		FUInt4 IBView;
+
+		FUInt4 DrawArg0;
+		uint32 DrawArg1;
+	} IndirectCommand;
+	FSceneInstanceMetaInfoPtr InstanceMetaInfo = SceneMetaInfo->GetInstanceMetaUniform();
+	const uint32 CommandStride = GPUCommandSignature->GetCommandStrideInBytes();
+	TI_ASSERT(CommandStride == sizeof(IndirectCommand));
+	uint32 CommandTestIndex = 0;
+	for (uint32 Ins = 0 ; Ins < TotalInstances ; ++ Ins)
+	{
+		if (InstanceMetaInfo->UniformBufferData[Ins].Info.W > 0)
+		{
+			IndirectCommand ICB;
+			uint32 CommandIndex = InstanceMetaInfo->UniformBufferData[Ins].Info.Y;
+			memcpy(&ICB, GPUCommandBuffer->GetCommandData(CommandIndex), CommandStride);
+
+			ICB.DrawArg0.Y = 1;
+			ICB.DrawArg1 = Ins;
+
+			GPUCommandBufferTest->SetCommandData(CommandTestIndex, &ICB, CommandStride);
+			++CommandTestIndex;
+		}
+	}
+	TI_ASSERT(GPUCommandBufferTest->GetEncodedCommandsCount() <= TotalInstances);
+	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBufferTest);
+}
+
 void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 {
 	Frustum = InFrustum;
@@ -200,6 +252,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		_LOG(Log, "Update gpu command buffer.\n");
 		// Update GPU Command Buffer
 		UpdateGPUCommandBuffer(RHI, Scene);
+		UpdateGPUCommandBufferTest(RHI, Scene);
 	}
 
 	//bool test = false;
@@ -222,7 +275,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceCullCS->UpdateComputeArguments(
 				RHI,
 				SceneMetaInfo->GetPrimitiveBBoxesUniform(),
-				SceneMetaInfo->GetInstanceMetaUniform(),
+				SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 				SceneMetaInfo->GetMergedInstanceBuffer(),
 				FrustumUniform->UniformBuffer
 			);
@@ -233,7 +286,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI,
 				SceneMetaInfo,
 				InstanceCullCS->GetVisibleResult(),
-				SceneMetaInfo->GetInstanceMetaUniform(),
+				SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 				GPUCommandBuffer,
 				ProcessedGPUCommandBuffer);
 		}
@@ -282,7 +335,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 			else
 			{
-				DrawGPUCommandBuffer(RHI, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
+				DrawGPUCommandBuffer(RHI, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBufferTest);
 			}
 		}
 	}

@@ -147,5 +147,26 @@ namespace tix
 		// Remember commands encoded
 		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
+
+	const void * FGPUCommandBufferDx12::GetCommandData(uint32 CommandIndex) const
+	{
+		TI_ASSERT(CommandIndex < CommandsEncoded);
+		TI_ASSERT(GPUCommandSignature->GetCommandStrideInBytes() != 0);
+
+		uint32 CommandPos = CommandIndex * GPUCommandSignature->GetCommandStrideInBytes();
+		return CommandBufferData->GetBuffer() + CommandPos;
+	}
+
+	void FGPUCommandBufferDx12::SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize)
+	{
+		FGPUCommandSignatureDx12 * GPUCommandSignatureDx12 = static_cast<FGPUCommandSignatureDx12*>(GetGPUCommandSignature().get());
+		TI_ASSERT(GPUCommandSignatureDx12->GetCommandStrideInBytes() != 0 && GPUCommandSignatureDx12->GetCommandStrideInBytes() == InDataSize);
+
+		uint32 CommandPos = CommandIndex * GPUCommandSignatureDx12->GetCommandStrideInBytes();
+		CommandBufferData->Seek(CommandPos);
+		CommandBufferData->Set(InData, InDataSize);
+
+		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+	}
 }
 #endif
