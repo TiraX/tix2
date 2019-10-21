@@ -27,8 +27,9 @@ public:
 
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
-	void UpdateGPUCommandBufferTest(FRHI* RHI, FScene * Scene);
 	void DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer);
+
+	void SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene);
 
 private:
 	FSceneMetaInfos * SceneMetaInfo;

@@ -55,9 +55,9 @@ namespace tix
 			// Bad fix!
 			return ScenePrimitiveBBoxes != nullptr && ScenePrimitiveBBoxes->UniformBuffer != nullptr;
 		}
-		FUniformBufferPtr GetPrimitiveBBoxesUniform()
+		FScenePrimitiveBBoxesPtr GetPrimitiveBBoxesUniform()
 		{
-			return ScenePrimitiveBBoxes->UniformBuffer;
+			return ScenePrimitiveBBoxes;
 		}
 		FSceneInstanceMetaInfoPtr GetInstanceMetaUniform()
 		{

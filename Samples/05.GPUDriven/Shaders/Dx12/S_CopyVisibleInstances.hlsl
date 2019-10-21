@@ -44,8 +44,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint InstanceIndex = groupId.x * threadBlockSize + threadIDInGroup.x;
 	if (InstanceMetaInfos[InstanceIndex].Info.w > 0 &&
 		InstanceVisibleInfos[InstanceIndex].Visible > 0)
-	{
-		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.x;
+	//if (InstanceMetaInfos[InstanceIndex].Info.w > 0 )
+		{
+		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.y;
 
 		IndirectCommand Command = InputCommands[PrimitiveIndex];
 		Command.DrawArguments0.y = 1;	// Change instance count to 1

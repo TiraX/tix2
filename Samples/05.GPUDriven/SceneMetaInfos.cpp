@@ -8,7 +8,7 @@
 
 namespace tix
 {
-#define LOG_LOADING_INFO (1)
+#define LOG_LOADING_INFO (0)
 #if LOG_LOADING_INFO
 #	define SCENE_META_LOG _LOG
 #else

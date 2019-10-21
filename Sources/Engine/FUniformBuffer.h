@@ -49,7 +49,7 @@ namespace tix
 
 #define END_UNIFORM_BUFFER_STRUCT(StructTypeName) \
 		}; \
-		uint32 GetElementsSize() const \
+		uint32 GetElementsCount() const \
 		{ \
 			return (uint32)UniformBufferData.size(); \
 		} \
@@ -60,14 +60,14 @@ namespace tix
 		TVector<FUniformBufferStruct> UniformBufferData; \
 		void InitToZero() \
 		{ \
-			memset(UniformBufferData.data(), 0, GetStructureStrideInBytes() * GetElementsSize() ); \
+			memset(UniformBufferData.data(), 0, GetStructureStrideInBytes() * GetElementsCount() ); \
 		} \
 		FUniformBufferPtr UniformBuffer; \
 		FUniformBufferPtr InitUniformBuffer(uint32 UBFlag = 0) \
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), GetElementsSize(), UBFlag); \
+			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), GetElementsCount(), UBFlag); \
 			RHI->UpdateHardwareResourceUB(UniformBuffer, UniformBufferData.data()); \
 			return UniformBuffer; \
 		} \
