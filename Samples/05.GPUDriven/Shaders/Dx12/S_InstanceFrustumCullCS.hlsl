@@ -77,7 +77,7 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 	NewOrigin = Origin.zzz * Trans.ins_transform2.xyz + NewOrigin;
 	NewOrigin += Trans.ins_transition.xyz;
 
-	float3 NewExtent = Extent.xxx * Trans.ins_transform0.xyz;
+	float3 NewExtent = abs(Extent.xxx * Trans.ins_transform0.xyz);
 	NewExtent += abs(Extent.yyy * Trans.ins_transform1.xyz);
 	NewExtent += abs(Extent.zzz * Trans.ins_transform2.xyz);
 
@@ -102,8 +102,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
 		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
-		//MinEdge.xyz = PrimMinEdge.xyz + InstanceData[InstanceIndex].ins_transition.xyz;
-		//MaxEdge.xyz = PrimMaxEdge.xyz + InstanceData[InstanceIndex].ins_transition.xyz;
 
 		//if (MinEdge.x <= BBoxMax.x &&
 		//	MinEdge.y <= BBoxMax.y &&

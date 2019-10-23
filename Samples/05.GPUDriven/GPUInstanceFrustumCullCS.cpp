@@ -48,7 +48,8 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 void FGPUInstanceFrustumCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = VisibilityResult->GetElements() / BlockSize;
+	const uint32 DispatchSize = (VisibilityResult->GetElements() + (BlockSize - 1)) / BlockSize;
+	TI_TODO("Here can test ECR_INTERSECT tiles' instances only.")
 
 	if (FrustumUniform != nullptr)
 	{

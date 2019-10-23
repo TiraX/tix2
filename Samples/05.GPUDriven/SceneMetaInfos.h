@@ -46,7 +46,7 @@ namespace tix
 			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
 			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
 		};
-		bool HasMetaFlag(FSceneMetaFlag InMetaFlag) const
+		bool HasMetaFlag(uint32 InMetaFlag) const
 		{
 			return (SceneMetaFlags & InMetaFlag) != 0;
 		}

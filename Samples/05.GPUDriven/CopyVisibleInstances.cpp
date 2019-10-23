@@ -59,7 +59,7 @@ void FCopyVisibleInstances::UpdateComputeArguments(
 void FCopyVisibleInstances::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = ProcessedCommandBuffer->GetEncodedCommandsCount() / BlockSize;
+	const uint32 DispatchSize = (ProcessedCommandBuffer->GetEncodedCommandsCount() + (BlockSize - 1)) / BlockSize;
 
 	// Reset command buffer counter
 	RHI->ComputeCopyBuffer(

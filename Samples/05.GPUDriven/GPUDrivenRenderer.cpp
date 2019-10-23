@@ -13,15 +13,6 @@ FGPUDrivenRenderer * FGPUDrivenRenderer::Get()
 	return GPUDrivenRenderer;
 }
 
-
-inline vector3df ti_abs(const vector3df& x)
-{
-	vector3df Ret;
-	Ret.X = ti_abs(x.X);
-	Ret.Y = ti_abs(x.Y);
-	Ret.Z = ti_abs(x.Z);
-	return Ret;
-}
 FGPUDrivenRenderer::FGPUDrivenRenderer()
 	: SceneMetaInfo(nullptr)
 {
@@ -235,7 +226,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	static bool Indirect = !false;
 	static bool DrawCulled = !false;
 
-	TI_TODO("Cull Scene tile in render thread. Then only collect visible scene tile resources");
 	if (bPerformGPUCulling)
 	{
 		SceneMetaInfo->DoSceneTileCulling(Scene, Frustum);
@@ -244,7 +234,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		SceneMetaInfo->CollectInstanceBuffers(Scene);
 	}
 
-	if (bPerformGPUCulling && SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
+	if (bPerformGPUCulling && 
+		SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty | FSceneMetaInfos::MetaFlag_ScenePrimitiveMetaDirty))
 	{
 		_LOG(Log, "Update gpu command buffer.\n");
 		// Update GPU Command Buffer

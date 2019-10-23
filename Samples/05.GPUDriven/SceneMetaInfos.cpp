@@ -229,22 +229,26 @@ namespace tix
 
 			// SceneInstancesAdded calculated in CollectSceneMetaInfos().
 			const uint32 TotalInstances = SceneInstancesAdded;
-			MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
-#if defined (TIX_DEBUG)
-			MergedInstanceBuffer->SetResourceName("SceneMergedIB");
-#endif
-			RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
-
-			uint32 InstanceDstOffset = 0;
-			for (const auto& TilePos : SortedTilePositions)
+			if (TotalInstances > 0)
 			{
-				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
-				FInstanceBufferPtr TileInstances = TileRes->GetInstanceBuffer();
+				MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
+#if defined (TIX_DEBUG)
+				MergedInstanceBuffer->SetResourceName("SceneMergedIB");
+#endif
+				RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
 
-				RHI->CopyBufferRegion(MergedInstanceBuffer, InstanceDstOffset, TileInstances, 0, TileInstances->GetInstancesCount());
-				InstanceDstOffset += TileInstances->GetInstancesCount();
+				uint32 InstanceDstOffset = 0;
+				for (const auto& TilePos : SortedTilePositions)
+				{
+					FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+					FInstanceBufferPtr TileInstances = TileRes->GetInstanceBuffer();
+
+					RHI->CopyBufferRegion(MergedInstanceBuffer, InstanceDstOffset, TileInstances, 0, TileInstances->GetInstancesCount());
+					InstanceDstOffset += TileInstances->GetInstancesCount();
+				}
+				TI_ASSERT(InstanceDstOffset == TotalInstances);
+
 			}
-			TI_ASSERT(InstanceDstOffset == TotalInstances);
 		}
 	}
 
