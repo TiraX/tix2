@@ -274,6 +274,11 @@ namespace tix
 			is slower than transformBox(). */
 		void transformBoxEx(aabbox3d<T>& box) const;
 
+		//! Transforms a axis aligned bounding box from UE4 FBox::TransformBy(const FMatrix& M)
+		/** Faster than  transformBoxEx() in release version;
+		*/
+		void transformBoxUE4(aabbox3d<T>& box) const;
+
 		//! Multiplies this matrix by a 1x4 matrix
 		void multiplyWith1x4Matrix(T* matrix) const;
 
@@ -1158,6 +1163,40 @@ namespace tix
 		box.MaxEdge.setZ(Bmax[2]);
 	}
 
+	template<typename T>
+	inline vector3d<T> ti_vec_abs(const vector3d<T>& vec)
+	{
+		vector3d<T> new_vec;
+		new_vec.X = ti_abs(vec.X);
+		new_vec.Y = ti_abs(vec.Y);
+		new_vec.Z = ti_abs(vec.Z);
+		return new_vec;
+	}
+
+	//! Transforms a axis aligned bounding box from UE4 FBox::TransformBy(const FMatrix& M)
+	template <class T>
+	inline void CMatrix4<T>::transformBoxUE4(aabbox3d<T>& box) const
+	{
+		vector3d<T> Origin = box.getCenter();
+		vector3d<T> Extent = box.getExtent() * 0.5f;
+
+		vector3d<T> Rot0(M[0], M[1], M[2]);
+		vector3d<T> Rot1(M[4], M[5], M[6]);
+		vector3d<T> Rot2(M[8], M[9], M[10]);
+		vector3d<T> Trans(M[12], M[13], M[14]);
+
+		vector3d<T> NewOrigin = vector3d<T>(Origin.X, Origin.X, Origin.X) * Rot0;
+		NewOrigin = vector3d<T>(Origin.Y, Origin.Y, Origin.Y) * Rot1 + NewOrigin;
+		NewOrigin = vector3d<T>(Origin.Z, Origin.Z, Origin.Z) * Rot2 + NewOrigin;
+		NewOrigin = NewOrigin + Trans;
+
+		vector3d<T> NewExtent = ti_vec_abs<T>(vector3d<T>(Extent.X, Extent.X, Extent.X) * Rot0);
+		NewExtent = NewExtent + ti_vec_abs<T>(vector3d<T>(Extent.Y, Extent.Y, Extent.Y) * Rot1);
+		NewExtent = NewExtent + ti_vec_abs<T>(vector3d<T>(Extent.Z, Extent.Z, Extent.Z) * Rot2);
+
+		box.MinEdge = NewOrigin - NewExtent;
+		box.MaxEdge = NewOrigin + NewExtent;
+	}
 
 	//! Multiplies this matrix by a 1x4 matrix
 	template <class T>
