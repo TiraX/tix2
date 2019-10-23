@@ -233,15 +233,18 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	static bool bPerformGPUCulling = true;
 	static bool Indirect = !false;
-	static bool DrawCulled = false;
+	static bool DrawCulled = !false;
 
 	TI_TODO("Cull Scene tile in render thread. Then only collect visible scene tile resources");
-	SceneMetaInfo->DoSceneTileCulling(Scene, Frustum);
+	if (bPerformGPUCulling)
+	{
+		SceneMetaInfo->DoSceneTileCulling(Scene, Frustum);
 
-	SceneMetaInfo->CollectSceneMetaInfos(Scene);
-	SceneMetaInfo->CollectInstanceBuffers(Scene);
+		SceneMetaInfo->CollectSceneMetaInfos(Scene);
+		SceneMetaInfo->CollectInstanceBuffers(Scene);
+	}
 
-	if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
+	if (bPerformGPUCulling && SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneTileMetaDirty))
 	{
 		_LOG(Log, "Update gpu command buffer.\n");
 		// Update GPU Command Buffer
