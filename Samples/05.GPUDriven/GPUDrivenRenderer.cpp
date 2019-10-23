@@ -223,6 +223,7 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 	if (InGPUCommandBuffer != nullptr)
 	{
 		// Set merged instance buffer
+		RHI->SetResourceStateCB(InGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->ExecuteGPUCommands(InGPUCommandBuffer);
 	}

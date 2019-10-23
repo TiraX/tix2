@@ -1871,9 +1871,15 @@ namespace tix
 
 	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
 	{
-		FUniformBufferReadableDx12 * UniformBufferDx12 = static_cast<FUniformBufferReadableDx12*>(InUniformBuffer.get());
+		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 		Transition(&UniformBufferDx12->BufferResource, TiX2DxResourceStateMap[NewState]);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+	}
+
+	void FRHIDx12::SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState)
+	{
+		FUniformBufferPtr CommandBuffer = InCommandBuffer->GetCommandBuffer();
+		SetResourceStateUB(CommandBuffer, NewState);
 	}
 
 	bool FRHIDx12::UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget)
