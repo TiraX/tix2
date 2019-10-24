@@ -18,6 +18,7 @@ namespace tix
 	FSceneMetaInfos::FSceneMetaInfos()
 		: SceneMetaFlags(0)
 		, SceneInstancesAdded(0)
+		, SceneInstancesIntersected(0)
 		, ScenePrimitivesAdded(0)
 		, SceneTileIntersected(0)
 		, SceneTileInner(0)
@@ -105,15 +106,21 @@ namespace tix
 
 			// Collect instances info, and remember meta infos
 			SceneInstancesAdded = 0;
+			SceneInstancesIntersected = 0;
 			ScenePrimitivesAdded = 0;
 			ActiveSceneTileInfoMap.clear();
-			for (const auto& TilePos : SortedTilePositions)
+			for (uint32 t = 0 ; t < (uint32)SortedTilePositions.size() ; ++ t)
 			{
+				const vector2di& TilePos = SortedTilePositions[t];
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
 				// Get available Instances range of this tile
 				const uint32 InstancesStartIndex = SceneInstancesAdded;
 				SceneInstancesAdded += TileRes->GetInstanceBuffer()->GetInstancesCount();
+				if (t < SceneTileIntersected)
+				{
+					SceneInstancesIntersected += TileRes->GetInstanceBuffer()->GetInstancesCount();
+				}
 
 				// Get available Primitive range of this tile
 				const uint32 PrimitiveStartIndex = ScenePrimitivesAdded;

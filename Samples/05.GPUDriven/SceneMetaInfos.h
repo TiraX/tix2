@@ -71,6 +71,10 @@ namespace tix
 		{
 			return SceneInstancesAdded;
 		}
+		uint32 GetSceneInstancesIntersected() const
+		{
+			return SceneInstancesIntersected;
+		}
 		uint32 GetScenePrimitivesAdded() const
 		{
 			return ScenePrimitivesAdded;
@@ -91,11 +95,11 @@ namespace tix
 		//FSceneTileMetaInfoPtr SceneTileMetaInfo;
 		THMap<vector2di, uint32> SceneTileVisibleInfo;
 		
-		// Static mesh count that added to scene from visible scene tiles
-		// A static mesh can contain 1 or more primitives
-		//uint32 SceneStaticMeshAdded;
 		// Instances Count that added to scene from visible scene tiles
 		uint32 SceneInstancesAdded;
+		// Instances Count from scene tiles which intersects with view frustum 
+		// (instances from scene tiles inner frustum do not need GPU cull calculation, since they are always visible.) 
+		uint32 SceneInstancesIntersected;
 		// Primitives count that added to scene from visible scene tiles
 		// Each primitive is a mesh section
 		uint32 ScenePrimitivesAdded;

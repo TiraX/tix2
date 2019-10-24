@@ -264,8 +264,10 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 					SceneMetaInfo->GetMergedInstanceBuffer(),
-					FrustumUniform->UniformBuffer
+					FrustumUniform->UniformBuffer,
+					SceneMetaInfo->GetSceneInstancesIntersected()
 				);
+				_LOG(Log, "Instances : %d, Intersected : %d.\n", SceneMetaInfo->GetSceneInstancesAdded(), SceneMetaInfo->GetSceneInstancesIntersected());
 			}
 		}
 		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))

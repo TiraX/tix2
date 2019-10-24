@@ -9,6 +9,7 @@
 
 FGPUInstanceFrustumCullCS::FGPUInstanceFrustumCullCS()
 	: FComputeTask("S_InstanceFrustumCullCS")
+	, InstancesNeedToCull(0)
 {
 }
 
@@ -22,18 +23,48 @@ void FGPUInstanceFrustumCullCS::PrepareResources(FRHI * RHI)
 	ResourceTable = RHI->CreateRenderResourceTable(4, EHT_SHADER_RESOURCE);
 }
 
+inline void DoFillData(uint32 * DataDst, uint32 Count)
+{
+	uint32 i = 0;
+	const uint32 Value = 1;
+	const uint32 Count1 = Count - 8;
+	for ( ; i < Count1 ; i += 8)
+	{
+		DataDst[i + 0] = Value;
+		DataDst[i + 1] = Value;
+		DataDst[i + 2] = Value;
+		DataDst[i + 3] = Value;
+		DataDst[i + 4] = Value;
+		DataDst[i + 5] = Value;
+		DataDst[i + 6] = Value;
+		DataDst[i + 7] = Value;
+	}
+	for ( ; i < Count ; i ++)
+	{
+		DataDst[i] = Value;
+	}
+}
+
 void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	FRHI * RHI, 
 	FUniformBufferPtr PrimitiveBBoxes,
 	FUniformBufferPtr InstanceMetaInfo,
 	FInstanceBufferPtr SceneInstanceData,
-	FUniformBufferPtr InFrustumUniform)
+	FUniformBufferPtr InFrustumUniform,
+	uint32 InstancesCountIntersectWithFrustum)
 {
 	if (VisibilityResult == nullptr || VisibilityResult->GetElements() != InstanceMetaInfo->GetElements())
 	{
 		// Create visibility buffer to save tile visibility result
 		VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
 		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
+
+		FillVisibilityBuffer = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_INTERMEDIATE);
+		const uint32 ElementsCount = ti_align4(InstanceMetaInfo->GetElements());
+		uint32 * FillData = ti_new uint32[ElementsCount];
+		DoFillData(FillData, ElementsCount);
+		RHI->UpdateHardwareResourceUB(FillVisibilityBuffer, FillData);
+		ti_delete[] FillData;
 	}
 
 	TI_TODO("Does this resource table, need to re-create?");
@@ -43,16 +74,19 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	ResourceTable->PutUniformBufferInTable(VisibilityResult, 3);
 
 	FrustumUniform = InFrustumUniform;
+	InstancesNeedToCull = InstancesCountIntersectWithFrustum;
 }
 
 void FGPUInstanceFrustumCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (VisibilityResult->GetElements() + (BlockSize - 1)) / BlockSize;
-	TI_TODO("Here can test ECR_INTERSECT tiles' instances only.")
+	//const uint32 DispatchSize = (VisibilityResult->GetElements() + (BlockSize - 1)) / BlockSize;
+	const uint32 DispatchSize = (InstancesNeedToCull + BlockSize - 1) / BlockSize;
 
 	if (FrustumUniform != nullptr)
 	{
+		RHI->CopyBufferRegion(VisibilityResult, 0, FillVisibilityBuffer, VisibilityResult->GetTotalBufferSize());
+
 		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeBuffer(0, FrustumUniform);
 		RHI->SetComputeResourceTable(1, ResourceTable);
