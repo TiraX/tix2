@@ -1635,7 +1635,8 @@ namespace tix
 		}
 		else
 		{
-			const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+			//const int32 AlignedDataSize = ti_align(UniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+			const int32 AlignedDataSize = UniformBuffer->GetTotalBufferSize();
 			CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedDataSize);
 
 			if ((UniformBuffer->GetFlag() & UB_FLAG_INTERMEDIATE) != 0)
