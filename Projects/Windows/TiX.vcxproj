@@ -70,6 +70,7 @@
     <ClCompile Include="..\..\Sources\Engine\TAsset.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TAssetFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TAssetLibrary.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TCollisionSet.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TConsoleVariable.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TCVars.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="..\..\Sources\Engine\TAssetFile.h" />
     <ClInclude Include="..\..\Sources\Engine\TAssetFileDef.h" />
     <ClInclude Include="..\..\Sources\Engine\TAssetLibrary.h" />
+    <ClInclude Include="..\..\Sources\Engine\TCollisionSet.h" />
     <ClInclude Include="..\..\Sources\Engine\TConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TConsoleVariable.h" />
     <ClInclude Include="..\..\Sources\Engine\TCrc.h" />

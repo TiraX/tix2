@@ -55,6 +55,7 @@ using namespace std;
 #include "TResource.h"
 #include "TTexture.h"
 #include "TMeshBuffer.h"
+#include "TCollisionSet.h"
 #include "TPipeline.h"
 #include "TShader.h"
 #include "TMaterial.h"

@@ -289,6 +289,9 @@
     <ClCompile Include="..\..\Sources\Engine\FSceneTileResource.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCollisionSet.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -676,6 +679,9 @@
       <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FSceneTileResource.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TCollisionSet.h">
       <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>

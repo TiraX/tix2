@@ -165,6 +165,29 @@ namespace tix
 		}
 	};
 
+	struct THeaderCollisionSet
+	{
+		uint32 NumSpheres;
+		uint32 NumBoxes;
+		uint32 NumCapsules;
+		uint32 NumConvexes;
+		uint32 SpheresSizeInBytes;
+		uint32 BoxesSizeInBytes;
+		uint32 CapsulesSizeInBytes;
+		uint32 ConvexesSizeInBytes;
+
+		THeaderCollisionSet()
+			: NumSpheres(0)
+			, NumBoxes(0)
+			, NumCapsules(0)
+			, NumConvexes(0)
+			, SpheresSizeInBytes(0)
+			, BoxesSizeInBytes(0)
+			, CapsulesSizeInBytes(0)
+			, ConvexesSizeInBytes(0)
+		{}
+	};
+
 	struct THeaderTexture
 	{
 		int32 StrId_Name;

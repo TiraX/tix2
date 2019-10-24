@@ -185,9 +185,11 @@ namespace tix
 			return;
 		}
 		
-		OutResources.reserve(MeshCount);
+		OutResources.reserve(MeshCount + 1);
+
+		// Load meshes
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount;
+		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderCollisionSet);
 		int32 MeshDataOffset = 0;
 		for (int32 i = 0; i < MeshCount; ++i)
 		{
@@ -217,6 +219,62 @@ namespace tix
 			Mesh->SetDefaultMaterial(MaterialInstance);
 
 			OutResources.push_back(Mesh);
+		}
+
+		// Load collisions
+		{
+			const int8* CollisionHeaderStart = MeshDataStart + sizeof(THeaderMesh) * MeshCount;
+			const int8* CollisionDataStart = VertexDataStart + MeshDataOffset;
+			THeaderCollisionSet * HeaderCollision = (THeaderCollisionSet*)CollisionHeaderStart;
+
+			const int8* CollisionSphereData = CollisionDataStart;
+			const int8* CollisionBoxData = CollisionSphereData + HeaderCollision->SpheresSizeInBytes;
+			const int8* CollisionCapsuleData = CollisionBoxData + HeaderCollision->BoxesSizeInBytes;
+			const int8* CollisionConvexCount = CollisionCapsuleData + HeaderCollision->CapsulesSizeInBytes;
+			const int8* CollisionConvexData = CollisionConvexCount + sizeof(vector2du) * HeaderCollision->NumConvexes;
+
+			TI_ASSERT(sizeof(TCollisionSet::TSphere) * HeaderCollision->NumSpheres == HeaderCollision->SpheresSizeInBytes);
+			TI_ASSERT(sizeof(TCollisionSet::TBox) * HeaderCollision->NumBoxes == HeaderCollision->BoxesSizeInBytes);
+			TI_ASSERT(sizeof(TCollisionSet::TCapsule) * HeaderCollision->NumCapsules == HeaderCollision->CapsulesSizeInBytes);
+			TI_ASSERT(sizeof(vector2du) * HeaderCollision->NumConvexes == HeaderCollision->ConvexesSizeInBytes);
+
+			TCollisionSetPtr CollisionSet = ti_new TCollisionSet;
+			CollisionSet->Spheres.resize(HeaderCollision->NumSpheres);
+			CollisionSet->Boxes.resize(HeaderCollision->NumBoxes);
+			CollisionSet->Capsules.resize(HeaderCollision->NumCapsules);
+			CollisionSet->Convexes.resize(HeaderCollision->NumConvexes);
+
+			const TCollisionSet::TSphere * SphereData = (const TCollisionSet::TSphere*)CollisionSphereData;
+			for (uint32 i = 0; i < HeaderCollision->NumSpheres; ++i)
+			{
+				CollisionSet->Spheres[i] = SphereData[i];
+			}
+			const TCollisionSet::TBox * BoxData = (const TCollisionSet::TBox*)CollisionBoxData;
+			for (uint32 i = 0; i < HeaderCollision->NumBoxes; ++i)
+			{
+				CollisionSet->Boxes[i] = BoxData[i];
+			}
+			const TCollisionSet::TCapsule * CapsuleData = (const TCollisionSet::TCapsule*)CollisionCapsuleData;
+			for (uint32 i = 0; i < HeaderCollision->NumCapsules; ++i)
+			{
+				CollisionSet->Capsules[i] = CapsuleData[i];
+			}
+			const vector2du * ConvexDataCount = (const vector2du*)CollisionConvexCount;
+			uint32 ConvexDataOffset = 0;
+			for (uint32 i = 0 ; i < HeaderCollision->NumConvexes ; ++i)
+			{
+				const uint32 VertexCount = ConvexDataCount[i].X;
+				const uint32 IndexCount = ConvexDataCount[i].Y;
+
+				CollisionSet->Convexes[i].VertexData.resize(VertexCount);
+				CollisionSet->Convexes[i].IndexData.resize(IndexCount);
+
+				memcpy(CollisionSet->Convexes[i].VertexData.data(), CollisionConvexData + ConvexDataOffset, VertexCount * sizeof(vector3df));
+				ConvexDataOffset += VertexCount * sizeof(vector3df);
+				memcpy(CollisionSet->Convexes[i].IndexData.data(), CollisionConvexData + ConvexDataOffset, IndexCount * sizeof(uint16));
+				ConvexDataOffset += ti_align4(uint32(IndexCount * sizeof(uint16)));
+			}
+			//OutResources.push_back(CollisionSet);
 		}
 	}
 

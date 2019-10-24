@@ -19,6 +19,7 @@ namespace tix
 		ERES_SHADER,
 		ERES_INSTANCE,
 		ERES_SCENE_TILE,
+		ERES_COLLISION,
 
 		ERES_COUNT,
 	};

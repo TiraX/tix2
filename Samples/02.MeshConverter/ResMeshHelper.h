@@ -104,5 +104,11 @@ namespace tix
 
 	private:
 		TVector<TResMeshDefine> Meshes;
+
+		TVector<TCollisionSet::TSphere> ColSpheres;
+		TVector<TCollisionSet::TBox> ColBoxes;
+		TVector<TCollisionSet::TCapsule> ColCapsules;
+		TVector<TCollisionSet::TConvex> ColConvexes;
+
 	};
 }
