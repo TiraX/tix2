@@ -101,13 +101,15 @@ namespace tix
 						{
 							// Gather loaded mesh resources
 							TVector<FPrimitivePtr> LinkedPrimitives;
-							const TVector<TResourcePtr>& MeshSections = MeshAsset->GetResources();
-							const uint32 TotalSections = (uint32)MeshSections.size();
-							TI_ASSERT(SceneTileResource->MeshSectionsCount[m] == TotalSections);
+							// MeshResources Include mesh sections and 1 collision set
+							const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
+							const int32 TotalSections = (int32)MeshResources.size() - 1;
+							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
 							LinkedPrimitives.reserve(TotalSections);
-							for (uint32 Section = 0 ; Section < TotalSections ; ++ Section)
+							for (int32 Section = 0 ; Section < TotalSections ; ++ Section)
 							{
-								TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshSections[Section].get());
+								TI_ASSERT(MeshResources[Section]->GetType() == ERES_MESH);
+								TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshResources[Section].get());
 								TI_ASSERT(Mesh->MeshBufferResource != nullptr);
 
 								FPrimitivePtr Primitive = ti_new FPrimitive;
@@ -129,6 +131,17 @@ namespace tix
 								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 								{
 									FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
+								});
+
+							// Add Collision to scene
+							TI_ASSERT(0);
+							TResourcePtr CollisionResource = MeshResources[TotalSections];
+							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
+							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());
+							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileOccluderFromCollision,
+								TCollisionSetPtr, CollisionSet, CollisionSet,
+								{
+									FRenderThread::Get()->GetRenderScene()->AddOccluderFromCollisionSet(CollisionSet);
 								});
 
 							// Remove the reference holder

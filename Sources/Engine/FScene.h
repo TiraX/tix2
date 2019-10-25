@@ -36,6 +36,10 @@ namespace tix
 		void AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
 		void RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
 
+		// Add / Remove occluders
+		void AddOccluderFromCollisionSet(TCollisionSetPtr InCollisions);
+		void RemoveOccluders();
+
 		void AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 		void RemoveSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 

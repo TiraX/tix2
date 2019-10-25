@@ -274,7 +274,7 @@ namespace tix
 				memcpy(CollisionSet->Convexes[i].IndexData.data(), CollisionConvexData + ConvexDataOffset, IndexCount * sizeof(uint16));
 				ConvexDataOffset += ti_align4(uint32(IndexCount * sizeof(uint16)));
 			}
-			//OutResources.push_back(CollisionSet);
+			OutResources.push_back(CollisionSet);
 		}
 	}
 
