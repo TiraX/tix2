@@ -83,9 +83,9 @@ namespace tix
 
 	void TMeshBuffer::SetVertexStreamData(
 		uint32 InFormat,
-		const void* InVertexData, int32 InVertexCount,
+		const void* InVertexData, uint32 InVertexCount,
 		E_INDEX_TYPE InIndexType,
-		const void* InIndexData, int32 InIndexCount)
+		const void* InIndexData, uint32 InIndexCount)
 	{
 		VsFormat = InFormat;
 		VsDataCount = InVertexCount;

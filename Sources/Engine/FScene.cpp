@@ -87,6 +87,7 @@ namespace tix
 
 	void FScene::AddOccluderFromCollisionSet(TCollisionSetPtr InCollisions)
 	{
+		TMeshBufferPtr Mesh = InCollisions->ConvertToMesh();
 		TI_ASSERT(0);
 	}
 

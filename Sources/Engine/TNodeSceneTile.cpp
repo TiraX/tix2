@@ -134,7 +134,6 @@ namespace tix
 								});
 
 							// Add Collision to scene
-							TI_ASSERT(0);
 							TResourcePtr CollisionResource = MeshResources[TotalSections];
 							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
 							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());

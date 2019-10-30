@@ -303,7 +303,7 @@ namespace tix
 	typedef vector3d<float32> vector3df;
 	typedef vector3d<float16> vector3dh;
 	//! Typedef for an integer 3d vector.
-	typedef vector3d<int> vector3di;
+	typedef vector3d<int32> vector3di;
 
 	//! Function multiplying a scalar and a vector component-wise.
 	template<class S, class T>
