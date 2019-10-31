@@ -46,7 +46,7 @@ namespace tix
 
 		for (const auto& Capsule : Capsules)
 		{
-			TShape::CreateCapsule(Capsule.Center, Capsule.Radius, Capsule.Length, Capsule.Rotation, Positions, Indices);
+			TShape::CreateCapsule(6, 10, Capsule.Center, Capsule.Radius, Capsule.Length, Capsule.Rotation, Positions, Indices);
 		}
 
 		for (const auto& Convex : Convexes)

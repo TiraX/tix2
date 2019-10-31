@@ -25,6 +25,8 @@ namespace tix
 			TVector<uint16>& OutIndices);
 
 		static void CreateCapsule(
+			uint32 Latitude,
+			uint32 Longitude,
 			const vector3df& Center, 
 			float Radius, 
 			float Length, 

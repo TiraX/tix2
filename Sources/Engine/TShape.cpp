@@ -272,6 +272,85 @@ namespace tix
 		memcpy(OutIndices.data(), Faces, sizeof(Faces));
 	}
 
+	void _CreateCapsule(uint32 Latitude, uint32 Longitude, TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
+	{
+		//(x, y, z) = (sin(Pi * m/M) cos(2Pi * n/N), sin(Pi * m/M) sin(2Pi * n/N), cos(Pi * m/M))
+		OutPositions.clear();
+		OutIndices.clear();
+		OutPositions.reserve(Longitude * Latitude + 2);
+		OutIndices.reserve(Longitude * (Latitude - 1) * 6 + Longitude * 2 * 3);
+
+		// Calculate positions
+		OutPositions.push_back(vector3df(0, 0, 1.f));
+		for (uint32 Lat = 1; Lat < Latitude; ++Lat)
+		{
+			for (uint32 Long = 0; Long < Longitude; ++Long)
+			{
+				vector3df Pos;
+				Pos.X = sin(PI * Lat / Latitude) * cos(PI * 2.f * Long / Longitude);
+				Pos.Y = sin(PI * Lat / Latitude) * sin(PI * 2.f * Long / Longitude);
+				Pos.Z = cos(PI * Lat / Latitude);
+				OutPositions.push_back(Pos);
+			}
+			if (Lat == Latitude / 2)
+			{
+				// duplicate middle latitude
+				for (uint32 Long = 0; Long < Longitude; ++Long)
+				{
+					vector3df Pos;
+					Pos.X = sin(PI * Lat / Latitude) * cos(PI * 2.f * Long / Longitude);
+					Pos.Y = sin(PI * Lat / Latitude) * sin(PI * 2.f * Long / Longitude);
+					Pos.Z = cos(PI * Lat / Latitude);
+					OutPositions.push_back(Pos);
+				}
+			}
+		}
+		OutPositions.push_back(vector3df(0, 0, -1.f));
+
+		// Create indices
+		// First Latitude
+		for (uint32 Tri = 0; Tri < Longitude; ++Tri)
+		{
+			OutIndices.push_back(0);
+			OutIndices.push_back((Tri + 1) % Longitude + 1);
+			OutIndices.push_back(Tri + 1);
+		}
+
+		// Middle faces
+		for (uint32 i = 0; i < Latitude - 1; ++i)
+		{
+			int CurrLineStart = Longitude * i + 1;
+			int NextLineStart = CurrLineStart + Longitude;
+
+			for (uint32 l = 0; l < Longitude; ++l) {
+				int curr0, curr1, next0, next1;
+				curr0 = l + CurrLineStart;
+				curr1 = (l + 1) % Longitude + CurrLineStart;
+				next0 = l + NextLineStart;
+				next1 = (l + 1) % Longitude + NextLineStart;
+				OutIndices.push_back(curr0);
+				OutIndices.push_back(curr1);
+				OutIndices.push_back(next0);
+
+				OutIndices.push_back(next0);
+				OutIndices.push_back(curr1);
+				OutIndices.push_back(next1);
+			}
+		}
+
+		// Last Latitude
+		int32 LastPoint = (int32)OutPositions.size() - 1;
+		int32 LastLatStart = (Latitude - 1) * Longitude;
+		for (uint32 Tri = 0; Tri < Longitude; ++Tri)
+		{
+			OutIndices.push_back(LastLatStart + Tri + 1);
+			OutIndices.push_back(LastLatStart + (Tri + 1) % Longitude + 1);
+			OutIndices.push_back(LastPoint);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	void TShape::CreateICOSphere(
 		uint32 Frequency,
 		const vector3df& Center, 
@@ -279,9 +358,16 @@ namespace tix
 		TVector<vector3df>& OutPositions, 
 		TVector<uint16>& OutIndices)
 	{
-		TVector<vector3df> SpherePositions;
-		TVector<uint16> SphereIndices;
-		_CreateICOSphere(Frequency, SpherePositions, SphereIndices);
+		static TVector<vector3df> SpherePositions;
+		static TVector<uint16> SphereIndices;
+		static uint32 LastFrequency = 0;
+		if (LastFrequency != Frequency)
+		{
+			SpherePositions.clear();
+			SphereIndices.clear();
+			_CreateICOSphere(Frequency, SpherePositions, SphereIndices);
+			LastFrequency = Frequency;
+		}
 
 		const uint16 IndexOffset = (uint16)(OutPositions.size());
 		for (const auto& P : SpherePositions)
@@ -303,9 +389,12 @@ namespace tix
 		TVector<vector3df>& OutPositions,
 		TVector<uint16>& OutIndices)
 	{
-		TVector<vector3df> BoxPositions;
-		TVector<uint16> BoxIndices;
-		_CreateUnitBox(BoxPositions, BoxIndices);
+		static TVector<vector3df> BoxPositions;
+		static TVector<uint16> BoxIndices;
+		if (BoxPositions.size() == 0)
+		{
+			_CreateUnitBox(BoxPositions, BoxIndices);
+		}
 
 		const uint16 IndexOffset = (uint16)(OutPositions.size());
 		if (Rotation == quaternion())
@@ -337,6 +426,8 @@ namespace tix
 	}
 
 	void TShape::CreateCapsule(
+		uint32 Latitude,
+		uint32 Longitude,
 		const vector3df& Center,
 		float Radius,
 		float Length,
@@ -344,6 +435,61 @@ namespace tix
 		TVector<vector3df>& OutPositions,
 		TVector<uint16>& OutIndices)
 	{
-		TI_ASSERT(0);
+		static TVector<vector3df> CapsulePositions;
+		static TVector<uint16> CapsuleIndices;
+		static vector2di LatLong;
+		if (LatLong != vector2di(Latitude, Longitude))
+		{
+			CapsulePositions.clear();
+			CapsuleIndices.clear();
+			_CreateCapsule(Latitude, Longitude, CapsulePositions, CapsuleIndices);
+			LatLong = vector2di(Latitude, Longitude);
+		}
+
+		// Apply radius and length
+		const uint32 TotalPoints = (uint32)CapsulePositions.size();
+		const uint32 HalfPoints = TotalPoints / 2;
+		const float HalfLength = Length * 0.5f;
+		for (uint32 i = 0 ; i < HalfPoints ; ++ i)
+		{
+			vector3df& P = CapsulePositions[i];
+			P = P * Radius;
+			P.Z += HalfLength;
+		}
+		for (uint32 i = HalfPoints ; i < TotalPoints ; ++ i)
+		{
+			vector3df& P = CapsulePositions[i];
+			P = P * Radius;
+			P.Z -= HalfLength;
+		}
+
+		// Apply rotation
+		const uint16 IndexOffset = (uint16)(OutPositions.size());
+		if (Rotation == quaternion())
+		{
+			for (const auto& P : CapsulePositions)
+			{
+				vector3df NewP = P + Center;
+				OutPositions.push_back(NewP);
+			}
+		}
+		else
+		{
+			matrix4 RotMat;
+			Rotation.getMatrix(RotMat);
+
+			for (const auto& P : CapsulePositions)
+			{
+				vector3df NewP;
+				RotMat.transformVect(NewP, P);
+				NewP += Center;
+				OutPositions.push_back(NewP);
+			}
+		}
+		for (const auto& I : CapsuleIndices)
+		{
+			uint16 Index = I + IndexOffset;
+			OutIndices.push_back(Index);
+		}
 	}
 }
