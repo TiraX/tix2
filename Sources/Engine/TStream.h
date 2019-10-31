@@ -98,6 +98,15 @@ namespace tix
 			TI_ASSERT(Pos + size <= BufferSize);
 			memcpy(Buffer + Pos, buf, size);
 		}
+
+		// Fill data with 0, keep 'Pos' not changed
+		void FillWithZero(uint32 size)
+		{
+			if (size == 0)
+				return;
+			TI_ASSERT(Pos + size <= BufferSize);
+			memset(Buffer + Pos, 0, size);
+		}
 		
 		// Seek 'Pos' to position in buffer
 		void Seek(uint32 NewPos)

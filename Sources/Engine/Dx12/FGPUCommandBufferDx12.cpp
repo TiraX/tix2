@@ -43,6 +43,14 @@ namespace tix
 		return CommandsEncoded;
 	}
 
+	void FGPUCommandBufferDx12::EncodeEmptyCommand(uint32 CommandIndex)
+	{
+		const uint32 CommandStride = GetGPUCommandSignature()->GetCommandStrideInBytes();
+		uint32 CommandPos = CommandIndex * CommandStride;
+		CommandBufferData->Seek(CommandPos);
+		CommandBufferData->FillWithZero(CommandStride);
+	}
+
 	void FGPUCommandBufferDx12::EncodeSetVertexBuffer(
 		uint32 CommandIndex,
 		uint32 ArgumentIndex,

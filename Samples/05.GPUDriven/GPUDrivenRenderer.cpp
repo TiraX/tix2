@@ -57,7 +57,14 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TAssetPtr DebugMaterialAsset = TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
 	TResourcePtr DebugMaterialResource = DebugMaterialAsset->GetResourcePtr();
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
-	DebugPipeline = DebugMaterial->PipelineResource;
+	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
+
+	// Load Pre-Z pipeline.
+	const TString DepthOnlyMaterialName = "M_DepthOnly.tasset";
+	TAssetPtr DepthOnlyMaterialAsset = TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterialName);
+	TResourcePtr DepthOnlyMaterialResource = DepthOnlyMaterialAsset->GetResourcePtr();
+	TMaterialPtr DepthOnlyMaterial = static_cast<TMaterial*>(DepthOnlyMaterialResource.get());
+	FPipelinePtr DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
@@ -66,8 +73,12 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	//CommandStructure.push_back(GPU_COMMAND_SET_INSTANCE_BUFFER);
 	CommandStructure.push_back(GPU_COMMAND_SET_INDEX_BUFFER);
 	CommandStructure.push_back(GPU_COMMAND_DRAW_INDEXED);
+
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
+
+	PreZGPUCommandSignature = RHI->CreateGPUCommandSignature(DepthOnlyPipeline, CommandStructure);
+	RHI->UpdateHardwareResourceGPUCommandSig(PreZGPUCommandSignature);
 
 	// Create frustum uniform buffer
 	FrustumUniform = ti_new FCameraFrustumUniform;
@@ -104,6 +115,13 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	// Add binding arguments
 	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
+	PreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+#if defined (TIX_DEBUG)
+	PreZGPUCommandBuffer->SetResourceName("OccluderCB");
+#endif
+	// Add binding arguments
+	PreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
 	// Add draw calls
 	uint32 CommandIndex = 0;
 	for (uint32 i = 0 ; i < PrimsCount ; ++ i)
@@ -128,10 +146,31 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 			0, 
 			0, 
 			Primitive->GetGlobalInstanceOffset());
+
+		// Encode occluders
+		FMeshBufferPtr OccludeMesh = Primitive->GetOccluderMesh();
+		if (OccludeMesh != nullptr)
+		{
+			PreZGPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, 0, OccludeMesh);
+			PreZGPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, 1, OccludeMesh);
+			PreZGPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
+				2,
+				OccludeMesh->GetIndicesCount(),
+				Primitive->GetInstanceCount(),
+				0,
+				0,
+				Primitive->GetGlobalInstanceOffset());
+		}
+		else
+		{
+			PreZGPUCommandBuffer->EncodeEmptyCommand(CommandIndex);
+		}
+
 		++CommandIndex;
 	}
 	TI_ASSERT(GPUCommandBuffer->GetEncodedCommandsCount() <= PrimsAdded);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
+	RHI->UpdateHardwareResourceGPUCommandBuffer(PreZGPUCommandBuffer);
 
 	// Create empty GPU command buffer, gather visible draw commands, make it enough for all instances
 	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
@@ -142,6 +181,15 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	// Add binding arguments
 	ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
+
+
+	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+#if defined (TIX_DEBUG)
+	ProcessedPreZGPUCommandBuffer->SetResourceName("ProcessedOccluderCB");
+#endif
+	// Add binding arguments
+	ProcessedPreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedPreZGPUCommandBuffer);
 }
 
 void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
@@ -250,7 +298,9 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			_LOG(Log, "Update gpu command buffer args.\n");
 			// Add binding arguments
 			GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+			PreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 			ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
+			ProcessedPreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		}
 		// Set meta data every frame.
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
@@ -292,11 +342,25 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			// Do GPU Instance frustum culling
 			InstanceCullCS->Run(RHI);
 
+			TI_ASSERT(0);
+			// Copy pre-z occluders only.
 			static bool bCopyVisibleInstance = true;
 			if (bCopyVisibleInstance)
 				CopyVisibleInstances->Run(RHI);
 
 			RHI->EndComputeTask();
+		}
+
+		{
+			// PreZ Pass
+
+		}
+
+		{
+			// Occlusion Cull
+			// Down Sample Depth
+
+			// Cull Occluded Instances
 		}
 
 		{

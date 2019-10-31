@@ -103,6 +103,7 @@ namespace tix
 							TVector<FPrimitivePtr> LinkedPrimitives;
 							// MeshResources Include mesh sections and 1 collision set
 							const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
+							// Mesh sections
 							const int32 TotalSections = (int32)MeshResources.size() - 1;
 							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
 							LinkedPrimitives.reserve(TotalSections);
@@ -126,21 +127,22 @@ namespace tix
 								LinkedPrimitives.push_back(Primitive);
 							}
 
+							// Collisions
+							TResourcePtr CollisionResource = MeshResources[TotalSections];
+							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
+							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());
+							TMeshBufferPtr OccluderMesh = CollisionSet->ConvertToMesh();
+							OccluderMesh->InitRenderThreadResource();
+							// Only add to Primitive[0], since all primitives from the same mesh shares the same occluder.
+							LinkedPrimitives[0]->SetOccluder(OccluderMesh->MeshBufferResource);
+
+							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
+
 							// Add primitive to scene
 							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileMeshPrimitivesToScene,
 								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 								{
 									FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
-								});
-
-							// Add Collision to scene
-							TResourcePtr CollisionResource = MeshResources[TotalSections];
-							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
-							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());
-							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileOccluderFromCollision,
-								TCollisionSetPtr, CollisionSet, CollisionSet,
-								{
-									FRenderThread::Get()->GetRenderScene()->AddOccluderFromCollisionSet(CollisionSet);
 								});
 
 							// Remove the reference holder

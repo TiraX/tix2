@@ -38,11 +38,14 @@ private:
 	FRenderTargetPtr RT_BasePass;
 	FArgumentBufferPtr AB_Result;
 
-	FPipelinePtr DebugPipeline;
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
 	FGPUCommandBufferPtr GPUCommandBufferTest;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
+
+	FGPUCommandSignaturePtr PreZGPUCommandSignature;
+	FGPUCommandBufferPtr PreZGPUCommandBuffer;
+	FGPUCommandBufferPtr ProcessedPreZGPUCommandBuffer;
 
 	SViewFrustum Frustum;
 	FCameraFrustumUniformPtr FrustumUniform;

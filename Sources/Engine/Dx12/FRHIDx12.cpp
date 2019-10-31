@@ -1555,7 +1555,7 @@ namespace tix
 			state.PrimitiveTopologyType = k_PRIMITIVE_D3D12_TYPE_MAP[Desc.PrimitiveType];
 			TI_ASSERT(D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED != state.PrimitiveTopologyType);
 			state.NumRenderTargets = Desc.RTCount;
-			TI_ASSERT(Desc.RTCount > 0);
+			TI_ASSERT(Desc.RTCount >= 0);
 			for (int32 r = 0; r < Desc.RTCount; ++r)
 			{
 				state.RTVFormats[r] = GetDxPixelFormat(Desc.RTFormats[r]);

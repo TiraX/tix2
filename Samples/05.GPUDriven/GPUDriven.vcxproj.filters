@@ -100,5 +100,8 @@
     <FxCompile Include="Shaders\Dx12\S_CopyVisibleInstances.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_DepthOnlyVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

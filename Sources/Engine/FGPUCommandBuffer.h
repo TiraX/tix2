@@ -20,6 +20,7 @@ namespace tix
 		}
 
 		TI_API virtual uint32 GetEncodedCommandsCount() const = 0;
+		TI_API virtual void EncodeEmptyCommand(uint32 CommandIndex) = 0;
 		TI_API virtual void EncodeSetVertexBuffer(
 			uint32 CommandIndex, 
 			uint32 ArgumentIndex,

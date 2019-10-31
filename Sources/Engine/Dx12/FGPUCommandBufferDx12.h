@@ -18,6 +18,7 @@ namespace tix
 		virtual ~FGPUCommandBufferDx12();
 
 		virtual uint32 GetEncodedCommandsCount() const override;
+		virtual void EncodeEmptyCommand(uint32 CommandIndex) override;
 		virtual void EncodeSetVertexBuffer(
 			uint32 CommandIndex,
 			uint32 ArgumentIndex,

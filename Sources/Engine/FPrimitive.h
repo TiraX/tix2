@@ -41,6 +41,10 @@ namespace tix
 		{
 			return MeshBuffer;
 		}
+		FMeshBufferPtr GetOccluderMesh()
+		{
+			return Occluder;
+		}
 		FInstanceBufferPtr GetInstanceBuffer()
 		{
 			return InstanceBuffer;
@@ -100,6 +104,10 @@ namespace tix
 		{
 			IndexInSceneTile = InIndex;
 		}
+		void SetOccluder(FMeshBufferPtr OccluderMesh)
+		{
+			Occluder = OccluderMesh;
+		}
 
 		void UpdatePrimitiveBuffer_RenderThread();
 	private:
@@ -113,6 +121,8 @@ namespace tix
 
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;
+
+		FMeshBufferPtr Occluder;
 
 		// Every primitive has a unique Primitive uniform buffer, because VT UVTransform
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;

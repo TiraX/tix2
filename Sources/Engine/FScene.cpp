@@ -85,17 +85,6 @@ namespace tix
 		}
 	}
 
-	void FScene::AddOccluderFromCollisionSet(TCollisionSetPtr InCollisions)
-	{
-		TMeshBufferPtr Mesh = InCollisions->ConvertToMesh();
-		TI_ASSERT(0);
-	}
-
-	void FScene::RemoveOccluders()
-	{
-		TI_ASSERT(0);
-	}
-
 	void FScene::InitRenderFrame()
 	{
 		PrepareViewUniforms();
