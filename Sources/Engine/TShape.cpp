@@ -20,7 +20,7 @@ namespace tix
 		OutIndices.reserve(FacesByFrequency[FreqIndex] * 3);
 
 		const float T = (1.f + 2.236f) / 2.f;
-		const vector3df BasePos[] =
+		static const vector3df BasePos[] =
 		{
 			vector3df(-1.f, T, 0.f).normalize(),
 			vector3df(1.f, T, 0.f).normalize(),
@@ -38,7 +38,7 @@ namespace tix
 			vector3df(-T, 0.f, 1.f).normalize()
 		};
 
-		const vector3di BaseFaces[] =
+		static const vector3di BaseFaces[] =
 		{
 			vector3di(0, 11, 5),
 			vector3di(0, 5, 1),
@@ -67,9 +67,31 @@ namespace tix
 
 		const uint32 Faces = sizeof(BaseFaces) / sizeof(vector3di);
 		const float FreqInv = 1.f / Frequency;
+		const float Tolerance = 1.f / Frequency * 0.4f;
 		// Key.X = StartPoint, Key.Y = EndPoint, Key.Z = Step
 		THMap<vector3di, uint32> PointsMap;
 		TVector<uint32> IndicesMap;
+		IndicesMap.reserve(64);
+
+		auto MakeKey = [](const vector3df& Pos, float Tolerance)
+		{
+			vector3di Key;
+			Key.X = ti_round(Pos.X / Tolerance);
+			Key.Y = ti_round(Pos.Y / Tolerance);
+			Key.Z = ti_round(Pos.Z / Tolerance);
+			return Key;
+		};
+		auto AddSharedPoint = [](const vector3di& Key, const vector3df& Pos, THMap<vector3di, uint32>& PointsMap, TVector<vector3df>& OutPositions)
+		{
+			// Return shared point index
+			if (PointsMap.find(Key) == PointsMap.end())
+			{
+				OutPositions.push_back(Pos);
+				PointsMap[Key] = (uint32)(OutPositions.size() - 1);
+			}
+			TI_ASSERT(PointsMap[Key] < 65535);
+			return uint16(PointsMap[Key]);
+		};
 
 		for (uint32 f = 0; f < Faces; ++f)
 		{
@@ -82,32 +104,12 @@ namespace tix
 			const vector3df& P1 = BasePos[Face.Y];
 			const vector3df& P2 = BasePos[Face.Z];
 
-			auto MakeKey = [](int32 InStart, int32 InEnd, int32 Step, int32 Len)
-			{
-				bool bCorrectOrder = InStart < InEnd;
-				vector3di Result;
-				Result.X = bCorrectOrder ? InStart : InEnd;
-				Result.Y = bCorrectOrder ? InEnd : InStart;
-				Result.Z = bCorrectOrder ? Step : (Len - Step);
-				return Result;
-			};
-			vector3di Key = MakeKey(Face.X, Face.X, 0, 0);
+			vector3di Key = MakeKey(P0, Tolerance);
 
 			vector3df StepLeft = (P1 - P0) * FreqInv;
 			vector3df StepRight = (P2 - P0) * FreqInv;
 
 			// Generate points
-			auto AddSharedPoint = [](const vector3di& Key, const vector3df& Pos, THMap<vector3di, uint32>& PointsMap, TVector<vector3df>& OutPositions)
-			{
-				// Return shared point index
-				if (PointsMap.find(Key) == PointsMap.end())
-				{
-					OutPositions.push_back(Pos);
-					PointsMap[Key] = (uint32)(OutPositions.size() - 1);
-				}
-				TI_ASSERT(PointsMap[Key] < 65535);
-				return uint16(PointsMap[Key]);
-			};
 			uint16 PointIndex = AddSharedPoint(Key, P0, PointsMap, OutPositions);
 			IndicesMap.push_back(PointIndex);
 
@@ -119,16 +121,15 @@ namespace tix
 				float FreqHorizonInv = 1.f / (StepY + 1);
 				vector3df StepHorizon = (PointRight - PointLeft) * FreqHorizonInv;
 
-				vector3di KeyLeft = MakeKey(Face.X, Face.Y, StepY, Frequency);
-				vector3di KeyRight = MakeKey(Face.X, Face.Z, StepY, Frequency);
+				vector3di KeyLeft = MakeKey(PointLeft, Tolerance);
+				vector3di KeyRight = MakeKey(PointRight, Tolerance);
 				PointIndex = AddSharedPoint(KeyLeft, PointLeft, PointsMap, OutPositions);
 				IndicesMap.push_back(PointIndex);
 				for (uint32 StepX = 0; StepX < StepY; ++StepX)
 				{
-					// Interpolated point will never be shared, add to OutPositions directly
 					vector3df P = (PointLeft + StepHorizon * float(StepX + 1)).normalize();
-					OutPositions.push_back(P);
-					PointIndex = uint32(OutPositions.size() - 1);
+					vector3di KeyP = MakeKey(P, Tolerance);
+					PointIndex = AddSharedPoint(KeyP, P, PointsMap, OutPositions);
 					IndicesMap.push_back(PointIndex);
 				}
 				PointIndex = AddSharedPoint(KeyRight, PointRight, PointsMap, OutPositions);
@@ -218,7 +219,6 @@ namespace tix
 				OutIndices.push_back(curr1);
 				OutIndices.push_back(next1);
 			}
-			CurrLineStart += Longitude;
 		}
 
 		// Last Latitude
@@ -234,7 +234,7 @@ namespace tix
 
 	void _CreateUnitBox(TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
 	{
-		const vector3df Points[] =
+		static const vector3df Points[] =
 		{ 
 			vector3df(-1.f, -1.f, -1.f),
 			vector3df( 1, -1.f, -1.f),
@@ -245,7 +245,7 @@ namespace tix
 			vector3df( 1.f, 1.f, 1.f),
 			vector3df(-1.f, 1.f, 1.f)
 		};
-		const uint16 Faces[] =
+		static const uint16 Faces[] =
 		{
 			1, 4, 5,
 			2, 5, 6,
@@ -307,16 +307,27 @@ namespace tix
 		TVector<uint16> BoxIndices;
 		_CreateUnitBox(BoxPositions, BoxIndices);
 
-		matrix4 RotMat;
-		Rotation.getMatrix(RotMat);
-
 		const uint16 IndexOffset = (uint16)(OutPositions.size());
-		for (const auto& P : BoxPositions)
+		if (Rotation == quaternion())
 		{
-			vector3df NewP;
-			RotMat.transformVect(NewP, P * Edges);
-			NewP += Center;
-			OutPositions.push_back(NewP);
+			for (const auto& P : BoxPositions)
+			{
+				vector3df NewP = P * Edges + Center;
+				OutPositions.push_back(NewP);
+			}
+		}
+		else
+		{
+			matrix4 RotMat;
+			Rotation.getMatrix(RotMat);
+
+			for (const auto& P : BoxPositions)
+			{
+				vector3df NewP;
+				RotMat.transformVect(NewP, P * Edges);
+				NewP += Center;
+				OutPositions.push_back(NewP);
+			}
 		}
 		for (const auto& I : BoxIndices)
 		{
