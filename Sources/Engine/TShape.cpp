@@ -147,8 +147,8 @@ namespace tix
 				{
 					vector3di NewFace;
 					NewFace.X = Index + StepX;	// Current Point
-					NewFace.Y = Index + StepX + PointCount;	// Next Row Left
-					NewFace.Z = Index + StepX + PointCount + 1;	// Next Row Right
+					NewFace.Y = Index + StepX + PointCount + 1;	// Next Row Right
+					NewFace.Z = Index + StepX + PointCount;	// Next Row Left
 					OutIndices.push_back(IndicesMap[NewFace.X]);
 					OutIndices.push_back(IndicesMap[NewFace.Y]);
 					OutIndices.push_back(IndicesMap[NewFace.Z]);
@@ -156,8 +156,8 @@ namespace tix
 					if (StepX != PointCount - 1)
 					{
 						NewFace.X = Index + StepX;
-						NewFace.Y = Index + StepX + PointCount + 1;
-						NewFace.Z = Index + StepX + 1;
+						NewFace.Y = Index + StepX + 1;
+						NewFace.Z = Index + StepX + PointCount + 1;
 						OutIndices.push_back(IndicesMap[NewFace.X]);
 						OutIndices.push_back(IndicesMap[NewFace.Y]);
 						OutIndices.push_back(IndicesMap[NewFace.Z]);
