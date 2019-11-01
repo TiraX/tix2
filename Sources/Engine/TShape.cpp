@@ -93,10 +93,11 @@ namespace tix
 			return uint16(PointsMap[Key]);
 		};
 
+		const uint32 TesselationPoints = (1 + (Frequency + 1)) * (Frequency + 1) / 2;
 		for (uint32 f = 0; f < Faces; ++f)
 		{
 			const vector3di Face = BaseFaces[f];
-			uint32 PointsOffset = uint32(OutPositions.size());
+			const uint32 PointsOffset = TesselationPoints * f;
 			//   p0
 			//  /  \
 		    // p1---p2
@@ -247,23 +248,23 @@ namespace tix
 		};
 		static const uint16 Faces[] =
 		{
-			1, 4, 5,
-			2, 5, 6,
+			1, 5, 4,
+			2, 6, 5,
 
-			3, 6, 7,
-			0, 7, 4,
+			3, 7, 6,
+			0, 4, 7,
 
-			2, 0, 1,
-			5, 7, 6,
+			2, 1, 0,
+			5, 6, 7,
 			
-			7, 5, 4,
-			0, 2, 3,
+			7, 4, 5,
+			0, 3, 2,
 			
-			7, 0, 3,
-			6, 3, 2,
+			7, 3, 0,
+			6, 2, 3,
 			
-			5, 2, 1,
-			4, 1, 0
+			5, 1, 2,
+			4, 0, 1
 		};
 		OutPositions.resize(8);
 		memcpy(OutPositions.data(), Points, sizeof(Points));
