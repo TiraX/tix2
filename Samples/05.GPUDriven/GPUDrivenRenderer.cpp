@@ -40,11 +40,19 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	// Setup base pass render target
 	RT_BasePass = FRenderTarget::Create(RTWidth, RTHeight);
 #if defined (TIX_DEBUG)
-	RT_BasePass->SetResourceName("BasePass");
+	RT_BasePass->SetResourceName("RT_BasePass");
 #endif
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
+
+	// Setup depth only render target
+	RT_DepthOnly = FRenderTarget::Create(RTWidth, RTHeight);
+#if defined (TIX_DEBUG)
+	RT_DepthOnly->SetResourceName("RT_DepthOnly");
+#endif
+	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_DepthOnly->Compile();
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -64,7 +72,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TAssetPtr DepthOnlyMaterialAsset = TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterialName);
 	TResourcePtr DepthOnlyMaterialResource = DepthOnlyMaterialAsset->GetResourcePtr();
 	TMaterialPtr DepthOnlyMaterial = static_cast<TMaterial*>(DepthOnlyMaterialResource.get());
-	FPipelinePtr DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
+	DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
@@ -271,7 +279,7 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	static bool bPerformGPUCulling = true;
-	static bool Indirect = !false;
+	static bool Indirect = false;
 	static bool DrawCulled = !false;
 
 	if (bPerformGPUCulling)
@@ -330,8 +338,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo,
 					InstanceCullCS->GetVisibleResult(),
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
-					GPUCommandBuffer,
-					ProcessedGPUCommandBuffer);
+					PreZGPUCommandBuffer,
+					//GPUCommandBuffer,
+					ProcessedPreZGPUCommandBuffer
+					//ProcessedGPUCommandBuffer
+					);
 			}
 		}
 
@@ -342,7 +353,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			// Do GPU Instance frustum culling
 			InstanceCullCS->Run(RHI);
 
-			TI_ASSERT(0);
 			// Copy pre-z occluders only.
 			static bool bCopyVisibleInstance = true;
 			if (bCopyVisibleInstance)
@@ -353,7 +363,40 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		{
 			// PreZ Pass
+			RHI->BeginRenderToRenderTarget(RT_DepthOnly, "PreZ");
+			if (!Indirect)
+			{
+				// Set depth only PSO
+				RHI->SetGraphicsPipeline(DepthOnlyPipeline);
 
+				// Render occlude mesh
+				const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
+				for (const auto& Primitive : Primitives)
+				{
+					if (Primitive->GetOccluderMesh() != nullptr)
+					{
+						FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+						RHI->SetMeshBuffer(Primitive->GetOccluderMesh(), InstanceBuffer);
+						ApplyShaderParameter(RHI, Scene, Primitive);
+
+						RHI->DrawPrimitiveIndexedInstanced(
+							Primitive->GetOccluderMesh(),
+							InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
+							Primitive->GetInstanceOffset());
+					}
+				}
+			}
+			else
+			{
+
+				if (ProcessedPreZGPUCommandBuffer != nullptr)
+				{
+					// Set merged instance buffer
+					RHI->SetResourceStateCB(ProcessedPreZGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+					RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
+					RHI->ExecuteGPUCommands(ProcessedPreZGPUCommandBuffer);
+				}
+			}
 		}
 
 		{

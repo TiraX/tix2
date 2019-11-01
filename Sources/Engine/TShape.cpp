@@ -237,14 +237,14 @@ namespace tix
 	{
 		static const vector3df Points[] =
 		{ 
-			vector3df(-1.f, -1.f, -1.f),
-			vector3df( 1, -1.f, -1.f),
-			vector3df( 1.f, -1.f, 1),
-			vector3df(-1.f, -1.f, 1),
-			vector3df(-1.f, 1.f, -1.f),
-			vector3df( 1.f, 1.f, -1.f),
-			vector3df( 1.f, 1.f, 1.f),
-			vector3df(-1.f, 1.f, 1.f)
+			vector3df(-0.5f, -0.5f, -0.5f),
+			vector3df( 0.5f, -0.5f, -0.5f),
+			vector3df( 0.5f, -0.5f, 0.5f),
+			vector3df(-0.5f, -0.5f, 0.5f),
+			vector3df(-0.5f, 0.5f, -0.5f),
+			vector3df( 0.5f, 0.5f, -0.5f),
+			vector3df( 0.5f, 0.5f, 0.5f),
+			vector3df(-0.5f, 0.5f, 0.5f)
 		};
 		static const uint16 Faces[] =
 		{

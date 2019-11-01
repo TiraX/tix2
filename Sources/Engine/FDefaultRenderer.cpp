@@ -63,8 +63,8 @@ namespace tix
 			ApplyShaderParameter(RHI, Scene, Primitive);
 
 			RHI->DrawPrimitiveIndexedInstanced(
-				Primitive->GetMeshBuffer(), 
-				InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(), 
+				Primitive->GetMeshBuffer(),
+				InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
 				Primitive->GetInstanceOffset());
 		}
 	}

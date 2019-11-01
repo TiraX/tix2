@@ -36,6 +36,9 @@ private:
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	FRenderTargetPtr RT_DepthOnly;
+	FPipelinePtr DepthOnlyPipeline;
 	FArgumentBufferPtr AB_Result;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;

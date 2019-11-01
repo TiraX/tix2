@@ -49,9 +49,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.y;
 
 		IndirectCommand Command = InputCommands[PrimitiveIndex];
-		Command.DrawArguments0.y = 1;	// Change instance count to 1
-		Command.DrawArguments1.x = InstanceIndex;
+		if (Command.VertexBufferView.x > 0)
+		{
+			Command.DrawArguments0.y = 1;	// Change instance count to 1
+			Command.DrawArguments1.x = InstanceIndex;
 
-		OutputCommands.Append(Command);
+			OutputCommands.Append(Command);
+		}
 	}
 }

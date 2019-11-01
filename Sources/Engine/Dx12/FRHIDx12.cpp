@@ -1889,11 +1889,14 @@ namespace tix
 		// Create render target render resource tables
 		int32 ColorBufferCount = RenderTarget->GetColorBufferCount();
 		TI_ASSERT(RTDx12->RTColorTable == nullptr);
-		RTDx12->RTColorTable = CreateRenderResourceTable(ColorBufferCount, EHT_RENDERTARGET);
-		for (int32 i = 0; i < ColorBufferCount; ++i)
+		if (ColorBufferCount > 0)
 		{
-			const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
-			RTDx12->RTColorTable->PutRTColorInTable(ColorBuffer.Texture, i);
+			RTDx12->RTColorTable = CreateRenderResourceTable(ColorBufferCount, EHT_RENDERTARGET);
+			for (int32 i = 0; i < ColorBufferCount; ++i)
+			{
+				const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+				RTDx12->RTColorTable->PutRTColorInTable(ColorBuffer.Texture, i);
+			}
 		}
 
 		// Depth stencil buffers
