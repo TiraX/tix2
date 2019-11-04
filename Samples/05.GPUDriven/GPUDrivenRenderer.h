@@ -11,6 +11,7 @@
 #include "GPUCameraFrustum.h"
 #include "CopyVisibleTileCommandBuffer.h"
 #include "CopyVisibleInstances.h"
+#include "HiZDownSampleCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {

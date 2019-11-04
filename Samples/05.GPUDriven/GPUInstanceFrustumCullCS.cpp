@@ -70,6 +70,15 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	TI_TODO("Does this resource table, need to re-create?");
 	ResourceTable->PutUniformBufferInTable(PrimitiveBBoxes, 0);
 	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 1);
+	/** SceneInstanceData use half for instance rotation. For shader global uniform do NOT support half value.
+	Instance rotation use float32 for now.
+	Try to use half value with these to key point:
+	https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-object-byteaddressbuffer
+	ByteAddressBuffer asfloat(vertexData.Load3(vertexOffset + index * 12));
+	https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/f16tof32
+	float f16tof32( in uint value );
+	*/
+	TI_TODO("Use half for instance rotation.");
 	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 2);
 	ResourceTable->PutUniformBufferInTable(VisibilityResult, 3);
 

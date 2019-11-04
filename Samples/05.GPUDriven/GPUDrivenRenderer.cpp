@@ -51,7 +51,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_DepthOnly->SetResourceName("RT_DepthOnly");
 #endif
-	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 6, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH32, FHiZDownSampleCS::HiZLevels, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_DepthOnly->Compile();
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
@@ -402,6 +402,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			// Occlusion Cull
 			// Down Sample Depth
+			TI_TODO("Use graphics to down sample instead of compute. since DSV can not used with UAV");
+			TI_ASSERT(0);
 
 			// Cull Occluded Instances
 		}
