@@ -84,15 +84,15 @@ namespace tix
 		return Table;
 	}
 
-    void FRHI::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+    void FRHI::BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const int8* PassName)
 	{
 		CurrentRenderTarget = RT;
         
         const vector2di& d = RT->GetDemension();
 		RtViewport.Left = 0;
 		RtViewport.Top = 0;
-		RtViewport.Width = d.X;
-		RtViewport.Height = d.Y;
+		RtViewport.Width = d.X >> MipLevel;
+		RtViewport.Height = d.Y >> MipLevel;
 
 		SetViewport(RtViewport);
 	}

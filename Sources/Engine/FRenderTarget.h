@@ -101,10 +101,10 @@ namespace tix
 			return RTDepthStencilBuffer;
 		}
 
-		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
+		TI_API virtual void AddColorBuffer(E_PIXEL_FORMAT Format, uint32 Mips, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
 		TI_API virtual void AddColorBuffer(FTexturePtr Texture, E_RT_COLOR_BUFFER ColorBufferIndex, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
+		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format, uint32 Mips, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
 		TI_API virtual void AddDepthStencilBuffer(FTexturePtr Texture, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
-		TI_API virtual void AddDepthStencilBuffer(E_PIXEL_FORMAT Format, E_RT_LOAD_ACTION LoadAction, E_RT_STORE_ACTION StoreAction);
         
         // For metal tile shader
         TI_API virtual void SetTileSize(const vector2di& InTileSize)

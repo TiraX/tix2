@@ -42,8 +42,8 @@ void FGPUDrivenRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("RT_BasePass");
 #endif
-	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
-	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
+	RT_BasePass->AddColorBuffer(EPF_RGBA16F, 1, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 1, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
 	// Setup depth only render target
@@ -51,7 +51,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_DepthOnly->SetResourceName("RT_DepthOnly");
 #endif
-	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 6, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_DepthOnly->Compile();
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
@@ -363,7 +363,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		{
 			// PreZ Pass
-			RHI->BeginRenderToRenderTarget(RT_DepthOnly, "PreZ");
+			RHI->BeginRenderToRenderTarget(RT_DepthOnly, 0, "PreZ");
 			if (!Indirect)
 			{
 				// Set depth only PSO
@@ -408,7 +408,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		{
 			// Render Base Pass
-			RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+			RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
 
 			if (!Indirect)
 			{

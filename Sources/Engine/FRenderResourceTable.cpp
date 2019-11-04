@@ -61,15 +61,15 @@ namespace tix
 	void FRenderResourceTable::PutRTColorInTable(FTexturePtr InTexture, uint32 Index)
 	{
 		TI_ASSERT(HeapType == EHT_RENDERTARGET);
-		TI_ASSERT(Index < Size);
-		FRHI::Get()->PutRTColorInHeap(InTexture, Start + Index);
+		TI_ASSERT(InTexture->GetDesc().Mips > 0 && Index * InTexture->GetDesc().Mips < Size);
+		FRHI::Get()->PutRTColorInHeap(InTexture, Start + Index * InTexture->GetDesc().Mips);
 	}
 
 	void FRenderResourceTable::PutRTDepthInTable(FTexturePtr InTexture, uint32 Index)
 	{
 		TI_ASSERT(HeapType == EHT_DEPTHSTENCIL);
-		TI_ASSERT(Index < Size);
-		FRHI::Get()->PutRTDepthInHeap(InTexture, Start + Index);
+		TI_ASSERT(InTexture->GetDesc().Mips > 0 && Index * InTexture->GetDesc().Mips < Size);
+		FRHI::Get()->PutRTDepthInHeap(InTexture, Start + Index * InTexture->GetDesc().Mips);
 	}
 
 	E_RENDER_RESOURCE_HEAP_TYPE FRenderResourceTable::GetHeapType() const

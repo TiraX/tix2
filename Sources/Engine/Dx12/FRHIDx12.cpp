@@ -1891,7 +1891,16 @@ namespace tix
 		TI_ASSERT(RTDx12->RTColorTable == nullptr);
 		if (ColorBufferCount > 0)
 		{
-			RTDx12->RTColorTable = CreateRenderResourceTable(ColorBufferCount, EHT_RENDERTARGET);
+			uint32 Mips = 0;
+			// Validate mips in all color buffers
+			for (int32 i = 0; i < ColorBufferCount; ++i)
+			{
+				const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
+				TI_ASSERT(Mips == 0 || Mips == ColorBuffer.Texture->GetDesc().Mips);
+				Mips = ColorBuffer.Texture->GetDesc().Mips;
+			}
+			TI_ASSERT(Mips > 0);
+			RTDx12->RTColorTable = CreateRenderResourceTable(ColorBufferCount * Mips, EHT_RENDERTARGET);
 			for (int32 i = 0; i < ColorBufferCount; ++i)
 			{
 				const FRenderTarget::RTBuffer& ColorBuffer = RenderTarget->GetColorBuffer(i);
@@ -1906,7 +1915,7 @@ namespace tix
 			if (DSBufferTexture != nullptr)
 			{
 				TI_ASSERT(RTDx12->RTDepthTable == nullptr);
-				RTDx12->RTDepthTable = CreateRenderResourceTable(1, EHT_DEPTHSTENCIL);
+				RTDx12->RTDepthTable = CreateRenderResourceTable(DSBufferTexture->GetDesc().Mips, EHT_DEPTHSTENCIL);
 				RTDx12->RTDepthTable->PutRTDepthInTable(DSBufferTexture, 0);
 			}
 		}
@@ -2482,11 +2491,15 @@ namespace tix
 		RTVDesc.Format = GetDxPixelFormat(InTexture->GetDesc().Format);
 		TI_ASSERT(RTVDesc.Format != DXGI_FORMAT_UNKNOWN);
 		RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		RTVDesc.Texture2D.MipSlice = 0;
 		RTVDesc.Texture2D.PlaneSlice = 0;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, InHeapSlot);
-		D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource().Get(), &RTVDesc, Descriptor);
+		const uint32 Mips = InTexture->GetDesc().Mips;
+		for (uint32 Mip = 0 ; Mip < Mips ; ++ Mip)
+		{
+			RTVDesc.Texture2D.MipSlice = Mip;
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, InHeapSlot + Mip);
+			D3dDevice->CreateRenderTargetView(TexDx12->TextureResource.GetResource().Get(), &RTVDesc, Descriptor);
+		}
 	}
 
 	void FRHIDx12::PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot)
@@ -2500,11 +2513,15 @@ namespace tix
 		D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
 		DsvDesc.Format = GetDSVFormat(DxgiFormat);
 		DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		DsvDesc.Texture2D.MipSlice = 0;
 		DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, InHeapSlot);
-		D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource().Get(), &DsvDesc, Descriptor);
+		const uint32 Mips = InTexture->GetDesc().Mips;
+		for (uint32 Mip = 0; Mip < Mips; ++Mip)
+		{
+			DsvDesc.Texture2D.MipSlice = Mip;
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, InHeapSlot + Mip);
+			D3dDevice->CreateDepthStencilView(TexDx12->TextureResource.GetResource().Get(), &DsvDesc, Descriptor);
+		}
 	}
 
 	void FRHIDx12::SetGraphicsPipeline(FPipelinePtr InPipeline)
@@ -2768,24 +2785,29 @@ namespace tix
 		CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
 	}
 
-	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT)
+	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT, uint32 MipLevel)
 	{
 		// Transition Color buffer to D3D12_RESOURCE_STATE_RENDER_TARGET
 		FRenderTargetDx12 * RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
 		const int32 CBCount = RT->GetColorBufferCount();
+		uint32 RtMips = 0;
 		for (int32 cb = 0; cb < CBCount; ++cb)
 		{
 			FTexturePtr Texture = RT->GetColorBuffer(cb).Texture;
+			RtMips = Texture->GetDesc().Mips;
 			TI_ASSERT(Texture != nullptr);	// Color can be NULL ?
 			FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 			Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
+		TI_ASSERT(CBCount == 0 || MipLevel < RtMips);
 
 		// Transition Depth buffer to D3D12_RESOURCE_STATE_DEPTH_WRITE
 		{
 			FTexturePtr Texture = RT->GetDepthStencilBuffer().Texture;
 			if (Texture != nullptr)
 			{
+				TI_ASSERT(CBCount == 0 || Texture->GetDesc().Mips == RtMips);
+				RtMips = Texture->GetDesc().Mips;
 				FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(Texture.get());
 				Transition(&TexDx12->TextureResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 			}
@@ -2800,7 +2822,7 @@ namespace tix
 			RTVDescriptors.reserve(CBCount); 
 			for (int32 cb = 0 ; cb < CBCount ; ++ cb)
 			{
-				D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, ColorTable->GetIndexAt(cb));
+				D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(EHT_RENDERTARGET, ColorTable->GetIndexAt(cb * RtMips + MipLevel));
 				RTVDescriptors.push_back(Descriptor);
 			}
 			Rtv = RTVDescriptors.data();
@@ -2811,7 +2833,7 @@ namespace tix
 		FRenderResourceTablePtr DepthTable = RTDx12->RTDepthTable;
 		if (DepthTable != nullptr && DepthTable->GetTableSize() != 0)
 		{
-			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable->GetIndexAt(0));
+			DepthDescriptor = GetCpuDescriptorHandle(EHT_DEPTHSTENCIL, DepthTable->GetIndexAt(MipLevel));
 			Dsv = &DepthDescriptor;
 		}
 
@@ -2832,11 +2854,11 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName)
+	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const int8* PassName)
 	{
-		FRHI::BeginRenderToRenderTarget(RT, PassName);
+		FRHI::BeginRenderToRenderTarget(RT, MipLevel, PassName);
 
-		SetRenderTarget(RT);
+		SetRenderTarget(RT, MipLevel);
 	}
 
 	void FRHIDx12::InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset)
