@@ -68,16 +68,21 @@ namespace tix
 			Usage = InUsage;
 		}
 
-#if defined (TIX_DEBUG)
 		void SetResourceName(const TString& Name)
 		{
+#if defined (TIX_DEBUG)
 			ResourceName = Name;
+#endif
 		}
 		const TString& GetResourceName() const
 		{
+#if defined (TIX_DEBUG)
 			return ResourceName;
-		}
+#else
+			static const TString DefaultResourceName = "NoNamedTiXResource";
+			return DefaultResourceName;
 #endif
+		}
 
 	protected:
 		E_RENDER_RESOURCE_TYPE ResourceType;

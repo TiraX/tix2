@@ -39,20 +39,30 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	// Setup base pass render target
 	RT_BasePass = FRenderTarget::Create(RTWidth, RTHeight);
-#if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("RT_BasePass");
-#endif
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, 1, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 1, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
 	// Setup depth only render target
 	RT_DepthOnly = FRenderTarget::Create(RTWidth, RTHeight);
-#if defined (TIX_DEBUG)
 	RT_DepthOnly->SetResourceName("RT_DepthOnly");
-#endif
-	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH32, FHiZDownSampleCS::HiZLevels, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH32, 1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_DepthOnly->Compile();
+
+	TTextureDesc HiZTextureDesc;
+	HiZTextureDesc.Type = ETT_TEXTURE_2D;
+	HiZTextureDesc.Format = EPF_R32F;
+	HiZTextureDesc.Width = RTWidth;
+	HiZTextureDesc.Height = RTHeight;
+	HiZTextureDesc.AddressMode = ETC_CLAMP_TO_EDGE;
+	HiZTextureDesc.SRGB = 0;
+	HiZTextureDesc.Mips = FHiZDownSampleCS::HiZLevels;
+
+	HiZTextures = RHI->CreateTexture(HiZTextureDesc);
+	HiZTextures->SetTextureFlag(ETF_UAV, true);
+	HiZTextures->SetResourceName("HiZTextures");
+	RHI->UpdateHardwareResourceTexture(HiZTextures);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -102,6 +112,11 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	CopyVisibleInstances = ti_new FCopyVisibleInstances;
 	CopyVisibleInstances->Finalize();
 	CopyVisibleInstances->PrepareResources(RHI);
+
+	// Down sample HiZ 
+	HiZDownSample = ti_new FHiZDownSampleCS;
+	HiZDownSample->Finalize();
+	HiZDownSample->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTextures);
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -397,15 +412,22 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					RHI->ExecuteGPUCommands(ProcessedPreZGPUCommandBuffer);
 				}
 			}
+			RHI->CopyTextureRegion(HiZTextures, recti(0, 0, HiZTextures->GetWidth(), HiZTextures->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
 		}
 
 		{
+			RHI->BeginComputeTask();
 			// Occlusion Cull
 			// Down Sample Depth
-			TI_TODO("Use graphics to down sample instead of compute. since DSV can not used with UAV");
-			TI_ASSERT(0);
+			for (uint32 i = 1 ; i < FHiZDownSampleCS::HiZLevels ; ++ i)
+			{
+				HiZDownSample->UpdateComputeArguments(RHI, i);
+				HiZDownSample->Run(RHI);
+			}
 
 			// Cull Occluded Instances
+
+			RHI->EndComputeTask();
 		}
 
 		{

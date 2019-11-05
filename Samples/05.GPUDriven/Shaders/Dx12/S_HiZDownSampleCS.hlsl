@@ -11,11 +11,7 @@
 
 #define HiZDownSample_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=1))," \
-	"StaticSampler(s0, addressU = TEXTURE_ADDRESS_WRAP, " \
-		"addressV = TEXTURE_ADDRESS_CLAMP, " \
-		"addressW = TEXTURE_ADDRESS_CLAMP, " \
-		"filter = FILTER_MIN_MAG_MIP_POINT) "
+    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=1))" 
 
 cbuffer DownSampleInfo : register(b0)
 {
@@ -25,7 +21,6 @@ cbuffer DownSampleInfo : register(b0)
 
 Texture2D<float> SourceRT : register(t0);
 RWTexture2D<float> DownSampledRT : register(u0);
-SamplerState PointSampler : register(s0);
 
 #define threadBlockSize 16
 
@@ -36,12 +31,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	if (all(threadID.xy < RTInfo.xy))
 	{
 		uint Mip = RTInfo.z;
+		uint ParentMip = Mip - 1;
 		uint2 SourcePosition = threadID.xy * 2;
 		float4 Depths;
-		Depths.x = SourceRT.mips[Mip][SourcePosition];
-		Depths.y = SourceRT.mips[Mip][SourcePosition + uint2(1, 0)];
-		Depths.z = SourceRT.mips[Mip][SourcePosition + uint2(0, 1)];
-		Depths.w = SourceRT.mips[Mip][SourcePosition + uint2(1, 1)];
+		Depths.x = SourceRT.mips[ParentMip][SourcePosition];
+		Depths.y = SourceRT.mips[ParentMip][SourcePosition + uint2(1, 0)];
+		Depths.z = SourceRT.mips[ParentMip][SourcePosition + uint2(0, 1)];
+		Depths.w = SourceRT.mips[ParentMip][SourcePosition + uint2(1, 1)];
 
 		//find and return max depth
 		DownSampledRT[threadID.xy] = max(max(Depths.x, Depths.y), max(Depths.z, Depths.w));

@@ -70,11 +70,12 @@ namespace tix
 		ETF_NONE = 0,
 		ETF_RT_COLORBUFFER = 1 << 0,
 		ETF_RT_DSBUFFER = 1 << 1,
+		ETF_UAV = 1 << 2,
 
-		ETF_RENDER_RESOURCE_UPDATED = 1 << 2,	// Used for FTexture
+		ETF_RENDER_RESOURCE_UPDATED = 1 << 3,	// Used for FTexture
         
         // Used for iOS Metal
-        ETF_MEMORY_LESS = 1 << 3,
+        ETF_MEMORY_LESS = 1 << 4,
 	};
 
 	struct TTextureDesc

@@ -21,7 +21,7 @@
 	],
 	"rt_colors": [
 	],
-	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"rt_depth": "EPF_DEPTH32",
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": true,
 	"depth_test": true,

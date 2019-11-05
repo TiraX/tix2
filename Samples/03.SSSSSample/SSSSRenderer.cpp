@@ -71,9 +71,7 @@ void FSSSSRenderer::InitInRenderThread()
 
 	// Setup base pass render target
 	RT_BasePass = FRenderTarget::Create(ViewWidth, ViewHeight);
-#if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("BasePass");
-#endif
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_STORE);
@@ -86,18 +84,14 @@ void FSSSSRenderer::InitInRenderThread()
 	// Setup SSS blur pass render targets and texture tables
 	// RT BlurX
 	RT_SSSBlurX = FRenderTarget::Create(ViewWidth, ViewHeight);
-#if defined (TIX_DEBUG)
 	RT_SSSBlurX->SetResourceName("SSSBlurX");
-#endif
 	RT_SSSBlurX->AddColorBuffer(EPF_RGBA16F, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_SSSBlurX->AddDepthStencilBuffer(SceneDepth, ERT_LOAD_LOAD, ERT_STORE_DONTCARE);
 	RT_SSSBlurX->Compile();
 
 	// RT BlurY
 	RT_SSSBlurY = FRenderTarget::Create(ViewWidth, ViewHeight);
-#if defined (TIX_DEBUG)
 	RT_SSSBlurY->SetResourceName("SSSBlurY");
-#endif
 	RT_SSSBlurY->AddColorBuffer(SceneColor, ERTC_COLOR0, ERT_LOAD_DONTCARE, ERT_STORE_STORE);
 	RT_SSSBlurY->AddDepthStencilBuffer(SceneDepth, ERT_LOAD_LOAD, ERT_STORE_DONTCARE);
 	RT_SSSBlurY->Compile();

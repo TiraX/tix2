@@ -453,6 +453,9 @@ namespace tix
 		CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
 		D3D12_RECT ScissorRect = { Viewport.Left, Viewport.Top, Viewport.Width, Viewport.Height };
 		CurrentWorkingCommandList->RSSetScissorRects(1, &ScissorRect);
+
+		// Reset Bounded resource
+		CurrentBoundResource.Reset();
 	}
 
 	void FRHIDx12::BeginComputeTask(bool IsTileComputeShader)
@@ -1274,6 +1277,10 @@ namespace tix
 			ClearValue.DepthStencil.Depth = 1.f;
 			ClearValue.DepthStencil.Stencil = 0;
 		}
+		if ((Desc.Flags & ETF_UAV) != 0)
+		{
+			TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
 		TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
 		TextureDx12Desc.Width = Desc.Width;
 		TextureDx12Desc.Height = Desc.Height;
@@ -1797,7 +1804,7 @@ namespace tix
 		}
 	}
 
-	bool FRHIDx12::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, FTexturePtr SrcTexture)
+	bool FRHIDx12::CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, uint32 DstMipLevel, FTexturePtr SrcTexture, uint32 SrcMipLevel)
 	{
 		TI_ASSERT(SrcTexture != nullptr);
 		TI_ASSERT(SrcTexture->GetDesc().Width == InDstRegion.getWidth() && SrcTexture->GetDesc().Height == InDstRegion.getHeight());
@@ -1805,7 +1812,10 @@ namespace tix
 		FTextureDx12 * SrcTexDx12 = static_cast<FTextureDx12*>(SrcTexture.get());
 		TI_ASSERT(DstTexDx12->GetDesc().Type == ETT_TEXTURE_2D && SrcTexDx12->GetDesc().Type == ETT_TEXTURE_2D);
 		TI_ASSERT(InDstRegion.getWidth() == SrcTexture->GetDesc().Width && InDstRegion.getHeight() == SrcTexture->GetDesc().Height);
-		TI_ASSERT(DstTexture->GetDesc().Format == SrcTexture->GetDesc().Format);
+		if (DstTexture->GetDesc().Format != SrcTexture->GetDesc().Format)
+		{
+			_LOG(Warning, "CopyTextureRegion with different TextureFormat. Dst : %d, Src : %d\n", DstTexture->GetDesc().Format, SrcTexture->GetDesc().Format);
+		}
 
 		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
 		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -1818,8 +1828,8 @@ namespace tix
 		SrcBox.right = InDstRegion.getWidth();
 		SrcBox.bottom = InDstRegion.getHeight();
 		SrcBox.back = 1;
-		CD3DX12_TEXTURE_COPY_LOCATION Dst(DstTexDx12->TextureResource.GetResource().Get(), 0);
-		CD3DX12_TEXTURE_COPY_LOCATION Src(SrcTexDx12->TextureResource.GetResource().Get(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION Dst(DstTexDx12->TextureResource.GetResource().Get(), DstMipLevel);
+		CD3DX12_TEXTURE_COPY_LOCATION Src(SrcTexDx12->TextureResource.GetResource().Get(), SrcMipLevel);
 		CurrentWorkingCommandList->CopyTextureRegion(&Dst, InDstRegion.Left, InDstRegion.Upper, 0, &Src, &SrcBox);
 
 		// Hold resources used here
@@ -2462,6 +2472,31 @@ namespace tix
 		}
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource().Get(), &SRVDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
+
+		const TTextureDesc& Desc = InTexture->GetDesc();
+		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
+		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
+		TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
+
+		// Create unordered access view
+		D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+		UAVDesc.Format = GetUAVFormat(DxgiFormat);
+		UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+		UAVDesc.Texture2D.MipSlice = InMipLevel;
+		UAVDesc.Texture2D.PlaneSlice = 0;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+
+		D3dDevice->CreateUnorderedAccessView(
+			TexDx12->TextureResource.GetResource().Get(),
+			nullptr,
+			&UAVDesc,
+			Descriptor);
 	}
 
 	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)

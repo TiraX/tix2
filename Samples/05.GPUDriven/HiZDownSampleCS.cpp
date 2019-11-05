@@ -9,6 +9,7 @@
 
 FHiZDownSampleCS::FHiZDownSampleCS()
 	: FComputeTask("S_HiZDownSampleCS")
+	, ActiveLevel(0)
 {
 }
 
@@ -21,20 +22,31 @@ void FHiZDownSampleCS::PrepareResources(FRHI * RHI, const vector2di& HiZSize, FT
 	for (uint32 i = 1 ; i < HiZLevels ; ++ i)
 	{
 		InfoUniforms[i] = ti_new FHiZDownSampleInfo;
-		InfoUniforms[i]->UniformBufferData[0].RTInfo = FUInt4(HiZSize.X >> i, HiZSize.Y >> 1, i, 0);
+		InfoUniforms[i]->UniformBufferData[0].RTInfo = FUInt4(HiZSize.X >> i, HiZSize.Y >> i, i, 0);
+		InfoUniforms[i]->InitUniformBuffer();
 
 		ResourceTable[i] = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
 		ResourceTable[i]->PutTextureInTable(DepthTexture, 0);
-		ResourceTable[i]->PutReadWriteTextureInTable(DepthTexture, i, 1);
+		ResourceTable[i]->PutRWTextureInTable(DepthTexture, i, 1);
 	}
 }
 
 void FHiZDownSampleCS::UpdateComputeArguments(FRHI * RHI, uint32 InLevel)
 {
-	TI_ASSERT(0);
+	ActiveLevel = InLevel;
 }
 
 void FHiZDownSampleCS::Run(FRHI * RHI)
 {
-	TI_ASSERT(0);
+	const uint32 ThreadBlockSize = 16;
+	vector3di DispatchSize;
+	DispatchSize.X = (InfoUniforms[ActiveLevel]->UniformBufferData[0].RTInfo.X + (ThreadBlockSize - 1)) / ThreadBlockSize;
+	DispatchSize.Y = (InfoUniforms[ActiveLevel]->UniformBufferData[0].RTInfo.Y + (ThreadBlockSize - 1)) / ThreadBlockSize;
+	DispatchSize.Z = 1;
+
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeBuffer(0, InfoUniforms[ActiveLevel]->UniformBuffer);
+	RHI->SetComputeResourceTable(1, ResourceTable[ActiveLevel]);
+
+	RHI->DispatchCompute(vector3di(ThreadBlockSize, ThreadBlockSize, 1), DispatchSize);
 }

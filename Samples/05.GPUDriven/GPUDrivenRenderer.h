@@ -35,12 +35,15 @@ private:
 private:
 	FSceneMetaInfos * SceneMetaInfo;
 
+	FArgumentBufferPtr AB_Result;
+
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 
 	FRenderTargetPtr RT_DepthOnly;
 	FPipelinePtr DepthOnlyPipeline;
-	FArgumentBufferPtr AB_Result;
+
+	FTexturePtr HiZTextures;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
@@ -54,9 +57,8 @@ private:
 	SViewFrustum Frustum;
 	FCameraFrustumUniformPtr FrustumUniform;
 
-	//FGPUTileFrustumCullCSPtr TileCullCS;
+	// Compute Tasks
 	FGPUInstanceFrustumCullCSPtr InstanceCullCS;
-
-	//FCopyVisibleTileCommandBufferPtr CopyVisibleCommandBuffer;
 	FCopyVisibleInstancesPtr CopyVisibleInstances;
+	FHiZDownSampleCSPtr HiZDownSample;
 };

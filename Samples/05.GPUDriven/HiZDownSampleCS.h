@@ -29,5 +29,6 @@ private:
 	// Input Depth texture mip and Ouput depth texture mip
 	FRenderResourceTablePtr ResourceTable[HiZLevels];
 
+	uint32 ActiveLevel;
 };
 typedef TI_INTRUSIVE_PTR(FHiZDownSampleCS) FHiZDownSampleCSPtr;
