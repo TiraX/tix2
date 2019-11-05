@@ -59,10 +59,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	HiZTextureDesc.SRGB = 0;
 	HiZTextureDesc.Mips = FHiZDownSampleCS::HiZLevels;
 
-	HiZTextures = RHI->CreateTexture(HiZTextureDesc);
-	HiZTextures->SetTextureFlag(ETF_UAV, true);
-	HiZTextures->SetResourceName("HiZTextures");
-	RHI->UpdateHardwareResourceTexture(HiZTextures);
+	HiZTexture = RHI->CreateTexture(HiZTextureDesc);
+	HiZTexture->SetTextureFlag(ETF_UAV, true);
+	HiZTexture->SetResourceName("HiZTextures");
+	RHI->UpdateHardwareResourceTexture(HiZTexture);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -104,9 +104,9 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	// Prepare compute cull tasks
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
 
-	InstanceCullCS = ti_new FGPUInstanceFrustumCullCS();
-	InstanceCullCS->Finalize();
-	InstanceCullCS->PrepareResources(RHI);
+	InstanceFrustumCullCS = ti_new FGPUInstanceFrustumCullCS();
+	InstanceFrustumCullCS->Finalize();
+	InstanceFrustumCullCS->PrepareResources(RHI);
 
 	// Prepare copy visible instances
 	CopyVisibleInstances = ti_new FCopyVisibleInstances;
@@ -116,7 +116,12 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	// Down sample HiZ 
 	HiZDownSample = ti_new FHiZDownSampleCS;
 	HiZDownSample->Finalize();
-	HiZDownSample->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTextures);
+	HiZDownSample->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
+
+	// Instance occlusion cull
+	InstanceOcclusionCullCS = ti_new FGPUInstanceOcclusionCullCS;
+	InstanceOcclusionCullCS->Finalize();
+	InstanceOcclusionCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -332,7 +337,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			if (bPerformGPUCulling)
 			{
 				_LOG(Log, "Update instance cull CS args.\n");
-				InstanceCullCS->UpdateComputeArguments(
+				InstanceFrustumCullCS->UpdateComputeArguments(
 					RHI,
 					SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
@@ -341,6 +346,15 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo->GetSceneInstancesIntersected()
 				);
 				_LOG(Log, "Instances : %d, Intersected : %d.\n", SceneMetaInfo->GetSceneInstancesAdded(), SceneMetaInfo->GetSceneInstancesIntersected());
+				const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+				InstanceOcclusionCullCS->UpdateComputeArguments(
+					RHI,
+					ViewProjection.MatProj * ViewProjection.MatView,
+					SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
+					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
+					SceneMetaInfo->GetMergedInstanceBuffer(),
+					InstanceFrustumCullCS->GetVisibleResult(),
+					SceneMetaInfo->GetSceneInstancesAdded());
 			}
 		}
 		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
@@ -351,7 +365,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				CopyVisibleInstances->UpdateComputeArguments(
 					RHI,
 					SceneMetaInfo,
-					InstanceCullCS->GetVisibleResult(),
+					InstanceFrustumCullCS->GetVisibleResult(),
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 					PreZGPUCommandBuffer,
 					//GPUCommandBuffer,
@@ -366,7 +380,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->BeginComputeTask();
 
 			// Do GPU Instance frustum culling
-			InstanceCullCS->Run(RHI);
+			InstanceFrustumCullCS->Run(RHI);
 
 			// Copy pre-z occluders only.
 			static bool bCopyVisibleInstance = true;
@@ -412,7 +426,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					RHI->ExecuteGPUCommands(ProcessedPreZGPUCommandBuffer);
 				}
 			}
-			RHI->CopyTextureRegion(HiZTextures, recti(0, 0, HiZTextures->GetWidth(), HiZTextures->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
+			RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
 		}
 
 		{
@@ -426,6 +440,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 
 			// Cull Occluded Instances
+			InstanceOcclusionCullCS->Run(RHI);
 
 			RHI->EndComputeTask();
 		}

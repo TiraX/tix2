@@ -23,7 +23,7 @@ void FHiZDownSampleCS::PrepareResources(FRHI * RHI, const vector2di& HiZSize, FT
 	{
 		InfoUniforms[i] = ti_new FHiZDownSampleInfo;
 		InfoUniforms[i]->UniformBufferData[0].RTInfo = FUInt4(HiZSize.X >> i, HiZSize.Y >> i, i, 0);
-		InfoUniforms[i]->InitUniformBuffer();
+		InfoUniforms[i]->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
 		ResourceTable[i] = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
 		ResourceTable[i]->PutTextureInTable(DepthTexture, 0);

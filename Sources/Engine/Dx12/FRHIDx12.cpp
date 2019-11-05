@@ -1812,11 +1812,7 @@ namespace tix
 		FTextureDx12 * SrcTexDx12 = static_cast<FTextureDx12*>(SrcTexture.get());
 		TI_ASSERT(DstTexDx12->GetDesc().Type == ETT_TEXTURE_2D && SrcTexDx12->GetDesc().Type == ETT_TEXTURE_2D);
 		TI_ASSERT(InDstRegion.getWidth() == SrcTexture->GetDesc().Width && InDstRegion.getHeight() == SrcTexture->GetDesc().Height);
-		if (DstTexture->GetDesc().Format != SrcTexture->GetDesc().Format)
-		{
-			_LOG(Warning, "CopyTextureRegion with different TextureFormat. Dst : %d, Src : %d\n", DstTexture->GetDesc().Format, SrcTexture->GetDesc().Format);
-		}
-
+		
 		Transition(&DstTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_DEST);
 		Transition(&SrcTexDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());

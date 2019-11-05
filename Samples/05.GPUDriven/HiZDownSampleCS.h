@@ -11,7 +11,7 @@ END_UNIFORM_BUFFER_STRUCT(FHiZDownSampleInfo)
 class FHiZDownSampleCS : public FComputeTask
 {
 public:
-	static const uint32 HiZLevels = 6;
+	static const uint32 HiZLevels = 8;
 
 	FHiZDownSampleCS();
 	virtual ~FHiZDownSampleCS();

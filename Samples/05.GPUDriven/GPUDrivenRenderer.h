@@ -12,6 +12,7 @@
 #include "CopyVisibleTileCommandBuffer.h"
 #include "CopyVisibleInstances.h"
 #include "HiZDownSampleCS.h"
+#include "GPUInstanceOcclusionCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -43,7 +44,7 @@ private:
 	FRenderTargetPtr RT_DepthOnly;
 	FPipelinePtr DepthOnlyPipeline;
 
-	FTexturePtr HiZTextures;
+	FTexturePtr HiZTexture;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
@@ -58,7 +59,8 @@ private:
 	FCameraFrustumUniformPtr FrustumUniform;
 
 	// Compute Tasks
-	FGPUInstanceFrustumCullCSPtr InstanceCullCS;
+	FGPUInstanceFrustumCullCSPtr InstanceFrustumCullCS;
 	FCopyVisibleInstancesPtr CopyVisibleInstances;
 	FHiZDownSampleCSPtr HiZDownSample;
+	FGPUInstanceOcclusionCullCSPtr InstanceOcclusionCullCS;
 };
