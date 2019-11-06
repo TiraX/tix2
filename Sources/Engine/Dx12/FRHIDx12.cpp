@@ -23,6 +23,18 @@
 #include <d3d12shader.h>
 #include <d3dcompiler.h>
 
+#if !defined(TIX_SHIPPING)
+// Include pix function for dx12 profile
+#include <WinPixEventRuntime\pix3.h>
+#pragma comment (lib, "WinPixEventRuntime.lib")
+#define BEGIN_EVENT(CmdList, formatStr) PIXBeginEvent(CmdList, 0xffffffff, formatStr)
+#define END_EVENT(CmdList) PIXEndEvent(CmdList)
+#else
+#define BEGIN_EVENT(CmdList, formatStr)
+#define END_EVENT(CmdList)
+#endif
+
+
 // link libraries
 #pragma comment (lib, "d3d12.lib")
 #pragma comment (lib, "dxgi.lib")
@@ -466,6 +478,7 @@ namespace tix
 		// Close last command list
 		if (CurrentWorkingCommandList != nullptr)
 		{
+			END_EVENT(CurrentWorkingCommandList.Get());
 			VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
 		}
 
@@ -487,6 +500,8 @@ namespace tix
 		FCommandListDx12& List = Lists[CurrentCommandListCounter[EPL_COMPUTE]];
 		CurrentWorkingCommandList = List.CommandList;
 
+		//BEGIN_EVENT(ComputeCommandQueue.Get(), "ComputeTasks");
+
 		// Reset command list
 		VALIDATE_HRESULT(List.Allocators[CurrentFrame]->Reset());
 		VALIDATE_HRESULT(CurrentWorkingCommandList->Reset(List.Allocators[CurrentFrame].Get(), nullptr));
@@ -501,7 +516,20 @@ namespace tix
 	{
 		// Switch from compute command list to graphics command list.
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_COMPUTE);
+		//END_EVENT(ComputeCommandQueue.Get());
 		InitGraphicsPipeline();
+	}
+
+	void FRHIDx12::BeginEvent(const int8* InEventName)
+	{
+		TI_ASSERT(CurrentWorkingCommandList != nullptr);
+		BEGIN_EVENT(CurrentWorkingCommandList.Get(), InEventName);
+	}
+
+	void FRHIDx12::EndEvent()
+	{
+		TI_ASSERT(CurrentWorkingCommandList != nullptr);
+		END_EVENT(CurrentWorkingCommandList.Get());
 	}
 
 	FTexturePtr FRHIDx12::CreateTexture()
@@ -2930,7 +2958,7 @@ namespace tix
 	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const int8* PassName)
 	{
 		FRHI::BeginRenderToRenderTarget(RT, MipLevel, PassName);
-
+		BEGIN_EVENT(CurrentWorkingCommandList.Get(), PassName);
 		SetRenderTarget(RT, MipLevel);
 	}
 

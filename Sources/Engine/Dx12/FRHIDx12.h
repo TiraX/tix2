@@ -32,6 +32,9 @@ namespace tix
 		virtual void BeginComputeTask(bool IsTileComputeShader = false) override;
 		virtual void EndComputeTask(bool IsTileComputeShader = false) override;
 
+		virtual void BeginEvent(const int8* InEventName) override;
+		virtual void EndEvent() override;
+
 		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
 

@@ -13,7 +13,7 @@
 #include <wrl.h>
 #include <dxgi1_4.h>
 #include <d3d12.h>
-#include <pix.h>
+//#include <pix.h>
 #if defined(TIX_DEBUG)
 #include <dxgidebug.h>
 #endif

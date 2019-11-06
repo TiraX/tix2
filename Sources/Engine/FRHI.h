@@ -82,6 +82,9 @@ namespace tix
 		virtual void BeginComputeTask(bool IsTileComputeShader = false) = 0;
 		virtual void EndComputeTask(bool IsTileComputeShader = false) = 0;
 
+		virtual void BeginEvent(const int8* InEventName) = 0;
+		virtual void EndEvent() = 0;
+
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;
 
