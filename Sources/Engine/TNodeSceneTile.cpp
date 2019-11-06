@@ -132,9 +132,12 @@ namespace tix
 							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
 							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());
 							TMeshBufferPtr OccluderMesh = CollisionSet->ConvertToMesh();
-							OccluderMesh->InitRenderThreadResource();
-							// Only add to Primitive[0], since all primitives from the same mesh shares the same occluder.
-							LinkedPrimitives[0]->SetOccluder(OccluderMesh->MeshBufferResource);
+							if (OccluderMesh != nullptr)
+							{
+								OccluderMesh->InitRenderThreadResource();
+								// Only add to Primitive[0], since all primitives from the same mesh shares the same occluder.
+								LinkedPrimitives[0]->SetOccluder(OccluderMesh->MeshBufferResource);
+							}
 
 							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
 

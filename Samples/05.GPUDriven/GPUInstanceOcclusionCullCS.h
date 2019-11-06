@@ -26,6 +26,11 @@ public:
 		FUniformBufferPtr FrustumCullResult,
 		uint32 InstancesCountIntersectWithFrustum);
 	virtual void Run(FRHI * RHI) override;
+
+	FUniformBufferPtr GetVisibleResult()
+	{
+		return VisibilityResult;
+	}
 private:
 
 private:

@@ -87,6 +87,7 @@ namespace tix
 		E_INDEX_TYPE InIndexType,
 		const void* InIndexData, uint32 InIndexCount)
 	{
+		TI_ASSERT(InVertexCount > 0 && InIndexCount > 0);
 		VsFormat = InFormat;
 		VsDataCount = InVertexCount;
 

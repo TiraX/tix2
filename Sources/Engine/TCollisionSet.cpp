@@ -27,8 +27,6 @@ namespace tix
 
 	TMeshBufferPtr TCollisionSet::ConvertToMesh() const
 	{
-		TMeshBufferPtr Mesh = ti_new TMeshBuffer;
-
 		TVector<vector3df> Positions;
 		TVector<uint16> Indices;
 		Positions.reserve(64 * 1024);
@@ -60,8 +58,16 @@ namespace tix
 			}
 		}
 		TI_ASSERT(Positions.size() < 65535);
-		Mesh->SetVertexStreamData(EVSSEG_POSITION, Positions.data(), (uint32)Positions.size(), EIT_16BIT, Indices.data(), (uint32)Indices.size());
+		if (Positions.size() > 0)
+		{
+			TMeshBufferPtr Mesh = ti_new TMeshBuffer;
+			Mesh->SetVertexStreamData(EVSSEG_POSITION, Positions.data(), (uint32)Positions.size(), EIT_16BIT, Indices.data(), (uint32)Indices.size());
 
-		return Mesh;
+			return Mesh;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 }

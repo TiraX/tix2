@@ -60,6 +60,7 @@ private:
 
 	// Compute Tasks
 	FGPUInstanceFrustumCullCSPtr InstanceFrustumCullCS;
+	FCopyVisibleInstancesPtr CopyVisibleOccluders;
 	FCopyVisibleInstancesPtr CopyVisibleInstances;
 	FHiZDownSampleCSPtr HiZDownSample;
 	FGPUInstanceOcclusionCullCSPtr InstanceOcclusionCullCS;

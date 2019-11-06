@@ -354,6 +354,9 @@ namespace tix
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
+		END_EVENT(CurrentWorkingCommandList.Get());
+		BEGIN_EVENT(CurrentWorkingCommandList.Get(), "RenderToFrameBuffer");
+
 		D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = BackBufferDescriptors[CurrentFrame];
 		D3D12_CPU_DESCRIPTOR_HANDLE depthStencilView = DepthStencilDescriptor;
 		CurrentWorkingCommandList->ClearRenderTargetView(renderTargetView, DirectX::Colors::CornflowerBlue, 0, nullptr);
@@ -369,6 +372,8 @@ namespace tix
 		// Indicate that the render target will now be used to present when the command list is done executing.
 		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+
+		END_EVENT(CurrentWorkingCommandList.Get());
 
 		VALIDATE_HRESULT(CurrentWorkingCommandList->Close());
 		TI_ASSERT(FrameFence == nullptr);

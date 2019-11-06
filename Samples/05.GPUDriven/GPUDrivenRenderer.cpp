@@ -108,7 +108,11 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
-	// Prepare copy visible instances
+	// Prepare copy visible occluders & instances
+	CopyVisibleOccluders = ti_new FCopyVisibleInstances;
+	CopyVisibleOccluders->Finalize();
+	CopyVisibleOccluders->PrepareResources(RHI);
+
 	CopyVisibleInstances = ti_new FCopyVisibleInstances;
 	CopyVisibleInstances->Finalize();
 	CopyVisibleInstances->PrepareResources(RHI);
@@ -299,7 +303,8 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	static bool bPerformGPUCulling = true;
-	static bool Indirect = false;
+	static bool bOcclusionCull = true;
+	static bool Indirect = !false;
 	static bool DrawCulled = !false;
 
 	if (bPerformGPUCulling)
@@ -362,16 +367,22 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			if (bPerformGPUCulling)
 			{
 				_LOG(Log, "Update copy visible instances args.\n");
-				CopyVisibleInstances->UpdateComputeArguments(
+				CopyVisibleOccluders->UpdateComputeArguments(
 					RHI,
 					SceneMetaInfo,
 					InstanceFrustumCullCS->GetVisibleResult(),
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 					PreZGPUCommandBuffer,
-					//GPUCommandBuffer,
 					ProcessedPreZGPUCommandBuffer
-					//ProcessedGPUCommandBuffer
-					);
+				);
+				CopyVisibleInstances->UpdateComputeArguments(
+					RHI,
+					SceneMetaInfo,
+					bOcclusionCull ? InstanceOcclusionCullCS->GetVisibleResult() : InstanceFrustumCullCS->GetVisibleResult(),
+					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
+					GPUCommandBuffer,
+					ProcessedGPUCommandBuffer
+				);
 			}
 		}
 
@@ -380,16 +391,24 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->BeginComputeTask();
 
 			// Do GPU Instance frustum culling
-			InstanceFrustumCullCS->Run(RHI);
+			{
+				RHI->BeginEvent("Instance Frustum Cull");
+				InstanceFrustumCullCS->Run(RHI);
+				RHI->EndEvent();
+			}
 
 			// Copy pre-z occluders only.
-			static bool bCopyVisibleInstance = true;
-			if (bCopyVisibleInstance)
-				CopyVisibleInstances->Run(RHI);
+			if (bOcclusionCull)
+			{
+				RHI->BeginEvent("Copy Visible Occluders");
+				CopyVisibleOccluders->Run(RHI);
+				RHI->EndEvent();
+			}
 
 			RHI->EndComputeTask();
 		}
 
+		if (bOcclusionCull)
 		{
 			// PreZ Pass
 			RHI->BeginRenderToRenderTarget(RT_DepthOnly, 0, "PreZ");
@@ -430,19 +449,38 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 
 		{
-			RHI->BeginComputeTask();
-			// Occlusion Cull
-			// Down Sample Depth
-			for (uint32 i = 1 ; i < FHiZDownSampleCS::HiZLevels ; ++ i)
+			if (bPerformGPUCulling)
 			{
-				HiZDownSample->UpdateComputeArguments(RHI, i);
-				HiZDownSample->Run(RHI);
+				RHI->BeginComputeTask();
+				if (bOcclusionCull)
+				{
+					// Occlusion Cull
+					// Down Sample Depth
+					RHI->BeginEvent("Down Sample HiZ");
+					for (uint32 i = 1; i < FHiZDownSampleCS::HiZLevels; ++i)
+					{
+						HiZDownSample->UpdateComputeArguments(RHI, i);
+						HiZDownSample->Run(RHI);
+					}
+					RHI->EndEvent();
+
+					// Cull Occluded Instances
+					RHI->BeginEvent("Cull occluded Instances");
+					InstanceOcclusionCullCS->Run(RHI);
+					RHI->EndEvent();
+				}
+
+				// Copy visible instances only
+				static bool bCopyVisibleInstances = true;
+				if (bCopyVisibleInstances)
+				{
+					RHI->BeginEvent("Copy Visible Instances");
+					CopyVisibleInstances->Run(RHI);
+					RHI->EndEvent();
+				}
+
+				RHI->EndComputeTask();
 			}
-
-			// Cull Occluded Instances
-			InstanceOcclusionCullCS->Run(RHI);
-
-			RHI->EndComputeTask();
 		}
 
 		{
