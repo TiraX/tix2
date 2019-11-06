@@ -4,5 +4,8 @@ Content/Slums/
 Content/Slum01/
 Content/Slum01-Landscape1_sections/
 Content/Slum*.tjs
+Content/CubeTest01/
+Content/CubeTest*.tjs
 Content/*.tga
 Content/*.zip
+Content/*.dll
