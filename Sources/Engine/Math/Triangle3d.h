@@ -55,6 +55,116 @@ namespace tix
 				(pointA.Z < box.MinEdge.Z && pointB.Z < box.MinEdge.Z && pointC.Z < box.MinEdge.Z));
 		}
 
+		//! Determines if the triangle is intersect with a bounding box
+		// For any two convex meshes, to find whether they intersect, 
+		// you need to check if there exist a separating plane.
+		// If it does, they do not intersect.The plane can be picked from 
+		// any face of either shape, or the edge cross - products.
+		// The plane is defined as a normal and an offset from Origo.
+		// So, you only have to check three faces of the AABB, and one face of the triangle.
+		//https://stackoverflow.com/questions/17458562/efficient-aabb-triangle-intersection-in-c-sharp
+		/** \param box Box to check.
+		\return True if triangle is intersect the box, otherwise false. */
+		bool isIntersectWithBox(const aabbox3d<T>& box) const
+		{
+			T TriangleMin, TriangleMax;
+			T BoxMin, BoxMax;
+
+			// Test the box normals (x-, y- and z-axes)
+			vector3d<T> BoxNormals[3] =
+			{
+				vector3d<T>(1,0,0),
+				vector3d<T>(0,1,0),
+				vector3d<T>(0,0,1)
+			};
+
+			auto ProjectTriangle = [](const triangle3d<T>& Tri, const vector3d<T>& Axis, T& MinValue, T& MaxValue)
+			{
+				MinValue = FLT_MAX;
+				MaxValue = FLT_MIN;
+
+				const vector3d<T> Points[] =
+				{
+					Tri.pointA,
+					Tri.pointB,
+					Tri.pointC
+				};
+
+				for (int32 i = 0; i < 3; ++i)
+				{
+					T V = Axis.dotProduct(Points[i]);
+					if (V < MinValue)
+						MinValue = V;
+					if (V > MaxValue)
+						MaxValue = V;
+				}
+			};
+			auto ProjectBox = [](const aabbox3d<T>& Box, const vector3d<T>& Axis, T& MinValue, T& MaxValue)
+			{
+				MinValue = FLT_MAX;
+				MaxValue = FLT_MIN;
+
+				const vector3d<T> Points[] =
+				{
+					vector3d<T>(Box.MinEdge.X, Box.MinEdge.Y, Box.MinEdge.Z),
+					vector3d<T>(Box.MaxEdge.X, Box.MinEdge.Y, Box.MinEdge.Z),
+					vector3d<T>(Box.MinEdge.X, Box.MaxEdge.Y, Box.MinEdge.Z),
+					vector3d<T>(Box.MaxEdge.X, Box.MaxEdge.Y, Box.MinEdge.Z),
+
+					vector3d<T>(Box.MinEdge.X, Box.MinEdge.Y, Box.MaxEdge.Z),
+					vector3d<T>(Box.MaxEdge.X, Box.MinEdge.Y, Box.MaxEdge.Z),
+					vector3d<T>(Box.MinEdge.X, Box.MaxEdge.Y, Box.MaxEdge.Z),
+					vector3d<T>(Box.MaxEdge.X, Box.MaxEdge.Y, Box.MaxEdge.Z)
+				};
+
+				for (int32 i = 0; i < 8; ++i)
+				{
+					T V = Axis.dotProduct(Points[i]);
+					if (V < MinValue)
+						MinValue = V;
+					if (V > MaxValue)
+						MaxValue = V;
+				}
+			};
+			for (int32 i = 0; i < 3; i++)
+			{
+				const vector3d<T>& N = BoxNormals[i];
+				ProjectTriangle(*this, BoxNormals[i], TriangleMin, TriangleMax);
+				if (TriangleMax < box.MinEdge[i] || TriangleMin > box.MaxEdge[i])
+					return false; // No intersection possible.
+			}
+
+			// Test the triangle normal
+			vector3d<T> TriN = getNormal().normalize();
+			T TriangleOffset = TriN.dotProduct(pointA);
+			ProjectBox(box, TriN, BoxMin, BoxMax);
+			if (BoxMax < TriangleOffset || BoxMin > TriangleOffset)
+				return false; // No intersection possible.
+
+			// Test the nine edge cross-products
+			vector3d<T> TriangleEdges[] =
+			{
+				pointA - pointB,
+				pointB - pointC,
+				pointC - pointA
+			};
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					// The box normals are the same as it's edge tangents
+					vector3d<T> Axis = TriangleEdges[i].crossProduct(BoxNormals[j]);
+					ProjectBox(box, Axis, BoxMin, BoxMax);
+					ProjectTriangle(*this, Axis, TriangleMin, TriangleMax);
+					if (BoxMax <= TriangleMin || BoxMin >= TriangleMax)
+						return false; // No intersection possible
+				}
+			}
+
+			// No separating axis found.
+			return true;
+		}
+
 		//! Get the closest point on a triangle to a point on the same plane.
 		/** \param p Point which must be on the same plane as the triangle.
 		\return The closest point of the triangle */
