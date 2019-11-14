@@ -358,6 +358,15 @@ namespace tix
 			return plane3d<T>(pointA, pointB, pointC);
 		}
 
+		//! Get the bounding box of this triangle
+		aabbox3d<T> getBoundingBox() const
+		{
+			aabbox3d<T> Box(pointA);
+			Box.addInternalPoint(pointB);
+			Box.addInternalPoint(pointC);
+			return Box;
+		}
+
 		//! Get the area of the triangle
 		T getArea() const
 		{
