@@ -155,7 +155,7 @@ void TResMeshCluster::ScatterToVolume()
 
 	if (TResSettings::GlobalSettings.ClusterVerbose)
 	{
-		_LOG(Log, "  [%s(%d)] Volumes [%d, %d, %d] with size : %f . Total: %d\n", MeshName.c_str(), Section, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize, VolumeCells.size());
+		_LOG(Log, "  [%s(%d)] Prims [%d]. Volumes [%d, %d, %d] with size : %f.\n", PrimCount, MeshName.c_str(), Section, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize);
 	}
 
 	// Scatter every triangle to volume cell
