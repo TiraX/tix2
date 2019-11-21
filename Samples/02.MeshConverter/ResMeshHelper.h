@@ -76,6 +76,8 @@ namespace tix
 		TVector<float> Vertices;
 		TVector<int32> Indices;
 
+		TVector< TVector<uint32> > Clusters;
+
 		void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
 		void SetFaces(int32* Indices, int32 Count);
 		void SetMaterial(const TString& MaterialName);

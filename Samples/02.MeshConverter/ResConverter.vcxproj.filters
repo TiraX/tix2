@@ -70,7 +70,18 @@
     <ClInclude Include="ResSceneTileHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
+    <ClInclude Include="ResMeshCluster.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TSmallestEncloseSphere.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TSphere.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TCrc.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -143,6 +154,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResMeshCluster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

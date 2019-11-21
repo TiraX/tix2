@@ -7,6 +7,8 @@
 #include "ResHelper.h"
 #include "ResMeshHelper.h"
 #include "TMeshBufferSemantic.h"
+#include "ResMeshCluster.h"
+#include "ResMultiThreadTask.h"
 
 void ConvertJArrayToArray(TJSONNode& JArray, TVector<float>& OutArray)
 {
@@ -302,6 +304,45 @@ namespace tix
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 
+	class TMeshClusterTask : public TResMTTask
+	{
+	public:
+		TMeshClusterTask(TResMeshDefine * InMesh, const TString& InMeshName, int32 InSection)
+			: MeshSection(InMesh)
+			, MeshName(InMeshName)
+			, Section(InSection)
+		{
+		}
+
+		TResMeshDefine * MeshSection;
+		TString MeshName;
+		int32 Section;
+
+		virtual void Exec() override
+		{
+			const float* Positions = MeshSection->Segments[ESSI_POSITION].Data;
+			TVector<vector3df> PosArray;
+			PosArray.resize(MeshSection->NumVertices);
+			for (int32 v = 0; v < MeshSection->NumVertices; ++v)
+			{
+				vector3df P(Positions[v * 3 + 0], Positions[v * 3 + 1], Positions[v * 3 + 2]);
+				PosArray[v] = P;
+			}
+
+			TVector<vector3di> PrimArray;
+			PrimArray.resize(MeshSection->Indices.size() / 3);
+			for (int32 f = 0; f < (int32)MeshSection->Indices.size(); f += 3)
+			{
+				vector3di F(MeshSection->Indices[f + 0], MeshSection->Indices[f + 1], MeshSection->Indices[f + 2]);
+				PrimArray[f / 3] = F;
+			}
+
+			TResMeshCluster MC(PosArray, PrimArray, MeshName, Section);
+			MC.GenerateCluster(TResSettings::GlobalSettings.MeshClusterSize);
+
+			MeshSection->Clusters = MC.Clusters;
+		}
+	};
 	bool TResMeshHelper::LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResMeshHelper ResMesh;
@@ -403,6 +444,25 @@ namespace tix
 					Mesh.SetMaterial(MaterialName);
 				}
 			}
+
+			// Generate mesh cluster for this section
+			TVector<TMeshClusterTask*> Tasks;
+			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
+			{
+				for (int32 i = 0; i < Sections.Size(); ++i)
+				{
+					TResMeshDefine& Mesh = ResMesh.GetMesh(i);
+
+					TI_ASSERT(TResSettings::GlobalSettings.MeshClusterSize % 64 == 0);
+
+					TMeshClusterTask * Task = ti_new TMeshClusterTask(&Mesh, Name, i);
+					TResMTTaskExecuter::Get()->AddTask(Task);
+					Tasks.push_back(Task);
+				}
+			}
+
+			TResMTTaskExecuter::Get()->StartTasks();
+			TResMTTaskExecuter::Get()->WaitUntilFinished();
 		}
 
 		// Load collisions

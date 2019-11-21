@@ -121,6 +121,14 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 					TResSettings::GlobalSettings.AstcQuality = TResSettings::Astc_Quality_Low;
 				}
 			}
+			else if (key == "cluster_size")
+			{
+				TResSettings::GlobalSettings.MeshClusterSize = atoi(value.c_str());
+			}
+			else if (key == "cluster_verbose")
+			{
+				TResSettings::GlobalSettings.ClusterVerbose = true;
+			}
 
 			//if (key == "texture_path")
 			//{
@@ -154,6 +162,53 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 	return true;
 }
 
+bool operator > (const SYSTEMTIME& time0, const SYSTEMTIME& time1)
+{
+	if (time0.wYear != time1.wYear)
+		return time0.wYear > time1.wYear;
+	if (time0.wMonth != time1.wMonth)
+		return time0.wMonth > time1.wMonth;
+	if (time0.wDay != time1.wDay)
+		return time0.wDay > time1.wDay;
+	if (time0.wHour != time1.wHour)
+		return time0.wHour > time1.wHour;
+	if (time0.wMinute != time1.wMinute)
+		return time0.wMinute > time1.wMinute;
+	if (time0.wSecond != time1.wSecond)
+		return time0.wSecond > time1.wSecond;
+	if (time0.wMilliseconds != time1.wMilliseconds)
+		return time0.wMilliseconds > time1.wMilliseconds;
+	return false;
+}
+
+bool IsTargetNeedUpdate(const TString& SrcFile, const TString& DstFile)
+{
+	bool bNeedUpdate = true;
+	WIN32_FIND_DATA FindDataSrc, FindDataDst;
+	FILETIME  LocalTime;
+	SYSTEMTIME SysTimeSrc, SysTimeDst;
+
+	// check src and dst file
+	HANDLE hFileSrc, hFileDst;
+	hFileSrc = FindFirstFile(SrcFile.c_str(), &FindDataSrc);
+	hFileDst = FindFirstFile(DstFile.c_str(), &FindDataDst);
+	if (hFileSrc != INVALID_HANDLE_VALUE &&
+		hFileDst != INVALID_HANDLE_VALUE)
+	{
+		FileTimeToLocalFileTime(&(FindDataSrc.ftLastWriteTime), &LocalTime);
+		FileTimeToSystemTime(&LocalTime, &SysTimeSrc);
+
+		FileTimeToLocalFileTime(&(FindDataDst.ftLastWriteTime), &LocalTime);
+		FileTimeToSystemTime(&LocalTime, &SysTimeDst);
+
+		if (SysTimeDst > SysTimeSrc)
+		{
+			bNeedUpdate = false;
+		}
+	}
+	return bNeedUpdate;
+}
+
 int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 {
 	if (argc < 2 || !ParseParams(argc, argv))
@@ -165,6 +220,13 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 	if (bShowExample)
 	{
 		ShowExample();
+		return 0;
+	}
+
+	// Find path
+	TStringReplace(FilenameDst, "\\", "/");
+	if (!IsTargetNeedUpdate(FilenameSrc, FilenameDst))
+	{
 		return 0;
 	}
 
@@ -239,7 +301,6 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 	}
 
 	// Find path
-	TStringReplace(FilenameDst, "\\", "/");
 	TString DstPath;
 	TString::size_type SlashPos = FilenameDst.rfind('/');
 	if (SlashPos != TString::npos)

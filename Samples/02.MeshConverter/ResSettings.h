@@ -20,6 +20,8 @@ public:
 		: ForceAlphaChannel(false)
 		, IgnoreTexture(false)
 		, AstcQuality(Astc_Quality_Low)
+		, MeshClusterSize(0)
+		, ClusterVerbose(false)
 	{}
 
 	TString SrcPath;
@@ -28,4 +30,6 @@ public:
 	bool IgnoreTexture;
 	TString VTInfoFile;
 	int32 AstcQuality;
+	int32 MeshClusterSize;
+	bool ClusterVerbose;
 };
