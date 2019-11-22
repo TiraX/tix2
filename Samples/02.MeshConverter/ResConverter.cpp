@@ -94,6 +94,10 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			{
 				bShowExample = true;
 			}
+			else if (key == "iterate")
+			{
+				TResSettings::GlobalSettings.Iterate = true;
+			}
 			else if (key == "forcealphachannel")
 			{
 				TResSettings::GlobalSettings.ForceAlphaChannel = true;
@@ -225,7 +229,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 
 	// Find path
 	TStringReplace(FilenameDst, "\\", "/");
-	if (!IsTargetNeedUpdate(FilenameSrc, FilenameDst))
+	if (TResSettings::GlobalSettings.Iterate && !IsTargetNeedUpdate(FilenameSrc, FilenameDst))
 	{
 		return 0;
 	}

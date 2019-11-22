@@ -144,6 +144,7 @@ namespace tix
 		int32 PrimitiveCount;	//triangle count, means (index count) / 3. (triangle list)
 		int32 IndexType;
 		int32 StrMaterialInstance;
+		uint16 Clusters, ClusterSize;
 		uint32 Flag;
 		aabbox3df BBox;
 
@@ -160,6 +161,8 @@ namespace tix
 			, PrimitiveCount(0)
 			, IndexType(0)
 			, StrMaterialInstance(0)
+			, Clusters(0)
+			, ClusterSize(0)
 			, Flag(0)
 		{
 		}

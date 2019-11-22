@@ -17,7 +17,8 @@ public:
 
 	static TResSettings GlobalSettings;
 	TResSettings()
-		: ForceAlphaChannel(false)
+		: Iterate(false)
+		, ForceAlphaChannel(false)
 		, IgnoreTexture(false)
 		, AstcQuality(Astc_Quality_Low)
 		, MeshClusterSize(0)
@@ -26,6 +27,7 @@ public:
 
 	TString SrcPath;
 	TString SrcName;
+	bool Iterate;
 	bool ForceAlphaChannel;
 	bool IgnoreTexture;
 	TString VTInfoFile;

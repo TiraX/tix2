@@ -155,7 +155,7 @@ void TResMeshCluster::ScatterToVolume()
 
 	if (TResSettings::GlobalSettings.ClusterVerbose)
 	{
-		_LOG(Log, "  [%s(%d)] Prims [%d]. Volumes [%d, %d, %d] with size : %f.\n", PrimCount, MeshName.c_str(), Section, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize);
+		_LOG(Log, "  [%s(%d)] Prims [%d]. Volumes [%d, %d, %d] with size : %f.\n", MeshName.c_str(), Section, PrimCount, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize);
 	}
 
 	// Scatter every triangle to volume cell
@@ -544,9 +544,67 @@ void TResMeshCluster::MergeSmallClusters(uint32 ClusterTriangles)
 		FullClusters.push_back(MC);
 	}
 	Clusters = FullClusters;
+
+	// Copy indices
+	ClusterIndices.clear();
+	ClusterIndices.reserve(Clusters.size());
+	for (const auto& C : Clusters)
+	{
+		TVector<uint32> I;
+		I.reserve(C.size() * 3);
+		for (uint32 PrimIndex : C)
+		{
+			const vector3di& Prim = Prims[PrimIndex];
+			I.push_back(Prim.X);
+			I.push_back(Prim.Y);
+			I.push_back(Prim.Z);
+		}
+		ClusterIndices.push_back(I);
+	}
 }
 
 void TResMeshCluster::CalcMetaInfos()
 {
 	// Calc cluster bbox and cone info
+	ClusterBBoxes.reserve(Clusters.size());
+	ClusterCones.reserve(Clusters.size());
+
+	for (const auto& Cluster : Clusters)
+	{
+		const vector3df& P0 = P[Prims[Cluster[0]].X];
+		aabbox3df CBBox(P0);
+
+		for (auto CPrim : Cluster)
+		{
+			const vector3df& CP0 = P[Prims[CPrim].X];
+			const vector3df& CP1 = P[Prims[CPrim].Y];
+			const vector3df& CP2 = P[Prims[CPrim].Z];
+
+			CBBox.addInternalPoint(CP0);
+			CBBox.addInternalPoint(CP1);
+			CBBox.addInternalPoint(CP2);
+		}
+		ClusterBBoxes.push_back(CBBox);
+	}
+
+	for (const auto& Cluster : Clusters)
+	{
+		TVector<vector3df> ClusterNormals;
+		ClusterNormals.reserve(Clusters.size());
+		for (auto CPrim : Cluster)
+		{
+			const vector3df& PrimN = PrimsN[CPrim];
+			ClusterNormals.push_back(PrimN);
+		}
+		TSphere NBSphere = GetBoundingSphere(ClusterNormals);
+		vector3df CNormal = NBSphere.Center;
+		CNormal.normalize();
+		float SinA = NBSphere.Radius;
+		vector4df Cone;
+		Cone.X = CNormal.X;
+		Cone.Y = CNormal.Y;
+		Cone.Z = CNormal.Z;
+		Cone.W = -SinA;
+		ClusterCones.push_back(Cone);
+	}
 }

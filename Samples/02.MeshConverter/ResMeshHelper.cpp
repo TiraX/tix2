@@ -121,6 +121,14 @@ namespace tix
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
 
+			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
+			{
+				MeshHeader.ClusterSize = TResSettings::GlobalSettings.MeshClusterSize;
+				TI_ASSERT(Mesh.ClusterIndices.size() < 65000);
+				MeshHeader.Clusters = (uint16)Mesh.ClusterIndices.size();
+				MeshHeader.PrimitiveCount = MeshHeader.ClusterSize * MeshHeader.Clusters;
+			}
+
 			// fill data
 			// - vertices
 			float* DataPos = Mesh.Segments[ESSI_POSITION].Data != nullptr ? Mesh.Segments[ESSI_POSITION].Data : nullptr;
@@ -234,24 +242,67 @@ namespace tix
 			FillZero4(DataStream);
 
 			// - Indices
-			TI_ASSERT(Mesh.Faces.Count == MeshHeader.PrimitiveCount * 3);
-			if (MeshHeader.IndexType == EIT_16BIT)
+			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
-				for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+				if (MeshHeader.IndexType == EIT_16BIT)
 				{
-					uint16 Index = (uint16)Mesh.Faces.Data[i];
-					DataStream.Put(&Index, sizeof(uint16));
+					for (auto CI : Mesh.ClusterIndices)
+					{
+						for (auto I : CI)
+						{
+							uint16 Index = (uint16)I;
+							DataStream.Put(&Index, sizeof(uint16));
+						}
+					}
+				}
+				else
+				{
+					for (auto CI : Mesh.ClusterIndices)
+					{
+						for (auto I : CI)
+						{
+							uint32 Index = (uint32)I;
+							DataStream.Put(&Index, sizeof(uint32));
+						}
+					}
 				}
 			}
 			else
 			{
-				for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+				TI_ASSERT(Mesh.Faces.Count == MeshHeader.PrimitiveCount * 3);
+				if (MeshHeader.IndexType == EIT_16BIT)
 				{
-					uint32 Index = (uint32)Mesh.Faces.Data[i];
-					DataStream.Put(&Index, sizeof(uint32));
+					for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+					{
+						uint16 Index = (uint16)Mesh.Faces.Data[i];
+						DataStream.Put(&Index, sizeof(uint16));
+					}
+				}
+				else
+				{
+					for (int32 i = 0; i < Mesh.Faces.Count; ++i)
+					{
+						uint32 Index = (uint32)Mesh.Faces.Data[i];
+						DataStream.Put(&Index, sizeof(uint32));
+					}
 				}
 			}
 			FillZero4(DataStream);
+
+			// Export cluster meta data
+			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
+			{
+				TI_ASSERT(Mesh.ClusterBBoxes.size() == Mesh.ClusterCones.size());
+				const uint32 ClusterCount = (uint32)Mesh.ClusterBBoxes.size();
+				for (uint32 c = 0 ; c < ClusterCount ; ++ c)
+				{
+					const aabbox3df& CBBox = Mesh.ClusterBBoxes[c];
+					const vector4df& CCone = Mesh.ClusterCones[c];
+
+					DataStream.Put(&CBBox, sizeof(aabbox3df));
+					DataStream.Put(&CCone, sizeof(vector4df));
+				}
+			}
 
 			// Fill header
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
@@ -340,7 +391,9 @@ namespace tix
 			TResMeshCluster MC(PosArray, PrimArray, MeshName, Section);
 			MC.GenerateCluster(TResSettings::GlobalSettings.MeshClusterSize);
 
-			MeshSection->Clusters = MC.Clusters;
+			MeshSection->ClusterIndices = MC.ClusterIndices;
+			MeshSection->ClusterBBoxes = MC.ClusterBBoxes;
+			MeshSection->ClusterCones = MC.ClusterCones;
 		}
 	};
 	bool TResMeshHelper::LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
@@ -446,9 +499,9 @@ namespace tix
 			}
 
 			// Generate mesh cluster for this section
-			TVector<TMeshClusterTask*> Tasks;
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
+				TVector<TMeshClusterTask*> Tasks;
 				for (int32 i = 0; i < Sections.Size(); ++i)
 				{
 					TResMeshDefine& Mesh = ResMesh.GetMesh(i);
@@ -459,10 +512,10 @@ namespace tix
 					TResMTTaskExecuter::Get()->AddTask(Task);
 					Tasks.push_back(Task);
 				}
-			}
 
-			TResMTTaskExecuter::Get()->StartTasks();
-			TResMTTaskExecuter::Get()->WaitUntilFinished();
+				TResMTTaskExecuter::Get()->StartTasks();
+				TResMTTaskExecuter::Get()->WaitUntilFinished();
+			}
 		}
 
 		// Load collisions

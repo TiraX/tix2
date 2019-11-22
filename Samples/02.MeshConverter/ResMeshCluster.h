@@ -43,7 +43,10 @@ private:
 	// Each prim remember the cells it intersected
 	TVector< TVector<uint32> > PrimVolumePositions;
 
-public:
 	// Final Clusters
 	TVector< TVector<uint32> > Clusters;
+public:
+	TVector< TVector<uint32> > ClusterIndices;
+	TVector< aabbox3df > ClusterBBoxes;
+	TVector< vector4df > ClusterCones;
 };

@@ -197,16 +197,19 @@ namespace tix
 			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
 
 			// Load vertex data and index data
+			const int32 IndexStride = (Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
 			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
 			const int8* VertexData = VertexDataStart + MeshDataOffset;
 			const int8* IndexData = VertexDataStart + MeshDataOffset + ti_align4(Header->VertexCount * VertexStride);
+			const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
+			TI_TODO("Load cluster meta data.");
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 			Mesh->SetBBox(Header->BBox);
 			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride) 
-				+ ti_align4((int32)(((Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32)) * Header->PrimitiveCount * 3));
+				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
 
 			FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
-			FStats::Stats.IndexDataInBytes += ti_align4((int32)(((Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32)) * Header->PrimitiveCount * 3));
+			FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
 
 			// Load material
 			TString MaterialResName = GetString(Header->StrMaterialInstance);
