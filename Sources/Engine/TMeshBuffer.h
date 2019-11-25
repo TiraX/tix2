@@ -31,6 +31,8 @@ namespace tix
 			const void* InVertexData, uint32 InVertexCount,
 			E_INDEX_TYPE InIndexType,
 			const void* InIndexData, uint32 InIndexCount);
+		void SetClusterData(
+			const void* InClusterData, uint32 InClusterCount);
 
 		uint32 GetVerticesCount() const
 		{
@@ -108,6 +110,9 @@ namespace tix
 		E_INDEX_TYPE IndexType;
 		uint8* PsData;
 		uint32 PsDataCount;
+
+		uint8* ClusterData;
+		uint32 ClusterCount;
 
 		uint32 VsFormat;
 		uint32 Stride;

@@ -56,12 +56,23 @@ TSphere TResMeshCluster::GetBoundingSphere(const TVector<vector3df>& Points)
 
 void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 {
+	static const bool bExportDebugObjFile = !true;
+	if (bExportDebugObjFile)
+	{
+		SaveObjFile("_origin.obj");
+	}
+
 	SortPrimitives();
 	CalcPrimNormals();
 	ScatterToVolume();
 	MakeClusters(ClusterTriangles);
 	MergeSmallClusters(ClusterTriangles);
 	CalcMetaInfos();
+
+	if (bExportDebugObjFile)
+	{
+		SaveClusterObjFile("_debug.obj");
+	}
 }
 
 void TResMeshCluster::SortPrimitives()
@@ -607,4 +618,91 @@ void TResMeshCluster::CalcMetaInfos()
 		Cone.W = -SinA;
 		ClusterCones.push_back(Cone);
 	}
+}
+
+bool TResMeshCluster::SaveObjFile(const TString& Filename)
+{
+	TStringStream SS;
+
+	for (const auto& P : P)
+	{
+		SS << "v " << P.X << " " << P.Y << " " << P.Z << "\n";
+	}
+	SS << "\n";
+	SS << "vt 0.0 0.0 0.0\n\n";
+	SS << "vn 0 0 1\n\n";
+
+	SS << "g origin01\n";
+	SS << "s origins01\n\n";
+
+	const uint32 NPrims = (uint32)Prims.size();
+	for (uint32 p = 0; p < NPrims; ++p)
+	{
+		const vector3di& Prim = Prims[p];
+		vector3di T = Prim + vector3di(1, 1, 1);
+
+		SS << "f ";
+		SS << T.X << "/1/1 ";
+		SS << T.Y << "/1/1 ";
+		SS << T.Z << "/1/1\n";
+	}
+	SS << "\n";
+
+	// Write to file
+	TFile objfile;
+	if (objfile.Open(Filename, EFA_CREATEWRITE))
+	{
+		objfile.Write(SS.str().c_str(), (int32)SS.str().size());
+		objfile.Close();
+	}
+
+	return true;
+}
+
+bool TResMeshCluster::SaveClusterObjFile(const TString& Filename)
+{
+	TStringStream SS;
+
+	for (const auto& P : P)
+	{
+		SS << "v " << P.X << " " << P.Y << " " << P.Z << "\n";
+	}
+	SS << "\n";
+	SS << "vt 0.0 0.0 0.0\n\n";
+	SS << "vn 0 0 1\n\n";
+
+	const uint32 NClusters = (uint32)Clusters.size();
+	for (uint32 c = 0; c < NClusters; ++c)
+	{
+		if (Clusters[c].size() == 0)
+		{
+			continue;
+		}
+		char Name[128];
+		sprintf(Name, "Cluster%03d", c);
+		SS << "g " << Name << "\n";
+		SS << "s " << c << "\n";
+
+		for (uint32 PIndex : Clusters[c])
+		{
+			const vector3di& Prim = Prims[PIndex];
+			vector3di T = Prim + vector3di(1, 1, 1);
+
+			SS << "f ";
+			SS << T.X << "/1/1 ";
+			SS << T.Y << "/1/1 ";
+			SS << T.Z << "/1/1\n";
+		}
+		SS << "\n";
+	}
+
+	// Write to file
+	TFile objfile;
+	if (objfile.Open(Filename, EFA_CREATEWRITE))
+	{
+		objfile.Write(SS.str().c_str(), (int32)SS.str().size());
+		objfile.Close();
+	}
+
+	return true;
 }

@@ -25,6 +25,10 @@ private:
 	void CalcMetaInfos();
 	TSphere GetBoundingSphere(const TVector<vector3df>& Points);
 
+	// For debug
+	bool SaveObjFile(const TString& Filename);
+	bool SaveClusterObjFile(const TString& Filename);
+
 private:
 	TString MeshName;
 	int32 Section;

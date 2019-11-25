@@ -202,11 +202,16 @@ namespace tix
 			const int8* VertexData = VertexDataStart + MeshDataOffset;
 			const int8* IndexData = VertexDataStart + MeshDataOffset + ti_align4(Header->VertexCount * VertexStride);
 			const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
-			TI_TODO("Load cluster meta data.");
 			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
+			if (Header->Clusters > 0)
+			{
+				Mesh->SetClusterData(ClusterData, Header->Clusters);
+			}
 			Mesh->SetBBox(Header->BBox);
-			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride) 
-				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
+			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride)		// Vertex data size
+				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3))	// Index data size
+				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshCluster)));	// Cluster data size
+			TI_ASSERT(Header->PrimitiveCount == Header->Clusters * Header->ClusterSize);
 
 			FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
 			FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));

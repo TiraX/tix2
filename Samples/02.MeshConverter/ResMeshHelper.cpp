@@ -296,11 +296,11 @@ namespace tix
 				const uint32 ClusterCount = (uint32)Mesh.ClusterBBoxes.size();
 				for (uint32 c = 0 ; c < ClusterCount ; ++ c)
 				{
-					const aabbox3df& CBBox = Mesh.ClusterBBoxes[c];
-					const vector4df& CCone = Mesh.ClusterCones[c];
+					TMeshCluster Cluster;
+					Cluster.BBox = Mesh.ClusterBBoxes[c];
+					Cluster.Cone = Mesh.ClusterCones[c];
 
-					DataStream.Put(&CBBox, sizeof(aabbox3df));
-					DataStream.Put(&CCone, sizeof(vector4df));
+					DataStream.Put(&Cluster, sizeof(TMeshCluster));
 				}
 			}
 
@@ -372,12 +372,15 @@ namespace tix
 		virtual void Exec() override
 		{
 			const float* Positions = MeshSection->Segments[ESSI_POSITION].Data;
+			const int32 StrideInFloat = MeshSection->Segments[ESSI_POSITION].StrideInFloat;
 			TVector<vector3df> PosArray;
 			PosArray.resize(MeshSection->NumVertices);
+			int32 DataOffset = 0;
 			for (int32 v = 0; v < MeshSection->NumVertices; ++v)
 			{
-				vector3df P(Positions[v * 3 + 0], Positions[v * 3 + 1], Positions[v * 3 + 2]);
+				vector3df P(Positions[DataOffset + 0], Positions[DataOffset + 1], Positions[DataOffset + 2]);
 				PosArray[v] = P;
+				DataOffset += StrideInFloat;
 			}
 
 			TVector<vector3di> PrimArray;

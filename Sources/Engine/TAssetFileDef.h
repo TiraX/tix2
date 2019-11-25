@@ -168,6 +168,12 @@ namespace tix
 		}
 	};
 
+	struct TMeshCluster
+	{
+		aabbox3df BBox;
+		vector4df Cone;
+	};
+
 	struct THeaderCollisionSet
 	{
 		uint32 NumSpheres;

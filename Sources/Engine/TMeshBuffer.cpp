@@ -17,6 +17,8 @@ namespace tix
 		, IndexType(EIT_16BIT)
 		, PsData(nullptr)
 		, PsDataCount(0)
+		, ClusterData(nullptr)
+		, ClusterCount(0)
 		, VsFormat(0)
 		, Stride(0)
 	{
@@ -26,6 +28,7 @@ namespace tix
 	{
 		SAFE_DELETE(VsData);
 		SAFE_DELETE(PsData);
+		SAFE_DELETE(ClusterData);
 	}
 
 	uint32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
@@ -87,7 +90,6 @@ namespace tix
 		E_INDEX_TYPE InIndexType,
 		const void* InIndexData, uint32 InIndexCount)
 	{
-		TI_ASSERT(InVertexCount > 0 && InIndexCount > 0);
 		VsFormat = InFormat;
 		VsDataCount = InVertexCount;
 
@@ -107,6 +109,15 @@ namespace tix
 		TI_ASSERT(PsData == nullptr);
 		PsData = ti_new uint8[PsBufferSize];
 		memcpy(PsData, InIndexData, PsSize);
+	}
+
+	void TMeshBuffer::SetClusterData(const void* InClusterData, uint32 InClusterCount)
+	{
+		ClusterCount = InClusterCount;
+		TI_ASSERT(ClusterData == nullptr);
+		const uint32 ClusterDataSize = InClusterCount * sizeof(TMeshCluster);
+		ClusterData = ti_new uint8[ClusterDataSize];
+		memcpy(ClusterData, InClusterData, ClusterDataSize);
 	}
 
 	///////////////////////////////////////////////////////////
