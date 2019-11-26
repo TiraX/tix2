@@ -27,10 +27,10 @@ namespace tix
 			ViewUniformDirty = (ViewProjectionDirty | EnvironmentDirty),
 		};
 
-		void InitRenderFrame();
+		TI_API void InitRenderFrame();
 
-		void SetViewProjection(const FViewProjectionInfo& Info);
-		void SetEnvironmentInfo(const FEnvironmentInfo& Info);
+		TI_API void SetViewProjection(const FViewProjectionInfo& Info);
+		TI_API void SetEnvironmentInfo(const FEnvironmentInfo& Info);
 
 		// Add / Remove primitives from the same static mesh
 		void AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);

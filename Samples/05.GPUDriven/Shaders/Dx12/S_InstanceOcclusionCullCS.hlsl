@@ -37,7 +37,6 @@ struct FBBox
 struct FInstanceMetaInfo
 {
 	// x = primitive index
-	// y = scene tile index
 	uint4 Info;
 };
 

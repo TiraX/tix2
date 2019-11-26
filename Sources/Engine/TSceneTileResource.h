@@ -34,5 +34,7 @@ namespace tix
 		TVector<vector2di> InstanceCountAndOffset;
 		TVector<uint32> MeshSectionsCount;
 		TInstanceBufferPtr MeshInstanceBuffer;
+
+		FSceneTileResourcePtr RenderThreadTileResource;
 	};
 }

@@ -54,12 +54,15 @@ TSphere TResMeshCluster::GetBoundingSphere(const TVector<vector3df>& Points)
 	return Sphere;
 }
 
+static int32 _debug_index = 0;
 void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 {
-	static const bool bExportDebugObjFile = !true;
+	static const bool bExportDebugObjFile = true;
 	if (bExportDebugObjFile)
 	{
-		SaveObjFile("_origin.obj");
+		char debug_name[64];
+		sprintf(debug_name, "_origin_%d.obj", _debug_index);
+		SaveObjFile(debug_name);
 	}
 
 	SortPrimitives();
@@ -71,7 +74,10 @@ void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 
 	if (bExportDebugObjFile)
 	{
-		SaveClusterObjFile("_debug.obj");
+		char debug_name[64];
+		sprintf(debug_name, "_result_%d.obj", _debug_index);
+		SaveClusterObjFile(debug_name);
+		++_debug_index;
 	}
 }
 

@@ -175,49 +175,54 @@ namespace tix
 		{
 			SCENE_META_LOG(Log, "Primitive dirty.\n");
 			// Update scene primitive meta infos by scene order
-			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
-			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 			
-			uint32 PrimitiveIndexInDrawList = 0;
-			for (auto P : Primitives)
+			for (uint32 t = 0; t < (uint32)SortedTilePositions.size(); ++t)
 			{
-				const vector2di& TilePos = P->GetSceneTilePos();
+				const vector2di& TilePos = SortedTilePositions[t];
 				if (SceneTileVisibleInfo[TilePos] == ECR_OUTSIDE)
 				{
 					continue;
 				}
-				uint32 IndexInTile = P->GetIndexInSceneTile();
-				const aabbox3df& BBox = P->GetBBox();
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
 				TI_ASSERT(ActiveSceneTileInfoMap.find(TilePos) != ActiveSceneTileInfoMap.end());
 				const FUInt4& PosInfo = ActiveSceneTileInfoMap[TilePos];
-
 				const uint32 PrimitivesCount = PosInfo.X;
 				const uint32 PrimitivesStartIndex = PosInfo.Y;
 				const uint32 InstancesCount = PosInfo.Z;
 				const uint32 InstancesStartIndex = PosInfo.W;
 
-				// Mark a global instance offset for primitive in this merged instance buffer
-				P->SetGlobalInstanceOffset(InstancesStartIndex);
-
-				const uint32 PrimitiveIndex = PrimitivesStartIndex + IndexInTile;
-				// Update primitive bboxes in meta data
-				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MinEdge = FFloat4(BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z, 0);
-				ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0);
-				SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
-
-				// Update instance meta data Info.W as loaded (1)
-				FSceneTileResourcePtr SceneTile = SceneTiles.find(TilePos)->second;
-				const vector2di& InstancesCountAndOffset = SceneTile->GetInstanceCountAndOffset()[IndexInTile];
-				const uint32 PrimitiveInstanceStart = InstancesCountAndOffset.Y + InstancesStartIndex;
-				const uint32 PrimitiveInstanceEnd = PrimitiveInstanceStart + InstancesCountAndOffset.X;
-				for (uint32 i = PrimitiveInstanceStart; i < PrimitiveInstanceEnd; ++i)
+				const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+				for (uint32 PIndex = 0 ; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
 				{
-					SceneInstancesMetaInfo->UniformBufferData[i].Info.Y = PrimitiveIndexInDrawList;
-					SceneInstancesMetaInfo->UniformBufferData[i].Info.W = 1;
+					FPrimitivePtr P = TilePrimitives[PIndex];
+
+					if (P != nullptr)
+					{
+						const aabbox3df& BBox = P->GetBBox();
+
+						// Mark a global instance offset for primitive in this merged instance buffer
+						P->SetGlobalInstanceOffset(InstancesStartIndex);
+
+						const uint32 PrimitiveIndex = PrimitivesStartIndex + PIndex;
+						// Update primitive bboxes in meta data
+						ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MinEdge = FFloat4(BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z, 0);
+						ScenePrimitiveBBoxes->UniformBufferData[PrimitiveIndex].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0);
+						SceneMetaFlags |= MetaFlag_ScenePrimitiveMetaDirty;
+					}
+
+					// Update instance meta data Info.W as loaded (1)
+					const vector2di& InstancesCountAndOffset = TileRes->GetInstanceCountAndOffset()[PIndex];
+					const uint32 PrimitiveInstanceStart = InstancesCountAndOffset.Y + InstancesStartIndex;
+					const uint32 PrimitiveInstanceEnd = PrimitiveInstanceStart + InstancesCountAndOffset.X;
+					for (uint32 i = PrimitiveInstanceStart; i < PrimitiveInstanceEnd; ++i)
+					{
+						SceneInstancesMetaInfo->UniformBufferData[i].Info.W = (P != nullptr) ? 1 : 0;
+					}
+					SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
+
 				}
-				++PrimitiveIndexInDrawList;
-				SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
 			}
 		}
 
@@ -267,7 +272,6 @@ namespace tix
 
 	void FSceneMetaInfos::CollectClusterMetaBuffers(FScene * Scene)
 	{
-		TI_ASSERT(0);
 		// Collect all mesh cluster infos in Scene
 		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty))
 		{
@@ -286,6 +290,10 @@ namespace tix
 			}
 
 			MergedClusterData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
+#if defined (TIX_DEBUG)
+			MergedClusterData->SetResourceName("MergedClusterData");
+#endif
+			RHI->UpdateHardwareResourceUB(MergedClusterData, nullptr);
 
 			uint32 DataOffset = 0;
 			for (auto P : Primitives)

@@ -40,14 +40,6 @@ namespace tix
 			TI_ASSERT(NodeSceneTile->LoadedMeshAssets.empty());
 			// Init Loaded mesh asset array.
 			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
-
-			// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
-			FSceneTileResourcePtr RenderThreadTileResource = ti_new FSceneTileResource(NodeSceneTile->SceneTileResource);
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileRes,
-				FSceneTileResourcePtr, SceneTileRes, RenderThreadTileResource,
-				{
-					FRenderThread::Get()->GetRenderScene()->AddSceneTileInfo(SceneTileRes);
-				});
 		}
 		else
 		{
@@ -101,12 +93,14 @@ namespace tix
 						{
 							// Gather loaded mesh resources
 							TVector<FPrimitivePtr> LinkedPrimitives;
+							TVector<uint32> PrimitiveIndices;
 							// MeshResources Include mesh sections and 1 collision set
 							const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
 							// Mesh sections
 							const int32 TotalSections = (int32)MeshResources.size() - 1;
 							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
 							LinkedPrimitives.reserve(TotalSections);
+							PrimitiveIndices.reserve(TotalSections);
 							for (int32 Section = 0 ; Section < TotalSections ; ++ Section)
 							{
 								TI_ASSERT(MeshResources[Section]->GetType() == ERES_MESH);
@@ -123,9 +117,9 @@ namespace tix
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
 								);
 								Primitive->SetClusterMetaData(Mesh->MeshClusterDataResource);
-								Primitive->SetIndexInSceneTile(MeshSectionOffset + Section);
 								Primitive->SetSceneTilePos(SceneTileResource->Position);
 								LinkedPrimitives.push_back(Primitive);
+								PrimitiveIndices.push_back(MeshSectionOffset + Section);
 							}
 
 							// Collisions
@@ -143,10 +137,16 @@ namespace tix
 							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
 
 							// Add primitive to scene
-							ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileMeshPrimitivesToScene,
+							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileMeshPrimitivesToFSceneTile,
+								FSceneTileResourcePtr, RenderThreadSceneTileResource, SceneTileResource->RenderThreadTileResource, 
+								TVector<uint32>, Indices, PrimitiveIndices,
 								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
 								{
-									FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
+									const uint32 TotalPrimitives = (uint32)Primitives.size();
+									for (uint32 p = 0 ; p < TotalPrimitives ; ++ p)
+									{
+										RenderThreadSceneTileResource->AddPrimitive(Indices[p], Primitives[p]);
+									}
 								});
 
 							// Remove the reference holder

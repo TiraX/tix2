@@ -11,7 +11,7 @@ namespace tix
 	{
 	public:
 		FSceneTileResource();
-		FSceneTileResource(TSceneTileResourcePtr InSceneTileResource);
+		FSceneTileResource(const TSceneTileResource& InSceneTileResource);
 		virtual ~FSceneTileResource();
 
 		const vector2di& GetTilePosition() const
@@ -49,6 +49,16 @@ namespace tix
 			return TotalInstances;
 		}
 
+		void AddPrimitive(uint32 Index, FPrimitivePtr Primitive)
+		{
+			Primitives[Index] = Primitive;
+		}
+
+		const TVector<FPrimitivePtr>& GetPrimitives() const
+		{
+			return Primitives;
+		}
+
 	private:
 		vector2di Position;
 		aabbox3df BBox;
@@ -58,5 +68,7 @@ namespace tix
 		// X is Count, Y is Offset
 		TVector<vector2di> InstanceCountAndOffset;
 		FInstanceBufferPtr InstanceBuffer;
+
+		TVector<FPrimitivePtr> Primitives;
 	};
 }

@@ -19,7 +19,6 @@ struct FVisibleInfo
 struct FInstanceMetaInfo
 {
 	// x = primitive index
-	// y = scene tile index
 	uint4 Info;
 };
 struct IndirectCommand
@@ -46,7 +45,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		InstanceVisibleInfos[InstanceIndex].Visible > 0)
 	//if (InstanceMetaInfos[InstanceIndex].Info.w > 0 )
 		{
-		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.y;
+		uint PrimitiveIndex = InstanceMetaInfos[InstanceIndex].Info.x;
 
 		IndirectCommand Command = InputCommands[PrimitiveIndex];
 		if (Command.VertexBufferView.x > 0)

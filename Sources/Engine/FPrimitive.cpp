@@ -14,7 +14,6 @@ namespace tix
 		, InstanceOffset(0)
 		, GlobalInstanceOffset(0)
 		, DrawList(LIST_INVALID)
-		, IndexInSceneTile(uint32(-1))
 	{
 		PrimitiveUniformBuffer = ti_new FPrimitiveUniformBuffer;
 	}

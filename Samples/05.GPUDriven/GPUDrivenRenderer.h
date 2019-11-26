@@ -23,6 +23,7 @@ public:
 	static FGPUDrivenRenderer* Get();
 
 	virtual void InitInRenderThread() override;
+	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 	void UpdateFrustumUniform(const SViewFrustum& Frustum);
@@ -30,6 +31,7 @@ public:
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
 	void DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer);
+	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 	void SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene);
 

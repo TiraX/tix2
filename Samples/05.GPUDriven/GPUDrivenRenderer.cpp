@@ -26,6 +26,12 @@ FGPUDrivenRenderer::~FGPUDrivenRenderer()
 	ti_delete SceneMetaInfo;
 }
 
+void FGPUDrivenRenderer::InitRenderFrame(FScene* Scene)
+{
+	// Prepare frame view uniform buffer
+	Scene->InitRenderFrame();
+}
+
 void FGPUDrivenRenderer::InitInRenderThread()
 {
 	FRHI * RHI = FRHI::Get();
@@ -130,76 +136,81 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 {
-	// Encode all draw command to GPU command buffer
+	// Encode all draw command to GPU command buffer in Tile cull order.
 	TI_TODO("Process opaque list for now, encode other list in future.");
 
-	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
-	const uint32 PrimsCount = (uint32)Primitives.size();
 	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
 	if (PrimsAdded == 0)
 	{
 		return;
 	}
+
 	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
-#if defined (TIX_DEBUG)
 	GPUCommandBuffer->SetResourceName("DrawListCB");
-#endif
 	// Add binding arguments
 	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	PreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
-#if defined (TIX_DEBUG)
 	PreZGPUCommandBuffer->SetResourceName("OccluderCB");
-#endif
 	// Add binding arguments
 	PreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	// Add draw calls
 	uint32 CommandIndex = 0;
-	for (uint32 i = 0 ; i < PrimsCount ; ++ i)
+	const TVector<vector2di>& SortedTilePositions = SceneMetaInfo->GetSortedTilePositions();
+	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+	for (const auto& TilePos : SortedTilePositions)
 	{
-		FPrimitivePtr Primitive = Primitives[i];
-		const vector2di& TilePos = Primitive->GetSceneTilePos();
 		if (!SceneMetaInfo->IsTileVisible(TilePos))
 		{
 			continue;
 		}
+		FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 
-		FMeshBufferPtr MeshBuffer = Primitive->GetMeshBuffer();
-		FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
-		TI_ASSERT(MeshBuffer != nullptr && InstanceBuffer != nullptr);
-		GPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, 0, MeshBuffer);
-		//GPUCommandBuffer->EncodeSetInstanceBuffer(CommandIndex, GPU_COMMAND_SET_INSTANCE_BUFFER, InstanceBuffer);
-		GPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, 1, MeshBuffer);
-		GPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
-			2,
-			MeshBuffer->GetIndicesCount(),
-			Primitive->GetInstanceCount(),
-			0, 
-			0, 
-			Primitive->GetGlobalInstanceOffset());
-
-		// Encode occluders
-		FMeshBufferPtr OccludeMesh = Primitive->GetOccluderMesh();
-		if (OccludeMesh != nullptr)
+		const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+		for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
 		{
-			PreZGPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, 0, OccludeMesh);
-			PreZGPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, 1, OccludeMesh);
-			PreZGPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
-				2,
-				OccludeMesh->GetIndicesCount(),
-				Primitive->GetInstanceCount(),
-				0,
-				0,
-				Primitive->GetGlobalInstanceOffset());
-		}
-		else
-		{
-			PreZGPUCommandBuffer->EncodeEmptyCommand(CommandIndex);
-		}
+			FPrimitivePtr Primitive = TilePrimitives[PIndex];
+			if (Primitive != nullptr)
+			{
+				FMeshBufferPtr MeshBuffer = Primitive->GetMeshBuffer();
+				FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+				TI_ASSERT(MeshBuffer != nullptr && InstanceBuffer != nullptr);
+				GPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, 0, MeshBuffer);
+				//GPUCommandBuffer->EncodeSetInstanceBuffer(CommandIndex, GPU_COMMAND_SET_INSTANCE_BUFFER, InstanceBuffer);
+				GPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, 1, MeshBuffer);
+				GPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
+					2,
+					MeshBuffer->GetIndicesCount(),
+					Primitive->GetInstanceCount(),
+					0,
+					0,
+					Primitive->GetGlobalInstanceOffset());
 
-		++CommandIndex;
+				// Encode occluders
+				FMeshBufferPtr OccludeMesh = Primitive->GetOccluderMesh();
+				if (OccludeMesh != nullptr)
+				{
+					PreZGPUCommandBuffer->EncodeSetVertexBuffer(CommandIndex, 0, OccludeMesh);
+					PreZGPUCommandBuffer->EncodeSetIndexBuffer(CommandIndex, 1, OccludeMesh);
+					PreZGPUCommandBuffer->EncodeSetDrawIndexed(CommandIndex,
+						2,
+						OccludeMesh->GetIndicesCount(),
+						Primitive->GetInstanceCount(),
+						0,
+						0,
+						Primitive->GetGlobalInstanceOffset());
+				}
+				else
+				{
+					PreZGPUCommandBuffer->EncodeEmptyCommand(CommandIndex);
+				}
+
+				++CommandIndex;
+			}
+		}
 	}
+
 	TI_ASSERT(GPUCommandBuffer->GetEncodedCommandsCount() <= PrimsAdded);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(PreZGPUCommandBuffer);
@@ -297,6 +308,40 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr I
 		RHI->SetResourceStateCB(InGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->ExecuteGPUCommands(InGPUCommandBuffer);
+	}
+}
+
+void FGPUDrivenRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
+{
+	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+	for (auto& TileIter : SceneTileResources)
+	{
+		const vector2di& TilePos = TileIter.first;
+		FSceneTileResourcePtr TileRes = TileIter.second;
+
+		if (!SceneMetaInfo->IsTileVisible(TilePos))
+		{
+			continue;
+		}
+
+		const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+		for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
+		{
+			FPrimitivePtr Primitive = TilePrimitives[PIndex];
+
+			if (Primitive != nullptr)
+			{
+				FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+				RHI->SetGraphicsPipeline(Primitive->GetPipeline());
+				RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
+				ApplyShaderParameter(RHI, Scene, Primitive);
+
+				RHI->DrawPrimitiveIndexedInstanced(
+					Primitive->GetMeshBuffer(),
+					InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
+					Primitive->GetInstanceOffset());
+			}
+		}
 	}
 }
 
@@ -419,19 +464,33 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				RHI->SetGraphicsPipeline(DepthOnlyPipeline);
 
 				// Render occlude mesh
-				const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
-				for (const auto& Primitive : Primitives)
+				const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+				for (auto& TileIter : SceneTileResources)
 				{
-					if (Primitive->GetOccluderMesh() != nullptr)
-					{
-						FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
-						RHI->SetMeshBuffer(Primitive->GetOccluderMesh(), InstanceBuffer);
-						ApplyShaderParameter(RHI, Scene, Primitive);
+					const vector2di& TilePos = TileIter.first;
+					FSceneTileResourcePtr TileRes = TileIter.second;
 
-						RHI->DrawPrimitiveIndexedInstanced(
-							Primitive->GetOccluderMesh(),
-							InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
-							Primitive->GetInstanceOffset());
+					if (!SceneMetaInfo->IsTileVisible(TilePos))
+					{
+						continue;
+					}
+
+					const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+					for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
+					{
+						FPrimitivePtr Primitive = TilePrimitives[PIndex];
+
+						if (Primitive != nullptr && Primitive->GetOccluderMesh() != nullptr)
+						{
+							FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+							RHI->SetMeshBuffer(Primitive->GetOccluderMesh(), InstanceBuffer);
+							ApplyShaderParameter(RHI, Scene, Primitive);
+
+							RHI->DrawPrimitiveIndexedInstanced(
+								Primitive->GetOccluderMesh(),
+								InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
+								Primitive->GetInstanceOffset());
+						}
 					}
 				}
 			}
@@ -490,8 +549,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 			if (!Indirect)
 			{
-				RenderDrawList(RHI, Scene, LIST_OPAQUE);
-				//RenderDrawList(RHI, Scene, LIST_MASK);
+				DrawSceneTiles(RHI, Scene);
 			}
 			else
 			{
