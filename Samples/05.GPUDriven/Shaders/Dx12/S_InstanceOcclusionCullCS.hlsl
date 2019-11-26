@@ -172,6 +172,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		if (minZ <= maxDepth)
 		{
 			Result = 1;
+
+			// TODO: Copy visible clusters for cluster culling
+
 		}
 	}
 	VisibleInfo[InstanceIndex].Visible = Result;

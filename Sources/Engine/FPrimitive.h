@@ -32,6 +32,11 @@ namespace tix
 			uint32 InInstanceOffset
 		);
 
+		void SetClusterMetaData(FUniformBufferPtr InClusterData)
+		{
+			ClusterMetaData = InClusterData;
+		}
+
 		void SetGlobalInstanceOffset(uint32 InOffset)
 		{
 			GlobalInstanceOffset = InOffset;
@@ -48,6 +53,10 @@ namespace tix
 		FInstanceBufferPtr GetInstanceBuffer()
 		{
 			return InstanceBuffer;
+		}
+		FUniformBufferPtr GetClusterData()
+		{
+			return ClusterMetaData;
 		}
 		uint32 GetInstanceCount() const
 		{
@@ -118,6 +127,8 @@ namespace tix
 		uint32 InstanceCount;
 		uint32 InstanceOffset;
 		uint32 GlobalInstanceOffset;
+
+		FUniformBufferPtr ClusterMetaData;
 
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;

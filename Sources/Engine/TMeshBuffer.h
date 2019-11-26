@@ -19,6 +19,7 @@ namespace tix
 		static const int32 SemanticIndex[ESSI_TOTAL];
 	public:
 		FMeshBufferPtr MeshBufferResource;
+		FUniformBufferPtr MeshClusterDataResource;
 
 		static uint32 GetStrideFromFormat(uint32 Format);
 		static TVector<E_MESH_STREAM_INDEX> GetSteamsFromFormat(uint32 Format);
@@ -42,6 +43,11 @@ namespace tix
 		uint32 GetIndicesCount() const
 		{
 			return PsDataCount;
+		}
+
+		uint32 GetClusterCount() const
+		{
+			return ClusterCount;
 		}
 
 		E_PRIMITIVE_TYPE GetPrimitiveType() const
@@ -87,6 +93,11 @@ namespace tix
 		const void* GetPSData() const
 		{
 			return PsData;
+		}
+
+		const void* GetClusterData() const
+		{
+			return ClusterData;
 		}
 
 		void SetDefaultMaterial(TMaterialInstancePtr Material)

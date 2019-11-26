@@ -313,6 +313,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		SceneMetaInfo->CollectSceneMetaInfos(Scene);
 		SceneMetaInfo->CollectInstanceBuffers(Scene);
+		SceneMetaInfo->CollectClusterMetaBuffers(Scene);
 	}
 
 	if (bPerformGPUCulling && 

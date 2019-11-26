@@ -221,6 +221,13 @@ namespace tix
 			}
 		}
 
+		if (Scene->HasSceneFlag(FScene::ScenePrimitivesDirty))
+		{
+			// There is primitives changed, mark cluster data as dirty.
+			// Need to collect all cluster data into one big buffer.
+			SceneMetaFlags |= MetaFlag_SceneClusterMetaDirty;
+		}
+
 		UpdateGPUResources();
 	}
 
@@ -232,7 +239,6 @@ namespace tix
 
 			// Merge all instance buffers from scene tile node into a BIG one.
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
-			const uint32 TilesCount = (uint32)SceneTileResources.size();
 
 			// SceneInstancesAdded calculated in CollectSceneMetaInfos().
 			const uint32 TotalInstances = SceneInstancesAdded;
@@ -255,6 +261,37 @@ namespace tix
 				}
 				TI_ASSERT(InstanceDstOffset == TotalInstances);
 
+			}
+		}
+	}
+
+	void FSceneMetaInfos::CollectClusterMetaBuffers(FScene * Scene)
+	{
+		TI_ASSERT(0);
+		// Collect all mesh cluster infos in Scene
+		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty))
+		{
+			SCENE_META_LOG(Log, "Cluster meta dirty.\n");
+			FRHI * RHI = FRHI::Get();
+
+			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
+
+			// Calc total size of clusters
+			const uint32 ClusterDataSize = sizeof(TMeshCluster);
+			uint32 TotalClusterMetas = 0;
+			for (auto P : Primitives)
+			{
+				TotalClusterMetas += P->GetClusterData()->GetElements() * ClusterDataSize;
+			}
+
+			MergedClusterData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
+
+			uint32 DataOffset = 0;
+			for (auto P : Primitives)
+			{
+				RHI->CopyBufferRegion(MergedClusterData, DataOffset, P->GetClusterData(), P->GetClusterData()->GetElements() * ClusterDataSize);
+				DataOffset += P->GetClusterData()->GetElements() * ClusterDataSize;
 			}
 		}
 	}

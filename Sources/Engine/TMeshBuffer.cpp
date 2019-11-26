@@ -62,13 +62,23 @@ namespace tix
 	{
 		TI_ASSERT(MeshBufferResource == nullptr);
 		MeshBufferResource = FRHI::Get()->CreateMeshBuffer();
+		if (ClusterCount > 0)
+		{
+			TI_ASSERT(MeshClusterDataResource == nullptr);
+			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshCluster), ClusterCount, UB_FLAG_INTERMEDIATE);
+		}
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TMeshBufferUpdateFMeshBuffer,
+		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TMeshBufferUpdateFMeshBuffer,
 			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
+			FUniformBufferPtr, ClusterData, MeshClusterDataResource,
 			TMeshBufferPtr, InMeshData, this,
 			{
 				MeshBuffer->SetFromTMeshBuffer(InMeshData);
 				FRHI::Get()->UpdateHardwareResourceMesh(MeshBuffer, InMeshData);
+				if (ClusterData != nullptr)
+				{
+					FRHI::Get()->UpdateHardwareResourceUB(ClusterData, InMeshData->GetClusterData());
+				}
 			});
 	}
 

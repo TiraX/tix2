@@ -122,6 +122,7 @@ namespace tix
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
 								);
+								Primitive->SetClusterMetaData(Mesh->MeshClusterDataResource);
 								Primitive->SetIndexInSceneTile(MeshSectionOffset + Section);
 								Primitive->SetSceneTilePos(SceneTileResource->Position);
 								LinkedPrimitives.push_back(Primitive);

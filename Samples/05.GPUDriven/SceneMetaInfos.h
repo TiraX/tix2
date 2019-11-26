@@ -38,6 +38,7 @@ namespace tix
 		void DoSceneTileCulling(FScene * Scene, const SViewFrustum& ViewFrustum);
 		void CollectSceneMetaInfos(FScene * Scene);
 		void CollectInstanceBuffers(FScene * Scene);
+		void CollectClusterMetaBuffers(FScene * Scene);
 		void ClearMetaFlags();
 
 		enum FSceneMetaFlag
@@ -45,6 +46,7 @@ namespace tix
 			MetaFlag_SceneTileMetaDirty = 1 << 0,
 			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
 			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
+			MetaFlag_SceneClusterMetaDirty = 1 << 3,
 		};
 		bool HasMetaFlag(uint32 InMetaFlag) const
 		{
@@ -117,6 +119,9 @@ namespace tix
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;
 		FInstanceBufferPtr MergedInstanceBuffer;
+
+		// Scene mesh cluster info
+		FUniformBufferPtr MergedClusterData;
 
 		// Scene primitive meta info
 		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;
