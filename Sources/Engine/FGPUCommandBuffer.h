@@ -51,18 +51,6 @@ namespace tix
 		TI_API virtual void SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize)
 		{}
 
-		static const uint32 MAX_BINDING_UNIFORMS = 4;
-		TI_API void AddVSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);
-		TI_API void AddPSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer);
-
-		const TVector<FUniformBufferPtr>& GetVSPublicArguments() const
-		{
-			return VSPublicArguments;
-		}
-		const TVector<FUniformBufferPtr>& GetPSPublicArguments() const
-		{
-			return PSPublicArguments;
-		}
 		FUniformBufferPtr GetCommandBuffer()
 		{
 			return CommandBuffer;
@@ -71,8 +59,6 @@ namespace tix
 
 	protected:
 		FGPUCommandSignaturePtr GPUCommandSignature;
-		TVector<FUniformBufferPtr> VSPublicArguments;
-		TVector<FUniformBufferPtr> PSPublicArguments;
 
 		FUniformBufferPtr CommandBuffer;
 	};

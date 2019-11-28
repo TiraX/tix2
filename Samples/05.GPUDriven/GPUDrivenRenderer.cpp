@@ -157,13 +157,9 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 
 	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 	GPUCommandBuffer->SetResourceName("DrawListCB");
-	// Add binding arguments
-	GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	PreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 	PreZGPUCommandBuffer->SetResourceName("OccluderCB");
-	// Add binding arguments
-	PreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	// Add draw calls
 	uint32 CommandIndex = 0;
@@ -229,15 +225,11 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
 	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	ProcessedGPUCommandBuffer->SetResourceName("ProcessedCB");
-	// Add binding arguments
-	ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 
 
 	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	ProcessedPreZGPUCommandBuffer->SetResourceName("ProcessedOccluderCB");
-	// Add binding arguments
-	ProcessedPreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedPreZGPUCommandBuffer);
 }
 
@@ -253,10 +245,7 @@ void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
 	}
 
 	GPUCommandBufferTest = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
-#if defined (TIX_DEBUG)
 	GPUCommandBufferTest->SetResourceName("DrawListCBTest");
-#endif
-	GPUCommandBufferTest->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	// Copy instance as single draw call in gpu command buffer
 	typedef struct IndirectCommand
@@ -306,13 +295,15 @@ void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
-void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FGPUCommandBufferPtr InGPUCommandBuffer)
+void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr InGPUCommandBuffer)
 {
 	if (InGPUCommandBuffer != nullptr)
 	{
 		// Set merged instance buffer
 		RHI->SetResourceStateCB(InGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
+		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
+		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		RHI->ExecuteGPUCommands(InGPUCommandBuffer);
 	}
 }
@@ -378,15 +369,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 	if (GPUCommandBuffer != nullptr && SceneMetaInfo->IsPrimitiveDataReady())
 	{
-		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty))
-		{
-			_LOG(Log, "Update gpu command buffer args.\n");
-			// Add binding arguments
-			GPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-			PreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-			ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-			ProcessedPreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-		}
 		// Set meta data every frame.
 		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) ||
 			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
@@ -517,6 +499,13 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					// Set merged instance buffer
 					RHI->SetResourceStateCB(ProcessedPreZGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 					RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
+
+					// Set pipeline state
+					RHI->SetGraphicsPipeline(PreZGPUCommandSignature->GetPipeline());
+
+					// Set arguments
+					RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
 					RHI->ExecuteGPUCommands(ProcessedPreZGPUCommandBuffer);
 				}
 			}
@@ -568,7 +557,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 			else
 			{
-				DrawGPUCommandBuffer(RHI, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
+				DrawGPUCommandBuffer(RHI, Scene, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
 			}
 		}
 	}

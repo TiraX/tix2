@@ -12,21 +12,9 @@ namespace tix
 		: FRenderResource(RRT_GPU_COMMAND_BUFFER)
 		, GPUCommandSignature(Signature)
 	{
-		VSPublicArguments.resize(MAX_BINDING_UNIFORMS);
-		PSPublicArguments.resize(MAX_BINDING_UNIFORMS);
 	}
 
 	FGPUCommandBuffer::~FGPUCommandBuffer()
 	{
-	}
-
-	void FGPUCommandBuffer::AddVSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer)
-	{
-		VSPublicArguments[InBindingIndex] = InUniformBuffer;
-	}
-
-	void FGPUCommandBuffer::AddPSPublicArgument(uint32 InBindingIndex, FUniformBufferPtr InUniformBuffer)
-	{
-		PSPublicArguments[InBindingIndex] = InUniformBuffer;
 	}
 }

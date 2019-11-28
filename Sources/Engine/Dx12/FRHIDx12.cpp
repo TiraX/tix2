@@ -2780,27 +2780,6 @@ namespace tix
 			FGPUCommandBufferDx12 * GPUCommandBufferDx12 = static_cast<FGPUCommandBufferDx12*>(GPUCommandBuffer.get());
 			FGPUCommandSignatureDx12 * SignatueDx12 = static_cast<FGPUCommandSignatureDx12*>(GPUCommandBuffer->GetGPUCommandSignature().get());
 
-			// Set pipeline state
-			SetGraphicsPipeline(SignatueDx12->GetPipeline());
-
-			// Set public binding arguments
-			const TVector<FUniformBufferPtr>& VSArguments = GPUCommandBuffer->GetVSPublicArguments();
-			const TVector<FUniformBufferPtr>& PSArguments = GPUCommandBuffer->GetPSPublicArguments();
-			for (int32 i = 0 ; i < FGPUCommandBuffer::MAX_BINDING_UNIFORMS ; ++ i)
-			{
-				if (VSArguments[i] != nullptr)
-				{
-					SetUniformBuffer(ESS_VERTEX_SHADER, i, VSArguments[i]);
-				}
-			}
-			for (int32 i = 0; i < FGPUCommandBuffer::MAX_BINDING_UNIFORMS; ++i)
-			{
-				if (PSArguments[i] != nullptr)
-				{
-					SetUniformBuffer(ESS_PIXEL_SHADER, i, PSArguments[i]);
-				}
-			}
-
 			// Set Primitive Topology
 			CurrentWorkingCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			
