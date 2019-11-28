@@ -156,6 +156,33 @@ namespace tix
 		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
 
+	void FGPUCommandBufferDx12::EncodeSetDispatch(
+		uint32 CommandIndex,
+		uint32 ArgumentIndex,
+		uint32 ThreadGroupCountX,
+		uint32 ThreadGroupCountY,
+		uint32 ThreadGroupCountZ)
+	{
+		FGPUCommandSignatureDx12 * GPUCommandSignatureDx12 = static_cast<FGPUCommandSignatureDx12*>(GetGPUCommandSignature().get());
+		TI_ASSERT(GPUCommandSignatureDx12->GetCommandStrideInBytes() != 0);
+
+		// Draw index
+		const TVector<E_GPU_COMMAND_TYPE>& CommandStructure = GPUCommandSignatureDx12->GetCommandStructure();
+		E_GPU_COMMAND_TYPE CommandType = CommandStructure[ArgumentIndex];
+		TI_ASSERT(CommandType == GPU_COMMAND_DISPATCH);
+		uint32 CommandPos = CommandIndex * GPUCommandSignatureDx12->GetCommandStrideInBytes() + GPUCommandSignatureDx12->GetArgumentStrideOffset(ArgumentIndex);
+
+		D3D12_DISPATCH_ARGUMENTS DispatchArg;
+		DispatchArg.ThreadGroupCountX = ThreadGroupCountX;
+		DispatchArg.ThreadGroupCountY = ThreadGroupCountY;
+		DispatchArg.ThreadGroupCountZ = ThreadGroupCountZ;
+
+		CommandBufferData->Seek(CommandPos);
+		CommandBufferData->Set(&DispatchArg, sizeof(D3D12_DISPATCH_ARGUMENTS));
+		// Remember commands encoded
+		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+	}
+
 	const void * FGPUCommandBufferDx12::GetCommandData(uint32 CommandIndex) const
 	{
 		TI_ASSERT(CommandIndex < CommandsEncoded);

@@ -2353,6 +2353,10 @@ namespace tix
 			{
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
 			}
+			else if (Command == GPU_COMMAND_DISPATCH)
+			{
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+			}
 			else
 			{
 				TI_ASSERT(0);

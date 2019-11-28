@@ -42,6 +42,13 @@ namespace tix
 			uint32 BaseVertexLocation,
 			uint32 StartInstanceLocation
 		) = 0;
+		TI_API virtual void EncodeSetDispatch(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
+			uint32 ThreadGroupCountX,
+			uint32 ThreadGroupCountY,
+			uint32 ThreadGroupCountZ
+		) = 0;
 
 		// These two method for debug
 		TI_API virtual const void* GetCommandData(uint32 CommandIndex) const

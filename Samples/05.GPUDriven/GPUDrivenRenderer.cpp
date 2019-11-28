@@ -92,11 +92,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.reserve(2);
-	CommandStructure.push_back(GPU_COMMAND_SET_VERTEX_BUFFER);
-	//CommandStructure.push_back(GPU_COMMAND_SET_INSTANCE_BUFFER);
-	CommandStructure.push_back(GPU_COMMAND_SET_INDEX_BUFFER);
-	CommandStructure.push_back(GPU_COMMAND_DRAW_INDEXED);
+	CommandStructure.resize(3);
+	CommandStructure[0] = GPU_COMMAND_SET_VERTEX_BUFFER;
+	CommandStructure[1] = GPU_COMMAND_SET_INDEX_BUFFER;
+	CommandStructure[2] = GPU_COMMAND_DRAW_INDEXED;
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
@@ -133,15 +132,16 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceOcclusionCullCS->Finalize();
 	InstanceOcclusionCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
 
-	// Generate cluster cull indirect command
-	GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
-	GenerateClusterCullCommand->Finalize();
-	PROcess this generate cluster cull command compute shader.
-
 	// Cluster cull
 	ClusterCullCS = ti_new FGPUClusterCullCS;
 	ClusterCullCS->Finalize();
 	ClusterCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture, InstanceOcclusionCullCS->GetVisibleClusters());
+
+	// Generate cluster cull indirect command
+	GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
+	GenerateClusterCullCommand->Finalize();
+	GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleClusters(), ClusterCullCS->GetDispatchCommandBuffer());
+
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -346,7 +346,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	static bool bPerformGPUCulling = true;
 	static bool bOcclusionCull = true;
-	static bool Indirect = !false;
+	static bool Indirect = false;
 	static bool DrawCulled = !false;
 
 	if (bPerformGPUCulling)
@@ -356,6 +356,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		SceneMetaInfo->CollectSceneMetaInfos(Scene);
 		SceneMetaInfo->CollectInstanceBuffers(Scene);
 		SceneMetaInfo->CollectClusterMetaBuffers(Scene);
+		SceneMetaInfo->UpdateGPUResources();
 	}
 
 	if (bPerformGPUCulling && 
@@ -395,15 +396,19 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo->GetMergedInstanceBuffer(),
 					InstanceFrustumCullCS->GetVisibleResult(),
 					SceneMetaInfo->GetSceneInstancesAdded());
-
-				ClusterCullCS->UpdateComputeArguments(
-					RHI,
-					ViewProjection.CamDir,
-					MatVP,
-					Frustum,
-					SceneMetaInfo->GetMergedClusterData(),
-					SceneMetaInfo->GetMergedInstanceBuffer());
 			}
+		}
+		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneClusterMetaDirty))
+		{
+			const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+			FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
+			ClusterCullCS->UpdateComputeArguments(
+				RHI,
+				ViewProjection.CamDir,
+				MatVP,
+				Frustum,
+				SceneMetaInfo->GetMergedClusterData(),
+				SceneMetaInfo->GetMergedInstanceBuffer());
 		}
 		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
 		{
@@ -531,6 +536,16 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					// Cull Occluded Instances
 					RHI->BeginEvent("Cull occluded Instances");
 					InstanceOcclusionCullCS->Run(RHI);
+					RHI->EndEvent();
+
+					// Generate Cluster cull dispatch indirect command
+					RHI->BeginEvent("Cluster cull indirect command");
+					GenerateClusterCullCommand->Run(RHI);
+					RHI->EndEvent();
+
+					// Do cluster cull
+					RHI->BeginEvent("Cluster cull");
+					//ClusterCullCS->Run(RHI);
 					RHI->EndEvent();
 				}
 

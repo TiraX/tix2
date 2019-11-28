@@ -43,6 +43,13 @@ namespace tix
 			uint32 BaseVertexLocation,
 			uint32 StartInstanceLocation
 		) override;
+		virtual void EncodeSetDispatch(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex,
+			uint32 ThreadGroupCountX,
+			uint32 ThreadGroupCountY,
+			uint32 ThreadGroupCountZ
+		) override;
 
 		virtual const void* GetCommandData(uint32 CommandIndex) const override;
 		virtual void SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize) override;

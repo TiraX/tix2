@@ -35,4 +35,10 @@ namespace tix
 	FSceneTileResource::~FSceneTileResource()
 	{
 	}
+
+	void FSceneTileResource::AddPrimitive(uint32 Index, FPrimitivePtr Primitive)
+	{
+		Primitives[Index] = Primitive;
+		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
+	}
 }

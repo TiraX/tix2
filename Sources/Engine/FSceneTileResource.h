@@ -49,10 +49,7 @@ namespace tix
 			return TotalInstances;
 		}
 
-		void AddPrimitive(uint32 Index, FPrimitivePtr Primitive)
-		{
-			Primitives[Index] = Primitive;
-		}
+		void AddPrimitive(uint32 Index, FPrimitivePtr Primitive);
 
 		const TVector<FPrimitivePtr>& GetPrimitives() const
 		{

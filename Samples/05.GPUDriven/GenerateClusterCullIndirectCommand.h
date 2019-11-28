@@ -16,17 +16,12 @@ public:
 	FGenerateClusterCullIndirectCommand();
 	virtual ~FGenerateClusterCullIndirectCommand();
 
-	void PrepareResources(FRHI * RHI);
-	void UpdateComputeArguments(
-		FRHI * RHI, 
-		FSceneMetaInfos * SceneMetaInfos,
-		FUniformBufferPtr InstanceVisibleInfo, 
-		FUniformBufferPtr InstanceMetaInfo, 
-		FGPUCommandBufferPtr GPUCommandBuffer,
-		FGPUCommandBufferPtr ProcessedGPUCommandBuffer);
+	void PrepareResources(FRHI * RHI, FUniformBufferPtr ClustersLeft, FGPUCommandBufferPtr DispatchCommandBuffer);
 	virtual void Run(FRHI * RHI) override;
 private:
 
 private:
+	FUniformBufferPtr ClustersLeft;
+	FRenderResourceTablePtr ResourceTable;
 };
 typedef TI_INTRUSIVE_PTR(FGenerateClusterCullIndirectCommand) FGenerateClusterCullIndirectCommandPtr;

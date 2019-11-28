@@ -232,8 +232,6 @@ namespace tix
 			// Need to collect all cluster data into one big buffer.
 			SceneMetaFlags |= MetaFlag_SceneClusterMetaDirty;
 		}
-
-		UpdateGPUResources();
 	}
 
 	void FSceneMetaInfos::CollectInstanceBuffers(FScene * Scene)
@@ -276,26 +274,77 @@ namespace tix
 			SCENE_META_LOG(Log, "Cluster meta dirty.\n");
 			FRHI * RHI = FRHI::Get();
 
-			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
-			const THMap<vector2di, FSceneTileResourcePtr>& SceneTiles = Scene->GetSceneTiles();
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 
 			// Calc total size of clusters
 			const uint32 ClusterDataSize = sizeof(TMeshCluster);
+
 			uint32 TotalClusterMetas = 0;
-			for (auto P : Primitives)
+			for (const auto& TilePos : SortedTilePositions)
 			{
-				TotalClusterMetas += P->GetClusterData()->GetElements() * ClusterDataSize;
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+				for (auto Prim : TileRes->GetPrimitives())
+				{
+					TotalClusterMetas += Prim->GetClusterData()->GetElements() * ClusterDataSize;
+				}
 			}
+			TI_ASSERT(TotalClusterMetas > 0);
 
 			MergedClusterData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
 			MergedClusterData->SetResourceName("MergedClusterData");
 			RHI->UpdateHardwareResourceUB(MergedClusterData, nullptr);
 
 			uint32 DataOffset = 0;
-			for (auto P : Primitives)
+			for (const auto& TilePos : SortedTilePositions)
 			{
-				RHI->CopyBufferRegion(MergedClusterData, DataOffset, P->GetClusterData(), P->GetClusterData()->GetElements() * ClusterDataSize);
-				DataOffset += P->GetClusterData()->GetElements() * ClusterDataSize;
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+				for (auto Prim : TileRes->GetPrimitives())
+				{
+					if (Prim != nullptr)
+					{
+						uint32 ClusterOffset = DataOffset / ClusterDataSize;
+						uint32 ClusterCount = Prim->GetClusterData()->GetElements();
+						
+						RHI->CopyBufferRegion(MergedClusterData, DataOffset, Prim->GetClusterData(), ClusterCount * ClusterDataSize);
+						DataOffset += Prim->GetClusterData()->GetElements() * ClusterDataSize;
+					}
+				}
+			}
+			TI_ASSERT(DataOffset == TotalClusterMetas);
+		}
+		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty) ||
+			HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
+		{
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+
+			// Mark cluster meta info into instance meta infos.
+			uint32 ClusterOffset = 0;
+			for (const auto& TilePos : SortedTilePositions)
+			{
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+				for (auto Prim : TileRes->GetPrimitives())
+				{
+					if (Prim != nullptr)
+					{
+						uint32 InstanceOffset = Prim->GetGlobalInstanceOffset();
+						uint32 InstanceCount = Prim->GetInstanceCount();
+						uint32 ClusterCount = Prim->GetClusterData()->GetElements();
+						TI_ASSERT(ClusterCount > 0);
+						for (uint32 Ins = 0; Ins < InstanceCount; ++Ins)
+						{
+							uint32 Index = InstanceOffset + Ins;
+							// Info.y = cluster index begin
+							// Info.z = cluster count
+							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Y = ClusterOffset;
+							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Z = ClusterCount;
+						}
+
+						ClusterOffset += Prim->GetClusterData()->GetElements();
+
+						// Mark instance meta data as dirty to update meta data uniform buffer.
+						SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
+					}
+				}
 			}
 		}
 	}

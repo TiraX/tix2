@@ -17,23 +17,17 @@ FGenerateClusterCullIndirectCommand::~FGenerateClusterCullIndirectCommand()
 {
 }
 
-void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI)
+void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI, FUniformBufferPtr ClustersLeft, FGPUCommandBufferPtr DispatchCommandBuffer)
 {
-	TI_ASSERT(0);
-}
-
-void FGenerateClusterCullIndirectCommand::UpdateComputeArguments(
-	FRHI * RHI,
-	FSceneMetaInfos * SceneSceneMetaInfos,
-	FUniformBufferPtr InstanceVisibleInfo,
-	FUniformBufferPtr InstanceMetaInfo,
-	FGPUCommandBufferPtr GPUCommandBuffer,
-	FGPUCommandBufferPtr InProcessedGPUCommandBuffer)
-{
-	TI_ASSERT(0);
+	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
+	ResourceTable->PutUniformBufferInTable(ClustersLeft, 0);
+	ResourceTable->PutUniformBufferInTable(DispatchCommandBuffer->GetCommandBuffer(), 1);
 }
 
 void FGenerateClusterCullIndirectCommand::Run(FRHI * RHI)
 {
-	TI_ASSERT(0);
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeResourceTable(0, ResourceTable);
+
+	RHI->DispatchCompute(vector3di(1, 1, 1), vector3di(1, 1, 1));
 }

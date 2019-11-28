@@ -71,6 +71,7 @@ namespace tix
 
 		const TVector<FPrimitivePtr>& GetStaticDrawList(E_DRAWLIST_TYPE List) const
 		{
+			TI_ASSERT(0);
 			return StaticDrawLists[List];
 		}
 

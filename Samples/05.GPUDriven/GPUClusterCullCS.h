@@ -28,6 +28,10 @@ public:
 		FInstanceBufferPtr SceneInstanceData);
 	virtual void Run(FRHI * RHI) override;
 
+	FGPUCommandBufferPtr GetDispatchCommandBuffer()
+	{
+		return GPUCommandBuffer;
+	}
 private:
 
 private:
@@ -37,5 +41,7 @@ private:
 	FCounterResetPtr CounterReset;
 	FUniformBufferPtr TriangleCullCommands;
 
+	FGPUCommandSignaturePtr GPUCommandSignature;
+	FGPUCommandBufferPtr GPUCommandBuffer;
 };
 typedef TI_INTRUSIVE_PTR(FGPUClusterCullCS) FGPUClusterCullCSPtr;
