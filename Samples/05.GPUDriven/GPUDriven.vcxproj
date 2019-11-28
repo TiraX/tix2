@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -167,6 +167,8 @@
   <ItemGroup>
     <ClCompile Include="CopyVisibleInstances.cpp" />
     <ClCompile Include="CopyVisibleTileCommandBuffer.cpp" />
+    <ClCompile Include="GenerateClusterCullIndirectCommand.cpp" />
+    <ClCompile Include="GPUClusterCullCS.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
     <ClCompile Include="GPUDrivenTicker.cpp" />
@@ -183,7 +185,9 @@
   <ItemGroup>
     <ClInclude Include="CopyVisibleInstances.h" />
     <ClInclude Include="CopyVisibleTileCommandBuffer.h" />
-    <ClInclude Include="GPUCameraFrustum.h" />
+    <ClInclude Include="GenerateClusterCullIndirectCommand.h" />
+    <ClInclude Include="GPUComputeUniforms.h" />
+    <ClInclude Include="GPUClusterCullCS.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
     <ClInclude Include="GPUDrivenTicker.h" />
     <ClInclude Include="GPUInstanceFrustumCullCS.h" />
@@ -200,6 +204,12 @@
     <None Include="Shaders\Dx12\VS_Instanced.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_CopyVisibleInstances.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -228,6 +238,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_GenerateClusterCullIndirectCommandCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_HiZDownSampleCS.hlsl">

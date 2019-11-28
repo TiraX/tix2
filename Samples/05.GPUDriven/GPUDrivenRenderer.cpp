@@ -132,6 +132,16 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceOcclusionCullCS = ti_new FGPUInstanceOcclusionCullCS;
 	InstanceOcclusionCullCS->Finalize();
 	InstanceOcclusionCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
+
+	// Generate cluster cull indirect command
+	GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
+	GenerateClusterCullCommand->Finalize();
+	PROcess this generate cluster cull command compute shader.
+
+	// Cluster cull
+	ClusterCullCS = ti_new FGPUClusterCullCS;
+	ClusterCullCS->Finalize();
+	ClusterCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture, InstanceOcclusionCullCS->GetVisibleClusters());
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -218,18 +228,14 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	// Create empty GPU command buffer, gather visible draw commands, make it enough for all instances
 	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
 	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-#if defined (TIX_DEBUG)
 	ProcessedGPUCommandBuffer->SetResourceName("ProcessedCB");
-#endif
 	// Add binding arguments
 	ProcessedGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 
 
 	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-#if defined (TIX_DEBUG)
 	ProcessedPreZGPUCommandBuffer->SetResourceName("ProcessedOccluderCB");
-#endif
 	// Add binding arguments
 	ProcessedPreZGPUCommandBuffer->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedPreZGPUCommandBuffer);
@@ -398,14 +404,23 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				);
 				_LOG(Log, "Instances : %d, Intersected : %d.\n", SceneMetaInfo->GetSceneInstancesAdded(), SceneMetaInfo->GetSceneInstancesIntersected());
 				const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+				FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
 				InstanceOcclusionCullCS->UpdateComputeArguments(
 					RHI,
-					ViewProjection.MatProj * ViewProjection.MatView,
+					MatVP,
 					SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 					SceneMetaInfo->GetMergedInstanceBuffer(),
 					InstanceFrustumCullCS->GetVisibleResult(),
 					SceneMetaInfo->GetSceneInstancesAdded());
+
+				ClusterCullCS->UpdateComputeArguments(
+					RHI,
+					ViewProjection.CamDir,
+					MatVP,
+					Frustum,
+					SceneMetaInfo->GetMergedClusterData(),
+					SceneMetaInfo->GetMergedInstanceBuffer());
 			}
 		}
 		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))

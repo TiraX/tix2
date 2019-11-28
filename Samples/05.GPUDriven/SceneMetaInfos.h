@@ -68,6 +68,10 @@ namespace tix
 		{
 			return MergedInstanceBuffer;
 		}
+		FUniformBufferPtr GetMergedClusterData()
+		{
+			return MergedClusterData;
+		}
 		uint32 GetSceneInstancesAdded() const
 		{
 			return SceneInstancesAdded;

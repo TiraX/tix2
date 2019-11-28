@@ -4,6 +4,7 @@
 */
 
 #include "stdafx.h"
+#include "GPUComputeUniforms.h"
 #include "GPUInstanceOcclusionCullCS.h"
 #include "SceneMetaInfos.h"
 #include "HiZDownSampleCS.h"
@@ -22,9 +23,19 @@ void FGPUInstanceOcclusionCullCS::PrepareResources(FRHI * RHI, const vector2di& 
 {
 	OcclusionInfo = ti_new FOcclusionInfo;
 	OcclusionInfo->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
-	ResourceTable = RHI->CreateRenderResourceTable(6, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(7, EHT_SHADER_RESOURCE);
 
 	ResourceTable->PutTextureInTable(HiZTexture, 4);
+	
+	// Make a queue big enough to fill all clusters
+	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
+	ResourceTable->PutUniformBufferInTable(VisibleClusters, 6);
+
+	// Create counter reset
+	CounterReset = ti_new FCounterReset;
+	CounterReset->UniformBufferData[0].Zero = 0;
+	CounterReset->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
@@ -67,6 +78,8 @@ void FGPUInstanceOcclusionCullCS::Run(FRHI * RHI)
 	if (FrustumCullResult != nullptr)
 	{
 		RHI->CopyBufferRegion(VisibilityResult, 0, FrustumCullResult, VisibilityResult->GetTotalBufferSize());
+		// Reset command buffer counter
+		RHI->ComputeCopyBuffer(VisibleClusters, VisibleClusters->GetCounterOffset(), CounterReset->UniformBuffer, 0, sizeof(uint32));
 
 		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeBuffer(0, OcclusionInfo->UniformBuffer);

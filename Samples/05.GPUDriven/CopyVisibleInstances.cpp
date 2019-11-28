@@ -4,6 +4,7 @@
 */
 
 #include "stdafx.h"
+#include "GPUComputeUniforms.h"
 #include "CopyVisibleInstances.h"
 #include "SceneMetaInfos.h"
 

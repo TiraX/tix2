@@ -5,14 +5,15 @@
 
 #pragma once
 #include "SceneMetaInfos.h"
-#include "GPUCameraFrustum.h"
+#include "GPUComputeUniforms.h"
 #include "GPUTileFrustumCullCS.h"
 #include "GPUInstanceFrustumCullCS.h"
-#include "GPUCameraFrustum.h"
 #include "CopyVisibleTileCommandBuffer.h"
 #include "CopyVisibleInstances.h"
 #include "HiZDownSampleCS.h"
 #include "GPUInstanceOcclusionCullCS.h"
+#include "GPUClusterCullCS.h"
+#include "GenerateClusterCullIndirectCommand.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -66,4 +67,6 @@ private:
 	FCopyVisibleInstancesPtr CopyVisibleInstances;
 	FHiZDownSampleCSPtr HiZDownSample;
 	FGPUInstanceOcclusionCullCSPtr InstanceOcclusionCullCS;
+	FGenerateClusterCullIndirectCommandPtr GenerateClusterCullCommand;
+	FGPUClusterCullCSPtr ClusterCullCS;
 };

@@ -250,9 +250,7 @@ namespace tix
 			if (TotalInstances > 0)
 			{
 				MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
-#if defined (TIX_DEBUG)
 				MergedInstanceBuffer->SetResourceName("SceneMergedIB");
-#endif
 				RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
 
 				uint32 InstanceDstOffset = 0;
@@ -290,9 +288,7 @@ namespace tix
 			}
 
 			MergedClusterData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
-#if defined (TIX_DEBUG)
 			MergedClusterData->SetResourceName("MergedClusterData");
-#endif
 			RHI->UpdateHardwareResourceUB(MergedClusterData, nullptr);
 
 			uint32 DataOffset = 0;

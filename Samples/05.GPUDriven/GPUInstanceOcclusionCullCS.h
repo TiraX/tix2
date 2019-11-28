@@ -31,6 +31,10 @@ public:
 	{
 		return VisibilityResult;
 	}
+	FUniformBufferPtr GetVisibleClusters()
+	{
+		return VisibleClusters;
+	}
 private:
 
 private:
@@ -38,6 +42,12 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 	FUniformBufferPtr FrustumCullResult;
 	FUniformBufferPtr VisibilityResult;
+
+	FCounterResetPtr CounterReset;
+	FUniformBufferPtr VisibleClusters;
+
 	uint32 InstancesNeedToCull;
+
+	FUniformBufferPtr ClustersLeft;
 };
 typedef TI_INTRUSIVE_PTR(FGPUInstanceOcclusionCullCS) FGPUInstanceOcclusionCullCSPtr;

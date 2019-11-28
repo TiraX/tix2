@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#define InstanceOcclusionCull_RootSig \
+#define ClusterCull_RootSig \
 	"CBV(b0) ," \
     "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
@@ -17,21 +17,19 @@
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
 
-cbuffer FOcclusionInfo : register(b0)
+cbuffer FViewInfoUniform : register(b0)
 {
+	float3 ViewDir;
 	float4x4 ViewProjection;
 	uint4 RTSize;	// xy = size, z = max_mip_level
+	float4 Planes[6];
 };
 
-struct FVisibleInfo
-{
-	uint Visible;
-};
-
-struct FBBox
+struct ClusterMeta
 {
 	float4 MinEdge;
 	float4 MaxEdge;
+	float4 Cone;
 };
 
 struct FInstanceMetaInfo
@@ -51,16 +49,25 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
-StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
-StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
-StructuredBuffer<FVisibleInfo> FrustumCullResult : register(t3);
-Texture2D<float> HiZTexture : register(t4);
+StructuredBuffer<ClusterMeta> ClusterMetaData: register(t0);
+StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
+StructuredBuffer<uint2> ClusterQueue : register(t2);
+Texture2D<float> HiZTexture : register(t3);
 
-RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
-AppendStructuredBuffer<uint2> ClustersQueue : register(u1);	// Clusters to be culled
+AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
+
+inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
+{
+	float3 P;
+	P.x = Plane.x >= 0.0 ? MinEdge.x : MaxEdge.x;
+	P.y = Plane.y >= 0.0 ? MinEdge.y : MaxEdge.y;
+	P.z = Plane.z >= 0.0 ? MinEdge.z : MaxEdge.z;
+
+	float dis = dot(Plane.xyz, P) + Plane.w;
+	return dis <= 0.0;
+}
 
 inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout float4 MaxEdge)
 {
@@ -85,28 +92,34 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 
 #define threadBlockSize 128
 
-[RootSignature(InstanceOcclusionCull_RootSig)]
+[RootSignature(ClusterCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint Result = 0;
-	if (InstanceMetaInfo[InstanceIndex].Info.w > 0 &&
-		FrustumCullResult[InstanceIndex].Visible > 0)
-	{
-		// This tile intersect view frustum, need to cull instances one by one
-		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+	uint QueueIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
+	uint InstanceIndex = ClusterQueue[QueueIndex].x;
+	uint ClusterIndex = ClusterQueue[QueueIndex].y;
 
-		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+	ClusterMeta Cluster = ClusterMetaData[ClusterIndex];
+
+	uint Result = 0;
+	// Orientition cull
+	if (dot(ViewDir, Cluster.Cone.xyz) < Cluster.Cone.w)
+	{
+		// cull it
+	}
+	else
+	{
+		// HiZ culling
+		float4 MinEdge = Cluster.MinEdge;
+		float4 MaxEdge = Cluster.MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
 		float3 BBoxMin = MinEdge.xyz;
 		float3 BBoxMax = MaxEdge.xyz;
 		float3 BBoxSize = BBoxMax - BBoxMin;
 
-		float3 BBoxCorners[] = 
+		float3 BBoxCorners[] =
 		{
 			BBoxMin.xyz,
 			BBoxMin.xyz + float3(BBoxSize.x,0,0),
@@ -162,7 +175,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			Mip = level_lower;
 
 		//load depths from high z buffer
-		float4 Depth = 
+		float4 Depth =
 		{
 			HiZTexture.SampleLevel(PointSampler, BoxUVs.xy, Mip),
 			HiZTexture.SampleLevel(PointSampler, BoxUVs.zy, Mip),
@@ -173,21 +186,28 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		//find the max depth
 		float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
 
-		if (minZ <= maxDepth)
+		if (minZ > maxDepth)
 		{
-			Result = 1;
-
-			// Copy visible clusters for cluster culling
-			uint2 ClusterInfo;
-			ClusterInfo.x = InstanceIndex;	// Instance index
-			uint ClusterIndex = InstanceMetaInfo[InstanceIndex].Info.y;
-			uint ClusterCount = InstanceMetaInfo[InstanceIndex].Info.z;
-			for (uint i = 0; i < ClusterCount; ++i)
+			// Cull it
+		}
+		else
+		{
+			// Frustum cull
+			if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 			{
-				ClusterInfo.y = ClusterIndex + i;	// Cluster index;
-				ClustersQueue.Append(ClusterInfo);
+				Result = 1;
 			}
 		}
 	}
-	VisibleInfo[InstanceIndex].Visible = Result;
+
+	if (Result > 0)
+	{
+		// Encode triangle compute indirect command
+		TriangleCullingCommand.Append(1);
+	}
 }
