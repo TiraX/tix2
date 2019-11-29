@@ -76,7 +76,6 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	}
 	CullUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
 	ResourceTable->PutUniformBufferInTable(ClusterMetaData, 0);
 	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 1);
 	// t2 is VisibleClusters, alrealy set in PrepareResource()
@@ -97,9 +96,11 @@ void FGPUClusterCullCS::Run(FRHI * RHI)
 		0,
 		sizeof(uint32));
 
+	RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeBuffer(0, CullUniform->UniformBuffer);
 	RHI->SetComputeResourceTable(1, ResourceTable);
 
-	RHI->ExecuteGPUCommands(GPUCommandBuffer);
+	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
 }

@@ -138,7 +138,8 @@ namespace tix
 		virtual void ComputeCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) override;
 
 		// GPU Command buffer
-		virtual void ExecuteGPUCommands(FGPUCommandBufferPtr GPUCommandBuffer) override;
+		virtual void ExecuteGPUDrawCommands(FGPUCommandBufferPtr GPUCommandBuffer) override;
+		virtual void ExecuteGPUComputeCommands(FGPUCommandBufferPtr GPUCommandBuffer) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
 		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel = 0, const int8* PassName = "UnnamedPass") override;

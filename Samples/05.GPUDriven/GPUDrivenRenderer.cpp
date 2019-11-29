@@ -304,7 +304,7 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCo
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
-		RHI->ExecuteGPUCommands(InGPUCommandBuffer);
+		RHI->ExecuteGPUDrawCommands(InGPUCommandBuffer);
 	}
 }
 
@@ -511,7 +511,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					// Set arguments
 					RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
-					RHI->ExecuteGPUCommands(ProcessedPreZGPUCommandBuffer);
+					RHI->ExecuteGPUDrawCommands(ProcessedPreZGPUCommandBuffer);
 				}
 			}
 			RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
@@ -545,7 +545,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 					// Do cluster cull
 					RHI->BeginEvent("Cluster cull");
-					//ClusterCullCS->Run(RHI);
+					ClusterCullCS->Run(RHI);
 					RHI->EndEvent();
 				}
 

@@ -2777,7 +2777,7 @@ namespace tix
 			CopySize);
 	}
 
-	void FRHIDx12::ExecuteGPUCommands(FGPUCommandBufferPtr GPUCommandBuffer)
+	void FRHIDx12::ExecuteGPUDrawCommands(FGPUCommandBufferPtr GPUCommandBuffer)
 	{
 		if (GPUCommandBuffer->GetEncodedCommandsCount() > 0)
 		{
@@ -2786,7 +2786,42 @@ namespace tix
 
 			// Set Primitive Topology
 			CurrentWorkingCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			
+
+			// Execute indirect draw.
+			FUniformBufferDx12 * CommandBuffer = static_cast<FUniformBufferDx12*>(GPUCommandBuffer->GetCommandBuffer().get());
+			if ((CommandBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+			{
+				uint32 CounterOffset = CommandBuffer->GetCounterOffset();
+				CurrentWorkingCommandList->ExecuteIndirect(
+					SignatueDx12->CommandSignature.Get(),
+					GPUCommandBuffer->GetEncodedCommandsCount(),
+					CommandBuffer->BufferResource.GetResource().Get(),
+					0,
+					CommandBuffer->BufferResource.GetResource().Get(),
+					CounterOffset);
+			}
+			else
+			{
+				CurrentWorkingCommandList->ExecuteIndirect(
+					SignatueDx12->CommandSignature.Get(),
+					GPUCommandBuffer->GetEncodedCommandsCount(),
+					CommandBuffer->BufferResource.GetResource().Get(),
+					0,
+					nullptr,
+					0);
+			}
+
+			HoldResourceReference(GPUCommandBuffer);
+		}
+	}
+
+	void FRHIDx12::ExecuteGPUComputeCommands(FGPUCommandBufferPtr GPUCommandBuffer)
+	{
+		if (GPUCommandBuffer->GetEncodedCommandsCount() > 0)
+		{
+			FGPUCommandBufferDx12 * GPUCommandBufferDx12 = static_cast<FGPUCommandBufferDx12*>(GPUCommandBuffer.get());
+			FGPUCommandSignatureDx12 * SignatueDx12 = static_cast<FGPUCommandSignatureDx12*>(GPUCommandBuffer->GetGPUCommandSignature().get());
+
 			// Execute indirect draw.
 			FUniformBufferDx12 * CommandBuffer = static_cast<FUniformBufferDx12*>(GPUCommandBuffer->GetCommandBuffer().get());
 			if ((CommandBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
