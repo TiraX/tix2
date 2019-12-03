@@ -129,7 +129,7 @@ namespace tix
 
 		// Compute
 		virtual void SetComputePipeline(FPipelinePtr InPipeline) override;
-		virtual void SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) override;
+		virtual void SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset = 0) override;
 		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) override;
 		virtual void SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) override;
 		virtual void SetComputeTexture(int32 BindIndex, FTexturePtr InTexture) override;

@@ -180,7 +180,7 @@ namespace tix
 
 		// Compute
 		virtual void SetComputePipeline(FPipelinePtr InPipeline) = 0;
-		virtual void SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
+		virtual void SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset = 0) = 0;
 		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
         virtual void SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
         virtual void SetComputeTexture(int32 BindIndex, FTexturePtr InTexture) = 0;

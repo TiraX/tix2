@@ -17,17 +17,22 @@ FGenerateClusterCullIndirectCommand::~FGenerateClusterCullIndirectCommand()
 {
 }
 
-void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI, FUniformBufferPtr ClustersLeft, FGPUCommandBufferPtr DispatchCommandBuffer)
+void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI, FUniformBufferPtr InClusterQueue, FGPUCommandBufferPtr DispatchCommandBuffer)
 {
-	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
-	ResourceTable->PutUniformBufferInTable(ClustersLeft, 0);
-	ResourceTable->PutUniformBufferInTable(DispatchCommandBuffer->GetCommandBuffer(), 1);
+	ResourceTable = RHI->CreateRenderResourceTable(1, EHT_SHADER_RESOURCE);
+	ResourceTable->PutUniformBufferInTable(DispatchCommandBuffer->GetCommandBuffer(), 0);
+	ClustersQueue = InClusterQueue;
+	CommandBuffer = DispatchCommandBuffer;
 }
 
 void FGenerateClusterCullIndirectCommand::Run(FRHI * RHI)
 {
+	//RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_UNORDERED_ACCESS);
+
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeResourceTable(0, ResourceTable);
+	TI_ASSERT(ClustersQueue->GetCounterOffset() != 0);
+	RHI->SetComputeBuffer(0, ClustersQueue, ClustersQueue->GetCounterOffset());
+	RHI->SetComputeResourceTable(1, ResourceTable);
 
 	RHI->DispatchCompute(vector3di(1, 1, 1), vector3di(1, 1, 1));
 }

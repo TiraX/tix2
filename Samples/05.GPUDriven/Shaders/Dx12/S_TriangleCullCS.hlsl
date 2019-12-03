@@ -11,7 +11,7 @@
 
 #define ClusterCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -208,6 +208,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Result > 0)
 	{
 		// Encode triangle compute indirect command
-		TriangleCullingCommand.Append(QueueIndex);
+		TriangleCullingCommand.Append(1);
 	}
 }

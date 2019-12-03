@@ -49,6 +49,9 @@
     <ClCompile Include="GenerateClusterCullIndirectCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GPUTriangleCullCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUDrivenRenderer.h">
@@ -88,6 +91,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GenerateClusterCullIndirectCommand.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUTriangleCullCS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -137,6 +143,9 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_GenerateClusterCullIndirectCommandCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -5,11 +5,11 @@
 
 #pragma once
 
-class FGPUClusterCullCS : public FComputeTask
+class FGPUTriangleCullCS : public FComputeTask
 {
 public:
-	FGPUClusterCullCS();
-	virtual ~FGPUClusterCullCS();
+	FGPUTriangleCullCS();
+	virtual ~FGPUTriangleCullCS();
 
 	void PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters);
 	void UpdateComputeArguments(
@@ -37,4 +37,4 @@ private:
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;
 };
-typedef TI_INTRUSIVE_PTR(FGPUClusterCullCS) FGPUClusterCullCSPtr;
+typedef TI_INTRUSIVE_PTR(FGPUTriangleCullCS) FGPUTriangleCullCSPtr;

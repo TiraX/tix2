@@ -5,19 +5,19 @@
 
 #include "stdafx.h"
 #include "GPUComputeUniforms.h"
-#include "GPUClusterCullCS.h"
+#include "GPUTriangleCullCS.h"
 #include "HiZDownSampleCS.h"
 
-FGPUClusterCullCS::FGPUClusterCullCS()
-	: FComputeTask("S_ClusterCullCS")
+FGPUTriangleCullCS::FGPUTriangleCullCS()
+	: FComputeTask("S_TriangleCullCS")
 {
 }
 
-FGPUClusterCullCS::~FGPUClusterCullCS()
+FGPUTriangleCullCS::~FGPUTriangleCullCS()
 {
 }
 
-void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters)
+void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters)
 {
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
@@ -27,7 +27,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	ResourceTable->PutTextureInTable(HiZTexture, 3);
 
 	// Create a command buffer that big enough for triangle culling
-	TriangleCullCommands = RHI->CreateUniformBuffer(sizeof(uint32), 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	TriangleCullCommands = RHI->CreateUniformBuffer(sizeof(uint32), 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	RHI->UpdateHardwareResourceUB(TriangleCullCommands, nullptr);
 	TI_TODO("Change TriangleCullCommands to CommandBuffer as follows");
 	//const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
@@ -55,7 +55,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
 
-void FGPUClusterCullCS::UpdateComputeArguments(
+void FGPUTriangleCullCS::UpdateComputeArguments(
 	FRHI * RHI,
 	const vector3df& ViewDir,
 	const FMatrix& ViewProjection,
@@ -83,10 +83,10 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	ResourceTable->PutUniformBufferInTable(TriangleCullCommands, 4);
 }
 
-void FGPUClusterCullCS::Run(FRHI * RHI)
+void FGPUTriangleCullCS::Run(FRHI * RHI)
 {
-	return;
 	const uint32 BlockSize = 128;
+	const uint32 DispatchSize = (1024 + (BlockSize - 1)) / BlockSize;
 
 	// Reset command buffer counter
 	RHI->ComputeCopyBuffer(
@@ -103,5 +103,4 @@ void FGPUClusterCullCS::Run(FRHI * RHI)
 	RHI->SetComputeResourceTable(1, ResourceTable);
 
 	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
-	//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(80, 1, 1));
 }

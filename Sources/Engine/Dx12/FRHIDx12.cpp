@@ -1701,7 +1701,8 @@ namespace tix
 			{
 				// With counter, counter offset must be aligned with D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT
 				BufferSize = FUniformBufferDx12::AlignForUavCounter(BufferSize);
-				BufferSize += sizeof(uint32);
+				// Alloc FUint4 for counter, since some shader need to access it.
+				BufferSize += sizeof(FUInt4);
 			}
 			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
@@ -2723,12 +2724,12 @@ namespace tix
 		HoldResourceReference(InUniformBuffer);
 	}
 
-	void FRHIDx12::SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer)
+	void FRHIDx12::SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset)
 	{
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
 		// Bind the current frame's constant buffer to the pipeline.
-		CurrentWorkingCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress());
+		CurrentWorkingCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress() + BufferOffset);
 
 		HoldResourceReference(InUniformBuffer);
 	}
