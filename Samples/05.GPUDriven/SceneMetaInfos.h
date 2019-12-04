@@ -30,7 +30,6 @@ namespace tix
 
 	// Info.x = cluster index begin
 	// Info.y = cluster count
-	// Info.z = draw command index
 	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FClusterMetaInfo)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FClusterMetaInfo)

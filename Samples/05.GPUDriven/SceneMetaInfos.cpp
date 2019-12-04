@@ -286,7 +286,7 @@ namespace tix
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
 				for (auto Prim : TileRes->GetPrimitives())
 				{
-					TotalClusterMetas += Prim->GetClusterData()->GetElements() * ClusterDataSize;
+					TotalClusterMetas += Prim->GetClusterData()->GetElements();
 				}
 			}
 			TI_ASSERT(TotalClusterMetas > 0);
@@ -311,7 +311,7 @@ namespace tix
 					}
 				}
 			}
-			TI_ASSERT(DataOffset == TotalClusterMetas);
+			TI_ASSERT(DataOffset == TotalClusterMetas * ClusterDataSize);
 		}
 		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty) ||
 			HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
