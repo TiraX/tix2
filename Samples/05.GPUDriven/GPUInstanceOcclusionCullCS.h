@@ -24,6 +24,7 @@ public:
 		FUniformBufferPtr InstanceMetaInfo,
 		FInstanceBufferPtr SceneInstanceData,
 		FUniformBufferPtr FrustumCullResult,
+		FUniformBufferPtr InClusterMetaInfo,
 		uint32 InstancesCountIntersectWithFrustum);
 	virtual void Run(FRHI * RHI) override;
 

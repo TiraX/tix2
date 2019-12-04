@@ -142,6 +142,7 @@ namespace tix
 
 			// Collect Instances
 			SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo(SceneInstancesAdded);
+			ClusterMetaData = ti_new FClusterMetaInfo(SceneInstancesAdded);
 			for (const auto& TilePos : SortedTilePositions)
 			{
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
@@ -290,9 +291,9 @@ namespace tix
 			}
 			TI_ASSERT(TotalClusterMetas > 0);
 
-			MergedClusterData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
-			MergedClusterData->SetResourceName("MergedClusterData");
-			RHI->UpdateHardwareResourceUB(MergedClusterData, nullptr);
+			MergedClusterBoundingData = RHI->CreateUniformBuffer(ClusterDataSize, TotalClusterMetas);
+			MergedClusterBoundingData->SetResourceName("MergedClusterData");
+			RHI->UpdateHardwareResourceUB(MergedClusterBoundingData, nullptr);
 
 			uint32 DataOffset = 0;
 			for (const auto& TilePos : SortedTilePositions)
@@ -305,7 +306,7 @@ namespace tix
 						uint32 ClusterOffset = DataOffset / ClusterDataSize;
 						uint32 ClusterCount = Prim->GetClusterData()->GetElements();
 						
-						RHI->CopyBufferRegion(MergedClusterData, DataOffset, Prim->GetClusterData(), ClusterCount * ClusterDataSize);
+						RHI->CopyBufferRegion(MergedClusterBoundingData, DataOffset, Prim->GetClusterData(), ClusterCount * ClusterDataSize);
 						DataOffset += Prim->GetClusterData()->GetElements() * ClusterDataSize;
 					}
 				}
@@ -335,14 +336,11 @@ namespace tix
 							uint32 Index = InstanceOffset + Ins;
 							// Info.y = cluster index begin
 							// Info.z = cluster count
-							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Y = ClusterOffset;
-							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Z = ClusterCount;
+							ClusterMetaData->UniformBufferData[Index].Info.X = ClusterOffset;
+							ClusterMetaData->UniformBufferData[Index].Info.Y = ClusterCount;
 						}
 
 						ClusterOffset += Prim->GetClusterData()->GetElements();
-
-						// Mark instance meta data as dirty to update meta data uniform buffer.
-						SceneMetaFlags |= MetaFlag_SceneInstanceMetaDirty;
 					}
 				}
 			}
@@ -358,6 +356,10 @@ namespace tix
 		if (HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
 		{
 			SceneInstancesMetaInfo->InitUniformBuffer();
+		}
+		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty))
+		{
+			ClusterMetaData->InitUniformBuffer();
 		}
 	}
 

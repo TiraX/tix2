@@ -30,7 +30,7 @@ AppendStructuredBuffer<IndirectCommand> OutputCommands : register(u0);	// Cull r
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	IndirectCommand Command;
-	Command.ThreadGroupCount.x = (ClusterCount + 127) / 128;
+	Command.ThreadGroupCount.x = (ClusterCount.x + 127) / 128;
 	Command.ThreadGroupCount.y = 1;
 	Command.ThreadGroupCount.z = 1;
 	OutputCommands.Append(Command);

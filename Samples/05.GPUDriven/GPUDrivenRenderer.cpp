@@ -395,6 +395,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo->GetInstanceMetaUniform()->UniformBuffer,
 					SceneMetaInfo->GetMergedInstanceBuffer(),
 					InstanceFrustumCullCS->GetVisibleResult(),
+					SceneMetaInfo->GetClusterMetaInfo()->UniformBuffer,
 					SceneMetaInfo->GetSceneInstancesAdded());
 			}
 		}

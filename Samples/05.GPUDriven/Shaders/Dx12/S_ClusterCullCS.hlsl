@@ -25,7 +25,7 @@ cbuffer FViewInfoUniform : register(b0)
 	float4 Planes[6];
 };
 
-struct ClusterMeta
+struct FClusterBoundingInfo
 {
 	float4 MinEdge;
 	float4 MaxEdge;
@@ -49,7 +49,7 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-StructuredBuffer<ClusterMeta> ClusterMetaData: register(t0);
+StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
 StructuredBuffer<uint2> ClusterQueue : register(t2);
 Texture2D<float> HiZTexture : register(t3);
@@ -100,7 +100,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint InstanceIndex = ClusterQueue[QueueIndex].x;
 	uint ClusterIndex = ClusterQueue[QueueIndex].y;
 
-	ClusterMeta Cluster = ClusterMetaData[ClusterIndex];
+	FClusterBoundingInfo Cluster = ClusterBoundingData[ClusterIndex];
 
 	uint Result = 0;
 	// Orientition cull

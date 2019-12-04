@@ -23,14 +23,14 @@ void FGPUInstanceOcclusionCullCS::PrepareResources(FRHI * RHI, const vector2di& 
 {
 	OcclusionInfo = ti_new FOcclusionInfo;
 	OcclusionInfo->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
-	ResourceTable = RHI->CreateRenderResourceTable(7, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(8, EHT_SHADER_RESOURCE);
 
-	ResourceTable->PutTextureInTable(HiZTexture, 4);
+	ResourceTable->PutTextureInTable(HiZTexture, 5);
 	
 	// Make a queue big enough to fill all clusters
 	VisibleInstanceClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	RHI->UpdateHardwareResourceUB(VisibleInstanceClusters, nullptr);
-	ResourceTable->PutUniformBufferInTable(VisibleInstanceClusters, 6);
+	ResourceTable->PutUniformBufferInTable(VisibleInstanceClusters, 7);
 
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
@@ -45,6 +45,7 @@ void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
 	FUniformBufferPtr InstanceMetaInfo,
 	FInstanceBufferPtr SceneInstanceData,
 	FUniformBufferPtr InFrustumCullResult,
+	FUniformBufferPtr InClusterMetaInfo,
 	uint32 InstancesCountIntersectWithFrustum
 )
 {
@@ -62,8 +63,9 @@ void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
 	ResourceTable->PutUniformBufferInTable(InstanceMetaInfo, 1);
 	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 2);
 	ResourceTable->PutUniformBufferInTable(InFrustumCullResult, 3);
+	ResourceTable->PutUniformBufferInTable(InClusterMetaInfo, 4);
 	// t4 is HiZTexture, already set in PrepareResource()
-	ResourceTable->PutUniformBufferInTable(VisibilityResult, 5);
+	ResourceTable->PutUniformBufferInTable(VisibilityResult, 6);
 
 	FrustumCullResult = InFrustumCullResult;
 	InstancesNeedToCull = InstancesCountIntersectWithFrustum;
