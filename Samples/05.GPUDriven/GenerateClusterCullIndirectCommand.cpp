@@ -23,11 +23,18 @@ void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI, FUniformB
 	ResourceTable->PutUniformBufferInTable(DispatchCommandBuffer->GetCommandBuffer(), 0);
 	ClustersQueue = InClusterQueue;
 	CommandBuffer = DispatchCommandBuffer;
+
+	// Create counter reset
+	CounterReset = ti_new FCounterReset;
+	CounterReset->UniformBufferData[0].Zero = 0;
+	CounterReset->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FGenerateClusterCullIndirectCommand::Run(FRHI * RHI)
 {
 	//RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_UNORDERED_ACCESS);
+
+	RHI->CopyBufferRegion(CommandBuffer->GetCommandBuffer(), CommandBuffer->GetCommandBuffer()->GetCounterOffset(), CounterReset->UniformBuffer, sizeof(uint32));
 
 	RHI->SetComputePipeline(ComputePipeline);
 	TI_ASSERT(ClustersQueue->GetCounterOffset() != 0);

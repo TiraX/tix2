@@ -50,7 +50,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 	
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE);
+	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	GPUCommandBuffer->SetResourceName("ClusterCullIndirectCommand");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
@@ -85,7 +85,6 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 
 void FGPUClusterCullCS::Run(FRHI * RHI)
 {
-	return;
 	const uint32 BlockSize = 128;
 
 	// Reset command buffer counter

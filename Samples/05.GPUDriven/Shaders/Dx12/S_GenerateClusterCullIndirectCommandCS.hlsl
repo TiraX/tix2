@@ -23,13 +23,18 @@ struct IndirectCommand
 	uint3 ThreadGroupCount;
 };
 
-RWStructuredBuffer<IndirectCommand> OutputCommands : register(u0);	// Cull result, if this tile is visible
+AppendStructuredBuffer<IndirectCommand> OutputCommands : register(u0);	// Cull result, if this tile is visible
 
 [RootSignature(ClusterCullIndirectCommand_RootSig)]
 [numthreads(1, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	OutputCommands[0].ThreadGroupCount.x = (ClusterCount + 127) / 128;
-	OutputCommands[0].ThreadGroupCount.y = 1;
-	OutputCommands[0].ThreadGroupCount.z = 1;
+	IndirectCommand Command;
+	Command.ThreadGroupCount.x = (ClusterCount + 127) / 128;
+	Command.ThreadGroupCount.y = 1;
+	Command.ThreadGroupCount.z = 1;
+	OutputCommands.Append(Command);
+	//OutputCommands[0].ThreadGroupCount.x = (ClusterCount + 127) / 128;
+	//OutputCommands[0].ThreadGroupCount.y = 1;
+	//OutputCommands[0].ThreadGroupCount.z = 1;
 }

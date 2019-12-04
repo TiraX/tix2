@@ -20,5 +20,7 @@ private:
 	FUniformBufferPtr ClustersQueue;
 	FGPUCommandBufferPtr CommandBuffer;
 	FRenderResourceTablePtr ResourceTable;
+
+	FCounterResetPtr CounterReset;
 };
 typedef TI_INTRUSIVE_PTR(FGenerateClusterCullIndirectCommand) FGenerateClusterCullIndirectCommandPtr;

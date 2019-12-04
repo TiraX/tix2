@@ -1689,6 +1689,16 @@ namespace tix
 	}
 
 	static const int32 UniformBufferAlignSize = 256;
+	inline uint32 GetUBSizeWithCounter(uint32 InBufferSize)
+	{
+		uint32 BufferSizeWithCounter;
+		// With counter, counter offset must be aligned with D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT
+		BufferSizeWithCounter = FUniformBufferDx12::AlignForUavCounter(InBufferSize);
+		// Alloc FUint4 for counter, since some shader need to access it.
+		BufferSizeWithCounter += sizeof(FUInt4);
+
+		return BufferSizeWithCounter;
+	}
 	bool FRHIDx12::UpdateHardwareResourceUB(FUniformBufferPtr UniformBuffer, const void* InData)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(UniformBuffer.get());
@@ -1699,10 +1709,7 @@ namespace tix
 			int32 BufferSize = UniformBuffer->GetTotalBufferSize();
 			if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
 			{
-				// With counter, counter offset must be aligned with D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT
-				BufferSize = FUniformBufferDx12::AlignForUavCounter(BufferSize);
-				// Alloc FUint4 for counter, since some shader need to access it.
-				BufferSize += sizeof(FUInt4);
+				BufferSize = GetUBSizeWithCounter(BufferSize);
 			}
 			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
@@ -1871,7 +1878,12 @@ namespace tix
 
 	bool FRHIDx12::CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length)
 	{
-		TI_ASSERT(DstOffset + Length <= DstBuffer->GetTotalBufferSize());
+		uint32 RealBufferSize = DstBuffer->GetTotalBufferSize();
+		if ((DstBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+		{
+			RealBufferSize = GetUBSizeWithCounter(RealBufferSize);
+		}
+		TI_ASSERT(DstOffset + Length <= RealBufferSize);
 		TI_ASSERT(Length <= SrcBuffer->GetTotalBufferSize());
 
 		FUniformBufferDx12 * DstBufferDx12 = static_cast<FUniformBufferDx12*>(DstBuffer.get());
