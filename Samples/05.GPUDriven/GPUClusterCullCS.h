@@ -11,7 +11,7 @@ public:
 	FGPUClusterCullCS();
 	virtual ~FGPUClusterCullCS();
 
-	void PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters);
+	void PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleInstanceClusters);
 	void UpdateComputeArguments(
 		FRHI * RHI,
 		const vector3df& ViewDir,
@@ -32,7 +32,7 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 
 	FCounterResetPtr CounterReset;
-	FUniformBufferPtr TriangleCullCommands;
+	FUniformBufferPtr VisibleClusters;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;

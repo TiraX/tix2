@@ -28,9 +28,9 @@ void FGPUInstanceOcclusionCullCS::PrepareResources(FRHI * RHI, const vector2di& 
 	ResourceTable->PutTextureInTable(HiZTexture, 4);
 	
 	// Make a queue big enough to fill all clusters
-	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
-	ResourceTable->PutUniformBufferInTable(VisibleClusters, 6);
+	VisibleInstanceClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	RHI->UpdateHardwareResourceUB(VisibleInstanceClusters, nullptr);
+	ResourceTable->PutUniformBufferInTable(VisibleInstanceClusters, 6);
 
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
@@ -79,7 +79,7 @@ void FGPUInstanceOcclusionCullCS::Run(FRHI * RHI)
 	{
 		RHI->CopyBufferRegion(VisibilityResult, 0, FrustumCullResult, VisibilityResult->GetTotalBufferSize());
 		// Reset command buffer counter
-		RHI->ComputeCopyBuffer(VisibleClusters, VisibleClusters->GetCounterOffset(), CounterReset->UniformBuffer, 0, sizeof(uint32));
+		RHI->ComputeCopyBuffer(VisibleInstanceClusters, VisibleInstanceClusters->GetCounterOffset(), CounterReset->UniformBuffer, 0, sizeof(uint32));
 
 		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeBuffer(0, OcclusionInfo->UniformBuffer);

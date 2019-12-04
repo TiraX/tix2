@@ -49,6 +49,10 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
+//uint IndexOffset : register(b0);
+//ByteAddressBuffer                           vertexData      : register(t0);
+//Buffer<uint>                                indexData       : register(t1);
+
 StructuredBuffer<ClusterMeta> ClusterMetaData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
 StructuredBuffer<uint2> ClusterQueue : register(t2);

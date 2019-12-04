@@ -54,7 +54,7 @@ StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
 StructuredBuffer<uint2> ClusterQueue : register(t2);
 Texture2D<float> HiZTexture : register(t3);
 
-AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible clusters, perform triangle cull
+AppendStructuredBuffer<uint2> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
 
@@ -208,6 +208,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Result > 0)
 	{
 		// Encode triangle compute indirect command
-		TriangleCullingCommand.Append(QueueIndex);
+		VisibleClusters.Append(ClusterQueue[QueueIndex]);
 	}
 }

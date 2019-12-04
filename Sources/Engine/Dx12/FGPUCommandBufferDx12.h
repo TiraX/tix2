@@ -50,6 +50,10 @@ namespace tix
 			uint32 ThreadGroupCountY,
 			uint32 ThreadGroupCountZ
 		) override;
+		virtual void EncodeSetShaderResrouce(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex
+		) override;
 
 		virtual const void* GetCommandData(uint32 CommandIndex) const override;
 		virtual void SetCommandData(uint32 CommandIndex, const void* InData, uint32 InDataSize) override;

@@ -183,6 +183,14 @@ namespace tix
 		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
 
+	void FGPUCommandBufferDx12::EncodeSetShaderResrouce(
+		uint32 CommandIndex,
+		uint32 ArgumentIndex
+	)
+	{
+		TI_ASSERT(0);
+	}
+
 	const void * FGPUCommandBufferDx12::GetCommandData(uint32 CommandIndex) const
 	{
 		TI_ASSERT(CommandIndex < CommandsEncoded);

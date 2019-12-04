@@ -49,6 +49,10 @@ namespace tix
 			uint32 ThreadGroupCountY,
 			uint32 ThreadGroupCountZ
 		) = 0;
+		TI_API virtual void EncodeSetShaderResrouce(
+			uint32 CommandIndex,
+			uint32 ArgumentIndex
+		) = 0;
 
 		// These two method for debug
 		TI_API virtual const void* GetCommandData(uint32 CommandIndex) const

@@ -2370,6 +2370,24 @@ namespace tix
 			{
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
 			}
+			else if (Command == GPU_COMMAND_CONSTANT)
+			{
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+				// Set bind index
+				TI_ASSERT(0);
+			}
+			else if (Command == GPU_COMMAND_CONSTANT_BUFFER)
+			{
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+				// Set bind index
+				TI_ASSERT(0);
+			}
+			else if (Command == GPU_COMMAND_SHADER_RESOURCE)
+			{
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
+				// Set bind index
+				TI_ASSERT(0);
+			}
 			else
 			{
 				TI_ASSERT(0);

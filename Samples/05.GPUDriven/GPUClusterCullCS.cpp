@@ -17,18 +17,18 @@ FGPUClusterCullCS::~FGPUClusterCullCS()
 {
 }
 
-void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters)
+void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleInstanceClusters)
 {
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 
 	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
-	ResourceTable->PutUniformBufferInTable(VisibleClusters, 2);
+	ResourceTable->PutUniformBufferInTable(VisibleInstanceClusters, 2);
 	ResourceTable->PutTextureInTable(HiZTexture, 3);
 
 	// Create a command buffer that big enough for triangle culling
-	TriangleCullCommands = RHI->CreateUniformBuffer(sizeof(uint32), 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	RHI->UpdateHardwareResourceUB(TriangleCullCommands, nullptr);
+	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
 	TI_TODO("Change TriangleCullCommands to CommandBuffer as follows");
 	//const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
 	//TriangleCullCommands = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
@@ -36,6 +36,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	//// Add binding arguments
 	//TriangleCullCommands->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
 	//RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullCommands);
+	ResourceTable->PutUniformBufferInTable(VisibleClusters, 4);
 
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
@@ -80,7 +81,7 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 1);
 	// t2 is VisibleClusters, alrealy set in PrepareResource()
 	// t3 is HiZTexture, already set in PrepareResource()
-	ResourceTable->PutUniformBufferInTable(TriangleCullCommands, 4);
+	// u0 is VisibleClusters, already set in PrepareResource()
 }
 
 void FGPUClusterCullCS::Run(FRHI * RHI)
@@ -89,8 +90,8 @@ void FGPUClusterCullCS::Run(FRHI * RHI)
 
 	// Reset command buffer counter
 	RHI->ComputeCopyBuffer(
-		TriangleCullCommands,
-		TriangleCullCommands->GetCounterOffset(),
+		VisibleClusters,
+		VisibleClusters->GetCounterOffset(),
 		CounterReset->UniformBuffer,
 		0,
 		sizeof(uint32));

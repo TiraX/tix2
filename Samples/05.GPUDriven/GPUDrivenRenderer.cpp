@@ -135,12 +135,12 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	// Cluster cull
 	ClusterCullCS = ti_new FGPUClusterCullCS;
 	ClusterCullCS->Finalize();
-	ClusterCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture, InstanceOcclusionCullCS->GetVisibleClusters());
+	ClusterCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture, InstanceOcclusionCullCS->GetVisibleInstanceClusters());
 
 	// Generate cluster cull indirect command
 	GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
 	GenerateClusterCullCommand->Finalize();
-	GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleClusters(), ClusterCullCS->GetDispatchCommandBuffer());
+	GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleInstanceClusters(), ClusterCullCS->GetDispatchCommandBuffer());
 
 }
 

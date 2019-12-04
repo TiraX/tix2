@@ -31,9 +31,9 @@ public:
 	{
 		return VisibilityResult;
 	}
-	FUniformBufferPtr GetVisibleClusters()
+	FUniformBufferPtr GetVisibleInstanceClusters()
 	{
-		return VisibleClusters;
+		return VisibleInstanceClusters;
 	}
 private:
 
@@ -44,7 +44,7 @@ private:
 	FUniformBufferPtr VisibilityResult;
 
 	FCounterResetPtr CounterReset;
-	FUniformBufferPtr VisibleClusters;
+	FUniformBufferPtr VisibleInstanceClusters;
 
 	uint32 InstancesNeedToCull;
 
