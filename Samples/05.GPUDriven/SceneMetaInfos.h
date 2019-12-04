@@ -22,14 +22,15 @@ namespace tix
 	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
 
 	// Info.x = primitive index this instance link to, in scene tile order, to access primitive bbox
+	// Info.y = cluster index begin
+	// Info.z = cluster count
 	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
 	//#define MAX_INSTANCES_IN_SCENE (40 * 1024)
 	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneInstanceMetaInfo)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FSceneInstanceMetaInfo)
 
-	// Info.x = cluster index begin
-	// Info.y = cluster count
+	// Info.x = primitive index
 	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FClusterMetaInfo)
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
 	END_UNIFORM_BUFFER_STRUCT(FClusterMetaInfo)
@@ -70,10 +71,6 @@ namespace tix
 		FSceneInstanceMetaInfoPtr GetInstanceMetaUniform()
 		{
 			return SceneInstancesMetaInfo;
-		}
-		FClusterMetaInfoPtr GetClusterMetaInfo()
-		{
-			return ClusterMetaData;
 		}
 		FInstanceBufferPtr GetMergedInstanceBuffer()
 		{
@@ -138,8 +135,8 @@ namespace tix
 		FInstanceBufferPtr MergedInstanceBuffer;
 
 		// Scene mesh cluster info
-		FClusterMetaInfoPtr ClusterMetaData;
 		FUniformBufferPtr MergedClusterBoundingData;
+		FClusterMetaInfoPtr ClusterMetaData;
 
 		// Scene primitive meta info
 		FScenePrimitiveBBoxesPtr ScenePrimitiveBBoxes;

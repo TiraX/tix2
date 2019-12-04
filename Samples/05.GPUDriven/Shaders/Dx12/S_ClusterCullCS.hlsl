@@ -51,10 +51,10 @@ struct FInstanceTransform
 
 StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
-StructuredBuffer<uint2> ClusterQueue : register(t2);
+StructuredBuffer<uint4> ClusterQueue : register(t2);
 Texture2D<float> HiZTexture : register(t3);
 
-AppendStructuredBuffer<uint2> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
+AppendStructuredBuffer<uint4> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
 

@@ -142,7 +142,6 @@ namespace tix
 
 			// Collect Instances
 			SceneInstancesMetaInfo = ti_new FSceneInstanceMetaInfo(SceneInstancesAdded);
-			ClusterMetaData = ti_new FClusterMetaInfo(SceneInstancesAdded);
 			for (const auto& TilePos : SortedTilePositions)
 			{
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
@@ -295,7 +294,10 @@ namespace tix
 			MergedClusterBoundingData->SetResourceName("MergedClusterData");
 			RHI->UpdateHardwareResourceUB(MergedClusterBoundingData, nullptr);
 
-			uint32 DataOffset = 0;
+			ClusterMetaData = ti_new FClusterMetaInfo(TotalClusterMetas);
+
+			uint32 ElementOffset = 0;
+			uint32 PrimIndex = 0;
 			for (const auto& TilePos : SortedTilePositions)
 			{
 				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
@@ -303,15 +305,23 @@ namespace tix
 				{
 					if (Prim != nullptr)
 					{
-						uint32 ClusterOffset = DataOffset / ClusterDataSize;
+						uint32 ClusterOffset = ElementOffset;
 						uint32 ClusterCount = Prim->GetClusterData()->GetElements();
 						
-						RHI->CopyBufferRegion(MergedClusterBoundingData, DataOffset, Prim->GetClusterData(), ClusterCount * ClusterDataSize);
-						DataOffset += Prim->GetClusterData()->GetElements() * ClusterDataSize;
+						RHI->CopyBufferRegion(MergedClusterBoundingData, ElementOffset * ClusterDataSize, Prim->GetClusterData(), ClusterCount * ClusterDataSize);
+
+						for (uint32 c = 0 ; c < ClusterCount ; ++ c)
+						{
+							ClusterMetaData->UniformBufferData[ElementOffset + c].Info.X = PrimIndex;
+						}
+
+						++PrimIndex;
+						ElementOffset += Prim->GetClusterData()->GetElements();
 					}
 				}
 			}
-			TI_ASSERT(DataOffset == TotalClusterMetas * ClusterDataSize);
+			ClusterMetaData->InitUniformBuffer();
+			TI_ASSERT(ElementOffset == TotalClusterMetas);
 		}
 		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty) ||
 			HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
@@ -336,8 +346,8 @@ namespace tix
 							uint32 Index = InstanceOffset + Ins;
 							// Info.y = cluster index begin
 							// Info.z = cluster count
-							ClusterMetaData->UniformBufferData[Index].Info.X = ClusterOffset;
-							ClusterMetaData->UniformBufferData[Index].Info.Y = ClusterCount;
+							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Y = ClusterOffset;
+							SceneInstancesMetaInfo->UniformBufferData[Index].Info.Z = ClusterCount;
 						}
 
 						ClusterOffset += Prim->GetClusterData()->GetElements();
@@ -353,13 +363,10 @@ namespace tix
 		{
 			ScenePrimitiveBBoxes->InitUniformBuffer();
 		}
-		if (HasMetaFlag(MetaFlag_SceneInstanceMetaDirty))
+		if (HasMetaFlag(MetaFlag_SceneInstanceMetaDirty) ||
+			HasMetaFlag(MetaFlag_SceneClusterMetaDirty))
 		{
 			SceneInstancesMetaInfo->InitUniformBuffer();
-		}
-		if (HasMetaFlag(MetaFlag_SceneClusterMetaDirty))
-		{
-			ClusterMetaData->InitUniformBuffer();
 		}
 	}
 

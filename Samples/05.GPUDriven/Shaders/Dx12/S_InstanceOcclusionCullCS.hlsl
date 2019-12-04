@@ -11,7 +11,7 @@
 
 #define InstanceOcclusionCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
+    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -37,14 +37,14 @@ struct FBBox
 struct FInstanceMetaInfo
 {
 	// x = primitive index
+	// y = cluster index begin
+	// z = cluster count
 	// w = primitive was loaded.
 	uint4 Info;
 };
 
 struct FClusterMetaInfo
 {
-	// x = cluster index begin
-	// y = cluster count
 	// z = draw command index
 	uint4 Info;
 };
@@ -61,11 +61,10 @@ StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
 StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FVisibleInfo> FrustumCullResult : register(t3);
-StructuredBuffer<FClusterMetaInfo> ClusterMetaInfo : register(t4);
-Texture2D<float> HiZTexture : register(t5);
+Texture2D<float> HiZTexture : register(t4);
 
 RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
-AppendStructuredBuffer<uint2> ClustersQueue : register(u1);	// Clusters to be culled
+AppendStructuredBuffer<uint4> ClustersQueue : register(u1);	// Clusters to be culled
 
 SamplerState PointSampler : register(s0);
 
@@ -185,10 +184,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			Result = 1;
 
 			// Copy visible clusters for cluster culling
-			uint2 ClusterInfo;
+			uint4 ClusterInfo;
 			ClusterInfo.x = InstanceIndex;	// Instance index
-			uint ClusterIndex = ClusterMetaInfo[InstanceIndex].Info.x;
-			uint ClusterCount = ClusterMetaInfo[InstanceIndex].Info.y;
+			ClusterInfo.z = PrimitiveIndex; // Primitive index
+			ClusterInfo.w = 0;
+			uint ClusterIndex = InstanceMetaInfo[InstanceIndex].Info.y;
+			uint ClusterCount = InstanceMetaInfo[InstanceIndex].Info.z;
 			for (uint i = 0; i < ClusterCount; ++i)
 			{
 				ClusterInfo.y = ClusterIndex + i;	// Cluster index;

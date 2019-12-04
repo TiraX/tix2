@@ -27,7 +27,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	ResourceTable->PutTextureInTable(HiZTexture, 3);
 
 	// Create a command buffer that big enough for triangle culling
-	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
 	TI_TODO("Change TriangleCullCommands to CommandBuffer as follows");
 	//const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
