@@ -2341,6 +2341,7 @@ namespace tix
 		// Fill D3D12 INDIRECT ARGUMENT DESC
 		D3D12_INDIRECT_ARGUMENT_DESC * ArgumentDescs = ti_new D3D12_INDIRECT_ARGUMENT_DESC[ArgsCount];
 		uint32 ArgBytesStride = 0;
+		bool bNeedRootSignature = false;
 		GPUCommandSignatureDx12->ArgumentStrideOffset.resize(CommandStructure.size());
 		for (uint32 i = 0 ; i < (uint32)CommandStructure.size() ; ++ i)
 		{
@@ -2373,20 +2374,28 @@ namespace tix
 			else if (Command == GPU_COMMAND_CONSTANT)
 			{
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
-				// Set bind index
-				TI_ASSERT(0);
+				ArgumentDescs[i].Constant.RootParameterIndex = i;
+				ArgumentDescs[i].Constant.DestOffsetIn32BitValues = 0;
+				ArgumentDescs[i].Constant.Num32BitValuesToSet = 1;
+				bNeedRootSignature = true;
 			}
 			else if (Command == GPU_COMMAND_CONSTANT_BUFFER)
 			{
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
-				// Set bind index
-				TI_ASSERT(0);
+				ArgumentDescs[i].ConstantBufferView.RootParameterIndex = i;
+				bNeedRootSignature = true;
 			}
 			else if (Command == GPU_COMMAND_SHADER_RESOURCE)
 			{
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
-				// Set bind index
-				TI_ASSERT(0);
+				ArgumentDescs[i].ShaderResourceView.RootParameterIndex = i;
+				bNeedRootSignature = true;
+			}
+			else if (Command == GPU_COMMAND_UNORDERED_ACCESS)
+			{
+				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_UNORDERED_ACCESS_VIEW;
+				ArgumentDescs[i].UnorderedAccessView.RootParameterIndex = i;
+				bNeedRootSignature = true;
 			}
 			else
 			{
@@ -2403,13 +2412,14 @@ namespace tix
 		CommandSignatureDesc.ByteStride = ArgBytesStride;
 
 		TI_TODO("Check if this command signature need render root signature.");
-		// The root signature must be specified if and only if the command signature changes one of the root arguments.
-		// That's D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT, D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW,
-		// D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW, D3D12_INDIRECT_ARGUMENT_TYPE_UNORDERED_ACCESS_VIEW
-		//FShaderBindingPtr ShaderBinding = Pipeline->GetShader()->ShaderBinding;
-		//FRootSignatureDx12* RenderSignature = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
-		//VALIDATE_HRESULT(D3dDevice->CreateCommandSignature(&CommandSignatureDesc, RenderSignature->Get(), IID_PPV_ARGS(&GPUCommandBufferDx12->CommandSignature)));
-		VALIDATE_HRESULT(D3dDevice->CreateCommandSignature(&CommandSignatureDesc, nullptr, IID_PPV_ARGS(&GPUCommandSignatureDx12->CommandSignature)));
+		ID3D12RootSignature* RS = nullptr;
+		if (bNeedRootSignature)
+		{
+			FShaderBindingPtr ShaderBinding = GPUCommandSignature->GetPipeline()->GetShader()->ShaderBinding;
+			FRootSignatureDx12* RenderSignature = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
+			RS = RenderSignature->Get();
+		}
+		VALIDATE_HRESULT(D3dDevice->CreateCommandSignature(&CommandSignatureDesc, RS, IID_PPV_ARGS(&GPUCommandSignatureDx12->CommandSignature)));
 		ti_delete[] ArgumentDescs;
 
 		HoldResourceReference(GPUCommandSignature);

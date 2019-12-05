@@ -25,6 +25,10 @@ public:
 	{
 		return GPUCommandBuffer;
 	}
+	FUniformBufferPtr GetVisibleClusters()
+	{
+		return VisibleClusters;
+	}
 private:
 
 private:

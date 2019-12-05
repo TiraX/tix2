@@ -41,6 +41,15 @@ struct FInstanceMetaInfo
 	uint4 Info;
 };
 
+struct FClusterMetaInfo
+{
+	// x = instance global index
+	// y = cluster global index
+	// z = draw command index
+	// w = cluster local index
+	uint4 Info;
+};
+
 struct FInstanceTransform
 {
 	float4 ins_transition;
@@ -51,10 +60,10 @@ struct FInstanceTransform
 
 StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
-StructuredBuffer<uint4> ClusterQueue : register(t2);
+StructuredBuffer<FClusterMetaInfo> ClusterQueue : register(t2);
 Texture2D<float> HiZTexture : register(t3);
 
-AppendStructuredBuffer<uint4> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
+AppendStructuredBuffer<FClusterMetaInfo> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
 
@@ -97,8 +106,8 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint QueueIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint InstanceIndex = ClusterQueue[QueueIndex].x;
-	uint ClusterIndex = ClusterQueue[QueueIndex].y;
+	uint InstanceIndex = ClusterQueue[QueueIndex].Info.x;
+	uint ClusterIndex = ClusterQueue[QueueIndex].Info.y;
 
 	FClusterBoundingInfo Cluster = ClusterBoundingData[ClusterIndex];
 

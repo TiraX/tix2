@@ -19,7 +19,8 @@ namespace tix
 		sizeof(D3D12_DISPATCH_ARGUMENTS),		//GPU_COMMAND_DISPATCH
 		sizeof(uint32),							//GPU_COMMAND_CONSTANT
 		sizeof(uint64),							//GPU_COMMAND_CONSTANT_BUFFER
-		sizeof(uint64)							//GPU_COMMAND_SHADER_RESOURCE
+		sizeof(uint64),							//GPU_COMMAND_SHADER_RESOURCE
+		sizeof(uint64)							//GPU_COMMAND_UNORDERED_ACCESS
 	};
 
 	FGPUCommandSignatureDx12::FGPUCommandSignatureDx12(FPipelinePtr InPipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure)

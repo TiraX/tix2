@@ -168,6 +168,7 @@
     <ClCompile Include="CopyVisibleInstances.cpp" />
     <ClCompile Include="CopyVisibleTileCommandBuffer.cpp" />
     <ClCompile Include="GenerateClusterCullIndirectCommand.cpp" />
+    <ClCompile Include="GenerateTriangleCullIndirectCommand.cpp" />
     <ClCompile Include="GPUClusterCullCS.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="CopyVisibleInstances.h" />
     <ClInclude Include="CopyVisibleTileCommandBuffer.h" />
     <ClInclude Include="GenerateClusterCullIndirectCommand.h" />
+    <ClInclude Include="GenerateTriangleCullIndirectCommand.h" />
     <ClInclude Include="GPUComputeUniforms.h" />
     <ClInclude Include="GPUClusterCullCS.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
@@ -243,6 +245,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_GenerateClusterCullIndirectCommandCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_GenerateTriangleCullIndirectCommandCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>

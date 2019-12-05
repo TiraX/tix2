@@ -17,13 +17,13 @@ FGPUTriangleCullCS::~FGPUTriangleCullCS()
 {
 }
 
-void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters)
+void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture)
 {
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 
 	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
-	ResourceTable->PutUniformBufferInTable(VisibleClusters, 2);
+	//ResourceTable->PutUniformBufferInTable(VisibleClusters, 2);
 	ResourceTable->PutTextureInTable(HiZTexture, 3);
 
 	// Create a command buffer that big enough for triangle culling
@@ -44,14 +44,18 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.reserve(1);
+	CommandStructure.reserve(5);
+	CommandStructure.push_back(GPU_COMMAND_CONSTANT);
+	CommandStructure.push_back(GPU_COMMAND_CONSTANT);
+	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
+	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
 	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 	
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE);
-	GPUCommandBuffer->SetResourceName("ClusterCullIndirectCommand");
+	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	GPUCommandBuffer->SetResourceName("TriangleCullIndirectCommand");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
 

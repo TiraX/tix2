@@ -142,6 +142,15 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	GenerateClusterCullCommand->Finalize();
 	GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleInstanceClusters(), ClusterCullCS->GetDispatchCommandBuffer());
 
+	// Generate triangle cull indirect command
+	GenerateTriangleCullCommand = ti_new FGenerateTriangleCullIndirectCommand;
+	GenerateTriangleCullCommand->Finalize();
+	GenerateTriangleCullCommand->PrepareResources(RHI);
+
+	// Triangle cull
+	TriangleCullCS = ti_new FGPUTriangleCullCS;
+	TriangleCullCS->Finalize();
+	TriangleCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
 }
 
 void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
@@ -436,6 +445,15 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		if (bPerformGPUCulling)
 		{
+			GenerateTriangleCullCommand->UpdateComputeArguments(
+				RHI,
+				ClusterCullCS->GetVisibleClusters(),
+				GPUCommandBuffer,
+				TriangleCullCS->GetDispatchCommandBuffer());	// Give null for temp;
+		}
+
+		if (bPerformGPUCulling)
+		{
 			RHI->BeginComputeTask();
 
 			// Do GPU Instance frustum culling
@@ -546,6 +564,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					// Do cluster cull
 					RHI->BeginEvent("Cluster cull");
 					ClusterCullCS->Run(RHI);
+					RHI->EndEvent();
+
+					// Generate Triangle cull dispatch indirect command
+					RHI->BeginEvent("Triangle cull indirect command");
+					GenerateTriangleCullCommand->Run(RHI);
 					RHI->EndEvent();
 				}
 

@@ -45,7 +45,10 @@ struct FInstanceMetaInfo
 
 struct FClusterMetaInfo
 {
+	// x = instance global index
+	// y = cluster global index
 	// z = draw command index
+	// w = cluster local index
 	uint4 Info;
 };
 
@@ -187,12 +190,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			uint4 ClusterInfo;
 			ClusterInfo.x = InstanceIndex;	// Instance index
 			ClusterInfo.z = PrimitiveIndex; // Primitive index
-			ClusterInfo.w = 0;
 			uint ClusterIndex = InstanceMetaInfo[InstanceIndex].Info.y;
 			uint ClusterCount = InstanceMetaInfo[InstanceIndex].Info.z;
 			for (uint i = 0; i < ClusterCount; ++i)
 			{
 				ClusterInfo.y = ClusterIndex + i;	// Cluster index;
+				ClusterInfo.w = i;
 				ClustersQueue.Append(ClusterInfo);
 			}
 		}

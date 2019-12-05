@@ -11,7 +11,7 @@ public:
 	FGPUTriangleCullCS();
 	virtual ~FGPUTriangleCullCS();
 
-	void PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture, FUniformBufferPtr VisibleClusters);
+	void PrepareResources(FRHI * RHI, const vector2di& RTSize, FTexturePtr HiZTexture);
 	void UpdateComputeArguments(
 		FRHI * RHI,
 		const vector3df& ViewDir,

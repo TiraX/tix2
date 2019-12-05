@@ -14,6 +14,8 @@
 #include "GPUInstanceOcclusionCullCS.h"
 #include "GPUClusterCullCS.h"
 #include "GenerateClusterCullIndirectCommand.h"
+#include "GenerateTriangleCullIndirectCommand.h"
+#include "GPUTriangleCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -69,4 +71,6 @@ private:
 	FGPUInstanceOcclusionCullCSPtr InstanceOcclusionCullCS;
 	FGenerateClusterCullIndirectCommandPtr GenerateClusterCullCommand;
 	FGPUClusterCullCSPtr ClusterCullCS;
+	FGenerateTriangleCullIndirectCommandPtr GenerateTriangleCullCommand;
+	FGPUTriangleCullCSPtr TriangleCullCS;
 };
