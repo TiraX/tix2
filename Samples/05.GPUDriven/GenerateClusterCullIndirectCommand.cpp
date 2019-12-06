@@ -32,9 +32,10 @@ void FGenerateClusterCullIndirectCommand::PrepareResources(FRHI * RHI, FUniformB
 
 void FGenerateClusterCullIndirectCommand::Run(FRHI * RHI)
 {
-	//RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_UNORDERED_ACCESS);
-
+	RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_COPY_DEST);
 	RHI->CopyBufferRegion(CommandBuffer->GetCommandBuffer(), CommandBuffer->GetCommandBuffer()->GetCounterOffset(), CounterReset->UniformBuffer, sizeof(uint32));
+
+	RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_UNORDERED_ACCESS);
 
 	RHI->SetComputePipeline(ComputePipeline);
 	TI_ASSERT(ClustersQueue->GetCounterOffset() != 0);
