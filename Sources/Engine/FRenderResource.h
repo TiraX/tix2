@@ -68,7 +68,7 @@ namespace tix
 			Usage = InUsage;
 		}
 
-		void SetResourceName(const TString& Name)
+		virtual void SetResourceName(const TString& Name)
 		{
 #if defined (TIX_DEBUG)
 			ResourceName = Name;

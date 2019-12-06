@@ -66,6 +66,12 @@ namespace tix
 		{
 			return CommandBuffer;
 		}
+
+		TI_API virtual void SetResourceName(const TString& Name) override
+		{
+			FRenderResource::SetResourceName(Name);
+			CommandBuffer->SetResourceName(Name);
+		}
 	private:
 
 	protected:

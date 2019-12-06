@@ -1801,6 +1801,7 @@ namespace tix
 				}
 			}
 		}
+		DX_SETNAME(UniformBufferDx12->BufferResource.GetResource().Get(), UniformBuffer->GetResourceName() + "-UB");
 
 		HoldResourceReference(UniformBuffer);
 
