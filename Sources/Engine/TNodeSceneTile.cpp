@@ -129,6 +129,7 @@ namespace tix
 							TMeshBufferPtr OccluderMesh = CollisionSet->ConvertToMesh();
 							if (OccluderMesh != nullptr)
 							{
+								OccluderMesh->SetResourceName(MeshAsset->GetName() + "Occluder");
 								OccluderMesh->InitRenderThreadResource();
 								// Only add to Primitive[0], since all primitives from the same mesh shares the same occluder.
 								LinkedPrimitives[0]->SetOccluder(OccluderMesh->MeshBufferResource);

@@ -731,6 +731,7 @@ namespace tix
 
 			SceneTile->InstanceCountAndOffset.reserve(TotalMeshSections);
 			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
+			SceneTile->MeshInstanceBuffer->SetResourceName(Filename + "-TileInstance");
 			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * TotalInstances];
 
 			int32 InstanceOffsetSrc = 0;

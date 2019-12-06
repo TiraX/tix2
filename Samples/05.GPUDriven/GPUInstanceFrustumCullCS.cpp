@@ -57,6 +57,7 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 	{
 		// Create visibility buffer to save tile visibility result
 		VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
+		VisibilityResult->SetResourceName("InstanceFrustumCullResult");
 		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
 
 		FillVisibilityBuffer = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_INTERMEDIATE);

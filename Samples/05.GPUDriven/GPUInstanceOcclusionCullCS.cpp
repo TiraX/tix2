@@ -29,6 +29,7 @@ void FGPUInstanceOcclusionCullCS::PrepareResources(FRHI * RHI, const vector2di& 
 	
 	// Make a queue big enough to fill all clusters
 	VisibleInstanceClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	VisibleInstanceClusters->SetResourceName("VisibleInstanceClusters");
 	RHI->UpdateHardwareResourceUB(VisibleInstanceClusters, nullptr);
 	ResourceTable->PutUniformBufferInTable(VisibleInstanceClusters, 6);
 
@@ -52,6 +53,7 @@ void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
 	{
 		// Create visibility buffer to save tile visibility result
 		VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
+		VisibilityResult->SetResourceName("InstanceVisibleResult");
 		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
 	}
 

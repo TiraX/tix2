@@ -351,7 +351,7 @@ namespace tix
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
 		// Start render to frame buffer.
 		// Indicate this resource will be in use as a render target.
-		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		_Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		END_EVENT(CurrentWorkingCommandList.Get());
@@ -370,7 +370,7 @@ namespace tix
 		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
 		TI_ASSERT(CurrentWorkingCommandList != nullptr);
 		// Indicate that the render target will now be used to present when the command list is done executing.
-		Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		_Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 
 		END_EVENT(CurrentWorkingCommandList.Get());
@@ -793,12 +793,12 @@ namespace tix
 	{
 		if (GPUResource->GetCurrentState() != stateAfter)
 		{
-			Transition(GPUResource->GetResource().Get(), GPUResource->UsageState, stateAfter, subresource, flags);
+			_Transition(GPUResource->GetResource().Get(), GPUResource->UsageState, stateAfter, subresource, flags);
 			GPUResource->UsageState = stateAfter;
 		}
 	}
 
-	void FRHIDx12::Transition(
+	void FRHIDx12::_Transition(
 		_In_ ID3D12Resource* pResource,
 		D3D12_RESOURCE_STATES stateBefore,
 		D3D12_RESOURCE_STATES stateAfter,
@@ -858,6 +858,7 @@ namespace tix
 			IID_PPV_ARGS(&VertexBufferUpload)));
 
 		DX_SETNAME(MBDx12->VertexBuffer.GetResource().Get(), MeshBuffer->GetResourceName() + "-VB");
+		DX_SETNAME(VertexBufferUpload.Get(), MeshBuffer->GetResourceName() + "-Upload");
 
 		// Upload the vertex buffer to the GPU.
 		{
@@ -906,6 +907,7 @@ namespace tix
 			IID_PPV_ARGS(&IndexBufferUpload)));
 
 		DX_SETNAME(MBDx12->IndexBuffer.GetResource().Get(), MeshBuffer->GetResourceName() + "-ib");
+		DX_SETNAME(IndexBufferUpload.Get(), MeshBuffer->GetResourceName() + "-Upload");
 
 		// Upload the index buffer to the GPU.
 		{
@@ -1045,6 +1047,7 @@ namespace tix
 				IID_PPV_ARGS(&VertexBufferUpload)));
 
 			DX_SETNAME(InsDx12->InstanceBuffer.GetResource().Get(), InstanceBuffer->GetResourceName() + "-INSB");
+			DX_SETNAME(VertexBufferUpload.Get(), InstanceBuffer->GetResourceName() + "-Upload");
 
 			// Upload the instance buffer to the GPU.
 			{
@@ -1422,6 +1425,7 @@ namespace tix
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&TextureUploadHeap)));
+		DX_SETNAME(TextureUploadHeap.Get(), Texture->GetResourceName() + "-Upload");
 
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the Texture2D.
@@ -1513,6 +1517,7 @@ namespace tix
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&TextureUploadHeap)));
+		DX_SETNAME(TextureUploadHeap.Get(), Texture->GetResourceName() + "-Upload");
 
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the Texture2D.
@@ -1720,8 +1725,20 @@ namespace tix
 				&BufferDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			//Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			//FlushGraphicsBarriers(ComputeCommandList.Get());
+			if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
+			{
+				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+			}
+			else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
+			{
+				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			}
+			else
+			{
+				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
+			}
+
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 		}
 		else
 		{
@@ -1785,15 +1802,15 @@ namespace tix
 
 						if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
 						{
-							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+							Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 						}
 						else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
 						{
-							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+							Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 						}
 						else
 						{
-							Transition(UniformBufferDx12->BufferResource.GetResource().Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+							Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
 						}
 					}
 					FlushGraphicsBarriers(CurrentWorkingCommandList.Get());

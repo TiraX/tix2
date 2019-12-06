@@ -189,7 +189,7 @@ namespace tix
 			uint32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
 			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
-		void Transition(
+		void _Transition(
 			_In_ ID3D12Resource* pResource,
 			D3D12_RESOURCE_STATES stateBefore,
 			D3D12_RESOURCE_STATES stateAfter,

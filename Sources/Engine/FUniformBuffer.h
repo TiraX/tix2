@@ -68,6 +68,7 @@ namespace tix
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
 			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), GetElementsCount(), UBFlag); \
+			UniformBuffer->SetResourceName(#StructTypeName); \
 			RHI->UpdateHardwareResourceUB(UniformBuffer, UniformBufferData.data()); \
 			return UniformBuffer; \
 		} \
