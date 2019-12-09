@@ -14,23 +14,11 @@
 	"RootConstants(num32BitConstants=1, b1), " \
 	"SRV(t0) ," \
 	"SRV(t1) ," \
-	"CBV(b2) ," \
-	"SRV(t2) ," \
+    "DescriptorTable(CBV(b2), SRV(t2, numDescriptors=2), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
-
-uint ParamA : register(b0);
-uint ParamB : register(b1);
-
-cbuffer FViewInfoUniform : register(b2)
-{
-	float3 ViewDir;
-	float4x4 ViewProjection;
-	uint4 RTSize;	// xy = size, z = max_mip_level
-	float4 Planes[6];
-};
 
 struct ClusterMeta
 {
@@ -56,16 +44,23 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-//uint IndexOffset : register(b0);
-ByteAddressBuffer                           vertexData      : register(t0);
-Buffer<uint>                                indexData       : register(t1);
+uint IndexOffset : register(b0);
+uint InstanceIndex : register(b1);
 
-//StructuredBuffer<ClusterMeta> ClusterMetaData: register(t0);
-//StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
-//StructuredBuffer<uint2> ClusterQueue : register(t2);
-Texture2D<float> HiZTexture : register(t2);
+ByteAddressBuffer VertexData : register(t0);
+Buffer<uint> IndexData : register(t1);
 
-//AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible clusters, perform triangle cull
+cbuffer FViewInfoUniform : register(b2)
+{
+	float3 ViewDir;
+	float4x4 ViewProjection;
+	uint4 RTSize;	// xy = size, z = max_mip_level
+	float4 Planes[6];
+};
+StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
+Texture2D<float> HiZTexture : register(t3);
+
+AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
@@ -101,124 +96,167 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 	MaxEdge.xyz = NewOrigin + NewExtent;
 }
 
+inline float3 LoadVertex(uint index)
+{
+	// Vertex stride is 24 bytes
+	return asfloat(VertexData.Load3(index * 24));
+}
+
+float3 GetWorldPosition(in FInstanceTransform Transform, in float3 P)
+{
+	float3x3 RotMat = float3x3(Transform.ins_transform0.xyz, Transform.ins_transform1.xyz, Transform.ins_transform2.xyz);
+	float3 Position = mul(P, RotMat);
+	Position += Transform.ins_transition.xyz;
+	return Position;
+}
+
+bool HiZTriangle(float4 vertices[3])
+{
+	bool cull = false;
+
+	float minZ = 1;
+	float2 minXY = 1;
+	float2 maxXY = 0;
+
+	[unroll]
+	for (int i = 0; i < 3; i++)
+	{
+		//transform world space aaBox to NDC
+		float4 ClipPos = vertices[i];
+
+		ClipPos.z = max(ClipPos.z, 0);
+
+		ClipPos.xyz = ClipPos.xyz / ClipPos.w;
+
+		ClipPos.xy = clamp(ClipPos.xy, -1, 1);
+		ClipPos.xy = ClipPos.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+
+		minXY = min(ClipPos.xy, minXY);
+		maxXY = max(ClipPos.xy, maxXY);
+
+		minZ = saturate(min(minZ, ClipPos.z));
+	}
+
+	float4 BoxUVs = float4(minXY, maxXY);
+
+	// Calculate hi-Z buffer mip
+	int2 Size = int2((maxXY - minXY) * RTSize.xy);
+	float Mip = ceil(log2(max(Size.x, Size.y)));
+
+	uint MaxMipLevel = RTSize.z;
+	Mip = clamp(Mip, 0, MaxMipLevel);
+
+	// Texel footprint for the lower (finer-grained) level
+	float  level_lower = max(Mip - 1, 0);
+	float2 scale = exp2(-level_lower);
+	float2 a = floor(BoxUVs.xy*scale);
+	float2 b = ceil(BoxUVs.zw*scale);
+	float2 dims = b - a;
+
+	// Use the lower level if we only touch <= 2 texels in both dimensions
+	if (dims.x <= 2 && dims.y <= 2)
+		Mip = level_lower;
+
+	//load depths from high z buffer
+	float4 Depth =
+	{
+		HiZTexture.SampleLevel(PointSampler, BoxUVs.xy, Mip),
+		HiZTexture.SampleLevel(PointSampler, BoxUVs.zy, Mip),
+		HiZTexture.SampleLevel(PointSampler, BoxUVs.xw, Mip),
+		HiZTexture.SampleLevel(PointSampler, BoxUVs.zw, Mip)
+	};
+
+	//find the max depth
+	float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
+
+	if (minZ > maxDepth)
+	{
+		// Cull it
+		cull = true;
+	}
+	return cull;
+}
+
+bool CullTriangle(uint indices[3], float4 vertices[3])
+{
+	bool cull = false;
+
+	// Zero face cull
+	if (indices[0] == indices[1]
+		|| indices[1] == indices[2]
+		|| indices[0] == indices[2])
+	{
+		cull = true;
+	}
+
+	// Backface cull.
+	// Culling in homogenous coordinates
+	// Read: "Triangle Scan Conversion using 2D Homogeneous Coordinates"
+	//       by Marc Olano, Trey Greer
+	//       http://www.cs.unc.edu/~olano/papers/2dh-tri/2dh-tri.pdf
+	float3x3 m =
+	{
+		vertices[0].xyw, vertices[1].xyw, vertices[2].xyw
+	};
+	cull = cull || (determinant(m) > 0);
+
+	// Occlusion culling
+	cull = cull || HiZTriangle(vertices);
+
+	// Frustum cull.
+	int verticesInFrontOfNearPlane = 0;
+	// Transform vertices[i].xy into normalized 0..1 screen space
+	for (uint i = 0; i < 3; ++i)
+	{
+		vertices[i].xy /= vertices[i].w;
+		vertices[i].xy /= 2;
+		vertices[i].xy += float2(0.5, 0.5);
+		if (vertices[i].w < 0)
+		{
+			++verticesInFrontOfNearPlane;
+		}
+	}
+
+	if (verticesInFrontOfNearPlane == 3)
+	{
+		cull = true;
+	}
+
+	if (verticesInFrontOfNearPlane == 0)
+	{
+		float minx = min(min(vertices[0].x, vertices[1].x), vertices[2].x);
+		float miny = min(min(vertices[0].y, vertices[1].y), vertices[2].y);
+		float maxx = max(max(vertices[0].x, vertices[1].x), vertices[2].x);
+		float maxy = max(max(vertices[0].y, vertices[1].y), vertices[2].y);
+
+		cull = cull || (maxx < 0) || (maxy < 0) || (minx > 1) || (miny > 1);
+	}
+
+	return cull;
+}
+
 #define threadBlockSize 128
 
 [RootSignature(TriangleCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	//uint QueueIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	//uint InstanceIndex = ClusterQueue[QueueIndex].x;
-	//uint ClusterIndex = ClusterQueue[QueueIndex].y;
+	uint TriangleIndex = dispatchThreadId.x;
+	uint i0 = IndexData[IndexOffset];
+	uint i1 = IndexData[IndexOffset + 1];
+	uint i2 = IndexData[IndexOffset + 2];
 
-	//ClusterMeta Cluster = ClusterMetaData[ClusterIndex];
+	float3 v0 = LoadVertex(i0);
+	float3 v1 = LoadVertex(i1);
+	float3 v2 = LoadVertex(i2);
 
-	//uint Result = 0;
-	//// Orientition cull
-	//if (dot(ViewDir, Cluster.Cone.xyz) < Cluster.Cone.w)
-	//{
-	//	// cull it
-	//}
-	//else
-	//{
-	//	// HiZ culling
-	//	float4 MinEdge = Cluster.MinEdge;
-	//	float4 MaxEdge = Cluster.MaxEdge;
-	//	TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
+	FInstanceTransform InsTrans = InstanceData[InstanceIndex];
+	float3 wp0 = GetWorldPosition(InsTrans, v0);
+	float3 wp1 = GetWorldPosition(InsTrans, v1);
+	float3 wp2 = GetWorldPosition(InsTrans, v2);
 
-	//	float3 BBoxMin = MinEdge.xyz;
-	//	float3 BBoxMax = MaxEdge.xyz;
-	//	float3 BBoxSize = BBoxMax - BBoxMin;
+	float4 vp0 = mul(float4(wp0, 1.0), ViewProjection);
+	float4 vp1 = mul(float4(wp1, 1.0), ViewProjection);
+	float4 vp2 = mul(float4(wp2, 1.0), ViewProjection);
 
-	//	float3 BBoxCorners[] =
-	//	{
-	//		BBoxMin.xyz,
-	//		BBoxMin.xyz + float3(BBoxSize.x,0,0),
-	//		BBoxMin.xyz + float3(0, BBoxSize.y,0),
-	//		BBoxMin.xyz + float3(0, 0, BBoxSize.z),
-	//		BBoxMin.xyz + float3(BBoxSize.xy,0),
-	//		BBoxMin.xyz + float3(0, BBoxSize.yz),
-	//		BBoxMin.xyz + float3(BBoxSize.x, 0, BBoxSize.z),
-	//		BBoxMin.xyz + BBoxSize.xyz
-	//	};
-
-	//	float minZ = 1;
-	//	float2 minXY = 1;
-	//	float2 maxXY = 0;
-
-	//	[unroll]
-	//	for (int i = 0; i < 8; i++)
-	//	{
-	//		//transform world space aaBox to NDC
-	//		float4 ClipPos = mul(float4(BBoxCorners[i], 1), ViewProjection);
-
-	//		ClipPos.z = max(ClipPos.z, 0);
-
-	//		ClipPos.xyz = ClipPos.xyz / ClipPos.w;
-
-	//		ClipPos.xy = clamp(ClipPos.xy, -1, 1);
-	//		ClipPos.xy = ClipPos.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
-
-	//		minXY = min(ClipPos.xy, minXY);
-	//		maxXY = max(ClipPos.xy, maxXY);
-
-	//		minZ = saturate(min(minZ, ClipPos.z));
-	//	}
-
-	//	float4 BoxUVs = float4(minXY, maxXY);
-
-	//	// Calculate hi-Z buffer mip
-	//	int2 Size = int2((maxXY - minXY) * RTSize.xy);
-	//	float Mip = ceil(log2(max(Size.x, Size.y)));
-
-	//	uint MaxMipLevel = RTSize.z;
-	//	Mip = clamp(Mip, 0, MaxMipLevel);
-
-	//	// Texel footprint for the lower (finer-grained) level
-	//	float  level_lower = max(Mip - 1, 0);
-	//	float2 scale = exp2(-level_lower);
-	//	float2 a = floor(BoxUVs.xy*scale);
-	//	float2 b = ceil(BoxUVs.zw*scale);
-	//	float2 dims = b - a;
-
-	//	// Use the lower level if we only touch <= 2 texels in both dimensions
-	//	if (dims.x <= 2 && dims.y <= 2)
-	//		Mip = level_lower;
-
-	//	//load depths from high z buffer
-	//	float4 Depth =
-	//	{
-	//		HiZTexture.SampleLevel(PointSampler, BoxUVs.xy, Mip),
-	//		HiZTexture.SampleLevel(PointSampler, BoxUVs.zy, Mip),
-	//		HiZTexture.SampleLevel(PointSampler, BoxUVs.xw, Mip),
-	//		HiZTexture.SampleLevel(PointSampler, BoxUVs.zw, Mip)
-	//	};
-
-	//	//find the max depth
-	//	float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
-
-	//	if (minZ > maxDepth)
-	//	{
-	//		// Cull it
-	//	}
-	//	else
-	//	{
-	//		// Frustum cull
-	//		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-	//			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
-	//		{
-	//			Result = 1;
-	//		}
-	//	}
-	//}
-
-	//if (Result > 0)
-	//{
-	//	// Encode triangle compute indirect command
-	//	TriangleCullingCommand.Append(1);
-	//}
 }

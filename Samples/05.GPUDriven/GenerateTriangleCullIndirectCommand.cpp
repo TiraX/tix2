@@ -44,7 +44,9 @@ void FGenerateTriangleCullIndirectCommand::UpdateComputeArguments(
 
 void FGenerateTriangleCullIndirectCommand::Run(FRHI * RHI)
 {
+	RHI->SetResourceStateCB(TriangleCullCommandBuffer, RESOURCE_STATE_COPY_DEST);
 	RHI->CopyBufferRegion(TriangleCullCommandBuffer->GetCommandBuffer(), TriangleCullCommandBuffer->GetCommandBuffer()->GetCounterOffset(), CounterReset->UniformBuffer, sizeof(uint32));
+	RHI->SetResourceStateCB(TriangleCullCommandBuffer, RESOURCE_STATE_UNORDERED_ACCESS); 
 
 	RHI->SetComputePipeline(ComputePipeline);
 	TI_ASSERT(VisibleClusters->GetCounterOffset() != 0);

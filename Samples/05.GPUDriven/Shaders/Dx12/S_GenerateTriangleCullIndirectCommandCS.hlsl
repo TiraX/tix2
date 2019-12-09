@@ -57,7 +57,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		return;
 	
 	uint InstanceGlobalIndex = VisibleClusters[ClusterIndex].Info.x;
-	uint DrawCommandIndex = VisibleClusters[ClusterIndex].Info.y;
+	uint DrawCommandIndex = VisibleClusters[ClusterIndex].Info.z;
 	uint ClusterLocalIndex = VisibleClusters[ClusterIndex].Info.w;
 
 	DrawIndirectCommand DrawCommand = DrawCommands[DrawCommandIndex];

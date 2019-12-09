@@ -445,11 +445,20 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		if (bPerformGPUCulling)
 		{
+			const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+			FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
 			GenerateTriangleCullCommand->UpdateComputeArguments(
 				RHI,
 				ClusterCullCS->GetVisibleClusters(),
 				GPUCommandBuffer,
-				TriangleCullCS->GetDispatchCommandBuffer());	// Give null for temp;
+				TriangleCullCS->GetDispatchCommandBuffer());
+			TriangleCullCS->UpdateComputeArguments(
+				RHI, 
+				ViewProjection.CamDir, 
+				MatVP, 
+				Frustum,
+				SceneMetaInfo->GetMergedInstanceBuffer()
+			);
 		}
 
 		if (bPerformGPUCulling)
@@ -569,6 +578,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					// Generate Triangle cull dispatch indirect command
 					RHI->BeginEvent("Triangle cull indirect command");
 					GenerateTriangleCullCommand->Run(RHI);
+					RHI->EndEvent();
+
+					// Do triangle cull
+					RHI->BeginEvent("Triangle cull");
+					TriangleCullCS->Run(RHI);
 					RHI->EndEvent();
 				}
 

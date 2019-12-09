@@ -17,7 +17,6 @@ public:
 		const vector3df& ViewDir,
 		const FMatrix& ViewProjection,
 		const SViewFrustum& InFrustum,
-		FUniformBufferPtr ClusterMetaData,
 		FInstanceBufferPtr SceneInstanceData);
 	virtual void Run(FRHI * RHI) override;
 
@@ -32,7 +31,7 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 
 	FCounterResetPtr CounterReset;
-	FUniformBufferPtr TriangleCullCommands;
+	FUniformBufferPtr TriangleCullResults;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;

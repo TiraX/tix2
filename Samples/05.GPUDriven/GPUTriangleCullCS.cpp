@@ -22,20 +22,13 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 
-	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
-	//ResourceTable->PutUniformBufferInTable(VisibleClusters, 2);
-	ResourceTable->PutTextureInTable(HiZTexture, 3);
+	ResourceTable = RHI->CreateRenderResourceTable(4, EHT_SHADER_RESOURCE);
+	ResourceTable->PutTextureInTable(HiZTexture, 2);
 
 	// Create a command buffer that big enough for triangle culling
-	TriangleCullCommands = RHI->CreateUniformBuffer(sizeof(uint32), 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	RHI->UpdateHardwareResourceUB(TriangleCullCommands, nullptr);
-	TI_TODO("Change TriangleCullCommands to CommandBuffer as follows");
-	//const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
-	//TriangleCullCommands = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	//TriangleCullCommands->SetResourceName("ProcessedCB");
-	//// Add binding arguments
-	//TriangleCullCommands->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-	//RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullCommands);
+	TriangleCullResults = RHI->CreateUniformBuffer(sizeof(uint32), 1024 * 10, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	TriangleCullResults->SetResourceName("TriangleCullResults");
+	RHI->UpdateHardwareResourceUB(TriangleCullResults, nullptr);
 
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
@@ -54,7 +47,8 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 	
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	// Create a triangle cull gpu command buffer large enough for all dispatches
+	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1024 * 2, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	GPUCommandBuffer->SetResourceName("TriangleCullIndirectCommand");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
@@ -64,7 +58,6 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	const vector3df& ViewDir,
 	const FMatrix& ViewProjection,
 	const SViewFrustum& InFrustum,
-	FUniformBufferPtr ClusterMetaData,
 	FInstanceBufferPtr SceneInstanceData
 )
 {
@@ -80,11 +73,9 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	}
 	CullUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	ResourceTable->PutUniformBufferInTable(ClusterMetaData, 0);
+	ResourceTable->PutConstantBufferInTable(CullUniform->UniformBuffer, 0);
 	ResourceTable->PutInstanceBufferInTable(SceneInstanceData, 1);
-	// t2 is VisibleClusters, alrealy set in PrepareResource()
-	// t3 is HiZTexture, already set in PrepareResource()
-	ResourceTable->PutUniformBufferInTable(TriangleCullCommands, 4);
+	ResourceTable->PutUniformBufferInTable(TriangleCullResults, 3);
 }
 
 void FGPUTriangleCullCS::Run(FRHI * RHI)
@@ -94,8 +85,8 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 
 	// Reset command buffer counter
 	RHI->ComputeCopyBuffer(
-		TriangleCullCommands,
-		TriangleCullCommands->GetCounterOffset(),
+		TriangleCullResults,
+		TriangleCullResults->GetCounterOffset(),
 		CounterReset->UniformBuffer,
 		0,
 		sizeof(uint32));
@@ -103,8 +94,7 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 	RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeBuffer(0, CullUniform->UniformBuffer);
-	RHI->SetComputeResourceTable(1, ResourceTable);
+	RHI->SetComputeResourceTable(4, ResourceTable);
 
 	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
 }
