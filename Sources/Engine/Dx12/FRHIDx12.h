@@ -148,6 +148,8 @@ namespace tix
 		{
 			return D3dDevice;
 		}
+
+		static uint32 GetUBSizeWithCounter(uint32 InBufferSize);
 	protected: 
 		FRHIDx12();
 

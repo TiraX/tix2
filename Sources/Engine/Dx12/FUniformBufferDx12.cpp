@@ -38,6 +38,10 @@ namespace tix
 		{
 			// The code below assumes that the GPU wrote FLOATs to the buffer.
 			int32 BufferSize = GetTotalBufferSize();
+			if ((GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+			{
+				BufferSize = FRHIDx12::GetUBSizeWithCounter(BufferSize);
+			}
 			D3D12_RANGE ReadbackBufferRange{ 0, (SIZE_T)BufferSize };
 			uint8* Result = nullptr;
 			HRESULT Hr = ReadbackResource.GetResource()->Map(0, &ReadbackBufferRange, reinterpret_cast<void**>(&Result));

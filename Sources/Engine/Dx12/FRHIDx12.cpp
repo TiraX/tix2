@@ -1688,7 +1688,7 @@ namespace tix
 	}
 
 	static const int32 UniformBufferAlignSize = 256;
-	inline uint32 GetUBSizeWithCounter(uint32 InBufferSize)
+	uint32 FRHIDx12::GetUBSizeWithCounter(uint32 InBufferSize)
 	{
 		uint32 BufferSizeWithCounter;
 		// With counter, counter offset must be aligned with D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT
