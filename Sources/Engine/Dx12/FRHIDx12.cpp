@@ -1827,6 +1827,10 @@ namespace tix
 			if (UniformBufferDx12->ReadbackResource.GetResource() == nullptr)
 			{
 				int32 BufferSize = UniformBuffer->GetTotalBufferSize();
+				if ((UniformBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0)
+				{
+					BufferSize = GetUBSizeWithCounter(BufferSize);
+				}
 				D3D12_HEAP_PROPERTIES ReadbackHeapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK) };
 				D3D12_RESOURCE_DESC ReadbackBufferDesc{ CD3DX12_RESOURCE_DESC::Buffer(BufferSize) };
 
@@ -1840,7 +1844,7 @@ namespace tix
 			
 			{
 				// Transition the status of uniform from D3D12_RESOURCE_STATE_COPY_DEST to D3D12_RESOURCE_STATE_COPY_SOURCE
-				TI_ASSERT(UniformBufferDx12->BufferResource.GetCurrentState() == D3D12_RESOURCE_STATE_COPY_DEST);
+				//TI_ASSERT(UniformBufferDx12->BufferResource.GetCurrentState() == D3D12_RESOURCE_STATE_COPY_DEST);
 				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
 				FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 			}
