@@ -10,8 +10,7 @@
 //*********************************************************
 
 #define TriangleCull_RootSig \
-	"RootConstants(num32BitConstants=1, b0), " \
-	"RootConstants(num32BitConstants=1, b1), " \
+	"RootConstants(num32BitConstants=4, b0), " \
 	"SRV(t0) ," \
 	"SRV(t1) ," \
     "DescriptorTable(CBV(b2), SRV(t2, numDescriptors=2), UAV(u0, numDescriptors=1))," \
@@ -44,8 +43,7 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-uint IndexOffset : register(b0);
-uint InstanceIndex : register(b1);
+uint4 RootConstant : register(b0);	// x = IndexOffset; y = InstanceIndex;
 
 ByteAddressBuffer VertexData : register(t0);
 StructuredBuffer<uint> IndexData : register(t1);
@@ -246,6 +244,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	float4 Vertices[3];
 
 	// Load vertices
+	uint IndexOffset = (RootConstant.x + TriangleIndex) * 3;
+	uint InstanceIndex = RootConstant.y;
 	FInstanceTransform InsTrans = InstanceData[InstanceIndex];
 	[unroll]
 	for (int i = 0; i < 3; i++)

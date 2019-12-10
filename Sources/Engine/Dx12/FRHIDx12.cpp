@@ -2388,7 +2388,7 @@ namespace tix
 				ArgumentDescs[i].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
 				ArgumentDescs[i].Constant.RootParameterIndex = i;
 				ArgumentDescs[i].Constant.DestOffsetIn32BitValues = 0;
-				ArgumentDescs[i].Constant.Num32BitValuesToSet = 1;
+				ArgumentDescs[i].Constant.Num32BitValuesToSet = 4;	// Always use 4 components
 				bNeedRootSignature = true;
 			}
 			else if (Command == GPU_COMMAND_CONSTANT_BUFFER)

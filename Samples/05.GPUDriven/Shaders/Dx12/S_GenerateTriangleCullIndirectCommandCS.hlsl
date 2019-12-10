@@ -20,8 +20,7 @@ cbuffer FClusterCount : register(b0)
 
 struct TriangleCullDispatchCommand
 {
-	uint IndexOffset;
-	uint InstanceIndex;
+	uint4 RootContant;	// x = IndexOffset; y = InstanceIndex;
 	uint2 VertexDataView;
 	uint2 IndexDataView;
 	uint3 ThreadGroupCount;
@@ -63,11 +62,13 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	DrawIndirectCommand DrawCommand = DrawCommands[DrawCommandIndex];
 
 	TriangleCullDispatchCommand Command;
-	Command.IndexOffset = ClusterLocalIndex * 128;
-	Command.InstanceIndex = InstanceGlobalIndex;
+	Command.RootContant.x = ClusterLocalIndex * 128;
+	Command.RootContant.y = InstanceGlobalIndex;
+	Command.RootContant.z = 0;
+	Command.RootContant.w = 0;
 	Command.VertexDataView = DrawCommand.VertexBufferView.xy;
 	Command.IndexDataView = DrawCommand.IndexBufferView.xy;
-	Command.ThreadGroupCount.x = 128;
+	Command.ThreadGroupCount.x = 1;
 	Command.ThreadGroupCount.y = 1;
 	Command.ThreadGroupCount.z = 1;
 	OutputCommands.Append(Command);

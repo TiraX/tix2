@@ -39,7 +39,6 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
 	CommandStructure.reserve(5);
 	CommandStructure.push_back(GPU_COMMAND_CONSTANT);
-	CommandStructure.push_back(GPU_COMMAND_CONSTANT);
 	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
 	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
 	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
@@ -101,7 +100,7 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 	RHI->SetResourceStateCB(GPUCommandBuffer[CurrentFrameIndex], RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeResourceTable(4, ResourceTable);
+	RHI->SetComputeResourceTable(3, ResourceTable);
 
 	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer[CurrentFrameIndex]);
 }
