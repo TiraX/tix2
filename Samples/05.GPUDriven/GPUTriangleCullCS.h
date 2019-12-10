@@ -22,7 +22,7 @@ public:
 
 	FGPUCommandBufferPtr GetDispatchCommandBuffer()
 	{
-		return GPUCommandBuffer;
+		return GPUCommandBuffer[FRHI::Get()->GetCurrentEncodingFrameIndex()];
 	}
 private:
 
@@ -34,6 +34,6 @@ private:
 	FUniformBufferPtr TriangleCullResults;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
-	FGPUCommandBufferPtr GPUCommandBuffer;
+	FGPUCommandBufferPtr GPUCommandBuffer[FRHIConfig::FrameBufferNum];
 };
 typedef TI_INTRUSIVE_PTR(FGPUTriangleCullCS) FGPUTriangleCullCSPtr;

@@ -50,6 +50,7 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
+	GPUCommandSignature->SetResourceName("ClusterCullSig");
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 	
 	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);

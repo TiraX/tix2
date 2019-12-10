@@ -677,16 +677,10 @@ namespace tix
 		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
 	}
 
-	void FRHIDx12::SetResourceName(ID3D12Resource* InDxResource, const TString& InName)
+	void FRHIDx12::SetResourceName(ID3D12Object* InObject, const TString& InName)
 	{
 		TWString WName = FromString(InName);
-		InDxResource->SetName(WName.c_str());
-	}
-
-	void FRHIDx12::SetResourceName(ID3D12PipelineState* InDxResource, const TString& InName)
-	{
-		TWString WName = FromString(InName);
-		InDxResource->SetName(WName.c_str());
+		InObject->SetName(WName.c_str());
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -2438,6 +2432,7 @@ namespace tix
 			RS = RenderSignature->Get();
 		}
 		VALIDATE_HRESULT(D3dDevice->CreateCommandSignature(&CommandSignatureDesc, RS, IID_PPV_ARGS(&GPUCommandSignatureDx12->CommandSignature)));
+		DX_SETNAME(GPUCommandSignatureDx12->CommandSignature.Get(), GPUCommandSignature->GetResourceName());
 		ti_delete[] ArgumentDescs;
 
 		HoldResourceReference(GPUCommandSignature);
@@ -2597,6 +2592,7 @@ namespace tix
 		
 		if ((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
 		{
+			// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters
 			// Create unordered access view
 			D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
 			UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -2609,7 +2605,6 @@ namespace tix
 			UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-
 			D3dDevice->CreateUnorderedAccessView(
 				UBDx12->BufferResource.GetResource().Get(),
 				(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?

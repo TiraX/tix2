@@ -45,12 +45,18 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
+	GPUCommandSignature->SetResourceName("TriangleCullSig");
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 	
 	// Create a triangle cull gpu command buffer large enough for all dispatches
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1024 * 2, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	GPUCommandBuffer->SetResourceName("TriangleCullIndirectCommand");
-	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
+	for (int32 i = 0 ; i < FRHIConfig::FrameBufferNum; ++ i)
+	{
+		char name[64];
+		sprintf(name, "TriangleCullIndirectCommand%d", i);
+		GPUCommandBuffer[i] = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1024 * 2, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+		GPUCommandBuffer[i]->SetResourceName(name);
+		RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer[i]);
+	}
 }
 
 void FGPUTriangleCullCS::UpdateComputeArguments(
@@ -91,10 +97,11 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 		0,
 		sizeof(uint32));
 
-	RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+	const int32 CurrentFrameIndex = FRHI::Get()->GetCurrentEncodingFrameIndex();
+	RHI->SetResourceStateCB(GPUCommandBuffer[CurrentFrameIndex], RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeResourceTable(4, ResourceTable);
+	RHI->SetComputeResourceTable(0, ResourceTable);
 
-	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
+	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer[CurrentFrameIndex]);
 }
