@@ -48,7 +48,7 @@ uint IndexOffset : register(b0);
 uint InstanceIndex : register(b1);
 
 ByteAddressBuffer VertexData : register(t0);
-Buffer<uint> IndexData : register(t1);
+StructuredBuffer<uint> IndexData : register(t1);
 
 cbuffer FViewInfoUniform : register(b2)
 {
@@ -242,21 +242,25 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint TriangleIndex = dispatchThreadId.x;
-	uint i0 = IndexData[IndexOffset];
-	uint i1 = IndexData[IndexOffset + 1];
-	uint i2 = IndexData[IndexOffset + 2];
+	uint Indices[3];
+	float4 Vertices[3];
 
-	float3 v0 = LoadVertex(i0);
-	float3 v1 = LoadVertex(i1);
-	float3 v2 = LoadVertex(i2);
-
+	// Load vertices
 	FInstanceTransform InsTrans = InstanceData[InstanceIndex];
-	float3 wp0 = GetWorldPosition(InsTrans, v0);
-	float3 wp1 = GetWorldPosition(InsTrans, v1);
-	float3 wp2 = GetWorldPosition(InsTrans, v2);
+	[unroll]
+	for (int i = 0; i < 3; i++)
+	{
+		Indices[i] = IndexData[IndexOffset + i];
+		float3 Vertex = LoadVertex(Indices[i]);
+		float3 WorldPosition = GetWorldPosition(InsTrans, Vertex);
 
-	float4 vp0 = mul(float4(wp0, 1.0), ViewProjection);
-	float4 vp1 = mul(float4(wp1, 1.0), ViewProjection);
-	float4 vp2 = mul(float4(wp2, 1.0), ViewProjection);
+		// Projection space vertices
+		Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
+	}
 
+	// Perform cull
+	if (!CullTriangle(Indices, Vertices))
+	{
+		TriangleCullingCommand.Append(1);
+	}
 }

@@ -101,7 +101,7 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 	RHI->SetResourceStateCB(GPUCommandBuffer[CurrentFrameIndex], RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeResourceTable(0, ResourceTable);
+	RHI->SetComputeResourceTable(4, ResourceTable);
 
 	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer[CurrentFrameIndex]);
 }
