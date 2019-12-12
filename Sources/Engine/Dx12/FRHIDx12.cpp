@@ -1028,6 +1028,7 @@ namespace tix
 			&vertexBufferDesc,
 			D3D12_RESOURCE_STATE_COPY_DEST);
 
+		DX_SETNAME(InsDx12->InstanceBuffer.GetResource().Get(), InstanceBuffer->GetResourceName() + "-INSB");
 		if (InInstanceData != nullptr)
 		{
 			ComPtr<ID3D12Resource> VertexBufferUpload;
@@ -1040,7 +1041,6 @@ namespace tix
 				nullptr,
 				IID_PPV_ARGS(&VertexBufferUpload)));
 
-			DX_SETNAME(InsDx12->InstanceBuffer.GetResource().Get(), InstanceBuffer->GetResourceName() + "-INSB");
 			DX_SETNAME(VertexBufferUpload.Get(), InstanceBuffer->GetResourceName() + "-Upload");
 
 			// Upload the instance buffer to the GPU.
