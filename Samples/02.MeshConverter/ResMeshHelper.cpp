@@ -102,6 +102,12 @@ namespace tix
 			const TResMeshDefine& Mesh = Meshes[m];
 			TI_ASSERT(Mesh.Segments[ESSI_POSITION].Data != nullptr);
 
+			int32 IndexType = Mesh.NumVertices > 65535 ? EIT_32BIT : EIT_16BIT;
+			if (TResSettings::GlobalSettings.Force32BitIndex)
+			{
+				IndexType = EIT_32BIT;
+			}
+
 			// init header
 			THeaderMesh MeshHeader;
 			MeshHeader.StrId_Name = AddStringToList(OutStrings, Mesh.Name);
@@ -115,7 +121,7 @@ namespace tix
 			}
 			MeshHeader.VertexCount = Mesh.NumVertices;
 			MeshHeader.PrimitiveCount = Mesh.NumTriangles;
-			MeshHeader.IndexType = Mesh.NumVertices > 65535 ? EIT_32BIT : EIT_16BIT;
+			MeshHeader.IndexType = IndexType;
 			MeshHeader.Flag = 0;
 			MeshHeader.StrMaterialInstance = AddStringToList(OutStrings, Mesh.LinkedMaterialInstance);
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
@@ -242,6 +248,7 @@ namespace tix
 			FillZero4(DataStream);
 
 			// - Indices
+
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
 				if (MeshHeader.IndexType == EIT_16BIT)

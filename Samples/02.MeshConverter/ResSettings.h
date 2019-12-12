@@ -18,6 +18,7 @@ public:
 	static TResSettings GlobalSettings;
 	TResSettings()
 		: Iterate(false)
+		, Force32BitIndex(false)
 		, ForceAlphaChannel(false)
 		, IgnoreTexture(false)
 		, AstcQuality(Astc_Quality_Low)
@@ -28,6 +29,7 @@ public:
 	TString SrcPath;
 	TString SrcName;
 	bool Iterate;
+	bool Force32BitIndex;
 	bool ForceAlphaChannel;
 	bool IgnoreTexture;
 	TString VTInfoFile;

@@ -98,6 +98,10 @@ bool ParseParams(int argc, RES_CONVERTER_CONST int8* argv[])
 			{
 				TResSettings::GlobalSettings.Iterate = true;
 			}
+			else if (key == "force32bitindex")
+			{
+				TResSettings::GlobalSettings.Force32BitIndex = true;
+			}
 			else if (key == "forcealphachannel")
 			{
 				TResSettings::GlobalSettings.ForceAlphaChannel = true;
