@@ -98,7 +98,7 @@ void FGPUInstanceFrustumCullCS::Run(FRHI * RHI)
 		RHI->CopyBufferRegion(VisibilityResult, 0, FillVisibilityBuffer, VisibilityResult->GetTotalBufferSize());
 
 		RHI->SetComputePipeline(ComputePipeline);
-		RHI->SetComputeBuffer(0, FrustumUniform);
+		RHI->SetComputeConstantBuffer(0, FrustumUniform);
 		RHI->SetComputeResourceTable(1, ResourceTable);
 
 		RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));

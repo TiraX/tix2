@@ -45,7 +45,7 @@ void FHiZDownSampleCS::Run(FRHI * RHI)
 	DispatchSize.Z = 1;
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeBuffer(0, InfoUniforms[ActiveLevel]->UniformBuffer);
+	RHI->SetComputeConstantBuffer(0, InfoUniforms[ActiveLevel]->UniformBuffer);
 	RHI->SetComputeResourceTable(1, ResourceTable[ActiveLevel]);
 
 	RHI->DispatchCompute(vector3di(ThreadBlockSize, ThreadBlockSize, 1), DispatchSize);

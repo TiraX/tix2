@@ -13,27 +13,11 @@
 	"RootConstants(num32BitConstants=4, b0), " \
 	"SRV(t0) ," \
 	"SRV(t1) ," \
-    "DescriptorTable(CBV(b2), SRV(t2, numDescriptors=2), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(CBV(b2), SRV(t2, numDescriptors=2), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
-
-struct ClusterMeta
-{
-	float4 MinEdge;
-	float4 MaxEdge;
-	float4 Cone;
-};
-
-struct FInstanceMetaInfo
-{
-	// x = primitive index
-	// y = cluster index begin
-	// z = cluster count
-	// w = primitive was loaded.
-	uint4 Info;
-};
 
 struct FInstanceTransform
 {
@@ -45,7 +29,8 @@ struct FInstanceTransform
 
 uint4 RootConstant : register(b0);	// x = IndexOffset; y = InstanceIndex;
 
-ByteAddressBuffer VertexData : register(t0);
+//ByteAddressBuffer VertexData : register(t0);
+StructuredBuffer<float> VertexData : register(t0);
 StructuredBuffer<uint> IndexData : register(t1);
 
 cbuffer FViewInfoUniform : register(b2)
@@ -59,6 +44,7 @@ StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 Texture2D<float> HiZTexture : register(t3);
 
 AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible triangles
+AppendStructuredBuffer<float4> DebugGroup : register(u1);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
@@ -96,14 +82,23 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 
 inline float3 LoadVertex(uint index)
 {
-	// Vertex stride is 24 bytes
-	return asfloat(VertexData.Load3(index * 24));
+	// Vertex byte stride is 24 bytes, float stride is 6
+	// Position float3 = float x 3;
+	// normal uint = float x 1;
+	// uv0 half2 = float x 1;
+	// tangent uint = float x 1;
+	float3 Position;
+	Position.x = VertexData[index * 6];
+	Position.y = VertexData[index * 6 + 1];
+	Position.z = VertexData[index * 6 + 2];
+	//return asfloat(VertexData.Load3(index * 24));
+	return Position;
 }
 
-float3 GetWorldPosition(in FInstanceTransform Transform, in float3 P)
+float3 GetWorldPosition(FInstanceTransform Transform, float3 P)
 {
 	float3x3 RotMat = float3x3(Transform.ins_transform0.xyz, Transform.ins_transform1.xyz, Transform.ins_transform2.xyz);
-	float3 Position = mul(P, RotMat);
+	float3 Position = P;// mul(P, RotMat);
 	Position += Transform.ins_transition.xyz;
 	return Position;
 }
@@ -256,8 +251,17 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
 		// Projection space vertices
 		Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
+		Vertices[i] = float4(Vertex.xyz, 1.12);
 	}
-
+	//if (Indices[0].x != Indices[1].x && Indices[1] != Indices[2])
+	//{
+	//	TriangleCullingCommand.Append(Indices[0]);
+	//	//float4 a = float4(Indices[0], Indices[1], Indices[2], IndexOffset);
+	//	float4 a = float4(InsTrans.ins_transition.xyz, 3.223);
+	//	//float4 a = float4(Vertices[0].xyz, 3.223);
+	//	a.xyz += Vertices[0].xyz;
+	//	DebugGroup.Append(a);
+	//}
 	// Perform cull
 	if (!CullTriangle(Indices, Vertices))
 	{

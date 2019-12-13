@@ -37,6 +37,7 @@ private:
 
 	FCounterResetPtr CounterReset;
 	FUniformBufferPtr VisibleClusters;
+	FUniformBufferPtr ClusterClear;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
 	FGPUCommandBufferPtr GPUCommandBuffer;

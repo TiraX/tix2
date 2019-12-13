@@ -123,6 +123,7 @@ namespace tix
 							}
 
 							// Collisions
+							TI_TODO("Create one Collision Resource for each mesh (Now create one for each tile.)");
 							TResourcePtr CollisionResource = MeshResources[TotalSections];
 							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
 							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());

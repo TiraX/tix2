@@ -50,7 +50,7 @@ void FGenerateTriangleCullIndirectCommand::Run(FRHI * RHI)
 
 	RHI->SetComputePipeline(ComputePipeline);
 	TI_ASSERT(VisibleClusters->GetCounterOffset() != 0);
-	RHI->SetComputeBuffer(0, VisibleClusters, VisibleClusters->GetCounterOffset());
+	RHI->SetComputeConstantBuffer(0, VisibleClusters, VisibleClusters->GetCounterOffset());
 	RHI->SetComputeResourceTable(1, ResourceTable);
 
 	const uint32 BlockSize = 64;

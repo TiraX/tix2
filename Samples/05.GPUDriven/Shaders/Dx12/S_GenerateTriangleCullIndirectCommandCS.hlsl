@@ -55,6 +55,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (ClusterIndex >= ClusterCount.x)
 		return;
 	
+	if (ClusterIndex >= 1)
+		return;
+
 	uint InstanceGlobalIndex = VisibleClusters[ClusterIndex].Info.x;
 	uint DrawCommandIndex = VisibleClusters[ClusterIndex].Info.z;
 	uint ClusterLocalIndex = VisibleClusters[ClusterIndex].Info.w;

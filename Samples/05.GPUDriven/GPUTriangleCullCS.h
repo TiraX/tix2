@@ -22,7 +22,12 @@ public:
 
 	FGPUCommandBufferPtr GetDispatchCommandBuffer()
 	{
-		return GPUCommandBuffer[FRHI::Get()->GetCurrentEncodingFrameIndex()];
+		return GPUCommandBuffer;
+	}
+
+	void SetMeshBuffer(FMeshBufferPtr InMB)
+	{
+		MeshBuffer = InMB;
 	}
 private:
 
@@ -30,10 +35,17 @@ private:
 	FCullUniformPtr CullUniform;
 	FRenderResourceTablePtr ResourceTable;
 
+	FInstanceBufferPtr SceneInstanceData;
+
 	FCounterResetPtr CounterReset;
 	FUniformBufferPtr TriangleCullResults;
+	FUniformBufferPtr DebugGroup;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
-	FGPUCommandBufferPtr GPUCommandBuffer[FRHIConfig::FrameBufferNum];
+	FGPUCommandBufferPtr GPUCommandBuffer;
+
+	// Hack meshbuffers
+	FMeshBufferPtr MeshBuffer;
+
 };
 typedef TI_INTRUSIVE_PTR(FGPUTriangleCullCS) FGPUTriangleCullCSPtr;

@@ -1719,18 +1719,18 @@ namespace tix
 				&BufferDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
-			{
-				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-			}
-			else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
-			{
-				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-			}
-			else
-			{
-				Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
-			}
+			//if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
+			//{
+			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+			//}
+			//else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
+			//{
+			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			//}
+			//else
+			//{
+			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
+			//}
 
 			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 		}

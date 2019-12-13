@@ -27,17 +27,16 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	ResourceTable->PutTextureInTable(HiZTexture, 3);
 
 	// Create a command buffer that big enough for triangle culling
-	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 10 * 1024, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, MAX_VISIBLE_CLUSTERS_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	VisibleClusters->SetResourceName("VisibleClusters");
 	RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
-	TI_TODO("Change TriangleCullCommands to CommandBuffer as follows");
-	//const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
-	//TriangleCullCommands = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	//TriangleCullCommands->SetResourceName("ProcessedCB");
-	//// Add binding arguments
-	//TriangleCullCommands->AddVSPublicArgument(0, Scene->GetViewUniformBuffer()->UniformBuffer);
-	//RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullCommands);
-	ResourceTable->PutUniformBufferInTable(VisibleClusters, 4);
+
+	FUInt4 * ClearData = ti_new FUInt4[MAX_VISIBLE_CLUSTERS_COUNT];
+	memset(ClearData, 0, sizeof(FUInt4) * MAX_VISIBLE_CLUSTERS_COUNT);
+	ClusterClear = RHI->CreateUniformBuffer(sizeof(uint32) * 4, MAX_VISIBLE_CLUSTERS_COUNT);
+	ClusterClear->SetResourceName("ClusterClear");
+	RHI->UpdateHardwareResourceUB(ClusterClear, ClearData);
+	ti_delete[] ClearData;
 
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
@@ -45,17 +44,17 @@ void FGPUClusterCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, FT
 	CounterReset->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
 	// Init GPU command buffer
-	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.reserve(1);
-	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
+	//TVector<E_GPU_COMMAND_TYPE> CommandStructure;
+	//CommandStructure.reserve(1);
+	//CommandStructure.push_back(GPU_COMMAND_DISPATCH);
 
-	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
-	GPUCommandSignature->SetResourceName("ClusterCullSig");
-	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
-	
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	GPUCommandBuffer->SetResourceName("ClusterCullIndirectCommand");
-	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
+	//GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
+	//GPUCommandSignature->SetResourceName("ClusterCullSig");
+	//RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
+	//
+	//GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	//GPUCommandBuffer->SetResourceName("ClusterCullIndirectCommand");
+	//RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
 
 void FGPUClusterCullCS::UpdateComputeArguments(
@@ -84,13 +83,22 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	// t2 is VisibleClusters, alrealy set in PrepareResource()
 	// t3 is HiZTexture, already set in PrepareResource()
 	// u0 is VisibleClusters, already set in PrepareResource()
+	ResourceTable->PutUniformBufferInTable(VisibleClusters, 4);
 }
 
 void FGPUClusterCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
+	const int32 CurrFrame = RHI->GetCurrentEncodingFrameIndex();
 
 	// Reset command buffer counter
+	//RHI->SetResourceStateUB(VisibleClusters, RESOURCE_STATE_COPY_DEST);
+	RHI->ComputeCopyBuffer(
+		VisibleClusters,
+		0,
+		ClusterClear,
+		0,
+		ClusterClear->GetTotalBufferSize());
 	RHI->ComputeCopyBuffer(
 		VisibleClusters,
 		VisibleClusters->GetCounterOffset(),
@@ -98,12 +106,13 @@ void FGPUClusterCullCS::Run(FRHI * RHI)
 		0,
 		sizeof(uint32));
 
-	RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+	//RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+	//RHI->SetResourceStateUB(VisibleClusters, RESOURCE_STATE_UNORDERED_ACCESS);
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeBuffer(0, CullUniform->UniformBuffer);
+	RHI->SetComputeConstantBuffer(0, CullUniform->UniformBuffer);
 	RHI->SetComputeResourceTable(1, ResourceTable);
 
-	RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
-	//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(80, 1, 1));
+	//RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(13, 1, 1));
 }
