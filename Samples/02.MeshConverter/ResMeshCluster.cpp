@@ -550,7 +550,9 @@ void TResMeshCluster::MergeSmallClusters(uint32 ClusterTriangles)
 	if (Merged.size() > 0)
 	{
 		uint32 LastPrim = Merged[Merged.size() - 1];
-		for (uint32 m = (uint32)Merged.size() ; m < ClusterTriangles ; ++ m)
+
+		TI_TODO("Fill with zero sized triangle (means index[0] == index[1] == index[2];");
+		for (uint32 m = (uint32)Merged.size(); m < ClusterTriangles; ++m)
 		{
 			Merged.push_back(LastPrim);
 		}
@@ -561,6 +563,7 @@ void TResMeshCluster::MergeSmallClusters(uint32 ClusterTriangles)
 		FullClusters.push_back(MC);
 	}
 	Clusters = FullClusters;
+
 
 	// Copy indices
 	ClusterIndices.clear();
