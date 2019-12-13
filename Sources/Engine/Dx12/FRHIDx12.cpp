@@ -1989,8 +1989,33 @@ namespace tix
 
 	void FRHIDx12::SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState)
 	{
+		TI_ASSERT(RESOURCE_STATE_MESHBUFFER != NewState);
 		FUniformBufferPtr CommandBuffer = InCommandBuffer->GetCommandBuffer();
 		SetResourceStateUB(CommandBuffer, NewState);
+	}
+
+	void FRHIDx12::SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState)
+	{
+		TI_ASSERT(RESOURCE_STATE_MESHBUFFER != NewState);
+		FInstanceBufferDx12 * InstanceBufferDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
+		Transition(&InstanceBufferDx12->InstanceBuffer, TiX2DxResourceStateMap[NewState]);
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+	}
+
+	void FRHIDx12::SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState)
+	{
+		FMeshBufferDx12 * MeshBufferDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+		if (NewState == RESOURCE_STATE_MESHBUFFER)
+		{
+			Transition(&MeshBufferDx12->VertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			Transition(&MeshBufferDx12->IndexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		}
+		else
+		{
+			Transition(&MeshBufferDx12->VertexBuffer, TiX2DxResourceStateMap[NewState]);
+			Transition(&MeshBufferDx12->IndexBuffer, TiX2DxResourceStateMap[NewState]);
+		}
+		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
 	bool FRHIDx12::UpdateHardwareResourceRT(FRenderTargetPtr RenderTarget)
@@ -2427,7 +2452,6 @@ namespace tix
 		CommandSignatureDesc.NumArgumentDescs = ArgsCount;
 		CommandSignatureDesc.ByteStride = ArgBytesStride;
 
-		TI_TODO("Check if this command signature need render root signature.");
 		ID3D12RootSignature* RS = nullptr;
 		if (bNeedRootSignature)
 		{
@@ -2780,8 +2804,18 @@ namespace tix
 
 		HoldResourceReference(InUniformBuffer);
 	}
+	
+	void FRHIDx12::SetComputeConstant(int32 BindIndex, const FUInt4& InValue)
+	{
+		CurrentWorkingCommandList->SetComputeRoot32BitConstants(BindIndex, 4, &InValue, 0);
+	}
 
-	void FRHIDx12::SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset)
+	void FRHIDx12::SetComputeConstant(int32 BindIndex, const FFloat4& InValue)
+	{
+		CurrentWorkingCommandList->SetComputeRoot32BitConstants(BindIndex, 4, &InValue, 0);
+	}
+
+	void FRHIDx12::SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset)
 	{
 		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
@@ -2789,6 +2823,41 @@ namespace tix
 		CurrentWorkingCommandList->SetComputeRootConstantBufferView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress() + BufferOffset);
 
 		HoldResourceReference(InUniformBuffer);
+	}
+	
+	void FRHIDx12::SetComputeShaderResource(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset)
+	{
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
+
+		// Bind the current frame's constant buffer to the pipeline.
+		CurrentWorkingCommandList->SetComputeRootShaderResourceView(BindIndex, UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress() + BufferOffset);
+
+		HoldResourceReference(InUniformBuffer);
+	}
+
+	void FRHIDx12::SetComputeShaderResource(
+		int32 VertexBindIndex, 
+		int32 IndexBindIndex, 
+		FMeshBufferPtr InMeshBuffer, 
+		uint32 VertexBufferOffset, 
+		uint32 IndexBufferOffset)
+	{
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+
+		if (VertexBindIndex >= 0)
+		{
+			CurrentWorkingCommandList->SetComputeRootShaderResourceView(
+				VertexBindIndex, 
+				MBDx12->VertexBuffer.GetResource()->GetGPUVirtualAddress() + VertexBufferOffset);
+		}
+		if (IndexBindIndex >= 0)
+		{
+			CurrentWorkingCommandList->SetComputeRootShaderResourceView(
+				IndexBindIndex,
+				MBDx12->IndexBuffer.GetResource()->GetGPUVirtualAddress() + IndexBufferOffset);
+		}
+
+		HoldResourceReference(InMeshBuffer);
 	}
 
 	void FRHIDx12::SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)

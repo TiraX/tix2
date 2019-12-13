@@ -44,6 +44,7 @@ namespace tix
 		RESOURCE_STATE_INDIRECT_ARGUMENT,
 		RESOURCE_STATE_COPY_DEST,
 		RESOURCE_STATE_COPY_SOURCE,
+		RESOURCE_STATE_MESHBUFFER,	// For TiX to set VertexBuffer state and IndexBuffer state
 
 		RESOURCE_STATE_NUM,
 	};
@@ -166,8 +167,11 @@ namespace tix
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
+
 		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) = 0;
 		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState) = 0;
+		virtual void SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState) = 0;
+		virtual void SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState) = 0;
 
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset) = 0;
@@ -180,7 +184,11 @@ namespace tix
 
 		// Compute
 		virtual void SetComputePipeline(FPipelinePtr InPipeline) = 0;
-		virtual void SetComputeBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset = 0) = 0;
+		virtual void SetComputeConstant(int32 BindIndex, const FUInt4& InValue) = 0;
+		virtual void SetComputeConstant(int32 BindIndex, const FFloat4& InValue) = 0;
+		virtual void SetComputeConstantBuffer(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset = 0) = 0;
+		virtual void SetComputeShaderResource(int32 BindIndex, FUniformBufferPtr InUniformBuffer, uint32 BufferOffset = 0) = 0;
+		virtual void SetComputeShaderResource(int32 VertexBindIndex, int32 IndexBindIndex, FMeshBufferPtr InMeshBuffer, uint32 VertexBufferOffset = 0, uint32 IndexBufferOffset = 0) = 0;
 		virtual void SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;
         virtual void SetComputeArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
         virtual void SetComputeTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
