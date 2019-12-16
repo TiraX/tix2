@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "GPUComputeUniforms.h"
 
 namespace tix
 {
@@ -14,26 +15,6 @@ namespace tix
 	//	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 	//END_UNIFORM_BUFFER_STRUCT(FSceneTileMetaInfo)
 
-	// Primitive BBox info
-	//#define MAX_STATIC_MESH_IN_SCENE (2048)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FScenePrimitiveBBoxes)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
-	END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
-
-	// Info.x = primitive index this instance link to, in scene tile order, to access primitive bbox
-	// Info.y = cluster index begin
-	// Info.z = cluster count
-	// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
-	//#define MAX_INSTANCES_IN_SCENE (40 * 1024)
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneInstanceMetaInfo)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
-	END_UNIFORM_BUFFER_STRUCT(FSceneInstanceMetaInfo)
-
-	// Info.x = primitive index
-	BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FClusterMetaInfo)
-		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
-	END_UNIFORM_BUFFER_STRUCT(FClusterMetaInfo)
 
 	class FSceneMetaInfos
 	{
@@ -43,6 +24,7 @@ namespace tix
 
 		void DoSceneTileCulling(FScene * Scene, const SViewFrustum& ViewFrustum);
 		void CollectSceneMetaInfos(FScene * Scene);
+		void CollectMeshBuffers(FScene * Scene);
 		void CollectInstanceBuffers(FScene * Scene);
 		void CollectClusterMetaBuffers(FScene * Scene);
 		void ClearMetaFlags();
@@ -54,6 +36,7 @@ namespace tix
 			MetaFlag_ScenePrimitiveMetaDirty = 1 << 1,
 			MetaFlag_SceneInstanceMetaDirty = 1 << 2,
 			MetaFlag_SceneClusterMetaDirty = 1 << 3,
+			MetaFlag_SceneMeshBufferDirty = 1 << 4,
 		};
 		bool HasMetaFlag(uint32 InMetaFlag) const
 		{
@@ -72,6 +55,10 @@ namespace tix
 		{
 			return SceneInstancesMetaInfo;
 		}
+		FMeshBufferPtr GetMergedSceneMeshBuffer()
+		{
+			return MergedMeshBuffer;
+		}
 		FInstanceBufferPtr GetMergedInstanceBuffer()
 		{
 			return MergedInstanceBuffer;
@@ -79,6 +66,10 @@ namespace tix
 		FUniformBufferPtr GetMergedClusterData()
 		{
 			return MergedClusterBoundingData;
+		}
+		FUniformBufferPtr GetMergedSceneMeshBufferInfo()
+		{
+			return MergedSceneMeshBufferInfo->UniformBuffer;
 		}
 		uint32 GetSceneInstancesAdded() const
 		{
@@ -133,6 +124,10 @@ namespace tix
 		// Scene Instances info
 		FSceneInstanceMetaInfoPtr SceneInstancesMetaInfo;
 		FInstanceBufferPtr MergedInstanceBuffer;
+
+		// Scene Meshbuffer info
+		FMeshBufferPtr MergedMeshBuffer;
+		FSceneMeshBufferInfoPtr MergedSceneMeshBufferInfo;
 
 		// Scene mesh cluster info
 		FUniformBufferPtr MergedClusterBoundingData;

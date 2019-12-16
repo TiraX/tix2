@@ -63,10 +63,6 @@ private:
 	SViewFrustum Frustum;
 	FCameraFrustumUniformPtr FrustumUniform;
 
-	// Hack : remember all meshbuffers for render state change
-	TVector<FMeshBufferPtr> SceneMeshBuffers;
-	TMap<FMeshBuffer*, uint32> SceneMBTable;
-
 	// Compute Tasks
 	FGPUInstanceFrustumCullCSPtr InstanceFrustumCullCS;
 	FCopyVisibleInstancesPtr CopyVisibleOccluders;

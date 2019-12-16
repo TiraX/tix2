@@ -785,6 +785,7 @@ namespace tix
 		uint32 subresource,
 		D3D12_RESOURCE_BARRIER_FLAGS flags)
 	{
+		TI_TODO("Refactor resource-state related, make it more efficiency");
 		if (GPUResource->GetCurrentState() != stateAfter)
 		{
 			_Transition(GPUResource->GetResource().Get(), GPUResource->UsageState, stateAfter, subresource, flags);
@@ -1920,32 +1921,32 @@ namespace tix
 		uint32 DstIndexOffset,
 		FMeshBufferPtr SrcBuffer,
 		uint32 SrcVertexOffset,
-		uint32 VertexLength,
+		uint32 VertexLengthInBytes,
 		uint32 SrcIndexOffset,
-		uint32 IndexLength)
+		uint32 IndexLengthInBytes)
 	{
 		FMeshBufferDx12 * DstBufferDx12 = static_cast<FMeshBufferDx12*>(DstBuffer.get());
 		FMeshBufferDx12 * SrcBufferDx12 = static_cast<FMeshBufferDx12*>(SrcBuffer.get());
 
 		// Copy vertex data
 		TI_ASSERT(DstBuffer->GetVSFormat() == SrcBuffer->GetVSFormat());
-		TI_ASSERT(DstVertexOffset + VertexLength <= DstBuffer->GetVerticesCount() * DstBuffer->GetStride());
+		TI_ASSERT(DstVertexOffset + VertexLengthInBytes <= DstBuffer->GetVerticesCount() * DstBuffer->GetStride());
 		CurrentWorkingCommandList->CopyBufferRegion(
 			DstBufferDx12->VertexBuffer.GetResource().Get(), 
 			DstVertexOffset, 
 			SrcBufferDx12->VertexBuffer.GetResource().Get(), 
 			SrcVertexOffset, 
-			VertexLength);
+			VertexLengthInBytes);
 
 		// Copy index data
 		TI_ASSERT(DstBuffer->GetIndexType() == SrcBuffer->GetIndexType());
-		TI_ASSERT(DstIndexOffset + IndexLength <= (uint32)(DstBuffer->GetIndicesCount() * (DstBuffer->GetIndexType() == EIT_16BIT ? 2 : 4)));
+		TI_ASSERT(DstIndexOffset + IndexLengthInBytes <= (uint32)(DstBuffer->GetIndicesCount() * (DstBuffer->GetIndexType() == EIT_16BIT ? 2 : 4)));
 		CurrentWorkingCommandList->CopyBufferRegion(
 			DstBufferDx12->IndexBuffer.GetResource().Get(), 
 			DstIndexOffset, 
 			SrcBufferDx12->IndexBuffer.GetResource().Get(), 
 			SrcIndexOffset, 
-			IndexLength);
+			IndexLengthInBytes);
 
 		HoldResourceReference(DstBuffer);
 		HoldResourceReference(SrcBuffer);
@@ -2653,6 +2654,38 @@ namespace tix
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 			D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+		}
+	}
+	
+	void FRHIDx12::PutMeshBufferInHeap(FMeshBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, int32 InVBHeapSlot, int32 InIBHeapSlot)
+	{
+		FMeshBufferDx12 * MBDx12 = static_cast<FMeshBufferDx12*>(InBuffer.get());
+
+		// Create shader resource view
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		if (InVBHeapSlot >= 0)
+		{
+			TI_ASSERT(InBuffer->GetStride() % 4 == 0);
+			SRVDesc.Buffer.NumElements = InBuffer->GetVerticesCount() * InBuffer->GetStride() / sizeof(float);
+			SRVDesc.Buffer.StructureByteStride = sizeof(float);
+
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InVBHeapSlot);
+			D3dDevice->CreateShaderResourceView(MBDx12->VertexBuffer.GetResource().Get(), &SRVDesc, Descriptor);
+		}
+
+		if (InIBHeapSlot >= 0)
+		{
+			TI_ASSERT(InBuffer->GetIndexType() == EIT_32BIT);
+			SRVDesc.Buffer.NumElements = InBuffer->GetIndicesCount();
+			SRVDesc.Buffer.StructureByteStride = sizeof(uint32);
+
+			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InIBHeapSlot);
+			D3dDevice->CreateShaderResourceView(MBDx12->IndexBuffer.GetResource().Get(), &SRVDesc, Descriptor);
 		}
 	}
 

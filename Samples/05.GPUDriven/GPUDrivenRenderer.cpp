@@ -170,7 +170,6 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	PreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, PrimsAdded, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 	PreZGPUCommandBuffer->SetResourceName("OccluderCB");
 
-	SceneMeshBuffers.clear();
 	// Add draw calls
 	uint32 CommandIndex = 0;
 	const TVector<vector2di>& SortedTilePositions = SceneMetaInfo->GetSortedTilePositions();
@@ -220,13 +219,6 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 				else
 				{
 					PreZGPUCommandBuffer->EncodeEmptyCommand(CommandIndex);
-				}
-
-				// Hack, remember all meshbuffers in scene
-				if (SceneMBTable.find(MeshBuffer.get()) == SceneMBTable.end())
-				{
-					SceneMeshBuffers.push_back(MeshBuffer);
-					SceneMBTable[MeshBuffer.get()] = 1;
 				}
 
 				++CommandIndex;
@@ -371,6 +363,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		SceneMetaInfo->DoSceneTileCulling(Scene, Frustum);
 
 		SceneMetaInfo->CollectSceneMetaInfos(Scene);
+		SceneMetaInfo->CollectMeshBuffers(Scene);
 		SceneMetaInfo->CollectInstanceBuffers(Scene);
 		SceneMetaInfo->CollectClusterMetaBuffers(Scene);
 		SceneMetaInfo->UpdateGPUResources();
@@ -461,15 +454,16 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			//	ClusterCullCS->GetVisibleClusters(),
 			//	GPUCommandBuffer,
 			//	TriangleCullCS->GetDispatchCommandBuffer());
-			// Hack
-			if (SceneMeshBuffers.size() > 0)
-				TriangleCullCS->SetMeshBuffer(SceneMeshBuffers[0]);
+			
 			TriangleCullCS->UpdateComputeArguments(
 				RHI, 
 				ViewProjection.CamDir, 
 				MatVP, 
 				Frustum,
-				SceneMetaInfo->GetMergedInstanceBuffer()
+				SceneMetaInfo->GetMergedSceneMeshBuffer(),
+				SceneMetaInfo->GetMergedInstanceBuffer(),
+				SceneMetaInfo->GetMergedSceneMeshBufferInfo(),
+				ClusterCullCS->GetVisibleClusters()
 			);
 		}
 
@@ -554,12 +548,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				}
 			}
 			RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
-
-			// Hack, transition Sphere-vb & ib to NON_PIXEL_SHADER_RESOURCE.
-			for (FMeshBufferPtr MB : SceneMeshBuffers)
-			{
-				RHI->SetResourceStateMB(MB, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-			}
 		}
 
 		{
@@ -620,12 +608,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			// Render Base Pass
 			RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
-
-			// Hack, transition Sphere-vb & ib to VERTEXBUFFER and INDEXBUFFER.
-			for (FMeshBufferPtr MB : SceneMeshBuffers)
-			{
-				//RHI->SetResourceStateMB(MB, RESOURCE_STATE_MESHBUFFER);
-			}
 			if (!Indirect)
 			{
 				DrawSceneTiles(RHI, Scene);

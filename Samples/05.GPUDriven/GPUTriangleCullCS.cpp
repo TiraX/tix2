@@ -22,15 +22,15 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 
-	ResourceTable = RHI->CreateRenderResourceTable(5, EHT_SHADER_RESOURCE);
-	ResourceTable->PutTextureInTable(HiZTexture, 2);
+	ResourceTable = RHI->CreateRenderResourceTable(8, EHT_SHADER_RESOURCE);
+	ResourceTable->PutTextureInTable(HiZTexture, 5);
 
 	// Create a command buffer that big enough for triangle culling
-	TriangleCullResults = RHI->CreateUniformBuffer(sizeof(uint32), 1024 * 10, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	TriangleCullResults = RHI->CreateUniformBuffer(sizeof(uint32), MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	TriangleCullResults->SetResourceName("TriangleCullResults");
 	RHI->UpdateHardwareResourceUB(TriangleCullResults, nullptr);
 
-	DebugGroup = RHI->CreateUniformBuffer(sizeof(FFloat4), 1024 * 10, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	DebugGroup = RHI->CreateUniformBuffer(sizeof(FFloat4), MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	DebugGroup->SetResourceName("TriangleCullDebug");
 	RHI->UpdateHardwareResourceUB(DebugGroup, nullptr);
 
@@ -39,22 +39,22 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	CounterReset->UniformBufferData[0].Zero = 0;
 	CounterReset->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	// Init GPU command buffer
-	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.reserve(5);
-	CommandStructure.push_back(GPU_COMMAND_CONSTANT);
-	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
-	CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
-	CommandStructure.push_back(GPU_COMMAND_DISPATCH);
+	//// Init GPU command buffer
+	//TVector<E_GPU_COMMAND_TYPE> CommandStructure;
+	//CommandStructure.reserve(5);
+	//CommandStructure.push_back(GPU_COMMAND_CONSTANT);
+	//CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
+	//CommandStructure.push_back(GPU_COMMAND_SHADER_RESOURCE);
+	//CommandStructure.push_back(GPU_COMMAND_DISPATCH);
 
-	GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
-	GPUCommandSignature->SetResourceName("TriangleCullSig");
-	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
-	
-	// Create a triangle cull gpu command buffer large enough for all dispatches
-	GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1024 * 2, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER | UB_FLAG_READBACK);
-	GPUCommandBuffer->SetResourceName("TriangleCullIndirectCommand");
-	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
+	//GPUCommandSignature = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
+	//GPUCommandSignature->SetResourceName("TriangleCullSig");
+	//RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
+	//
+	//// Create a triangle cull gpu command buffer large enough for all dispatches
+	//GPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, 1024 * 2, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER | UB_FLAG_READBACK);
+	//GPUCommandBuffer->SetResourceName("TriangleCullIndirectCommand");
+	//RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
 }
 
 void FGPUTriangleCullCS::UpdateComputeArguments(
@@ -62,7 +62,10 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	const vector3df& ViewDir,
 	const FMatrix& ViewProjection,
 	const SViewFrustum& InFrustum,
-	FInstanceBufferPtr InSceneInstanceData
+	FMeshBufferPtr InSceneMergedMeshBuffer,
+	FInstanceBufferPtr InSceneInstanceData,
+	FUniformBufferPtr SceneMeshBufferInfo,
+	FUniformBufferPtr InVisibleClusters
 )
 {
 	CullUniform->UniformBufferData[0].ViewDir = ViewDir;
@@ -77,22 +80,24 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	}
 	CullUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	ResourceTable->PutConstantBufferInTable(CullUniform->UniformBuffer, 0);
-	ResourceTable->PutInstanceBufferInTable(InSceneInstanceData, 1);
-	ResourceTable->PutUniformBufferInTable(TriangleCullResults, 3);
-	ResourceTable->PutUniformBufferInTable(DebugGroup, 4);
+	// Input srvs
+	ResourceTable->PutMeshBufferInTable(InSceneMergedMeshBuffer, 0, 1);
+	ResourceTable->PutInstanceBufferInTable(InSceneInstanceData, 2);
+	ResourceTable->PutUniformBufferInTable(SceneMeshBufferInfo, 3);
+	ResourceTable->PutUniformBufferInTable(InVisibleClusters, 4);
+
+	// Output uavs
+	ResourceTable->PutUniformBufferInTable(TriangleCullResults, 6);
+	ResourceTable->PutUniformBufferInTable(DebugGroup, 7);
 
 	SceneInstanceData = InSceneInstanceData;
+	VisibleClusters = InVisibleClusters;
 }
 
 void FGPUTriangleCullCS::Run(FRHI * RHI)
 {
-	if (MeshBuffer == nullptr)
-	{
-		return;
-	}
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (1024 + (BlockSize - 1)) / BlockSize;
+	const uint32 DispatchSize = VisibleClusters->GetElements();
 
 	// Reset command buffer counter
 	//RHI->SetResourceStateUB(TriangleCullResults, RESOURCE_STATE_COPY_DEST);
@@ -109,25 +114,15 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 		0,
 		sizeof(uint32));
 
-	RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+	//RHI->SetResourceStateCB(GPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 	//RHI->SetResourceStateUB(TriangleCullResults, RESOURCE_STATE_UNORDERED_ACCESS);
 	RHI->SetResourceStateInsB(SceneInstanceData, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	RHI->SetComputePipeline(ComputePipeline);
 
-	bool bIndirect = false;
-	if (bIndirect)
-	{
-		RHI->SetComputeResourceTable(3, ResourceTable);
-		RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
-	}
-	else
-	{
-		// x = IndexOffset; y = InstanceIndex;
-		RHI->SetComputeConstant(0, FUInt4(512, 531, 0, 0));
-		// vertex buffer & index buffer
-		RHI->SetComputeShaderResource(1, 2, MeshBuffer);
-		RHI->SetComputeResourceTable(3, ResourceTable);
-		RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1, 1, 1));
-	}
+	RHI->SetComputeConstantBuffer(0, CullUniform->UniformBuffer);
+	RHI->SetComputeConstantBuffer(1, VisibleClusters, VisibleClusters->GetCounterOffset());
+	RHI->SetComputeResourceTable(2, ResourceTable);
+
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }

@@ -88,9 +88,9 @@ namespace tix
 			uint32 DstIndexOffset,
 			FMeshBufferPtr SrcBuffer,
 			uint32 SrcVertexOffset,
-			uint32 VertexLength,
+			uint32 VertexLengthInBytes,
 			uint32 SrcIndexOffset,
-			uint32 IndexLength) override;
+			uint32 IndexLengthInBytes) override;
 		virtual bool CopyBufferRegion(
 			FInstanceBufferPtr DstBuffer,
 			uint32 DstInstanceOffset,
@@ -102,6 +102,7 @@ namespace tix
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
+		virtual void PutMeshBufferInHeap(FMeshBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, int32 InVBHeapSlot, int32 InIBHeapSlot) override;
 		virtual void PutInstanceBufferInHeap(FInstanceBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;

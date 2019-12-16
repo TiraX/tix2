@@ -17,18 +17,16 @@ public:
 		const vector3df& ViewDir,
 		const FMatrix& ViewProjection,
 		const SViewFrustum& InFrustum,
-		FInstanceBufferPtr SceneInstanceData);
+		FMeshBufferPtr InSceneMergedMeshBuffer,
+		FInstanceBufferPtr SceneInstanceData,
+		FUniformBufferPtr SceneMeshBufferInfo,
+		FUniformBufferPtr InVisibleClusters);
 	virtual void Run(FRHI * RHI) override;
 
-	FGPUCommandBufferPtr GetDispatchCommandBuffer()
-	{
-		return GPUCommandBuffer;
-	}
-
-	void SetMeshBuffer(FMeshBufferPtr InMB)
-	{
-		MeshBuffer = InMB;
-	}
+	//FGPUCommandBufferPtr GetDispatchCommandBuffer()
+	//{
+	//	return GPUCommandBuffer;
+	//}
 private:
 
 private:
@@ -41,11 +39,10 @@ private:
 	FUniformBufferPtr TriangleCullResults;
 	FUniformBufferPtr DebugGroup;
 
-	FGPUCommandSignaturePtr GPUCommandSignature;
-	FGPUCommandBufferPtr GPUCommandBuffer;
+	FUniformBufferPtr VisibleClusters;
 
-	// Hack meshbuffers
-	FMeshBufferPtr MeshBuffer;
+	//FGPUCommandSignaturePtr GPUCommandSignature;
+	//FGPUCommandBufferPtr GPUCommandBuffer;
 
 };
 typedef TI_INTRUSIVE_PTR(FGPUTriangleCullCS) FGPUTriangleCullCSPtr;

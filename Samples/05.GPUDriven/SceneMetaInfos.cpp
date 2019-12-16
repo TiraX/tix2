@@ -231,6 +231,9 @@ namespace tix
 			// There is primitives changed, mark cluster data as dirty.
 			// Need to collect all cluster data into one big buffer.
 			SceneMetaFlags |= MetaFlag_SceneClusterMetaDirty;
+
+			// Same with above, collect all vertex data and index data into a big buffer
+			SceneMetaFlags |= MetaFlag_SceneMeshBufferDirty;
 		}
 	}
 
@@ -263,6 +266,85 @@ namespace tix
 				TI_ASSERT(InstanceDstOffset == TotalInstances);
 
 			}
+		}
+	}
+
+	void FSceneMetaInfos::CollectMeshBuffers(FScene * Scene)
+	{
+		if (HasMetaFlag(MetaFlag_SceneMeshBufferDirty))
+		{
+			SCENE_META_LOG(Log, "Scene mesh buffer dirty.\n");
+			FRHI * RHI = FRHI::Get();
+
+			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+
+			// Calculate total size of vertex and index
+			uint32 TotalMeshCount, TotalVertexCount, TotalIndexCount;
+			TotalMeshCount = 0;
+			TotalVertexCount = 0;
+			TotalIndexCount = 0;
+			uint32 VBFormat = 0;
+			for (const auto& TilePos : SortedTilePositions)
+			{
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+				for (auto Prim : TileRes->GetPrimitives())
+				{
+					if (Prim != nullptr)
+					{
+						FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
+						TotalVertexCount += MeshBuffer->GetVerticesCount();
+						TotalIndexCount += MeshBuffer->GetIndicesCount();
+						TI_ASSERT(MeshBuffer->GetIndexType() == EIT_32BIT);	// Compute shader can only access 32bit aligned data
+						TI_ASSERT(VBFormat == 0 || VBFormat == MeshBuffer->GetVSFormat());
+						VBFormat = MeshBuffer->GetVSFormat();
+						++TotalMeshCount;
+					}
+				}
+			}
+			TI_ASSERT(TotalVertexCount > 0 && TotalIndexCount > 0);
+
+			// Copy all data into one big buffer
+			const uint32 VertexStride = TMeshBuffer::GetStrideFromFormat(VBFormat);
+			MergedMeshBuffer = RHI->CreateEmptyMeshBuffer(EPT_TRIANGLELIST, VBFormat, TotalVertexCount, EIT_32BIT, TotalIndexCount);
+			MergedMeshBuffer->SetResourceName("MergedMeshBuffer");
+			RHI->UpdateHardwareResourceMesh(MergedMeshBuffer, TotalVertexCount * VertexStride, VertexStride, TotalIndexCount * sizeof(uint32), EIT_32BIT, "MergedMeshBuffer");
+
+			MergedSceneMeshBufferInfo = ti_new FSceneMeshBufferInfo(TotalMeshCount);
+
+			uint32 VBOffset = 0, IBOffset = 0;
+			uint32 PrimIndex = 0;
+			for (const auto& TilePos : SortedTilePositions)
+			{
+				FSceneTileResourcePtr TileRes = SceneTileResources.find(TilePos)->second;
+				for (auto Prim : TileRes->GetPrimitives())
+				{
+					if (Prim != nullptr)
+					{
+						FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
+						RHI->SetResourceStateMB(MeshBuffer, RESOURCE_STATE_COPY_SOURCE);
+
+						RHI->CopyBufferRegion(
+							MergedMeshBuffer, 
+							VBOffset, 
+							IBOffset, 
+							MeshBuffer, 
+							0, 
+							MeshBuffer->GetVerticesCount() * VertexStride, 
+							0, 
+							MeshBuffer->GetIndicesCount() * sizeof(uint32)); 
+
+						MergedSceneMeshBufferInfo->UniformBufferData[PrimIndex].Info.X = VBOffset / sizeof(float);
+						MergedSceneMeshBufferInfo->UniformBufferData[PrimIndex].Info.Y = IBOffset / sizeof(uint32);
+
+						VBOffset += MeshBuffer->GetVerticesCount() * VertexStride;
+						IBOffset += MeshBuffer->GetIndicesCount() * sizeof(uint32);
+
+						++PrimIndex;
+					}
+				}
+			}
+			MergedSceneMeshBufferInfo->InitUniformBuffer();
+			TI_ASSERT(PrimIndex == TotalMeshCount);
 		}
 	}
 

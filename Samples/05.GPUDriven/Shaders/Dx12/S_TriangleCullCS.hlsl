@@ -10,14 +10,26 @@
 //*********************************************************
 
 #define TriangleCull_RootSig \
-	"RootConstants(num32BitConstants=4, b0), " \
-	"SRV(t0) ," \
-	"SRV(t1) ," \
-    "DescriptorTable(CBV(b2), SRV(t2, numDescriptors=2), UAV(u0, numDescriptors=2))," \
+	"CBV(b0), " \
+	"CBV(b1), " \
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
+
+cbuffer FViewInfoUniform : register(b0)
+{
+	float3 ViewDir;
+	float4x4 ViewProjection;
+	uint4 RTSize;	// xy = size, z = max_mip_level
+	float4 Planes[6];
+};
+
+cbuffer FVisibleClusterCount : register(b1)
+{
+	uint4 VisibleClusterCount;
+};
 
 struct FInstanceTransform
 {
@@ -27,60 +39,35 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-uint4 RootConstant : register(b0);	// x = IndexOffset; y = InstanceIndex;
+struct FSceneMeshBufferInfo
+{
+	// Info.x = Vertex data offsets in bytes
+	// Info.y = Index data offsets in bytes
+	uint4 Info;
+};
 
-//ByteAddressBuffer VertexData : register(t0);
+struct FClusterMetaInfo
+{
+	// x = instance global index
+	// y = cluster global index
+	// z = draw command index = mesh buffer index in merged buffer.
+	// w = cluster local index
+	uint4 Info;
+};
+
 StructuredBuffer<float> VertexData : register(t0);
 StructuredBuffer<uint> IndexData : register(t1);
-
-cbuffer FViewInfoUniform : register(b2)
-{
-	float3 ViewDir;
-	float4x4 ViewProjection;
-	uint4 RTSize;	// xy = size, z = max_mip_level
-	float4 Planes[6];
-};
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
-Texture2D<float> HiZTexture : register(t3);
+StructuredBuffer<FSceneMeshBufferInfo> SceneMeshBufferInfo : register(t3);
+StructuredBuffer<FClusterMetaInfo> VisibleClusters : register(t4);
+Texture2D<float> HiZTexture : register(t5);
 
 AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible triangles
 AppendStructuredBuffer<float4> DebugGroup : register(u1);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
-inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
-{
-	float3 P;
-	P.x = Plane.x >= 0.0 ? MinEdge.x : MaxEdge.x;
-	P.y = Plane.y >= 0.0 ? MinEdge.y : MaxEdge.y;
-	P.z = Plane.z >= 0.0 ? MinEdge.z : MaxEdge.z;
-
-	float dis = dot(Plane.xyz, P) + Plane.w;
-	return dis <= 0.0;
-}
-
-inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout float4 MaxEdge)
-{
-	float3 VecMin = MinEdge.xyz;
-	float3 VecMax = MaxEdge.xyz;
-
-	float3 Origin = (VecMax + VecMin) * 0.5;
-	float3 Extent = (VecMax - VecMin) * 0.5;
-
-	float3 NewOrigin = Origin.xxx * Trans.ins_transform0.xyz;
-	NewOrigin = Origin.yyy * Trans.ins_transform1.xyz + NewOrigin;
-	NewOrigin = Origin.zzz * Trans.ins_transform2.xyz + NewOrigin;
-	NewOrigin += Trans.ins_transition.xyz;
-
-	float3 NewExtent = abs(Extent.xxx * Trans.ins_transform0.xyz);
-	NewExtent += abs(Extent.yyy * Trans.ins_transform1.xyz);
-	NewExtent += abs(Extent.zzz * Trans.ins_transform2.xyz);
-
-	MinEdge.xyz = NewOrigin - NewExtent;
-	MaxEdge.xyz = NewOrigin + NewExtent;
-}
-
-inline float3 LoadVertex(uint index)
+inline float3 LoadVertex(uint index, uint DataOffset)
 {
 	// Vertex byte stride is 24 bytes, float stride is 6
 	// Position float3 = float x 3;
@@ -88,9 +75,9 @@ inline float3 LoadVertex(uint index)
 	// uv0 half2 = float x 1;
 	// tangent uint = float x 1;
 	float3 Position;
-	Position.x = VertexData[index * 6];
-	Position.y = VertexData[index * 6 + 1];
-	Position.z = VertexData[index * 6 + 2];
+	Position.x = VertexData[DataOffset + index * 6];
+	Position.y = VertexData[DataOffset + index * 6 + 1];
+	Position.z = VertexData[DataOffset + index * 6 + 2];
 	//return asfloat(VertexData.Load3(index * 24));
 	return Position;
 }
@@ -234,34 +221,39 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	uint TriangleIndex = dispatchThreadId.x;
+	uint ClusterIndex = groupId.x;
+	if (ClusterIndex >= VisibleClusterCount.x)
+		return;
+
+	FClusterMetaInfo ClusterInfo = VisibleClusters[ClusterIndex];
+
+	uint InstanceIndex = ClusterInfo.Info.x;
+	uint MeshBufferIndex = ClusterInfo.Info.z;
+	uint ClusterLocalIndex = ClusterInfo.Info.w;
+
+	FSceneMeshBufferInfo MeshBufferInfo = SceneMeshBufferInfo[MeshBufferIndex];
+
+	uint VertexDataOffset = MeshBufferInfo.Info.x;
+	uint IndexDataOffset = MeshBufferInfo.Info.y;
+
+	uint TriangleIndex = ClusterLocalIndex * 128 + threadIDInGroup.x;
+	uint IndexDataIndex = IndexDataOffset + TriangleIndex * 3;
+
 	uint Indices[3];
 	float4 Vertices[3];
 
-	// Load vertices
-	uint IndexOffset = (RootConstant.x + TriangleIndex) * 3;
-	uint InstanceIndex = RootConstant.y;
 	FInstanceTransform InsTrans = InstanceData[InstanceIndex];
+	// Load vertices
 	[unroll]
 	for (int i = 0; i < 3; i++)
 	{
-		Indices[i] = IndexData[IndexOffset + i];
-		float3 Vertex = LoadVertex(Indices[i]);
+		Indices[i] = IndexData[IndexDataIndex + i];
+		float3 Vertex = LoadVertex(Indices[i], VertexDataOffset);
 		float3 WorldPosition = GetWorldPosition(InsTrans, Vertex);
 
 		// Projection space vertices
 		Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
-		Vertices[i] = float4(Vertex.xyz, 1.12);
 	}
-	//if (Indices[0].x != Indices[1].x && Indices[1] != Indices[2])
-	//{
-	//	TriangleCullingCommand.Append(Indices[0]);
-	//	//float4 a = float4(Indices[0], Indices[1], Indices[2], IndexOffset);
-	//	float4 a = float4(InsTrans.ins_transition.xyz, 3.223);
-	//	//float4 a = float4(Vertices[0].xyz, 3.223);
-	//	a.xyz += Vertices[0].xyz;
-	//	DebugGroup.Append(a);
-	//}
 	// Perform cull
 	if (!CullTriangle(Indices, Vertices))
 	{
