@@ -73,8 +73,8 @@ private:
 	FCopyVisibleInstancesPtr CopyVisibleInstances;
 	FHiZDownSampleCSPtr HiZDownSample;
 	FGPUInstanceOcclusionCullCSPtr InstanceOcclusionCullCS;
-	FGenerateClusterCullIndirectCommandPtr GenerateClusterCullCommand;
+	//FGenerateClusterCullIndirectCommandPtr GenerateClusterCullCommand;
 	FGPUClusterCullCSPtr ClusterCullCS;
-	FGenerateTriangleCullIndirectCommandPtr GenerateTriangleCullCommand;
+	//FGenerateTriangleCullIndirectCommandPtr GenerateTriangleCullCommand;
 	FGPUTriangleCullCSPtr TriangleCullCS;
 };

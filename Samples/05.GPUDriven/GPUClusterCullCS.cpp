@@ -63,7 +63,8 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	const FMatrix& ViewProjection,
 	const SViewFrustum& InFrustum,
 	FUniformBufferPtr ClusterMetaData,
-	FInstanceBufferPtr SceneInstanceData
+	FInstanceBufferPtr SceneInstanceData,
+	FUniformBufferPtr InVisibleInstanceClusters
 )
 {
 	CullUniform->UniformBufferData[0].ViewDir = ViewDir;
@@ -84,11 +85,14 @@ void FGPUClusterCullCS::UpdateComputeArguments(
 	// t3 is HiZTexture, already set in PrepareResource()
 	// u0 is VisibleClusters, already set in PrepareResource()
 	ResourceTable->PutUniformBufferInTable(VisibleClusters, 4);
+
+	VisibleInstanceClusters = InVisibleInstanceClusters;
 }
 
 void FGPUClusterCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
+	const uint32 DispatchSize = (VisibleInstanceClusters->GetElements() + 127) / 128;
 	const int32 CurrFrame = RHI->GetCurrentEncodingFrameIndex();
 
 	// Reset command buffer counter
@@ -111,8 +115,9 @@ void FGPUClusterCullCS::Run(FRHI * RHI)
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, CullUniform->UniformBuffer);
-	RHI->SetComputeResourceTable(1, ResourceTable);
+	RHI->SetComputeConstantBuffer(1, VisibleInstanceClusters, VisibleInstanceClusters->GetCounterOffset());
+	RHI->SetComputeResourceTable(2, ResourceTable);
 
 	//RHI->ExecuteGPUComputeCommands(GPUCommandBuffer);
-	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(13, 1, 1));
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }

@@ -11,6 +11,7 @@
 
 #define ClusterCull_RootSig \
 	"CBV(b0) ," \
+	"CBV(b1) ," \
     "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
@@ -23,6 +24,10 @@ cbuffer FViewInfoUniform : register(b0)
 	float4x4 ViewProjection;
 	uint4 RTSize;	// xy = size, z = max_mip_level
 	float4 Planes[6];
+};
+cbuffer FClusterCount : register(b1)
+{
+	uint4 ClusterCount;
 };
 
 struct FClusterBoundingInfo
@@ -106,6 +111,10 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint QueueIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
+
+	if (QueueIndex >= ClusterCount.x)
+		return;
+
 	uint InstanceIndex = ClusterQueue[QueueIndex].Info.x;
 	uint ClusterIndex = ClusterQueue[QueueIndex].Info.y;
 

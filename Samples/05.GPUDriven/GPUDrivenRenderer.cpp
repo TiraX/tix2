@@ -137,15 +137,15 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	ClusterCullCS->Finalize();
 	ClusterCullCS->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture, InstanceOcclusionCullCS->GetVisibleInstanceClusters());
 
-	// Generate cluster cull indirect command
-	GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
-	GenerateClusterCullCommand->Finalize();
-	GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleInstanceClusters(), ClusterCullCS->GetDispatchCommandBuffer());
+	//// Generate cluster cull indirect command
+	//GenerateClusterCullCommand = ti_new FGenerateClusterCullIndirectCommand;
+	//GenerateClusterCullCommand->Finalize();
+	//GenerateClusterCullCommand->PrepareResources(RHI, InstanceOcclusionCullCS->GetVisibleInstanceClusters(), ClusterCullCS->GetDispatchCommandBuffer());
 
-	// Generate triangle cull indirect command
-	GenerateTriangleCullCommand = ti_new FGenerateTriangleCullIndirectCommand;
-	GenerateTriangleCullCommand->Finalize();
-	GenerateTriangleCullCommand->PrepareResources(RHI);
+	//// Generate triangle cull indirect command
+	//GenerateTriangleCullCommand = ti_new FGenerateTriangleCullIndirectCommand;
+	//GenerateTriangleCullCommand->Finalize();
+	//GenerateTriangleCullCommand->PrepareResources(RHI);
 
 	// Triangle cull
 	TriangleCullCS = ti_new FGPUTriangleCullCS;
@@ -425,7 +425,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				MatVP,
 				Frustum,
 				SceneMetaInfo->GetMergedClusterData(),
-				SceneMetaInfo->GetMergedInstanceBuffer());
+				SceneMetaInfo->GetMergedInstanceBuffer(),
+				InstanceOcclusionCullCS->GetVisibleInstanceClusters());
 		}
 		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneInstanceMetaDirty))
 		{
@@ -455,11 +456,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		{
 			const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
 			FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
-			GenerateTriangleCullCommand->UpdateComputeArguments(
-				RHI,
-				ClusterCullCS->GetVisibleClusters(),
-				GPUCommandBuffer,
-				TriangleCullCS->GetDispatchCommandBuffer());
+			//GenerateTriangleCullCommand->UpdateComputeArguments(
+			//	RHI,
+			//	ClusterCullCS->GetVisibleClusters(),
+			//	GPUCommandBuffer,
+			//	TriangleCullCS->GetDispatchCommandBuffer());
 			// Hack
 			if (SceneMeshBuffers.size() > 0)
 				TriangleCullCS->SetMeshBuffer(SceneMeshBuffers[0]);
@@ -592,10 +593,10 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					ClusterCullCS->Run(RHI);
 					RHI->EndEvent();
 
-					// Generate Triangle cull dispatch indirect command
-					RHI->BeginEvent("Triangle cull indirect command");
-					GenerateTriangleCullCommand->Run(RHI);
-					RHI->EndEvent();
+					//// Generate Triangle cull dispatch indirect command
+					//RHI->BeginEvent("Triangle cull indirect command");
+					//GenerateTriangleCullCommand->Run(RHI);
+					//RHI->EndEvent();
 
 					// Do triangle cull
 					RHI->BeginEvent("Triangle cull");

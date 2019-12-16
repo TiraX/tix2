@@ -18,13 +18,14 @@ public:
 		const FMatrix& ViewProjection,
 		const SViewFrustum& InFrustum,
 		FUniformBufferPtr ClusterMetaData,
-		FInstanceBufferPtr SceneInstanceData);
+		FInstanceBufferPtr SceneInstanceData,
+		FUniformBufferPtr InVisibleInstanceClusters);
 	virtual void Run(FRHI * RHI) override;
 
-	FGPUCommandBufferPtr GetDispatchCommandBuffer()
-	{
-		return GPUCommandBuffer;
-	}
+	//FGPUCommandBufferPtr GetDispatchCommandBuffer()
+	//{
+	//	return GPUCommandBuffer;
+	//}
 	FUniformBufferPtr GetVisibleClusters()
 	{
 		return VisibleClusters;
@@ -39,7 +40,9 @@ private:
 	FUniformBufferPtr VisibleClusters;
 	FUniformBufferPtr ClusterClear;
 
-	FGPUCommandSignaturePtr GPUCommandSignature;
-	FGPUCommandBufferPtr GPUCommandBuffer;
+	FUniformBufferPtr VisibleInstanceClusters;
+
+	//FGPUCommandSignaturePtr GPUCommandSignature;
+	//FGPUCommandBufferPtr GPUCommandBuffer;
 };
 typedef TI_INTRUSIVE_PTR(FGPUClusterCullCS) FGPUClusterCullCSPtr;

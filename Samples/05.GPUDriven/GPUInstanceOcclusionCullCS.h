@@ -47,7 +47,5 @@ private:
 	FUniformBufferPtr VisibleInstanceClusters;
 
 	uint32 InstancesNeedToCull;
-
-	FUniformBufferPtr ClustersLeft;
 };
 typedef TI_INTRUSIVE_PTR(FGPUInstanceOcclusionCullCS) FGPUInstanceOcclusionCullCSPtr;
