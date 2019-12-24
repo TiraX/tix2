@@ -30,7 +30,7 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	TriangleCullResults->SetResourceName("TriangleCullResults");
 	RHI->UpdateHardwareResourceUB(TriangleCullResults, nullptr);
 
-	DebugGroup = RHI->CreateUniformBuffer(sizeof(FFloat4), MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	DebugGroup = RHI->CreateUniformBuffer(sizeof(FFloat4) * 5, MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	DebugGroup->SetResourceName("TriangleCullDebug");
 	RHI->UpdateHardwareResourceUB(DebugGroup, nullptr);
 

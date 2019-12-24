@@ -42,6 +42,7 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 	FUniformBufferPtr FrustumCullResult;
 	FUniformBufferPtr VisibilityResult;
+	FUniformBufferPtr DebugResult;
 
 	FCounterResetPtr CounterReset;
 	FUniformBufferPtr VisibleInstanceClusters;

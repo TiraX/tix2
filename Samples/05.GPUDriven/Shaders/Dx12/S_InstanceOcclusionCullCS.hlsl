@@ -11,7 +11,7 @@
 
 #define InstanceOcclusionCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=2))," \
+    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=3))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -52,6 +52,17 @@ struct FClusterMetaInfo
 	uint4 Info;
 };
 
+struct FInsOccDebug
+{
+	float HiZ;
+	float minZ;
+	float Mip;
+	float Padding;
+	float4 BoxUVs;
+	float4 BoxCornerDepth04;
+	float4 BoxCornerDepth58;
+};
+
 struct FInstanceTransform
 {
 	float4 ins_transition;
@@ -68,6 +79,7 @@ Texture2D<float> HiZTexture : register(t4);
 
 RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
 AppendStructuredBuffer<uint4> ClustersQueue : register(u1);	// Clusters to be culled
+RWStructuredBuffer<FInsOccDebug> InstanceOccDebug : register(u2);	// 
 
 SamplerState PointSampler : register(s0);
 
@@ -132,10 +144,13 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		float2 maxXY = 0;
 
 		[unroll]
+		float Zzz[8];
 		for (int i = 0; i < 8; i++)
 		{
 			//transform world space aaBox to NDC
 			float4 ClipPos = mul(float4(BBoxCorners[i], 1), ViewProjection);
+
+			Zzz[i] = ClipPos.z / ClipPos.w;
 
 			ClipPos.z = max(ClipPos.z, 0);
 
@@ -199,6 +214,13 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 				ClustersQueue.Append(ClusterInfo);
 			}
 		}
+		InstanceOccDebug[InstanceIndex].HiZ = maxDepth;
+		InstanceOccDebug[InstanceIndex].minZ = minZ;
+		InstanceOccDebug[InstanceIndex].Mip = Mip;
+		InstanceOccDebug[InstanceIndex].Padding = 1;
+		InstanceOccDebug[InstanceIndex].BoxUVs = BoxUVs;
+		InstanceOccDebug[InstanceIndex].BoxCornerDepth04 = float4(Zzz[0], Zzz[1], Zzz[2], Zzz[3]);
+		InstanceOccDebug[InstanceIndex].BoxCornerDepth58 = float4(Zzz[4], Zzz[5], Zzz[6], Zzz[7]);
 	}
 	VisibleInfo[InstanceIndex].Visible = Result;
 }

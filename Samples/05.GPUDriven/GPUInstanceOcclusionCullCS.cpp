@@ -23,7 +23,7 @@ void FGPUInstanceOcclusionCullCS::PrepareResources(FRHI * RHI, const vector2di& 
 {
 	OcclusionInfo = ti_new FOcclusionInfo;
 	OcclusionInfo->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
-	ResourceTable = RHI->CreateRenderResourceTable(7, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(8, EHT_SHADER_RESOURCE);
 
 	ResourceTable->PutTextureInTable(HiZTexture, 4);
 	
@@ -55,6 +55,10 @@ void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
 		VisibilityResult = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
 		VisibilityResult->SetResourceName("InstanceVisibleResult");
 		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
+
+		DebugResult = RHI->CreateUniformBuffer(sizeof(FFloat4) * 4, InstanceMetaInfo->GetElements(), UB_FLAG_COMPUTE_WRITABLE);
+		DebugResult->SetResourceName("InstanceOccDebug");
+		RHI->UpdateHardwareResourceUB(DebugResult, nullptr);
 	}
 
 	OcclusionInfo->UniformBufferData[0].ViewProjection = ViewProjection;
@@ -66,6 +70,7 @@ void FGPUInstanceOcclusionCullCS::UpdateComputeArguments(
 	ResourceTable->PutUniformBufferInTable(InFrustumCullResult, 3);
 	// t4 is HiZTexture, already set in PrepareResource()
 	ResourceTable->PutUniformBufferInTable(VisibilityResult, 5);
+	ResourceTable->PutUniformBufferInTable(DebugResult, 7);
 
 	FrustumCullResult = InFrustumCullResult;
 	InstancesNeedToCull = InstancesCountIntersectWithFrustum;

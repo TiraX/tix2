@@ -55,6 +55,19 @@ struct FClusterMetaInfo
 	uint4 Info;
 };
 
+struct FDebugInfo
+{
+	float3 VertexP;
+	float Mip;
+	float HiZ;
+	float MinZ;
+	float IsCulled;
+	float Padding;
+	uint4 Indices;
+	float4 Vertex;
+	float4 VPPosition;
+};
+
 StructuredBuffer<float> VertexData : register(t0);
 StructuredBuffer<uint> IndexData : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
@@ -63,7 +76,7 @@ StructuredBuffer<FClusterMetaInfo> VisibleClusters : register(t4);
 Texture2D<float> HiZTexture : register(t5);
 
 AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible triangles
-AppendStructuredBuffer<float4> DebugGroup : register(u1);	// Visible triangles
+AppendStructuredBuffer<FDebugInfo> DebugGroup : register(u1);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
@@ -85,12 +98,12 @@ inline float3 LoadVertex(uint index, uint DataOffset)
 float3 GetWorldPosition(FInstanceTransform Transform, float3 P)
 {
 	float3x3 RotMat = float3x3(Transform.ins_transform0.xyz, Transform.ins_transform1.xyz, Transform.ins_transform2.xyz);
-	float3 Position = P;// mul(P, RotMat);
+	float3 Position = mul(P, RotMat);
 	Position += Transform.ins_transition.xyz;
 	return Position;
 }
 
-bool HiZTriangle(float4 vertices[3])
+bool HiZTriangle(float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip)
 {
 	bool cull = false;
 
@@ -149,6 +162,9 @@ bool HiZTriangle(float4 vertices[3])
 	//find the max depth
 	float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
 
+	oDebugMaxZ = float4(maxDepth, minZ, minZ > maxDepth ? 1.0 : 0.0, 1.0);
+	oDebugMip = Mip;
+
 	if (minZ > maxDepth)
 	{
 		// Cull it
@@ -157,9 +173,12 @@ bool HiZTriangle(float4 vertices[3])
 	return cull;
 }
 
-bool CullTriangle(uint indices[3], float4 vertices[3])
+bool CullTriangle(uint indices[3], float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip, out uint oHiZCull)
 {
 	bool cull = false;
+	oDebugMaxZ = 0.0;
+	oDebugMip = 0;
+	oHiZCull = 0;
 
 	// Zero face cull
 	if (indices[0] == indices[1]
@@ -167,6 +186,7 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 		|| indices[0] == indices[2])
 	{
 		cull = true;
+		return cull;
 	}
 
 	// Backface cull.
@@ -179,9 +199,16 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 		vertices[0].xyw, vertices[1].xyw, vertices[2].xyw
 	};
 	cull = cull || (determinant(m) > 0);
+	if (cull)
+		return true;
 
 	// Occlusion culling
-	cull = cull || HiZTriangle(vertices);
+	cull = HiZTriangle(vertices, oDebugMaxZ, oDebugMip);
+	if (cull)
+	{
+		oHiZCull = 1;
+		return true;
+	}
 
 	// Frustum cull.
 	int verticesInFrontOfNearPlane = 0;
@@ -243,20 +270,44 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	float4 Vertices[3];
 
 	FInstanceTransform InsTrans = InstanceData[InstanceIndex];
+	float3 Vertex, WorldPosition;
+	uint4 oIndex = float4(0,0,0,0);
 	// Load vertices
 	[unroll]
 	for (int i = 0; i < 3; i++)
 	{
 		Indices[i] = IndexData[IndexDataIndex + i];
-		float3 Vertex = LoadVertex(Indices[i], VertexDataOffset);
-		float3 WorldPosition = GetWorldPosition(InsTrans, Vertex);
+		oIndex[i] = Indices[i];
+		Vertex = LoadVertex(Indices[i], VertexDataOffset);
+		WorldPosition = GetWorldPosition(InsTrans, Vertex);
 
 		// Projection space vertices
 		Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
 	}
+	oIndex.w = IndexDataIndex;
+	//DebugGroup.Append(Vertices[0]);
 	// Perform cull
-	if (!CullTriangle(Indices, Vertices))
+	float4 debugZ;
+	uint debugMip, debugHiZ;
+	if (!CullTriangle(Indices, Vertices, debugZ, debugMip, debugHiZ))
 	{
 		TriangleCullingCommand.Append(1);
 	}
+
+	FDebugInfo DInfo;
+	float4 dbg_v = Vertices[0];
+	dbg_v /= dbg_v.w;
+	dbg_v.xy = dbg_v.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+	dbg_v.w = debugMip;
+	DInfo.VertexP = dbg_v.xyz;
+	DInfo.Mip = debugMip;
+	DInfo.HiZ = debugZ.x;
+	DInfo.MinZ = debugZ.y;
+	DInfo.IsCulled = debugZ.z;
+	DInfo.Padding = 0.5;
+	DInfo.Indices = oIndex;
+	DInfo.Vertex = float4(Vertex, 0.925);
+	DInfo.VPPosition = Vertices[0];
+
+	DebugGroup.Append(DInfo);
 }

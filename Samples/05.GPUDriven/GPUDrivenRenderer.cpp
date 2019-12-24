@@ -597,7 +597,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				if (bCopyVisibleInstances)
 				{
 					RHI->BeginEvent("Copy Visible Instances");
-					//CopyVisibleInstances->Run(RHI);
+					CopyVisibleInstances->Run(RHI);
 					RHI->EndEvent();
 				}
 

@@ -61,7 +61,8 @@ void FGPUInstanceFrustumCullCS::UpdateComputeArguments(
 		RHI->UpdateHardwareResourceUB(VisibilityResult, nullptr);
 
 		FillVisibilityBuffer = RHI->CreateUniformBuffer(sizeof(uint32), InstanceMetaInfo->GetElements(), UB_FLAG_INTERMEDIATE);
-		const uint32 ElementsCount = ti_align4(InstanceMetaInfo->GetElements());
+		uint32 ElementsCount = ti_align4(InstanceMetaInfo->GetElements());
+		ElementsCount = ti_max(16, ElementsCount);
 		uint32 * FillData = ti_new uint32[ElementsCount];
 		DoFillData(FillData, ElementsCount);
 		RHI->UpdateHardwareResourceUB(FillVisibilityBuffer, FillData);
