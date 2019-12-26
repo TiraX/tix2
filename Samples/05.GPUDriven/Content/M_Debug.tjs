@@ -29,5 +29,5 @@
 	"blend_mode": "BLEND_MODE_OPAQUE",
 	"depth_write": true,
 	"depth_test": true,
-	"two_sides": false
+	"two_sides": true
 }

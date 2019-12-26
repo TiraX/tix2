@@ -22,7 +22,7 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	CullUniform = ti_new FCullUniform;
 	CullUniform->UniformBufferData[0].RTSize = FUInt4(RTSize.X, RTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 
-	ResourceTable = RHI->CreateRenderResourceTable(8, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(9, EHT_SHADER_RESOURCE);
 	ResourceTable->PutTextureInTable(HiZTexture, 5);
 
 	// Create counter reset
@@ -66,6 +66,10 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 		VisibleTriangleIndex = RHI->CreateUniformBuffer(sizeof(uint32) * 3, InSceneMergedMeshBuffer->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
 		VisibleTriangleIndex->SetResourceName("VisibleTriangleIndex");
 		RHI->UpdateHardwareResourceUB(VisibleTriangleIndex, nullptr);
+
+		DebugGroup = RHI->CreateUniformBuffer(sizeof(uint32) * 4, InSceneMergedMeshBuffer->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
+		DebugGroup->SetResourceName("VisibleTriangleIndexDebug");
+		RHI->UpdateHardwareResourceUB(DebugGroup, nullptr);
 	}
 
 	CullUniform->UniformBufferData[0].ViewDir = ViewDir;
@@ -89,6 +93,7 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	// Output uavs
 	ResourceTable->PutUniformBufferInTable(VisibleTriangleIndex, 6);
 	ResourceTable->PutUniformBufferInTable(InClusterCommandBuffer->GetCommandBuffer(), 7);
+	ResourceTable->PutUniformBufferInTable(DebugGroup, 8);
 
 	SceneInstanceData = InSceneInstanceData;
 	VisibleClusters = InVisibleClusters;

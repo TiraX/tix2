@@ -12,7 +12,7 @@
 #define TriangleCull_RootSig \
 	"CBV(b0), " \
 	"CBV(b1), " \
-    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=3))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -61,6 +61,14 @@ struct FIndirectCommand
 	uint DrawArguments1;	// x=StartInstanceLocation
 };
 
+struct FDebugInfo
+{
+	uint ClusterIndex;
+	uint ClusterLocalIndex;
+	uint TriangleIndex;
+	uint IndexDataOffset;
+};
+
 StructuredBuffer<float> VertexData : register(t0);
 StructuredBuffer<uint> IndexData : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
@@ -70,6 +78,7 @@ Texture2D<float> HiZTexture : register(t5);
 
 RWStructuredBuffer<uint3> VisibleTriangleIndex : register(u0);	// Visible triangles
 AppendStructuredBuffer<FIndirectCommand> IndirectCommands : register(u1);	// Visible triangles
+RWStructuredBuffer<FDebugInfo> DebugInfo : register(u2);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
@@ -292,7 +301,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		uint localCount;
 		InterlockedAdd(localValidDraws, 1, localCount);
 
-		VisibleTriangleIndex[localCount + ClusterIndex * 128] = TIndex;
+		VisibleTriangleIndex[localCount + ClusterIndex * threadBlockSize] = TIndex;
+
+		DebugInfo[localCount + ClusterIndex * threadBlockSize].ClusterIndex = ClusterIndex;
+		DebugInfo[localCount + ClusterIndex * threadBlockSize].ClusterLocalIndex = ClusterLocalIndex;
+		DebugInfo[localCount + ClusterIndex * threadBlockSize].TriangleIndex = TriangleIndex;
+		DebugInfo[localCount + ClusterIndex * threadBlockSize].IndexDataOffset = IndexDataIndex;
 	}
 
 	// record indirect draw commands

@@ -334,11 +334,15 @@ void FGPUDrivenRenderer::DrawGPUCommandBufferCluster(FRHI * RHI, FScene * Scene,
 	{
 		// Set merged instance buffer
 		RHI->SetResourceStateCB(InGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+		RHI->SetResourceStateMB(SceneMetaInfo->GetMergedSceneMeshBuffer(), RESOURCE_STATE_MESHBUFFER);
+		RHI->SetResourceStateInsB(SceneMetaInfo->GetMergedInstanceBuffer(), RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
 		RHI->SetMeshBufferAtSlot(0, SceneMetaInfo->GetMergedSceneMeshBuffer());
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->SetGraphicsPipeline(InGPUCommandBuffer->GetGPUCommandSignature()->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		RHI->ExecuteGPUDrawCommands(InGPUCommandBuffer);
+		//RHI->ExecuteGPUDrawCommandsDebug(InGPUCommandBuffer, 1);
 	}
 }
 

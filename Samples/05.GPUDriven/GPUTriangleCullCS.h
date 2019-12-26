@@ -39,6 +39,7 @@ private:
 	FCounterResetPtr CounterReset;
 	FUniformBufferPtr VisibleTriangleIndex;
 	FGPUCommandBufferPtr ClusterGPUCommandBufferRef;
+	FUniformBufferPtr DebugGroup;
 
 	FUniformBufferPtr VisibleClusters;
 
