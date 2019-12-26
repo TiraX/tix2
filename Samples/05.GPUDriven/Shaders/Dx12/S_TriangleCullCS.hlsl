@@ -255,7 +255,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint VertexDataOffset = MeshBufferInfo.Info.x;
 	uint IndexDataOffset = MeshBufferInfo.Info.y;
 
-	uint TriangleIndex = ClusterLocalIndex * 128 + threadIDInGroup.x;
+	uint TriangleIndex = ClusterLocalIndex * threadBlockSize + threadIDInGroup.x;
 	uint IndexDataIndex = IndexDataOffset + TriangleIndex * 3;
 
 	uint Indices[3];
@@ -309,7 +309,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		FIndirectCommand Cmd;
 		Cmd.DrawArguments0.x = localValidDraws * 3;
 		Cmd.DrawArguments0.y = 1;
-		Cmd.DrawArguments0.z = ClusterIndex * 128;
+		Cmd.DrawArguments0.z = ClusterIndex * threadBlockSize * 3;
 		Cmd.DrawArguments0.w = VerticesOffset;
 		Cmd.DrawArguments1   = InstanceIndex;
 
