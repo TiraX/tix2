@@ -74,7 +74,7 @@ void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 
 	if (TResSettings::GlobalSettings.ClusterVerbose)
 	{
-		_LOG(Log, "  [%d] Clusters generated.\n  BBox | Cone", Clusters.size());
+		_LOG(Log, "  [%d] Clusters generated.\n  BBox | Cone\n", Clusters.size());
 
 		TI_ASSERT(ClusterBBoxes.size() == ClusterCones.size());
 		const uint32 ClusterCount = (uint32)ClusterBBoxes.size();
