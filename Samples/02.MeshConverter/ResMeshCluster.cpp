@@ -57,7 +57,7 @@ TSphere TResMeshCluster::GetBoundingSphere(const TVector<vector3df>& Points)
 static int32 _debug_index = 0;
 void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 {
-	static const bool bExportDebugObjFile = true;
+	static const bool bExportDebugObjFile = TResSettings::GlobalSettings.ClusterVerbose;
 	if (bExportDebugObjFile)
 	{
 		char debug_name[64];
@@ -71,6 +71,23 @@ void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 	MakeClusters(ClusterTriangles);
 	MergeSmallClusters(ClusterTriangles);
 	CalcMetaInfos();
+
+	if (TResSettings::GlobalSettings.ClusterVerbose)
+	{
+		_LOG(Log, "  [%d] Clusters generated.\n  BBox | Cone", Clusters.size());
+
+		TI_ASSERT(ClusterBBoxes.size() == ClusterCones.size());
+		const uint32 ClusterCount = (uint32)ClusterBBoxes.size();
+		for (uint32 c = 0 ; c < ClusterCount ; ++c)
+		{
+			const auto& BBox = ClusterBBoxes[c];
+			const auto& Cone = ClusterCones[c];
+			_LOG(Log, "    [%f,%f,%f]-[%f,%f,%f] | [%f]-[%f]\n",
+				BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z,
+				BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z,
+				Cone.X, Cone.Y, Cone.Z, Cone.W);
+		}
+	}
 
 	if (bExportDebugObjFile)
 	{
