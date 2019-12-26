@@ -2818,14 +2818,19 @@ namespace tix
 
 	void FRHIDx12::SetMeshBufferAtSlot(uint32 StartSlot, FMeshBufferPtr InMeshBuffer)
 	{
-		TI_ASSERT(0);
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+		CurrentWorkingCommandList->IASetVertexBuffers(StartSlot, 1, &MBDx12->VertexBufferView);
+		CurrentWorkingCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+
+		HoldResourceReference(InMeshBuffer);
 	}
 
 	void FRHIDx12::SetInstanceBufferAtSlot(uint32 StartSlot, FInstanceBufferPtr InInstanceBuffer)
 	{
 		FInstanceBufferDx12* IBDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
-
 		CurrentWorkingCommandList->IASetVertexBuffers(StartSlot, 1, &IBDx12->InstanceBufferView);
+
+		HoldResourceReference(InInstanceBuffer);
 	}
 
 	void FRHIDx12::SetUniformBuffer(E_SHADER_STAGE , int32 BindIndex, FUniformBufferPtr InUniformBuffer)

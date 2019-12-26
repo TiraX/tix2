@@ -100,6 +100,13 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
 
+	// Init Cluster GPU command buffer
+	TVector<E_GPU_COMMAND_TYPE> CommandStructureCluster;
+	CommandStructureCluster.resize(1);
+	CommandStructureCluster[0] = GPU_COMMAND_DRAW_INDEXED;
+	GPUCommandSignatureCluster = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructureCluster);
+	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignatureCluster);
+
 	PreZGPUCommandSignature = RHI->CreateGPUCommandSignature(DepthOnlyPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(PreZGPUCommandSignature);
 
@@ -236,10 +243,14 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	ProcessedGPUCommandBuffer->SetResourceName("ProcessedCB");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 
-
 	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	ProcessedPreZGPUCommandBuffer->SetResourceName("ProcessedOccluderCB");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedPreZGPUCommandBuffer);
+
+	TI_TODO("Temp cluster dc count. Change it!");
+	GPUCommandBufferCluster = RHI->CreateGPUCommandBuffer(GPUCommandSignatureCluster, TotalInstances * 8, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	GPUCommandBufferCluster->SetResourceName("DrawListCluster");
+	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBufferCluster);
 }
 
 void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
@@ -317,6 +328,20 @@ void FGPUDrivenRenderer::DrawGPUCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCo
 	}
 }
 
+void FGPUDrivenRenderer::DrawGPUCommandBufferCluster(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr InGPUCommandBuffer)
+{
+	if (InGPUCommandBuffer != nullptr)
+	{
+		// Set merged instance buffer
+		RHI->SetResourceStateCB(InGPUCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+		RHI->SetMeshBufferAtSlot(0, SceneMetaInfo->GetMergedSceneMeshBuffer());
+		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
+		RHI->SetGraphicsPipeline(InGPUCommandBuffer->GetGPUCommandSignature()->GetPipeline());
+		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+		RHI->ExecuteGPUDrawCommands(InGPUCommandBuffer);
+	}
+}
+
 void FGPUDrivenRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 {
 	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
@@ -355,7 +380,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	static bool bPerformGPUCulling = true;
 	static bool bOcclusionCull = true;
-	static bool Indirect = false;
+	static bool Indirect = !false;
 	static bool DrawCulled = !false;
 
 	if (bPerformGPUCulling)
@@ -463,7 +488,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				SceneMetaInfo->GetMergedSceneMeshBuffer(),
 				SceneMetaInfo->GetMergedInstanceBuffer(),
 				SceneMetaInfo->GetMergedSceneMeshBufferInfo(),
-				ClusterCullCS->GetVisibleClusters()
+				ClusterCullCS->GetVisibleClusters(),
+				GPUCommandBufferCluster
 			);
 		}
 
@@ -614,7 +640,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 			else
 			{
-				DrawGPUCommandBuffer(RHI, Scene, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
+				//DrawGPUCommandBuffer(RHI, Scene, DrawCulled ? ProcessedGPUCommandBuffer : GPUCommandBuffer);
+				DrawGPUCommandBufferCluster(RHI, Scene, GPUCommandBufferCluster);
 			}
 		}
 	}

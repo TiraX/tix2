@@ -25,15 +25,6 @@ void FGPUTriangleCullCS::PrepareResources(FRHI * RHI, const vector2di& RTSize, F
 	ResourceTable = RHI->CreateRenderResourceTable(8, EHT_SHADER_RESOURCE);
 	ResourceTable->PutTextureInTable(HiZTexture, 5);
 
-	// Create a command buffer that big enough for triangle culling
-	TriangleCullResults = RHI->CreateUniformBuffer(sizeof(uint32), MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	TriangleCullResults->SetResourceName("TriangleCullResults");
-	RHI->UpdateHardwareResourceUB(TriangleCullResults, nullptr);
-
-	DebugGroup = RHI->CreateUniformBuffer(sizeof(FFloat4) * 5, MAX_TRIANGLE_VISIBLE_COUNT, UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
-	DebugGroup->SetResourceName("TriangleCullDebug");
-	RHI->UpdateHardwareResourceUB(DebugGroup, nullptr);
-
 	// Create counter reset
 	CounterReset = ti_new FCounterReset;
 	CounterReset->UniformBufferData[0].Zero = 0;
@@ -65,9 +56,18 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	FMeshBufferPtr InSceneMergedMeshBuffer,
 	FInstanceBufferPtr InSceneInstanceData,
 	FUniformBufferPtr SceneMeshBufferInfo,
-	FUniformBufferPtr InVisibleClusters
+	FUniformBufferPtr InVisibleClusters,
+	FGPUCommandBufferPtr InClusterCommandBuffer
 )
 {
+	if (VisibleTriangleIndex == nullptr || VisibleTriangleIndex->GetElements() != InSceneMergedMeshBuffer->GetIndicesCount() / 3)
+	{
+		// Create a command buffer that big enough for triangle culling
+		VisibleTriangleIndex = RHI->CreateUniformBuffer(sizeof(uint32) * 3, InSceneMergedMeshBuffer->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
+		VisibleTriangleIndex->SetResourceName("VisibleTriangleIndex");
+		RHI->UpdateHardwareResourceUB(VisibleTriangleIndex, nullptr);
+	}
+
 	CullUniform->UniformBufferData[0].ViewDir = ViewDir;
 	CullUniform->UniformBufferData[0].ViewProjection = ViewProjection;
 	for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
@@ -87,11 +87,12 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 	ResourceTable->PutUniformBufferInTable(InVisibleClusters, 4);
 
 	// Output uavs
-	ResourceTable->PutUniformBufferInTable(TriangleCullResults, 6);
-	ResourceTable->PutUniformBufferInTable(DebugGroup, 7);
+	ResourceTable->PutUniformBufferInTable(VisibleTriangleIndex, 6);
+	ResourceTable->PutUniformBufferInTable(InClusterCommandBuffer->GetCommandBuffer(), 7);
 
 	SceneInstanceData = InSceneInstanceData;
 	VisibleClusters = InVisibleClusters;
+	ClusterGPUCommandBufferRef = InClusterCommandBuffer;
 }
 
 void FGPUTriangleCullCS::Run(FRHI * RHI)
@@ -102,14 +103,8 @@ void FGPUTriangleCullCS::Run(FRHI * RHI)
 	// Reset command buffer counter
 	//RHI->SetResourceStateUB(TriangleCullResults, RESOURCE_STATE_COPY_DEST);
 	RHI->ComputeCopyBuffer(
-		TriangleCullResults,
-		TriangleCullResults->GetCounterOffset(),
-		CounterReset->UniformBuffer,
-		0,
-		sizeof(uint32));
-	RHI->ComputeCopyBuffer(
-		DebugGroup,
-		DebugGroup->GetCounterOffset(),
+		ClusterGPUCommandBufferRef->GetCommandBuffer(),
+		ClusterGPUCommandBufferRef->GetCommandBuffer()->GetCounterOffset(),
 		CounterReset->UniformBuffer,
 		0,
 		sizeof(uint32));

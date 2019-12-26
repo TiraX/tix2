@@ -55,17 +55,10 @@ struct FClusterMetaInfo
 	uint4 Info;
 };
 
-struct FDebugInfo
+struct FIndirectCommand
 {
-	float3 VertexP;
-	float Mip;
-	float HiZ;
-	float MinZ;
-	float IsCulled;
-	float Padding;
-	uint4 Indices;
-	float4 Vertex;
-	float4 VPPosition;
+	uint4 DrawArguments0;	// x=IndexCountPerInstance,y=InstanceCount,z=StartIndexLocation,w=BaseVertexLocation
+	uint DrawArguments1;	// x=StartInstanceLocation
 };
 
 StructuredBuffer<float> VertexData : register(t0);
@@ -75,8 +68,8 @@ StructuredBuffer<FSceneMeshBufferInfo> SceneMeshBufferInfo : register(t3);
 StructuredBuffer<FClusterMetaInfo> VisibleClusters : register(t4);
 Texture2D<float> HiZTexture : register(t5);
 
-AppendStructuredBuffer<uint> TriangleCullingCommand : register(u0);	// Visible triangles
-AppendStructuredBuffer<FDebugInfo> DebugGroup : register(u1);	// Visible triangles
+RWStructuredBuffer<uint3> VisibleTriangleIndex : register(u0);	// Visible triangles
+AppendStructuredBuffer<FIndirectCommand> IndirectCommands : register(u1);	// Visible triangles
 
 SamplerState PointSampler : register(s0);
 
@@ -103,7 +96,7 @@ float3 GetWorldPosition(FInstanceTransform Transform, float3 P)
 	return Position;
 }
 
-bool HiZTriangle(float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip)
+bool HiZTriangle(float4 vertices[3])
 {
 	bool cull = false;
 
@@ -162,9 +155,6 @@ bool HiZTriangle(float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip)
 	//find the max depth
 	float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
 
-	oDebugMaxZ = float4(maxDepth, minZ, minZ > maxDepth ? 1.0 : 0.0, 1.0);
-	oDebugMip = Mip;
-
 	if (minZ > maxDepth)
 	{
 		// Cull it
@@ -173,12 +163,9 @@ bool HiZTriangle(float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip)
 	return cull;
 }
 
-bool CullTriangle(uint indices[3], float4 vertices[3], out float4 oDebugMaxZ, out uint oDebugMip, out uint oHiZCull)
+bool CullTriangle(uint indices[3], float4 vertices[3])
 {
 	bool cull = false;
-	oDebugMaxZ = 0.0;
-	oDebugMip = 0;
-	oHiZCull = 0;
 
 	// Zero face cull
 	if (indices[0] == indices[1]
@@ -203,10 +190,9 @@ bool CullTriangle(uint indices[3], float4 vertices[3], out float4 oDebugMaxZ, ou
 		return true;
 
 	// Occlusion culling
-	cull = HiZTriangle(vertices, oDebugMaxZ, oDebugMip);
+	cull = HiZTriangle(vertices);
 	if (cull)
 	{
-		oHiZCull = 1;
 		return true;
 	}
 
@@ -244,10 +230,16 @@ bool CullTriangle(uint indices[3], float4 vertices[3], out float4 oDebugMaxZ, ou
 
 #define threadBlockSize 128
 
+groupshared uint localValidDraws;
+
 [RootSignature(TriangleCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
+	if (threadIDInGroup.x == 0)
+		localValidDraws = 0;
+	GroupMemoryBarrierWithGroupSync();
+
 	uint ClusterIndex = groupId.x;
 	if (ClusterIndex >= VisibleClusterCount.x)
 		return;
@@ -287,27 +279,40 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	oIndex.w = IndexDataIndex;
 	//DebugGroup.Append(Vertices[0]);
 	// Perform cull
-	float4 debugZ;
-	uint debugMip, debugHiZ;
-	if (!CullTriangle(Indices, Vertices, debugZ, debugMip, debugHiZ))
+	if (!CullTriangle(Indices, Vertices))
 	{
-		TriangleCullingCommand.Append(1);
+		// remember visible triangle index
+		uint3 TIndex;
+		TIndex.x = Indices[0];
+		TIndex.y = Indices[1];
+		TIndex.z = Indices[2];
+		//VisibleTriangleIndex.Append(TIndex);
+
+		// remember visible triangle count
+		uint localCount;
+		InterlockedAdd(localValidDraws, 1, localCount);
+
+		VisibleTriangleIndex[localCount + ClusterIndex * 128] = TIndex;
 	}
 
-	FDebugInfo DInfo;
-	float4 dbg_v = Vertices[0];
-	dbg_v /= dbg_v.w;
-	dbg_v.xy = dbg_v.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
-	dbg_v.w = debugMip;
-	DInfo.VertexP = dbg_v.xyz;
-	DInfo.Mip = debugMip;
-	DInfo.HiZ = debugZ.x;
-	DInfo.MinZ = debugZ.y;
-	DInfo.IsCulled = debugZ.z;
-	DInfo.Padding = 0.5;
-	DInfo.Indices = oIndex;
-	DInfo.Vertex = float4(Vertex, 0.925);
-	DInfo.VPPosition = Vertices[0];
+	// record indirect draw commands
+	GroupMemoryBarrierWithGroupSync();
+	if (threadIDInGroup.x == 0 && localValidDraws > 0)
+	{
+		//struct FIndirectCommand
+		//{
+		//	uint4 DrawArguments0;	// x=IndexCountPerInstance,y=InstanceCount,z=StartIndexLocation,w=BaseVertexLocation
+		//	uint DrawArguments1;	// x=StartInstanceLocation
+		//};
 
-	DebugGroup.Append(DInfo);
+		uint VerticesOffset = VertexDataOffset / 24;
+		FIndirectCommand Cmd;
+		Cmd.DrawArguments0.x = localValidDraws * 3;
+		Cmd.DrawArguments0.y = 1;
+		Cmd.DrawArguments0.z = ClusterIndex * 128;
+		Cmd.DrawArguments0.w = VerticesOffset;
+		Cmd.DrawArguments1   = InstanceIndex;
+
+		IndirectCommands.Append(Cmd);
+	}
 }

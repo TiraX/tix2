@@ -34,6 +34,7 @@ public:
 private:
 	void UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene);
 	void DrawGPUCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr InGPUCommandBuffer);
+	void DrawGPUCommandBufferCluster(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr InGPUCommandBuffer);
 	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 	void SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene);
@@ -55,6 +56,9 @@ private:
 	FGPUCommandBufferPtr GPUCommandBuffer;
 	FGPUCommandBufferPtr GPUCommandBufferTest;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
+
+	FGPUCommandSignaturePtr GPUCommandSignatureCluster;
+	FGPUCommandBufferPtr GPUCommandBufferCluster;
 
 	FGPUCommandSignaturePtr PreZGPUCommandSignature;
 	FGPUCommandBufferPtr PreZGPUCommandBuffer;

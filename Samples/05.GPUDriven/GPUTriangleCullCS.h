@@ -20,7 +20,8 @@ public:
 		FMeshBufferPtr InSceneMergedMeshBuffer,
 		FInstanceBufferPtr SceneInstanceData,
 		FUniformBufferPtr SceneMeshBufferInfo,
-		FUniformBufferPtr InVisibleClusters);
+		FUniformBufferPtr InVisibleClusters,
+		FGPUCommandBufferPtr InClusterCommandBuffer);
 	virtual void Run(FRHI * RHI) override;
 
 	//FGPUCommandBufferPtr GetDispatchCommandBuffer()
@@ -36,8 +37,8 @@ private:
 	FInstanceBufferPtr SceneInstanceData;
 
 	FCounterResetPtr CounterReset;
-	FUniformBufferPtr TriangleCullResults;
-	FUniformBufferPtr DebugGroup;
+	FUniformBufferPtr VisibleTriangleIndex;
+	FGPUCommandBufferPtr ClusterGPUCommandBufferRef;
 
 	FUniformBufferPtr VisibleClusters;
 
