@@ -82,7 +82,7 @@ void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 		{
 			const auto& BBox = ClusterBBoxes[c];
 			const auto& Cone = ClusterCones[c];
-			_LOG(Log, "    [%f,%f,%f]-[%f,%f,%f] | [%f]-[%f]\n",
+			_LOG(Log, "    [%f, %f, %f]-[%f, %f, %f] | [%f, %f, %f]-[%f]\n",
 				BBox.MinEdge.X, BBox.MinEdge.Y, BBox.MinEdge.Z,
 				BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z,
 				Cone.X, Cone.Y, Cone.Z, Cone.W);
