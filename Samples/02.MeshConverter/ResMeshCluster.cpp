@@ -57,7 +57,7 @@ TSphere TResMeshCluster::GetBoundingSphere(const TVector<vector3df>& Points)
 static int32 _debug_index = 0;
 void TResMeshCluster::GenerateCluster(uint32 ClusterTriangles)
 {
-	static const bool bExportDebugObjFile = TResSettings::GlobalSettings.ClusterVerbose;
+	const bool bExportDebugObjFile = TResSettings::GlobalSettings.ClusterVerbose;
 	if (bExportDebugObjFile)
 	{
 		char debug_name[64];
