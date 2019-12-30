@@ -150,9 +150,20 @@ inline vector3di GetVolumeCellCount(const aabbox3df& VolumeBox)
 	vector3di VolumeCellCount;
 	for (int32 i = 0; i < 3; ++i)
 	{
-		VolumeCellCount[i] = ti_round(VolumeSize[i] / VolumeCellSize);
+		VolumeCellCount[i] = (int32)ceil(VolumeSize[i] / VolumeCellSize);
+		VolumeCellCount[i] = ti_max(1, VolumeCellCount[i]);
 	}
 	return VolumeCellCount;
+}
+inline vector3di GetVolumeCellOffsetFrom(const vector3df& Start, const vector3df& Pos)
+{
+	vector3df Offset = Pos - Start;
+	vector3di VolumeCellOffset;
+	for (int32 i = 0; i < 3; ++i)
+	{
+		VolumeCellOffset[i] = ti_round(Offset[i] / VolumeCellSize);
+	}
+	return VolumeCellOffset;
 }
 inline uint32 GetCellIndex(const vector3di& CellPosition, const vector3di& VolumeCellCount)
 {
@@ -177,12 +188,14 @@ void TResMeshCluster::ScatterToVolume()
 
 	// Determine VolumeCellSize
 	MeshVolume = GetBoundingVolume(BBox);
+	MeshVolume.extend(1.06f);
 	MeshVolumeCellCount = GetVolumeCellCount(MeshVolume);
 	static const int32 TargetCellCount = 6;
 	while (MeshVolumeCellCount.X * MeshVolumeCellCount.Y * MeshVolumeCellCount.Z > TargetCellCount * TargetCellCount * TargetCellCount)
 	{
 		VolumeCellSize += 1.f;
 		MeshVolume = GetBoundingVolume(BBox);
+		MeshVolume.extend(1.06f);
 		MeshVolumeCellCount = GetVolumeCellCount(MeshVolume);
 	}
 	VolumeCells.resize(MeshVolumeCellCount.X * MeshVolumeCellCount.Y * MeshVolumeCellCount.Z);
@@ -204,7 +217,7 @@ void TResMeshCluster::ScatterToVolume()
 		aabbox3df VolumeBox = GetBoundingVolume(Box);
 
 		vector3di VolumeCellCount = GetVolumeCellCount(VolumeBox);
-		vector3di VolumeCellStart = GetVolumeCellCount(aabbox3df(MeshVolume.MinEdge, VolumeBox.MinEdge));
+		vector3di VolumeCellStart = GetVolumeCellOffsetFrom(MeshVolume.MinEdge, VolumeBox.MinEdge);
 
 		for (int32 z = 0; z < VolumeCellCount.Z; ++z)
 		{
@@ -215,6 +228,7 @@ void TResMeshCluster::ScatterToVolume()
 					aabbox3df Cell;
 					Cell.MinEdge = VolumeBox.MinEdge + vector3df(VolumeCellSize * x, VolumeCellSize * y, VolumeCellSize * z);
 					Cell.MaxEdge = Cell.MinEdge + vector3df(VolumeCellSize, VolumeCellSize, VolumeCellSize);
+					Cell.extend(1.05f);
 
 					if (Triangle.isIntersectWithBox(Cell))
 					{
