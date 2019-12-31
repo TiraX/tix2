@@ -319,7 +319,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		//	uint DrawArguments1;	// x=StartInstanceLocation
 		//};
 
-		uint VerticesOffset = VertexDataOffset / 24;
+		uint VerticesOffset = VertexDataOffset / 6;
 		FIndirectCommand Cmd;
 		Cmd.DrawArguments0.x = localValidDraws * 3;
 		Cmd.DrawArguments0.y = 1;

@@ -302,6 +302,7 @@ namespace tix
 				}
 			}
 			TI_ASSERT(TotalVertexCount > 0 && TotalIndexCount > 0);
+			TI_TODO("Collected mesh buffer may be duplicated. Remove duplicated mesh. Copy a unique ONE.");
 
 			// Copy all data into one big buffer
 			const uint32 VertexStride = TMeshBuffer::GetStrideFromFormat(VBFormat);
