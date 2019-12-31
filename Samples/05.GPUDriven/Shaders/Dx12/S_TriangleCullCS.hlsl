@@ -41,8 +41,8 @@ struct FInstanceTransform
 
 struct FSceneMeshBufferInfo
 {
-	// Info.x = Vertex data offsets in bytes
-	// Info.y = Index data offsets in bytes
+	// Info.x = Vertex data offsets in floats
+	// Info.y = Index data offsets in uint
 	uint4 Info;
 };
 
