@@ -14,6 +14,13 @@ namespace tix
 		TMeshBuffer();
 		~TMeshBuffer();
 
+		struct TMeshClusterData
+		{
+			FFloat4 MinEdge;
+			FFloat4 MaxEdge;
+			FFloat4 Cone;
+		};
+
 		static const int32 SemanticSize[ESSI_TOTAL];
 		static const int8* SemanticName[ESSI_TOTAL];
 		static const int32 SemanticIndex[ESSI_TOTAL];
@@ -122,7 +129,7 @@ namespace tix
 		uint8* PsData;
 		uint32 PsDataCount;
 
-		uint8* ClusterData;
+		TMeshClusterData* ClusterData;
 		uint32 ClusterCount;
 
 		uint32 VsFormat;

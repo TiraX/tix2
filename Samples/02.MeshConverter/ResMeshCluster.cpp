@@ -15,11 +15,12 @@ TResMeshCluster::TResMeshCluster()
 {
 }
 
-TResMeshCluster::TResMeshCluster(const TVector<vector3df>& PosArray, const TVector<vector3di>& PrimsArray, const TString& InMeshName, int32 InSection)
+TResMeshCluster::TResMeshCluster(const TVector<vector3df>& PosArray, const TVector<vector3df>& NormalArray, const TVector<vector3di>& PrimsArray, const TString& InMeshName, int32 InSection)
 	: MeshName(InMeshName)
 	, Section(InSection)
 {
 	P = PosArray;
+	N = NormalArray;
 	Prims = PrimsArray;
 
 	// Calc bbox
@@ -115,9 +116,17 @@ void TResMeshCluster::CalcPrimNormals()
 
 		vector3df P10 = P1 - P0;
 		vector3df P20 = P2 - P0;
-		vector3df N = P10.crossProduct(P20);
-		N.normalize();
-		PrimsN.push_back(N);
+		vector3df PrimN = P10.crossProduct(P20);
+		PrimN.normalize();
+		PrimsN.push_back(PrimN);
+
+		// Validate Face normal
+		const vector3df& PN0 = N[Prim.X];
+		const vector3df& PN1 = N[Prim.Y];
+		const vector3df& PN2 = N[Prim.Z];
+
+		const float AngleLimit = cos(DEG_TO_RAD(15));
+		TI_ASSERT(PN0.dotProduct(PrimN) > AngleLimit && PN1.dotProduct(PrimN) > AngleLimit && PN2.dotProduct(PrimN) > AngleLimit);
 	}
 }
 

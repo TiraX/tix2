@@ -24,6 +24,11 @@ public:
 		FGPUCommandBufferPtr InClusterCommandBuffer);
 	virtual void Run(FRHI * RHI) override;
 
+	FUniformBufferPtr GetCulledTriangleIndexBuffer()
+	{
+		return VisibleTriangleIndex;
+	}
+
 	//FGPUCommandBufferPtr GetDispatchCommandBuffer()
 	//{
 	//	return GPUCommandBuffer;

@@ -337,7 +337,8 @@ void FGPUDrivenRenderer::DrawGPUCommandBufferCluster(FRHI * RHI, FScene * Scene,
 		RHI->SetResourceStateMB(SceneMetaInfo->GetMergedSceneMeshBuffer(), RESOURCE_STATE_MESHBUFFER);
 		RHI->SetResourceStateInsB(SceneMetaInfo->GetMergedInstanceBuffer(), RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
-		RHI->SetMeshBufferAtSlot(0, SceneMetaInfo->GetMergedSceneMeshBuffer());
+		RHI->SetVertexBufferAtSlot(0, SceneMetaInfo->GetMergedSceneMeshBuffer());
+		RHI->SetIndexBufferFromUniformBuffer(TriangleCullCS->GetCulledTriangleIndexBuffer());
 		RHI->SetInstanceBufferAtSlot(1, SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->SetGraphicsPipeline(InGPUCommandBuffer->GetGPUCommandSignature()->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
@@ -437,7 +438,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 					SceneMetaInfo->GetSceneInstancesAdded());
 			}
 		}
-		if (SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneClusterMetaDirty))
+		if (Scene->HasSceneFlag(FScene::ViewProjectionDirty) || 
+			SceneMetaInfo->HasMetaFlag(FSceneMetaInfos::MetaFlag_SceneClusterMetaDirty))
 		{
 			const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
 			FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;

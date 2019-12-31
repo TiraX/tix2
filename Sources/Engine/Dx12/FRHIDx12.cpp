@@ -2825,6 +2825,36 @@ namespace tix
 		HoldResourceReference(InMeshBuffer);
 	}
 
+	void FRHIDx12::SetVertexBufferAtSlot(uint32 StartSlot, FMeshBufferPtr InMeshBuffer)
+	{
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+		CurrentWorkingCommandList->IASetVertexBuffers(StartSlot, 1, &MBDx12->VertexBufferView);
+
+		HoldResourceReference(InMeshBuffer);
+	}
+	
+	void FRHIDx12::SetIndexBufferFromMeshBuffer(FMeshBufferPtr InMeshBuffer)
+	{
+		FMeshBufferDx12* MBDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
+		CurrentWorkingCommandList->IASetIndexBuffer(&MBDx12->IndexBufferView);
+
+		HoldResourceReference(InMeshBuffer);
+	}
+
+	void FRHIDx12::SetIndexBufferFromUniformBuffer(FUniformBufferPtr InIndexBuffer)
+	{
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InIndexBuffer.get());
+
+		D3D12_INDEX_BUFFER_VIEW IndexBufferView;
+		IndexBufferView.BufferLocation = UBDx12->BufferResource.GetResource()->GetGPUVirtualAddress();
+		IndexBufferView.SizeInBytes = UBDx12->GetTotalBufferSize();
+		IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
+		CurrentWorkingCommandList->IASetIndexBuffer(&IndexBufferView);
+
+		HoldResourceReference(InIndexBuffer);
+	}
+
 	void FRHIDx12::SetInstanceBufferAtSlot(uint32 StartSlot, FInstanceBufferPtr InInstanceBuffer)
 	{
 		FInstanceBufferDx12* IBDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());

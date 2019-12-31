@@ -303,11 +303,11 @@ namespace tix
 				const uint32 ClusterCount = (uint32)Mesh.ClusterBBoxes.size();
 				for (uint32 c = 0 ; c < ClusterCount ; ++ c)
 				{
-					TMeshCluster Cluster;
+					TMeshClusterDef Cluster;
 					Cluster.BBox = Mesh.ClusterBBoxes[c];
 					Cluster.Cone = Mesh.ClusterCones[c];
 
-					DataStream.Put(&Cluster, sizeof(TMeshCluster));
+					DataStream.Put(&Cluster, sizeof(TMeshClusterDef));
 				}
 			}
 
@@ -379,14 +379,18 @@ namespace tix
 		virtual void Exec() override
 		{
 			const float* Positions = MeshSection->Segments[ESSI_POSITION].Data;
+			const float* Normals = MeshSection->Segments[ESSI_NORMAL].Data;
 			const int32 StrideInFloat = MeshSection->Segments[ESSI_POSITION].StrideInFloat;
-			TVector<vector3df> PosArray;
+			TVector<vector3df> PosArray, NormalArray;
 			PosArray.resize(MeshSection->NumVertices);
+			NormalArray.resize(MeshSection->NumVertices);
 			int32 DataOffset = 0;
 			for (int32 v = 0; v < MeshSection->NumVertices; ++v)
 			{
 				vector3df P(Positions[DataOffset + 0], Positions[DataOffset + 1], Positions[DataOffset + 2]);
 				PosArray[v] = P;
+				vector3df N(Normals[DataOffset + 0], Normals[DataOffset + 1], Normals[DataOffset + 2]);
+				NormalArray[v] = N;
 				DataOffset += StrideInFloat;
 			}
 
@@ -398,7 +402,7 @@ namespace tix
 				PrimArray[f / 3] = F;
 			}
 
-			TResMeshCluster MC(PosArray, PrimArray, MeshName, Section);
+			TResMeshCluster MC(PosArray, NormalArray, PrimArray, MeshName, Section);
 			MC.GenerateCluster(TResSettings::GlobalSettings.MeshClusterSize);
 
 			MeshSection->ClusterIndices = MC.ClusterIndices;

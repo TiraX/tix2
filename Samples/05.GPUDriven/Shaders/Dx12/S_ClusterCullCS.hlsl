@@ -122,7 +122,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
 	uint Result = 0;
 	// Orientition cull
-	if (dot(ViewDir, Cluster.Cone.xyz) < Cluster.Cone.w)
+	if (dot(-ViewDir, Cluster.Cone.xyz) < Cluster.Cone.w)
 	{
 		// cull it
 	}

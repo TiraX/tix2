@@ -359,7 +359,7 @@ namespace tix
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 
 			// Calc total size of clusters
-			const uint32 ClusterDataSize = sizeof(TMeshCluster);
+			const uint32 ClusterDataSize = sizeof(TMeshBuffer::TMeshClusterData);
 
 			uint32 TotalClusterMetas = 0;
 			for (const auto& TilePos : SortedTilePositions)

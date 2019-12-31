@@ -163,6 +163,9 @@ namespace tix
 		virtual void SetGraphicsPipeline(FPipelinePtr InPipeline) = 0;
 		virtual void SetMeshBuffer(FMeshBufferPtr InMeshBuffer, FInstanceBufferPtr InInstanceBuffer) = 0;
 		virtual void SetMeshBufferAtSlot(uint32 StartSlot, FMeshBufferPtr InMeshBuffer) = 0;
+		virtual void SetVertexBufferAtSlot(uint32 StartSlot, FMeshBufferPtr InMeshBuffer) = 0;
+		virtual void SetIndexBufferFromMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
+		virtual void SetIndexBufferFromUniformBuffer(FUniformBufferPtr InIndexBuffer) = 0;
 		virtual void SetInstanceBufferAtSlot(uint32 StartSlot, FInstanceBufferPtr InInstanceBuffer) = 0;
 		virtual void SetUniformBuffer(E_SHADER_STAGE ShaderStage, int32 BindIndex, FUniformBufferPtr InUniformBuffer) = 0;
 		virtual void SetRenderResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable) = 0;

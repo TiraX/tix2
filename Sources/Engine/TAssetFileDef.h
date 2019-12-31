@@ -168,7 +168,7 @@ namespace tix
 		}
 	};
 
-	struct TMeshCluster
+	struct TMeshClusterDef
 	{
 		aabbox3df BBox;
 		vector4df Cone;

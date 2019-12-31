@@ -28,7 +28,7 @@ namespace tix
 	{
 		SAFE_DELETE(VsData);
 		SAFE_DELETE(PsData);
-		SAFE_DELETE(ClusterData);
+		SAFE_DELETE_ARRAY(ClusterData);
 	}
 
 	uint32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
@@ -65,7 +65,7 @@ namespace tix
 		if (ClusterCount > 0)
 		{
 			TI_ASSERT(MeshClusterDataResource == nullptr);
-			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshCluster), ClusterCount, UB_FLAG_INTERMEDIATE);
+			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshClusterData), ClusterCount, UB_FLAG_INTERMEDIATE);
 		}
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TMeshBufferUpdateFMeshBuffer,
@@ -125,9 +125,14 @@ namespace tix
 	{
 		ClusterCount = InClusterCount;
 		TI_ASSERT(ClusterData == nullptr);
-		const uint32 ClusterDataSize = InClusterCount * sizeof(TMeshCluster);
-		ClusterData = ti_new uint8[ClusterDataSize];
-		memcpy(ClusterData, InClusterData, ClusterDataSize);
+		ClusterData = ti_new TMeshClusterData[InClusterCount];
+		const TMeshClusterDef* InData = (const TMeshClusterDef*)InClusterData;
+		for (uint32 c = 0 ; c < InClusterCount ; ++ c)
+		{
+			ClusterData[c].MinEdge = InData[c].BBox.MinEdge;
+			ClusterData[c].MaxEdge = InData[c].BBox.MaxEdge;
+			ClusterData[c].Cone = InData[c].Cone;
+		}
 	}
 
 	///////////////////////////////////////////////////////////

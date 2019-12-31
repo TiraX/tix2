@@ -210,7 +210,7 @@ namespace tix
 			Mesh->SetBBox(Header->BBox);
 			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride)		// Vertex data size
 				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3))	// Index data size
-				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshCluster)));	// Cluster data size
+				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshClusterDef)));	// Cluster data size
 			TI_ASSERT(Header->PrimitiveCount == Header->Clusters * Header->ClusterSize);
 
 			FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
