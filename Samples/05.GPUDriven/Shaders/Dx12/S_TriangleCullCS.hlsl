@@ -194,7 +194,7 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 	{
 		vertices[0].xyw, vertices[1].xyw, vertices[2].xyw
 	};
-	cull = cull || (determinant(m) > 0);
+	cull = cull || (determinant(m) < 0);
 	if (cull)
 		return true;
 
