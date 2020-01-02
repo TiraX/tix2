@@ -62,12 +62,13 @@ void FGPUTriangleCullCS::UpdateComputeArguments(
 {
 	if (VisibleTriangleIndex == nullptr || VisibleTriangleIndex->GetElements() != InSceneMergedMeshBuffer->GetIndicesCount() / 3)
 	{
+		const uint32 MaxTriangleCount = InSceneMergedMeshBuffer->GetIndicesCount() / 3 * InSceneInstanceData->GetInstancesCount();
 		// Create a command buffer that big enough for triangle culling
-		VisibleTriangleIndex = RHI->CreateUniformBuffer(sizeof(uint32) * 3, InSceneMergedMeshBuffer->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
+		VisibleTriangleIndex = RHI->CreateUniformBuffer(sizeof(uint32) * 3, MaxTriangleCount, UB_FLAG_COMPUTE_WRITABLE);
 		VisibleTriangleIndex->SetResourceName("VisibleTriangleIndex");
 		RHI->UpdateHardwareResourceUB(VisibleTriangleIndex, nullptr);
 
-		DebugGroup = RHI->CreateUniformBuffer(sizeof(uint32) * 4, InSceneMergedMeshBuffer->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
+		DebugGroup = RHI->CreateUniformBuffer(sizeof(uint32) * 4, MaxTriangleCount, UB_FLAG_COMPUTE_WRITABLE);
 		DebugGroup->SetResourceName("VisibleTriangleIndexDebug");
 		RHI->UpdateHardwareResourceUB(DebugGroup, nullptr);
 	}
