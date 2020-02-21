@@ -1,0 +1,10 @@
+{
+	"name": "DepthOnlyMaterial",
+	"type": "material_instance",
+	"version": 1,
+	"desc": "Material instance from TiX exporter.",
+	"linked_material": "M_DepthOnly.tasset",
+	"parameters":
+	{
+	}
+}
