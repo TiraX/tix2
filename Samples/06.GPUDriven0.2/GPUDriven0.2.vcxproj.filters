@@ -22,37 +22,10 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GPUInstanceFrustumCullCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUTileFrustumCullCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CopyVisibleTileCommandBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SceneMetaInfos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CopyVisibleInstances.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HiZDownSampleCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUInstanceOcclusionCullCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUClusterCullCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GenerateClusterCullIndirectCommand.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPUTriangleCullCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GenerateTriangleCullIndirectCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -66,47 +39,14 @@
     <ClInclude Include="stdafx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPUInstanceFrustumCullCS.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUTileFrustumCullCS.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CopyVisibleTileCommandBuffer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="SceneMetaInfos.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CopyVisibleInstances.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="HiZDownSampleCS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPUInstanceOcclusionCullCS.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUClusterCullCS.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUComputeUniforms.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GenerateClusterCullIndirectCommand.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUTriangleCullCS.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GenerateTriangleCullIndirectCommand.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Dx12\Common.hlsli">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="Shaders\Dx12\PS_Common.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
@@ -124,37 +64,10 @@
     <FxCompile Include="Shaders\Dx12\S_DebugOpaqueVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_InstanceFrustumCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TileFrustumCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CopyVisibleTileCommandBuffer.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CopyVisibleInstances.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DepthOnlyVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_HiZDownSampleCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_InstanceOcclusionCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_GenerateClusterCullIndirectCommandCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_GenerateTriangleCullIndirectCommandCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

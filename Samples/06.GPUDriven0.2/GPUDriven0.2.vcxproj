@@ -165,18 +165,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CopyVisibleInstances.cpp" />
-    <ClCompile Include="CopyVisibleTileCommandBuffer.cpp" />
-    <ClCompile Include="GenerateClusterCullIndirectCommand.cpp" />
-    <ClCompile Include="GenerateTriangleCullIndirectCommand.cpp" />
-    <ClCompile Include="GPUClusterCullCS.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
     <ClCompile Include="GPUDrivenTicker.cpp" />
-    <ClCompile Include="GPUInstanceFrustumCullCS.cpp" />
-    <ClCompile Include="GPUInstanceOcclusionCullCS.cpp" />
-    <ClCompile Include="GPUTileFrustumCullCS.cpp" />
-    <ClCompile Include="GPUTriangleCullCS.cpp" />
     <ClCompile Include="HiZDownSampleCS.cpp" />
     <ClCompile Include="SceneMetaInfos.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -185,47 +176,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CopyVisibleInstances.h" />
-    <ClInclude Include="CopyVisibleTileCommandBuffer.h" />
-    <ClInclude Include="GenerateClusterCullIndirectCommand.h" />
-    <ClInclude Include="GenerateTriangleCullIndirectCommand.h" />
-    <ClInclude Include="GPUComputeUniforms.h" />
-    <ClInclude Include="GPUClusterCullCS.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
     <ClInclude Include="GPUDrivenTicker.h" />
-    <ClInclude Include="GPUInstanceFrustumCullCS.h" />
-    <ClInclude Include="GPUInstanceOcclusionCullCS.h" />
-    <ClInclude Include="GPUTileFrustumCullCS.h" />
-    <ClInclude Include="GPUTriangleCullCS.h" />
     <ClInclude Include="HiZDownSampleCS.h" />
     <ClInclude Include="SceneMetaInfos.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Dx12\Common.hlsli" />
     <None Include="Shaders\Dx12\PS_Common.hlsli" />
     <None Include="Shaders\Dx12\S_BasePassRS.hlsli" />
     <None Include="Shaders\Dx12\VS_Instanced.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CopyVisibleInstances.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CopyVisibleTileCommandBuffer.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -244,43 +206,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_GenerateClusterCullIndirectCommandCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_GenerateTriangleCullIndirectCommandCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_HiZDownSampleCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_InstanceFrustumCullCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_InstanceOcclusionCullCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TileFrustumCullCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
