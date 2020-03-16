@@ -72,10 +72,8 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.resize(3);
-	CommandStructure[0] = GPU_COMMAND_SET_VERTEX_BUFFER;
-	CommandStructure[1] = GPU_COMMAND_SET_INDEX_BUFFER;
-	CommandStructure[2] = GPU_COMMAND_DRAW_INDEXED;
+	CommandStructure.resize(1);
+	CommandStructure[0] = GPU_COMMAND_DRAW_INDEXED;
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
@@ -84,13 +82,36 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
 }
 
+void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene)
+{
+	if (SceneMetaInfo->GetGPUCommandBuffer() != nullptr)
+	{
+		RHI->SetResourceStateCB(SceneMetaInfo->GetGPUCommandBuffer(), RESOURCE_STATE_INDIRECT_ARGUMENT);
+		RHI->SetMeshBuffer(SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer());
+		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
+		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+		RHI->ExecuteGPUDrawCommands(SceneMetaInfo->GetGPUCommandBuffer());
+	}
+}
+
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	static bool bPerformGPUCulling = true;
-	static bool bOcclusionCull = true;
-	static bool Indirect = !false;
-	static bool DrawCulled = !false;
+	// Merge all instances and meshes into a big one
+	SceneMetaInfo->PrepareSceneResources(RHI, Scene, GPUCommandSignature);
 
+	TI_TODO("Use depth from last frame. Think carefully about it. NOT a clear solution yet.");
+	{
+		// Do test
+		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+		TestDrawSceneIndirectCommandBuffer(RHI, Scene);
+	}
+	// Frustum cull instances before preZ
+
+	// Render preZ depth
+
+	// Option1: Instance occlusion cull / Cluster cull / Triangle cull
+
+	// Option2: Cluster cull / Triangle cull
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

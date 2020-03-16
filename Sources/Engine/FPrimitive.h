@@ -39,6 +39,7 @@ namespace tix
 
 		void SetGlobalInstanceOffset(uint32 InOffset)
 		{
+			TI_TODO("Remove GlobalInstanceOffset in future.");
 			GlobalInstanceOffset = InOffset;
 		}
 

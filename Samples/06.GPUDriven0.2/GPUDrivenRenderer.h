@@ -20,6 +20,7 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
+	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene);
 
 private:
 	FSceneMetaInfos * SceneMetaInfo;
@@ -30,7 +31,6 @@ private:
 	FRenderTargetPtr RT_BasePass;
 
 	FGPUCommandSignaturePtr GPUCommandSignature;
-	FGPUCommandBufferPtr GPUCommandBuffer;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
 
 	FGPUCommandSignaturePtr PreZGPUCommandSignature;

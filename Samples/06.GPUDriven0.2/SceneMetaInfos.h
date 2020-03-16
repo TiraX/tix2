@@ -13,12 +13,27 @@ namespace tix
 		FSceneMetaInfos();
 		~FSceneMetaInfos();
 
+		void PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUCommandSignaturePtr CommandSignature);
 
+		FInstanceBufferPtr GetMergedInstanceBuffer()
+		{
+			return MergedInstanceBuffer;
+		}
+		FMeshBufferPtr GetMergedSceneMeshBuffer()
+		{
+			return MergedMeshBuffer;
+		}
+		FGPUCommandBufferPtr GetGPUCommandBuffer()
+		{
+			return GPUCommandBuffer;
+		}
 	private:
 
 
 	private:
-		uint32 SceneMetaFlags;
+		FInstanceBufferPtr MergedInstanceBuffer;
+		FMeshBufferPtr MergedMeshBuffer;
+		FGPUCommandBufferPtr GPUCommandBuffer;
 
 		friend class FScene;
 	};
