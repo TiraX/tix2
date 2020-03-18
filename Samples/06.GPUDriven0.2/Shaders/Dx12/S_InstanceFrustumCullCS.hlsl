@@ -11,7 +11,7 @@
 
 #define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1)),"
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=2)),"
 
 
 cbuffer FFrustum : register(b0)
@@ -19,11 +19,6 @@ cbuffer FFrustum : register(b0)
 	float4 BBoxMin;
 	float4 BBoxMax;
 	float4 Planes[6];
-};
-
-struct FVisibleInfo
-{
-	uint Visible;
 };
 
 struct FBBox
@@ -34,7 +29,7 @@ struct FBBox
 
 struct FInstanceMetaInfo
 {
-	// x = primitive index
+	// x = draw call index
 	uint4 Info;
 };
 
@@ -46,11 +41,25 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
+struct FDrawInstanceCommand
+{
+	//uint32 IndexCountPerInstance;
+	//uint32 InstanceCount;
+	//uint32 StartIndexLocation;
+	//uint32 BaseVertexLocation;
+	//uint32 StartInstanceLocation;
+	uint4 Params;
+	uint Param;
+};
+
+
 StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
 StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
+StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
 
-RWStructuredBuffer<FVisibleInfo> VisibleInfo : register(u0);	// Cull result, if this instance is visible
+RWStructuredBuffer<FInstanceTransform> OutputInstanceData : register(u0);
+RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);
 
 inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
 {
@@ -91,34 +100,32 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint Result = 0;
-	if (InstanceMetaInfo[InstanceIndex].Info.w > 0)
+	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+
+	// Transform primitive bbox
+	float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
+	float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+	TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
+
+	if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+		IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 	{
-		// This tile intersect view frustum, need to cull instances one by one
-		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+		// Increate visible instances count
+		uint CurrentInstanceCount;
+		InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
 
-		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
-		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
+		// Copy instance data to compaced position
+		OutputInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
 
-		//if (MinEdge.x <= BBoxMax.x &&
-		//	MinEdge.y <= BBoxMax.y &&
-		//	MinEdge.z <= BBoxMax.z &&
-		//	MaxEdge.x >= BBoxMin.x &&
-		//	MaxEdge.y >= BBoxMin.y &&
-		//	MaxEdge.z >= BBoxMin.z)
-		{
-			if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-				IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-				IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-				IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-				IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-				IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
-			{
-				Result = 1;
-			}
-		}
+		// Modify Draw command
+		OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
+		//OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
+		OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
+		OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
+		OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
 	}
-	VisibleInfo[InstanceIndex].Visible = Result;
 }
