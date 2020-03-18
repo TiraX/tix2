@@ -6,6 +6,7 @@
 #pragma once
 #include "SceneMetaInfos.h"
 #include "HiZDownSampleCS.h"
+#include "InstanceFrustumCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -38,4 +39,7 @@ private:
 	FGPUCommandBufferPtr ProcessedPreZGPUCommandBuffer;
 
 	SViewFrustum Frustum;
+
+	// Compute Tasks
+	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;
 };

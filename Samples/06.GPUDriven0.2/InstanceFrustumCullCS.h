@@ -15,10 +15,12 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdataComputeParams(
+		FRHI * RHI,
 		FUniformBufferPtr InFrustumUniform,
 		FUniformBufferPtr InPrimitiveBBoxes,
 		FUniformBufferPtr InInstanceMetaInfo,
 		FInstanceBufferPtr InInstanceData,
+		FGPUCommandSignaturePtr InCommandSignature,
 		FGPUCommandBufferPtr InDrawCommandBuffer
 	);
 private:

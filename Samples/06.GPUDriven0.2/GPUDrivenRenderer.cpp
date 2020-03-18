@@ -80,6 +80,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	
 	// Prepare compute cull tasks
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
+
+	InstanceFrustumCullCS = ti_new FInstanceFrustumCullCS();
+	InstanceFrustumCullCS->Finalize();
+	InstanceFrustumCullCS->PrepareResources(RHI);
 }
 
 void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene)
@@ -96,6 +100,7 @@ void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene *
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	static bool bGPUCull = true;
 	// Merge all instances and meshes into a big one
 	SceneMetaInfo->PrepareSceneResources(RHI, Scene, GPUCommandSignature);
 
@@ -105,7 +110,31 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
 		TestDrawSceneIndirectCommandBuffer(RHI, Scene);
 	}
+
+	// Prepare compute parameters
+	if (bGPUCull)
+	{
+		InstanceFrustumCullCS->UpdataComputeParams(
+			RHI,
+			FrustumUniform,
+			PrimiBBox,
+			InstanceMeta,
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			GPUCommandSignature,
+			SceneMetaInfo->GetGPUCommandBuffer()
+		);
+	}
+
 	// Frustum cull instances before preZ
+	RHI->BeginComputeTask();
+	if (bGPUCull)
+	{
+		// Occlusion Cull
+		// Down Sample Depth
+		RHI->BeginEvent("Frustum Instance Culling");
+
+		RHI->EndEvent();
+	}
 
 	// Render preZ depth
 

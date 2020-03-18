@@ -22,17 +22,62 @@ void FInstanceFrustumCullCS::PrepareResources(FRHI * RHI)
 }
 
 void FInstanceFrustumCullCS::UpdataComputeParams(
+	FRHI * RHI,
 	FUniformBufferPtr InFrustumUniform,
 	FUniformBufferPtr InPrimitiveBBoxes,
 	FUniformBufferPtr InInstanceMetaInfo,
 	FInstanceBufferPtr InInstanceData,
+	FGPUCommandSignaturePtr InCommandSignature,
 	FGPUCommandBufferPtr InDrawCommandBuffer
 )
 {
+	FrustumUniform = InFrustumUniform;
 
+	if (PrimitiveBBoxes != InPrimitiveBBoxes)
+	{
+		ResourceTable->PutUniformBufferInTable(InPrimitiveBBoxes, 0);
+		PrimitiveBBoxes = InPrimitiveBBoxes;
+	}
+	if (InstanceMetaInfo != InInstanceMetaInfo)
+	{
+		ResourceTable->PutUniformBufferInTable(InInstanceMetaInfo, 1);
+		InstanceMetaInfo = InInstanceMetaInfo;
+	}
+	if (InstanceData != InInstanceData)
+	{
+		ResourceTable->PutInstanceBufferInTable(InInstanceData, 2);
+		InstanceData = InInstanceData;
+
+		// Update new CompactInstanceData
+		CompactInstanceData = RHI->CreateEmptyInstanceBuffer(InInstanceData->GetInstancesCount(), TInstanceBuffer::InstanceStride);
+		CompactInstanceData->SetResourceName("FrustumCulledInstanceData");
+		RHI->UpdateHardwareResourceIB(CompactInstanceData, nullptr);
+		ResourceTable->PutInstanceBufferInTable(CompactInstanceData, 4);
+	}
+	if (DrawCommandBuffer != InDrawCommandBuffer)
+	{
+		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), 3);
+		DrawCommandBuffer = InDrawCommandBuffer;
+
+		// Update new CulledDrawCommandBuffer
+		CulledDrawCommandBuffer = RHI->CreateGPUCommandBuffer(
+			InCommandSignature,
+			InDrawCommandBuffer->GetEncodedCommandsCount(), 
+			UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER
+		);
+		CulledDrawCommandBuffer->SetResourceName("FrustumCulledCommandBuffer");
+		RHI->UpdateHardwareResourceGPUCommandBuffer(CulledDrawCommandBuffer);
+	}
 }
 
 void FInstanceFrustumCullCS::Run(FRHI * RHI)
 {
+	const uint32 BlockSize = 128;
+	const uint32 DispatchSize = (InstanceData->GetInstancesCount() + BlockSize - 1) / BlockSize;
+
+	RHI->SetComputePipeline(ComputePipeline);
+	RHI->SetComputeConstantBuffer(0, FrustumUniform);
+	RHI->SetComputeResourceTable(1, ResourceTable);
+	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
 }
 
