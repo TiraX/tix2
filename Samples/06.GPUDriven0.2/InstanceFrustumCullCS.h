@@ -23,6 +23,11 @@ public:
 		FGPUCommandSignaturePtr InCommandSignature,
 		FGPUCommandBufferPtr InDrawCommandBuffer
 	);
+
+	FGPUCommandBufferPtr GetCulledDrawCommandBuffer()
+	{
+		return CulledDrawCommandBuffer;
+	}
 private:
 
 private:
@@ -38,5 +43,7 @@ private:
 
 	FInstanceBufferPtr CompactInstanceData;	// u0
 	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u1
+
+	FUniformBufferPtr ResetCommandBuffer;
 };
 typedef TI_INTRUSIVE_PTR(FInstanceFrustumCullCS) FInstanceFrustumCullCSPtr;

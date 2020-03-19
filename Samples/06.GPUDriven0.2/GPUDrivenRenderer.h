@@ -20,8 +20,10 @@ public:
 	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
+	void UpdateFrustumUniform(const SViewFrustum& Frustum);
+
 private:
-	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene);
+	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr CommandBuffer);
 
 private:
 	FSceneMetaInfos * SceneMetaInfo;
@@ -39,6 +41,7 @@ private:
 	FGPUCommandBufferPtr ProcessedPreZGPUCommandBuffer;
 
 	SViewFrustum Frustum;
+	FCameraFrustumUniformPtr FrustumUniform;
 
 	// Compute Tasks
 	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;

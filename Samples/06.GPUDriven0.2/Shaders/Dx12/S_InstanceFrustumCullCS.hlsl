@@ -102,30 +102,33 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
 	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
 
-	// Transform primitive bbox
-	float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-	float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
-	TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
-
-	if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-		IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+	if (InstanceMetaInfo[InstanceIndex].Info.x > 0)	// Test loaded primitives
 	{
-		// Increate visible instances count
-		uint CurrentInstanceCount;
-		InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
+		// Transform primitive bbox
+		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
+		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
-		// Copy instance data to compaced position
-		OutputInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+		{
+			// Increate visible instances count
+			uint CurrentInstanceCount;
+			InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
 
-		// Modify Draw command
-		OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-		//OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-		OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
-		OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
-		OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
+			// Copy instance data to compaced position
+			OutputInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+
+			// Modify Draw command
+			OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
+			//OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
+			OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
+			OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
+			OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
+		}
 	}
 }

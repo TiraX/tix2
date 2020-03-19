@@ -54,6 +54,9 @@
     <ClInclude Include="InstanceFrustumCullCS.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
+    <ClInclude Include="ComputeUniforms.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Dx12\PS_Common.hlsli">

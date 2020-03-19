@@ -4,37 +4,51 @@
 */
 
 #pragma once
+#include "ComputeUniforms.h"
 
-namespace tix
+class FSceneMetaInfos
 {
-	class FSceneMetaInfos
+public:
+	FSceneMetaInfos();
+	~FSceneMetaInfos();
+
+	void PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUCommandSignaturePtr CommandSignature);
+
+	bool IsInited() const
 	{
-	public:
-		FSceneMetaInfos();
-		~FSceneMetaInfos();
+		return Inited;
+	}
+	FInstanceBufferPtr GetMergedInstanceBuffer()
+	{
+		return MergedInstanceBuffer;
+	}
+	FMeshBufferPtr GetMergedSceneMeshBuffer()
+	{
+		return MergedMeshBuffer;
+	}
+	FGPUCommandBufferPtr GetGPUCommandBuffer()
+	{
+		return GPUCommandBuffer;
+	}
+	FScenePrimitiveBBoxesPtr GetPrimitiveBBoxesUniform()
+	{
+		return PrimitiveBBoxesUniform;
+	}
+	FSceneInstanceMetaInfoPtr GetInstanceMetaInfoUniform()
+	{
+		return InstanceMetaInfoUniform;
+	}
+private:
 
-		void PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUCommandSignaturePtr CommandSignature);
 
-		FInstanceBufferPtr GetMergedInstanceBuffer()
-		{
-			return MergedInstanceBuffer;
-		}
-		FMeshBufferPtr GetMergedSceneMeshBuffer()
-		{
-			return MergedMeshBuffer;
-		}
-		FGPUCommandBufferPtr GetGPUCommandBuffer()
-		{
-			return GPUCommandBuffer;
-		}
-	private:
+private:
+	bool Inited;
+	FInstanceBufferPtr MergedInstanceBuffer;
+	FMeshBufferPtr MergedMeshBuffer;
+	FGPUCommandBufferPtr GPUCommandBuffer;
 
+	FScenePrimitiveBBoxesPtr PrimitiveBBoxesUniform;
+	FSceneInstanceMetaInfoPtr InstanceMetaInfoUniform;
 
-	private:
-		FInstanceBufferPtr MergedInstanceBuffer;
-		FMeshBufferPtr MergedMeshBuffer;
-		FGPUCommandBufferPtr GPUCommandBuffer;
-
-		friend class FScene;
-	};
-} // end namespace tix
+	friend class FScene;
+};

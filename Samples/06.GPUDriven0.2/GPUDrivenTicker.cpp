@@ -19,6 +19,17 @@ void TGPUDrivenTicker::Tick(float Dt)
 {
 	TScene * Scene = TEngine::Get()->GetScene();
 	Scene->UpdateAllNodesTransforms();
+
+	// Send frustum info to render thread
+	TNodeCamera * Cam = Scene->GetActiveCamera();
+	if ((Cam->GetCameraFlags() & TNodeCamera::ECAMF_MAT_VIEW_UPDATED) != 0)
+	{
+		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateFrustumRenderThread,
+			SViewFrustum, Frustum, Cam->GetFrustum(),
+			{
+				FGPUDrivenRenderer::Get()->UpdateFrustumUniform(Frustum);
+			});
+	}
 }
 
 void TGPUDrivenTicker::SetupScene()

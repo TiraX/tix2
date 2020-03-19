@@ -63,10 +63,18 @@ void FInstanceFrustumCullCS::UpdataComputeParams(
 		CulledDrawCommandBuffer = RHI->CreateGPUCommandBuffer(
 			InCommandSignature,
 			InDrawCommandBuffer->GetEncodedCommandsCount(), 
-			UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER
+			UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE
 		);
 		CulledDrawCommandBuffer->SetResourceName("FrustumCulledCommandBuffer");
 		RHI->UpdateHardwareResourceGPUCommandBuffer(CulledDrawCommandBuffer);
+		ResourceTable->PutUniformBufferInTable(CulledDrawCommandBuffer->GetCommandBuffer(), 5);
+
+		// Create Zero reset command buffer
+		ResetCommandBuffer = RHI->CreateUniformBuffer(InCommandSignature->GetCommandStrideInBytes(), InDrawCommandBuffer->GetEncodedCommandsCount(), UB_FLAG_INTERMEDIATE);
+		uint8 * ZeroData = ti_new uint8[InCommandSignature->GetCommandStrideInBytes() * InDrawCommandBuffer->GetEncodedCommandsCount()];
+		memset(ZeroData, 0, InCommandSignature->GetCommandStrideInBytes() * InDrawCommandBuffer->GetEncodedCommandsCount());
+		RHI->UpdateHardwareResourceUB(ResetCommandBuffer, ZeroData);
+		ti_delete[] ZeroData;
 	}
 }
 
@@ -74,6 +82,8 @@ void FInstanceFrustumCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (InstanceData->GetInstancesCount() + BlockSize - 1) / BlockSize;
+
+	RHI->CopyBufferRegion(CulledDrawCommandBuffer->GetCommandBuffer(), 0, ResetCommandBuffer, ResetCommandBuffer->GetTotalBufferSize());
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, FrustumUniform);

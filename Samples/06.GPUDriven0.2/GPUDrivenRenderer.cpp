@@ -77,7 +77,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
-	
+
+	// Create frustum uniform buffer
+	FrustumUniform = ti_new FCameraFrustumUniform;
+
 	// Prepare compute cull tasks
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
 
@@ -86,39 +89,51 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->PrepareResources(RHI);
 }
 
-void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene)
+void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 {
-	if (SceneMetaInfo->GetGPUCommandBuffer() != nullptr)
+	Frustum = InFrustum;
+	FrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(InFrustum.BoundingBox.MinEdge.X, InFrustum.BoundingBox.MinEdge.Y, InFrustum.BoundingBox.MinEdge.Z, 1.f);
+	FrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(InFrustum.BoundingBox.MaxEdge.X, InFrustum.BoundingBox.MaxEdge.Y, InFrustum.BoundingBox.MaxEdge.Z, 1.f);
+	for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
+	{
+		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
+			InFrustum.Planes[i].Normal.X,
+			InFrustum.Planes[i].Normal.Y,
+			InFrustum.Planes[i].Normal.Z,
+			InFrustum.Planes[i].D);
+	}
+	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+}
+
+void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr CommandBuffer)
+{
+	if (CommandBuffer != nullptr)
 	{
 		RHI->SetResourceStateCB(SceneMetaInfo->GetGPUCommandBuffer(), RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetMeshBuffer(SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer());
 		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
-		RHI->ExecuteGPUDrawCommands(SceneMetaInfo->GetGPUCommandBuffer());
+		RHI->ExecuteGPUDrawCommands(CommandBuffer);
 	}
 }
 
 void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	static bool bGPUCull = true;
+	static bool bGPUCullEnabled = true;
 	// Merge all instances and meshes into a big one
 	SceneMetaInfo->PrepareSceneResources(RHI, Scene, GPUCommandSignature);
 
+	bool bGPUCull = bGPUCullEnabled && SceneMetaInfo->IsInited();
 	TI_TODO("Use depth from last frame. Think carefully about it. NOT a clear solution yet.");
-	{
-		// Do test
-		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
-		TestDrawSceneIndirectCommandBuffer(RHI, Scene);
-	}
 
 	// Prepare compute parameters
 	if (bGPUCull)
 	{
 		InstanceFrustumCullCS->UpdataComputeParams(
 			RHI,
-			FrustumUniform,
-			PrimiBBox,
-			InstanceMeta,
+			FrustumUniform->UniformBuffer,
+			SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
+			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUCommandSignature,
 			SceneMetaInfo->GetGPUCommandBuffer()
@@ -129,18 +144,24 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->BeginComputeTask();
 	if (bGPUCull)
 	{
-		// Occlusion Cull
-		// Down Sample Depth
 		RHI->BeginEvent("Frustum Instance Culling");
-
+		InstanceFrustumCullCS->Run(RHI);
 		RHI->EndEvent();
 	}
+	RHI->EndComputeTask();
 
 	// Render preZ depth
 
 	// Option1: Instance occlusion cull / Cluster cull / Triangle cull
 
 	// Option2: Cluster cull / Triangle cull
+
+	{
+		// Do test
+		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetGPUCommandBuffer());
+		TestDrawSceneIndirectCommandBuffer(RHI, Scene, InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
+	}
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
