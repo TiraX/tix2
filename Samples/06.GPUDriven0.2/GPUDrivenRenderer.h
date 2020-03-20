@@ -23,7 +23,7 @@ public:
 	void UpdateFrustumUniform(const SViewFrustum& Frustum);
 
 private:
-	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr CommandBuffer);
+	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FMeshBufferPtr MeshBuffer, FInstanceBufferPtr InstanceBuffer, FGPUCommandBufferPtr CommandBuffer);
 
 private:
 	FSceneMetaInfos * SceneMetaInfo;

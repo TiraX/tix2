@@ -102,7 +102,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
 	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
 
-	if (InstanceMetaInfo[InstanceIndex].Info.x > 0)	// Test loaded primitives
+	if (InstanceMetaInfo[InstanceIndex].Info.w > 0)	// Test loaded primitives
 	{
 		// Transform primitive bbox
 		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;

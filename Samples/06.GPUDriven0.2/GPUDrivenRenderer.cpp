@@ -105,12 +105,12 @@ void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
-void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FGPUCommandBufferPtr CommandBuffer)
+void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FMeshBufferPtr MeshBuffer, FInstanceBufferPtr InstanceBuffer, FGPUCommandBufferPtr CommandBuffer)
 {
 	if (CommandBuffer != nullptr)
 	{
-		RHI->SetResourceStateCB(SceneMetaInfo->GetGPUCommandBuffer(), RESOURCE_STATE_INDIRECT_ARGUMENT);
-		RHI->SetMeshBuffer(SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer());
+		RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+		RHI->SetMeshBuffer(MeshBuffer, InstanceBuffer);
 		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		RHI->ExecuteGPUDrawCommands(CommandBuffer);
@@ -159,8 +159,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		// Do test
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
-		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetGPUCommandBuffer());
-		TestDrawSceneIndirectCommandBuffer(RHI, Scene, InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
+		TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
+		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer(), SceneMetaInfo->GetGPUCommandBuffer());
 	}
 
 	RHI->BeginRenderToFrameBuffer();

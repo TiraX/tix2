@@ -28,6 +28,11 @@ public:
 	{
 		return CulledDrawCommandBuffer;
 	}
+
+	FInstanceBufferPtr GetCompactInstanceBuffer()
+	{
+		return CompactInstanceData;
+	}
 private:
 
 private:
