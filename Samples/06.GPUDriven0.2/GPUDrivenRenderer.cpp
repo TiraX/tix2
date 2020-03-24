@@ -141,14 +141,14 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	// Frustum cull instances before preZ
-	RHI->BeginComputeTask();
 	if (bGPUCull)
 	{
+		RHI->BeginComputeTask();
 		RHI->BeginEvent("Frustum Instance Culling");
 		InstanceFrustumCullCS->Run(RHI);
 		RHI->EndEvent();
+		RHI->EndComputeTask();
 	}
-	RHI->EndComputeTask();
 
 	// Render preZ depth
 
