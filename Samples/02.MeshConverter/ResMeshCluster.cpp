@@ -12,12 +12,14 @@ static const bool EnableVerbose = false;
 
 TResMeshCluster::TResMeshCluster()
 	: Section(0)
+	, MinVertexIndex(0)
 {
 }
 
-TResMeshCluster::TResMeshCluster(const TVector<vector3df>& PosArray, const TVector<vector3df>& NormalArray, const TVector<vector3di>& PrimsArray, const TString& InMeshName, int32 InSection)
+TResMeshCluster::TResMeshCluster(const TVector<vector3df>& PosArray, const TVector<vector3df>& NormalArray, const TVector<vector3di>& PrimsArray, const TString& InMeshName, int32 InSection, int32 InMinVertexIndex)
 	: MeshName(InMeshName)
 	, Section(InSection)
+	, MinVertexIndex(InMinVertexIndex)
 {
 	P = PosArray;
 	N = NormalArray;
@@ -125,7 +127,7 @@ void TResMeshCluster::CalcPrimNormals()
 		const vector3df& PN1 = N[Prim.Y];
 		const vector3df& PN2 = N[Prim.Z];
 
-		const float AngleLimit = cos(DEG_TO_RAD(15));
+		const float AngleLimit = cos(DEG_TO_RAD(45));
 		TI_ASSERT(PN0.dotProduct(PrimN) > AngleLimit && PN1.dotProduct(PrimN) > AngleLimit && PN2.dotProduct(PrimN) > AngleLimit);
 	}
 }
@@ -212,7 +214,7 @@ void TResMeshCluster::ScatterToVolume()
 
 	if (TResSettings::GlobalSettings.ClusterVerbose)
 	{
-		_LOG(Log, "  [%s(%d)] Prims [%d]. Volumes [%d, %d, %d] with size : %f.\n", MeshName.c_str(), Section, PrimCount, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize);
+		_LOG(Log, "  [%s(%d) minvtx=%d] Prims [%d]. Volumes [%d, %d, %d] with size : %f.\n", MeshName.c_str(), Section, MinVertexIndex, PrimCount, MeshVolumeCellCount.X, MeshVolumeCellCount.Y, MeshVolumeCellCount.Z, VolumeCellSize);
 	}
 
 	// Scatter every triangle to volume cell
@@ -573,31 +575,31 @@ void TResMeshCluster::MergeSmallClusters(uint32 ClusterTriangles)
 		}
 	}
 	TVector<TVector<uint32>> MergedClusters;
-	TVector<uint32> Merged;
-	Merged.reserve(ClusterTriangles);
+	TVector<uint32> MergedPrims;
+	MergedPrims.reserve(ClusterTriangles);
 	for (const auto& SC : SmallClusters)
 	{
 		const uint32 Tri = (uint32)SC.size();
 		for (uint32 t = 0 ;t < Tri ; ++ t)
 		{
-			Merged.push_back(SC[t]);
-			if (Merged.size() == ClusterTriangles)
+			MergedPrims.push_back(SC[t]);
+			if (MergedPrims.size() == ClusterTriangles)
 			{
-				MergedClusters.push_back(Merged);
-				Merged.clear();
+				MergedClusters.push_back(MergedPrims);
+				MergedPrims.clear();
 			}
 		}
 	}
-	if (Merged.size() > 0)
+	// Fill last cluster less than 128 to 128
+	if (MergedPrims.size() > 0)
 	{
-		uint32 LastPrim = Merged[Merged.size() - 1];
+		uint32 FillPrim = uint32(-1);
 
-		TI_TODO("Fill with zero sized triangle (means index[0] == index[1] == index[2];");
-		for (uint32 m = (uint32)Merged.size(); m < ClusterTriangles; ++m)
+		for (uint32 m = (uint32)MergedPrims.size(); m < ClusterTriangles; ++m)
 		{
-			Merged.push_back(LastPrim);
+			MergedPrims.push_back(FillPrim);
 		}
-		MergedClusters.push_back(Merged);
+		MergedClusters.push_back(MergedPrims);
 	}
 	for (const auto& MC : MergedClusters)
 	{
@@ -615,10 +617,20 @@ void TResMeshCluster::MergeSmallClusters(uint32 ClusterTriangles)
 		I.reserve(C.size() * 3);
 		for (uint32 PrimIndex : C)
 		{
-			const vector3di& Prim = Prims[PrimIndex];
-			I.push_back(Prim.X);
-			I.push_back(Prim.Y);
-			I.push_back(Prim.Z);
+			if (PrimIndex == uint32(-1))
+			{
+				// Empty triangle
+				I.push_back(0);
+				I.push_back(0);
+				I.push_back(0);
+			}
+			else
+			{
+				const vector3di& Prim = Prims[PrimIndex];
+				I.push_back(Prim.X + MinVertexIndex);
+				I.push_back(Prim.Y + MinVertexIndex);
+				I.push_back(Prim.Z + MinVertexIndex);
+			}
 		}
 		ClusterIndices.push_back(I);
 	}
@@ -637,13 +649,16 @@ void TResMeshCluster::CalcMetaInfos()
 
 		for (auto CPrim : Cluster)
 		{
-			const vector3df& CP0 = P[Prims[CPrim].X];
-			const vector3df& CP1 = P[Prims[CPrim].Y];
-			const vector3df& CP2 = P[Prims[CPrim].Z];
+			if (CPrim != uint32(-1))
+			{
+				const vector3df& CP0 = P[Prims[CPrim].X];
+				const vector3df& CP1 = P[Prims[CPrim].Y];
+				const vector3df& CP2 = P[Prims[CPrim].Z];
 
-			CBBox.addInternalPoint(CP0);
-			CBBox.addInternalPoint(CP1);
-			CBBox.addInternalPoint(CP2);
+				CBBox.addInternalPoint(CP0);
+				CBBox.addInternalPoint(CP1);
+				CBBox.addInternalPoint(CP2);
+			}
 		}
 		ClusterBBoxes.push_back(CBBox);
 	}
@@ -654,8 +669,11 @@ void TResMeshCluster::CalcMetaInfos()
 		ClusterNormals.reserve(Clusters.size());
 		for (auto CPrim : Cluster)
 		{
-			const vector3df& PrimN = PrimsN[CPrim];
-			ClusterNormals.push_back(PrimN);
+			if (CPrim != uint32(-1))
+			{
+				const vector3df& PrimN = PrimsN[CPrim];
+				ClusterNormals.push_back(PrimN);
+			}
 		}
 		TSphere NBSphere = GetBoundingSphere(ClusterNormals);
 		vector3df CNormal = NBSphere.Center;
@@ -735,13 +753,16 @@ bool TResMeshCluster::SaveClusterObjFile(const TString& Filename)
 
 		for (uint32 PIndex : Clusters[c])
 		{
-			const vector3di& Prim = Prims[PIndex];
-			vector3di T = Prim + vector3di(1, 1, 1);
+			if (PIndex != uint32(-1))
+			{
+				const vector3di& Prim = Prims[PIndex];
+				vector3di T = Prim + vector3di(1, 1, 1);
 
-			SS << "f ";
-			SS << T.X << "/1/1 ";
-			SS << T.Y << "/1/1 ";
-			SS << T.Z << "/1/1\n";
+				SS << "f ";
+				SS << T.X << "/1/1 ";
+				SS << T.Y << "/1/1 ";
+				SS << T.Z << "/1/1\n";
+			}
 		}
 		SS << "\n";
 	}

@@ -90,9 +90,6 @@
     <ClCompile Include="ResMeshHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResMeshHelperObj.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

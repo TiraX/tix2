@@ -73,11 +73,6 @@ namespace tix
 		Faces.Count = Count;
 	}
 
-	void TResMeshDefine::SetMaterial(const TString& MaterialName)
-	{
-		LinkedMaterialInstance = MaterialName;
-	}
-
 	/////////////////////////////////////////////////////////////////
 
 	TResMeshHelper::TResMeshHelper()
@@ -93,13 +88,12 @@ namespace tix
 		TResfileChunkHeader ChunkHeader;
 		ChunkHeader.ID = TIRES_ID_CHUNK_MESH;
 		ChunkHeader.Version = TIRES_VERSION_CHUNK_MESH;
-		ChunkHeader.ElementCount = (int32)Meshes.size();
+		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);
 		// Mesh data
 		for (int32 m = 0; m < ChunkHeader.ElementCount; ++m)
 		{
-			const TResMeshDefine& Mesh = Meshes[m];
 			TI_ASSERT(Mesh.Segments[ESSI_POSITION].Data != nullptr);
 
 			int32 IndexType = Mesh.NumVertices > 65535 ? EIT_32BIT : EIT_16BIT;
@@ -110,7 +104,6 @@ namespace tix
 
 			// init header
 			THeaderMesh MeshHeader;
-			MeshHeader.StrId_Name = AddStringToList(OutStrings, Mesh.Name);
 			MeshHeader.VertexFormat = 0;
 			for (int32 s = 0; s < ESSI_TOTAL; ++s)
 			{
@@ -122,17 +115,47 @@ namespace tix
 			MeshHeader.VertexCount = Mesh.NumVertices;
 			MeshHeader.PrimitiveCount = Mesh.NumTriangles;
 			MeshHeader.IndexType = IndexType;
+			MeshHeader.Sections = (int32)Mesh.Sections.size();
+			TI_ASSERT(MeshHeader.Sections > 0);
 			MeshHeader.Flag = 0;
-			MeshHeader.StrMaterialInstance = AddStringToList(OutStrings, Mesh.LinkedMaterialInstance);
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
 
+			TVector<THeaderMeshSection> MeshSections;
+			MeshSections.resize(MeshHeader.Sections);
+			for (int32 s = 0 ; s < MeshHeader.Sections ; ++ s)
+			{
+				MeshSections[s].StrId_Name = AddStringToList(OutStrings, Mesh.Sections[s].Name);
+				MeshSections[s].StrMaterialInstance = AddStringToList(OutStrings, Mesh.Sections[s].LinkedMaterialInstance);
+				MeshSections[s].IndexStart = Mesh.Sections[s].IndexStart;
+				MeshSections[s].Triangles = Mesh.Sections[s].Triangles;
+			}
+
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
+				// Remember all clusters
 				MeshHeader.ClusterSize = TResSettings::GlobalSettings.MeshClusterSize;
-				TI_ASSERT(Mesh.ClusterIndices.size() < 65000);
-				MeshHeader.Clusters = (uint16)Mesh.ClusterIndices.size();
+				int32 TotalClusters = 0;
+				for (int32 s = 0 ; s < MeshHeader.Sections ; ++ s)
+				{
+					TotalClusters += (int32)Mesh.Sections[s].ClusterIndices.size();
+				}
+				TI_ASSERT(TotalClusters < 65000);
+				MeshHeader.Clusters = (uint16)TotalClusters;
 				MeshHeader.PrimitiveCount = MeshHeader.ClusterSize * MeshHeader.Clusters;
+
+				// Correct section index_start and triangles
+				int32 IndexOffset = 0;
+				for (int32 s = 0; s < MeshHeader.Sections; ++s)
+				{
+					MeshSections[s].IndexStart = IndexOffset;
+					MeshSections[s].Triangles = (int32)(Mesh.Sections[s].ClusterIndices.size() * MeshHeader.ClusterSize);
+					for (const auto& CI : Mesh.Sections[s].ClusterIndices)
+					{
+						TI_ASSERT(CI.size() == MeshHeader.ClusterSize * 3);
+					}
+					IndexOffset += MeshSections[s].Triangles * 3;
+				}
 			}
 
 			// fill data
@@ -253,23 +276,29 @@ namespace tix
 			{
 				if (MeshHeader.IndexType == EIT_16BIT)
 				{
-					for (auto CI : Mesh.ClusterIndices)
+					for (int32 s = 0; s < MeshHeader.Sections; ++s)
 					{
-						for (auto I : CI)
+						for (auto CI : Mesh.Sections[s].ClusterIndices)
 						{
-							uint16 Index = (uint16)I;
-							DataStream.Put(&Index, sizeof(uint16));
+							for (auto I : CI)
+							{
+								uint16 Index = (uint16)I;
+								DataStream.Put(&Index, sizeof(uint16));
+							}
 						}
 					}
 				}
 				else
 				{
-					for (auto CI : Mesh.ClusterIndices)
+					for (int32 s = 0; s < MeshHeader.Sections; ++s)
 					{
-						for (auto I : CI)
+						for (auto CI : Mesh.Sections[s].ClusterIndices)
 						{
-							uint32 Index = (uint32)I;
-							DataStream.Put(&Index, sizeof(uint32));
+							for (auto I : CI)
+							{
+								uint32 Index = (uint32)I;
+								DataStream.Put(&Index, sizeof(uint32));
+							}
 						}
 					}
 				}
@@ -299,44 +328,49 @@ namespace tix
 			// Export cluster meta data
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
-				TI_ASSERT(Mesh.ClusterBBoxes.size() == Mesh.ClusterCones.size());
-				const uint32 ClusterCount = (uint32)Mesh.ClusterBBoxes.size();
-				for (uint32 c = 0 ; c < ClusterCount ; ++ c)
+				for (int32 s = 0; s < MeshHeader.Sections; ++s)
 				{
-					TMeshClusterDef Cluster;
-					Cluster.BBox = Mesh.ClusterBBoxes[c];
-					Cluster.Cone = Mesh.ClusterCones[c];
+					TI_ASSERT(Mesh.Sections[s].ClusterBBoxes.size() == Mesh.Sections[s].ClusterCones.size());
 
-					DataStream.Put(&Cluster, sizeof(TMeshClusterDef));
+					const uint32 ClusterCount = (uint32)Mesh.Sections[s].ClusterBBoxes.size();
+					for (uint32 c = 0; c < ClusterCount; ++c)
+					{
+						TMeshClusterDef Cluster;
+						Cluster.BBox = Mesh.Sections[s].ClusterBBoxes[c];
+						Cluster.Cone = Mesh.Sections[s].ClusterCones[c];
+
+						DataStream.Put(&Cluster, sizeof(TMeshClusterDef));
+					}
 				}
 			}
 
 			// Fill header
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
 			FillZero4(HeaderStream);
+			HeaderStream.Put(MeshSections.data(), (uint32)(sizeof(THeaderMeshSection) * MeshSections.size()));
 		}
 
 		// Collision data
 		{
 			// Header
 			THeaderCollisionSet HeaderCollision;
-			HeaderCollision.NumSpheres = (uint32)ColSpheres.size();
-			HeaderCollision.NumBoxes = (uint32)ColBoxes.size();
-			HeaderCollision.NumCapsules = (uint32)ColCapsules.size();
-			HeaderCollision.NumConvexes = (uint32)ColConvexes.size();
-			HeaderCollision.SpheresSizeInBytes = sizeof(TCollisionSet::TSphere) * (uint32)ColSpheres.size();
-			HeaderCollision.BoxesSizeInBytes = sizeof(TCollisionSet::TBox) * (uint32)ColBoxes.size();
-			HeaderCollision.CapsulesSizeInBytes = sizeof(TCollisionSet::TCapsule) * (uint32)ColCapsules.size();
-			HeaderCollision.ConvexesSizeInBytes = sizeof(vector2du) * (uint32)ColConvexes.size();
+			HeaderCollision.NumSpheres = (uint32)Mesh.ColSpheres.size();
+			HeaderCollision.NumBoxes = (uint32)Mesh.ColBoxes.size();
+			HeaderCollision.NumCapsules = (uint32)Mesh.ColCapsules.size();
+			HeaderCollision.NumConvexes = (uint32)Mesh.ColConvexes.size();
+			HeaderCollision.SpheresSizeInBytes = sizeof(TCollisionSet::TSphere) * (uint32)Mesh.ColSpheres.size();
+			HeaderCollision.BoxesSizeInBytes = sizeof(TCollisionSet::TBox) * (uint32)Mesh.ColBoxes.size();
+			HeaderCollision.CapsulesSizeInBytes = sizeof(TCollisionSet::TCapsule) * (uint32)Mesh.ColCapsules.size();
+			HeaderCollision.ConvexesSizeInBytes = sizeof(vector2du) * (uint32)Mesh.ColConvexes.size();
 			HeaderStream.Put(&HeaderCollision, sizeof(THeaderCollisionSet));
 
 			// Data
-			DataStream.Put(ColSpheres.data(), HeaderCollision.SpheresSizeInBytes);
-			DataStream.Put(ColBoxes.data(), HeaderCollision.BoxesSizeInBytes);
-			DataStream.Put(ColCapsules.data(), HeaderCollision.CapsulesSizeInBytes);
+			DataStream.Put(Mesh.ColSpheres.data(), HeaderCollision.SpheresSizeInBytes);
+			DataStream.Put(Mesh.ColBoxes.data(), HeaderCollision.BoxesSizeInBytes);
+			DataStream.Put(Mesh.ColCapsules.data(), HeaderCollision.CapsulesSizeInBytes);
 			TVector<vector2du> ConvexVertexIndexCount;
-			ConvexVertexIndexCount.reserve(ColConvexes.size());
-			for (const auto& Convex : ColConvexes)
+			ConvexVertexIndexCount.reserve(Mesh.ColConvexes.size());
+			for (const auto& Convex : Mesh.ColConvexes)
 			{
 				vector2du VertexIndexCount;
 				VertexIndexCount.X = (uint32)Convex.VertexData.size();
@@ -346,7 +380,7 @@ namespace tix
 			DataStream.Put(ConvexVertexIndexCount.data(), HeaderCollision.ConvexesSizeInBytes);
 
 			// Convex vertex data and index data
-			for (const auto& Convex : ColConvexes)
+			for (const auto& Convex : Mesh.ColConvexes)
 			{
 				DataStream.Put(Convex.VertexData.data(), sizeof(vector3df) * (uint32)Convex.VertexData.size());
 				DataStream.Put(Convex.IndexData.data(), sizeof(uint16) * (uint32)Convex.IndexData.size());
@@ -365,27 +399,46 @@ namespace tix
 	class TMeshClusterTask : public TResMTTask
 	{
 	public:
-		TMeshClusterTask(TResMeshDefine * InMesh, const TString& InMeshName, int32 InSection)
+		TMeshClusterTask(TResMeshDefine * InMesh, const TString& InMeshName, int32 InSection, int32 InSectionIndexStart, int32 InTriangleCount)
 			: MeshSection(InMesh)
 			, MeshName(InMeshName)
 			, Section(InSection)
+			, SectionIndexStart(InSectionIndexStart)
+			, TriangleCount(InTriangleCount)
 		{
 		}
 
 		TResMeshDefine * MeshSection;
 		TString MeshName;
 		int32 Section;
+		int32 SectionIndexStart;
+		int32 TriangleCount;
 
 		virtual void Exec() override
 		{
 			const float* Positions = MeshSection->Segments[ESSI_POSITION].Data;
 			const float* Normals = MeshSection->Segments[ESSI_NORMAL].Data;
 			const int32 StrideInFloat = MeshSection->Segments[ESSI_POSITION].StrideInFloat;
+		
+			// Find mesh vertex index start and end
+			int32 MaxVertexIndex = 0;
+			int32 MinVertexIndex = 999999999;
+			for (int32 i = SectionIndexStart ; i < SectionIndexStart + TriangleCount * 3 ; ++ i)
+			{
+				int32 VertexIndex = MeshSection->Indices[i];
+				if (VertexIndex > MaxVertexIndex)
+					MaxVertexIndex = VertexIndex;
+				if (VertexIndex < MinVertexIndex)
+					MinVertexIndex = VertexIndex;
+			}
+
+			// Copy
 			TVector<vector3df> PosArray, NormalArray;
-			PosArray.resize(MeshSection->NumVertices);
-			NormalArray.resize(MeshSection->NumVertices);
-			int32 DataOffset = 0;
-			for (int32 v = 0; v < MeshSection->NumVertices; ++v)
+			const int32 TotalVertices = MaxVertexIndex - MinVertexIndex + 1;
+			PosArray.resize(TotalVertices);
+			NormalArray.resize(TotalVertices);
+			int32 DataOffset = MinVertexIndex * StrideInFloat;
+			for (int32 v = 0 ; v < TotalVertices; ++ v)
 			{
 				vector3df P(Positions[DataOffset + 0], Positions[DataOffset + 1], Positions[DataOffset + 2]);
 				PosArray[v] = P;
@@ -395,19 +448,31 @@ namespace tix
 			}
 
 			TVector<vector3di> PrimArray;
-			PrimArray.resize(MeshSection->Indices.size() / 3);
-			for (int32 f = 0; f < (int32)MeshSection->Indices.size(); f += 3)
+			PrimArray.resize(TriangleCount);
+			for (int32 f = 0; f < (int32)TriangleCount * 3; f += 3)
 			{
-				vector3di F(MeshSection->Indices[f + 0], MeshSection->Indices[f + 1], MeshSection->Indices[f + 2]);
+				vector3di F(
+					MeshSection->Indices[f + SectionIndexStart + 0] - MinVertexIndex, 
+					MeshSection->Indices[f + SectionIndexStart + 1] - MinVertexIndex, 
+					MeshSection->Indices[f + SectionIndexStart + 2] - MinVertexIndex
+				);
 				PrimArray[f / 3] = F;
 			}
 
-			TResMeshCluster MC(PosArray, NormalArray, PrimArray, MeshName, Section);
+			//TResMeshCluster(
+			//	const TVector<vector3df>& PosArray,
+			//	const TVector<vector3df>& NormalArray,
+			//	const TVector<vector3di>& PrimsArray,
+			//	const TString& InMeshName,
+			//	int32 InSection,
+			//	int32 InMinVertexIndex
+			//);
+			TResMeshCluster MC(PosArray, NormalArray, PrimArray, MeshName, Section, MinVertexIndex);
 			MC.GenerateCluster(TResSettings::GlobalSettings.MeshClusterSize);
 
-			MeshSection->ClusterIndices = MC.ClusterIndices;
-			MeshSection->ClusterBBoxes = MC.ClusterBBoxes;
-			MeshSection->ClusterCones = MC.ClusterCones;
+			MeshSection->Sections[Section].ClusterIndices = MC.ClusterIndices;
+			MeshSection->Sections[Section].ClusterBBoxes = MC.ClusterBBoxes;
+			MeshSection->Sections[Section].ClusterCones = MC.ClusterCones;
 		}
 	};
 	bool TResMeshHelper::LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
@@ -416,113 +481,128 @@ namespace tix
 
 		TString Name = Doc["name"].GetString();
 		//int32 Version = Doc["version"].GetInt();
+		int32 TotalVertices = Doc["vertex_count_total"].GetInt();
+		int32 TotalIndices = Doc["index_count_total"].GetInt();
 
 		//int32 VCount = Doc["vertex_count_total"].GetInt();
 		//int32 ICount = Doc["index_count_total"].GetInt();
 		//int32 UVCount = Doc["texcoord_count"].GetInt();
 
-		// Load mesh sections
+		// Load mesh data
 		{
-			TJSONNode Sections = Doc["sections"];
+			TJSONNode JData = Doc["data"];
+			TJSONNode JVsFormat = JData["vs_format"];
 
 			TVector<TString> SFormat;
+			ConvertJArrayToArray(JVsFormat, SFormat);
 
-			ResMesh.AllocateMeshes(Sections.Size());
-			for (int32 i = 0; i < Sections.Size(); ++i)
+			TJSONNode JVertices = JData["vertices"];
+			TJSONNode JIndices = JData["indices"];
+			int32 VsFormat = 0;
+			int32 ElementsStride = 0;
+			for (const auto& S : SFormat)
 			{
-				TJSONNode JSection = Sections[i];
+				E_VERTEX_STREAM_SEGMENT Segment = GetVertexSegment(S);
+				VsFormat |= Segment;
+				ElementsStride += GetSegmentElements(Segment);
+			}
+			TI_ASSERT(TotalVertices * ElementsStride == JVertices.Size());
+
+			const int32 BytesStride = ElementsStride * sizeof(float);
+			TResMeshDefine& Mesh = ResMesh.GetMesh();
+			Mesh.NumVertices = TotalVertices;
+			Mesh.NumTriangles = (int32)JIndices.Size() / 3;
+			ConvertJArrayToArray(JVertices, Mesh.Vertices);
+			ConvertJArrayToArray(JIndices, Mesh.Indices);
+
+			int32 ElementOffset = 0;
+			{
+				TI_ASSERT((VsFormat & EVSSEG_POSITION) != 0);
+				Mesh.AddSegment(ESSI_POSITION, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_NORMAL) != 0)
+			{
+				Mesh.AddSegment(ESSI_NORMAL, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_COLOR) != 0)
+			{
+				Mesh.AddSegment(ESSI_COLOR, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 4;
+			}
+			if ((VsFormat & EVSSEG_TEXCOORD0) != 0)
+			{
+				Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 2;
+			}
+			if ((VsFormat & EVSSEG_TEXCOORD1) != 0)
+			{
+				Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 2;
+			}
+			if ((VsFormat & EVSSEG_TANGENT) != 0)
+			{
+				Mesh.AddSegment(ESSI_TANGENT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 3;
+			}
+			if ((VsFormat & EVSSEG_BLENDINDEX) != 0)
+			{
+				Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 4;
+			}
+			if ((VsFormat & EVSSEG_BLENDWEIGHT) != 0)
+			{
+				Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
+				ElementOffset += 4;
+			}
+			Mesh.SetFaces(&Mesh.Indices[0], (int32)Mesh.Indices.size());
+		}
+
+		// Load mesh sections
+		{
+			TJSONNode JSections = Doc["sections"];
+
+			ResMesh.Mesh.Sections.clear();
+			ResMesh.Mesh.Sections.resize(JSections.Size());
+
+			for (int32 i = 0; i < JSections.Size(); ++i)
+			{
+				TJSONNode JSection = JSections[i];
+				TResMeshSection& Section = ResMesh.Mesh.Sections[i];
+
 				TJSONNode JSectionName = JSection["name"];
-				int32 VertexCount = JSection["vertex_count"].GetInt();
-				TJSONNode JVertices = JSection["vertices"];
-				TJSONNode JIndices = JSection["indices"];
-				TJSONNode JVsFormat = JSection["vs_format"];
-
-				SFormat.clear();
-
-				ConvertJArrayToArray(JVsFormat, SFormat);
-
-				TString SectionName = JSectionName.GetString();
-
-				int32 VsFormat = 0;
-				int32 ElementsStride = 0;
-				for (const auto& S : SFormat)
-				{
-					E_VERTEX_STREAM_SEGMENT Segment = GetVertexSegment(S);
-					VsFormat |= Segment;
-					ElementsStride += GetSegmentElements(Segment);
-				}
-				TI_ASSERT(VertexCount * ElementsStride == JVertices.Size());
-
-				const int32 BytesStride = ElementsStride * sizeof(float);
-				TResMeshDefine& Mesh = ResMesh.GetMesh(i);
-				Mesh.Name = SectionName;
-				Mesh.NumVertices = VertexCount;
-				Mesh.NumTriangles = (int32)JIndices.Size() / 3;
-				ConvertJArrayToArray(JVertices, Mesh.Vertices);
-				ConvertJArrayToArray(JIndices, Mesh.Indices);
-
-				int32 ElementOffset = 0;
-				{
-					TI_ASSERT((VsFormat & EVSSEG_POSITION) != 0);
-					Mesh.AddSegment(ESSI_POSITION, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 3;
-				}
-				if ((VsFormat & EVSSEG_NORMAL) != 0)
-				{
-					Mesh.AddSegment(ESSI_NORMAL, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 3;
-				}
-				if ((VsFormat & EVSSEG_COLOR) != 0)
-				{
-					Mesh.AddSegment(ESSI_COLOR, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 4;
-				}
-				if ((VsFormat & EVSSEG_TEXCOORD0) != 0)
-				{
-					Mesh.AddSegment(ESSI_TEXCOORD0, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 2;
-				}
-				if ((VsFormat & EVSSEG_TEXCOORD1) != 0)
-				{
-					Mesh.AddSegment(ESSI_TEXCOORD1, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 2;
-				}
-				if ((VsFormat & EVSSEG_TANGENT) != 0)
-				{
-					Mesh.AddSegment(ESSI_TANGENT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 3;
-				}
-				if ((VsFormat & EVSSEG_BLENDINDEX) != 0)
-				{
-					Mesh.AddSegment(ESSI_BLENDINDEX, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 4;
-				}
-				if ((VsFormat & EVSSEG_BLENDWEIGHT) != 0)
-				{
-					Mesh.AddSegment(ESSI_BLENDWEIGHT, (float*)&Mesh.Vertices[ElementOffset], BytesStride);
-					ElementOffset += 4;
-				}
-				Mesh.SetFaces(&Mesh.Indices[0], (int32)Mesh.Indices.size());
-
 				TJSONNode JMaterial = JSection["material"];
+				TJSONNode JIndexStart= JSection["index_start"];
+				TJSONNode JTriangles = JSection["triangles"];
+
+				Section.Name = JSectionName.GetString();
+
 				if (!JMaterial.IsNull())
 				{
 					TString MaterialName = JMaterial.GetString();
-					Mesh.SetMaterial(MaterialName);
+					Section.LinkedMaterialInstance = MaterialName;
 				}
+
+				Section.IndexStart = JIndexStart.GetInt();
+				Section.Triangles = JTriangles.GetInt();
 			}
 
 			// Generate mesh cluster for this section
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
 			{
 				TVector<TMeshClusterTask*> Tasks;
-				for (int32 i = 0; i < Sections.Size(); ++i)
+				TResMeshDefine& Mesh = ResMesh.GetMesh();
+
+				for (int32 i = 0; i < JSections.Size(); ++i)
 				{
-					TResMeshDefine& Mesh = ResMesh.GetMesh(i);
+					TJSONNode JSection = JSections[i];
+					int32 IndexStart = JSection["index_start"].GetInt();
+					int32 Triangles = JSection["triangles"].GetInt();
 
 					TI_ASSERT(TResSettings::GlobalSettings.MeshClusterSize % 64 == 0);
 
-					TMeshClusterTask * Task = ti_new TMeshClusterTask(&Mesh, Name, i);
+					TMeshClusterTask * Task = ti_new TMeshClusterTask(&Mesh, Name, i, IndexStart, Triangles);
 					TResMTTaskExecuter::Get()->AddTask(Task);
 					Tasks.push_back(Task);
 				}
@@ -541,10 +621,10 @@ namespace tix
 			TJSONNode ColCapsules = Collisions["capsule"];
 			TJSONNode ColConvex = Collisions["convex"];
 
-			ResMesh.ColSpheres.resize(ColSpheres.Size());
-			ResMesh.ColBoxes.resize(ColBoxes.Size());
-			ResMesh.ColCapsules.resize(ColCapsules.Size());
-			ResMesh.ColConvexes.resize(ColConvex.Size());
+			ResMesh.Mesh.ColSpheres.resize(ColSpheres.Size());
+			ResMesh.Mesh.ColBoxes.resize(ColBoxes.Size());
+			ResMesh.Mesh.ColCapsules.resize(ColCapsules.Size());
+			ResMesh.Mesh.ColConvexes.resize(ColConvex.Size());
 
 			// Spheres
 			for (int32 i = 0 ; i < ColSpheres.Size(); ++ i)
@@ -553,8 +633,8 @@ namespace tix
 				TJSONNode JCenter = JSphere["center"];
 				TJSONNode JRadius = JSphere["radius"];
 
-				ResMesh.ColSpheres[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
-				ResMesh.ColSpheres[i].Radius = JRadius.GetFloat();
+				ResMesh.Mesh.ColSpheres[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
+				ResMesh.Mesh.ColSpheres[i].Radius = JRadius.GetFloat();
 			}
 
 			// Boxes
@@ -567,11 +647,11 @@ namespace tix
 				TJSONNode JY = JBox["y"];
 				TJSONNode JZ = JBox["z"];
 
-				ResMesh.ColBoxes[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
-				ResMesh.ColBoxes[i].Rotation = TJSONUtil::JsonArrayToQuaternion(JRotation);
-				ResMesh.ColBoxes[i].Edge.X = JX.GetFloat();
-				ResMesh.ColBoxes[i].Edge.Y = JY.GetFloat();
-				ResMesh.ColBoxes[i].Edge.Z = JZ.GetFloat();
+				ResMesh.Mesh.ColBoxes[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
+				ResMesh.Mesh.ColBoxes[i].Rotation = TJSONUtil::JsonArrayToQuaternion(JRotation);
+				ResMesh.Mesh.ColBoxes[i].Edge.X = JX.GetFloat();
+				ResMesh.Mesh.ColBoxes[i].Edge.Y = JY.GetFloat();
+				ResMesh.Mesh.ColBoxes[i].Edge.Z = JZ.GetFloat();
 			}
 
 			// Capsules
@@ -583,10 +663,10 @@ namespace tix
 				TJSONNode JRadius = JCapsule["radius"];
 				TJSONNode JLength = JCapsule["length"];
 
-				ResMesh.ColCapsules[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
-				ResMesh.ColCapsules[i].Rotation = TJSONUtil::JsonArrayToQuaternion(JRotation);
-				ResMesh.ColCapsules[i].Radius = JRadius.GetFloat();
-				ResMesh.ColCapsules[i].Length = JLength.GetFloat();
+				ResMesh.Mesh.ColCapsules[i].Center = TJSONUtil::JsonArrayToVector3df(JCenter);
+				ResMesh.Mesh.ColCapsules[i].Rotation = TJSONUtil::JsonArrayToQuaternion(JRotation);
+				ResMesh.Mesh.ColCapsules[i].Radius = JRadius.GetFloat();
+				ResMesh.Mesh.ColCapsules[i].Length = JLength.GetFloat();
 			}
 
 			// Convex
@@ -632,8 +712,8 @@ namespace tix
 					IndexData[e] = Index;
 				}
 
-				ResMesh.ColConvexes[i].VertexData = VertexData;
-				ResMesh.ColConvexes[i].IndexData = IndexData;
+				ResMesh.Mesh.ColConvexes[i].VertexData = VertexData;
+				ResMesh.Mesh.ColConvexes[i].IndexData = IndexData;
 			}
 		}
 

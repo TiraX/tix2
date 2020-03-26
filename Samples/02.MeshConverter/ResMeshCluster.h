@@ -10,7 +10,14 @@ class TResMeshCluster
 {
 public:
 	TResMeshCluster();
-	TResMeshCluster(const TVector<vector3df>& PosArray, const TVector<vector3df>& NormalArray, const TVector<vector3di>& PrimsArray, const TString& InMeshName, int32 InSection);
+	TResMeshCluster(
+		const TVector<vector3df>& PosArray, 
+		const TVector<vector3df>& NormalArray, 
+		const TVector<vector3di>& PrimsArray, 
+		const TString& InMeshName, 
+		int32 InSection, 
+		int32 InMinVertexIndex
+	);
 	~TResMeshCluster();
 
 	void GenerateCluster(uint32 ClusterTriangles);
@@ -32,6 +39,7 @@ private:
 private:
 	TString MeshName;
 	int32 Section;
+	int32 MinVertexIndex;
 	TVector<vector3df> P;
 	TVector<vector3df> N;
 

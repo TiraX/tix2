@@ -138,12 +138,11 @@ namespace tix
 
 	struct THeaderMesh
 	{
-		int32 StrId_Name;
 		uint32 VertexFormat;
 		int32 VertexCount;
 		int32 PrimitiveCount;	//triangle count, means (index count) / 3. (triangle list)
 		int32 IndexType;
-		int32 StrMaterialInstance;
+		int32 Sections;
 		uint16 Clusters, ClusterSize;
 		uint32 Flag;
 		aabbox3df BBox;
@@ -155,17 +154,31 @@ namespace tix
 		};
 
 		THeaderMesh()
-			: StrId_Name(-1)
-			, VertexFormat(0)
+			: VertexFormat(0)
 			, VertexCount(0)
 			, PrimitiveCount(0)
 			, IndexType(0)
-			, StrMaterialInstance(0)
+			, Sections(0)
 			, Clusters(0)
 			, ClusterSize(0)
 			, Flag(0)
 		{
 		}
+	};
+
+	struct THeaderMeshSection
+	{
+		int32 StrId_Name;
+		int32 StrMaterialInstance;
+		int32 IndexStart;
+		int32 Triangles;
+
+		THeaderMeshSection()
+			: StrId_Name(0)
+			, StrMaterialInstance(0)
+			, IndexStart(0)
+			, Triangles(0)
+		{}
 	};
 
 	struct TMeshClusterDef

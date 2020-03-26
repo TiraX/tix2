@@ -185,6 +185,7 @@ namespace tix
 			return;
 		}
 		
+		// Mesh sections and 1 collision
 		OutResources.reserve(MeshCount + 1);
 
 		// Load meshes

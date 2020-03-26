@@ -200,7 +200,6 @@
     <ClCompile Include="ResMaterialInstanceHelper.cpp" />
     <ClCompile Include="ResMeshCluster.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
-    <ClCompile Include="ResMeshHelperObj.cpp" />
     <ClCompile Include="ResMultiThreadTask.cpp" />
     <ClCompile Include="ResSceneHelper.cpp" />
     <ClCompile Include="ResSceneTileHelper.cpp" />

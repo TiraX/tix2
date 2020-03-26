@@ -27,19 +27,47 @@ namespace tix
 		{}
 	};
 
+	struct TResMeshSection
+	{
+		TResMeshSection()
+			: LinkedMaterialInstance("MI_Unknown")
+			, IndexStart(0)
+			, Triangles(0)
+		{
+		}
+
+		void SetMaterial(const TString& MaterialName)
+		{
+			LinkedMaterialInstance = MaterialName;
+		}
+
+		TResMeshSection& operator = (const TResMeshSection& Other)
+		{
+			Name = Other.Name;
+			LinkedMaterialInstance = Other.LinkedMaterialInstance;
+			return *this;
+		}
+
+		TString Name;
+		TString LinkedMaterialInstance;
+		int32 IndexStart;
+		int32 Triangles;
+
+		TVector< TVector<uint32> > ClusterIndices;
+		TVector< aabbox3df > ClusterBBoxes;
+		TVector< vector4df > ClusterCones;
+	};
+
 	struct TResMeshDefine
 	{
 		TResMeshDefine()
 			: NumVertices(0)
 			, NumTriangles(0)
-			, LinkedMaterialInstance("MI_Unknown")
 		{
 		}
 		TResMeshDefine(const TString& InName, int32 InVertices, int32 InTriangles)
-			: Name(InName)
-			, NumVertices(InVertices)
+			: NumVertices(InVertices)
 			, NumTriangles(InTriangles)
-			, LinkedMaterialInstance("MI_Unknown")
 		{
 		}
 		~TResMeshDefine()
@@ -52,11 +80,9 @@ namespace tix
 		}
 		TResMeshDefine& operator = (const TResMeshDefine& Other)
 		{
-			Name = Other.Name;
 			NumVertices = Other.NumVertices;
 			NumTriangles = Other.NumTriangles;
-			LinkedMaterialInstance = Other.LinkedMaterialInstance;
-
+		
 			for (int32 i = 0; i < ESSI_TOTAL; ++i)
 			{
 				Segments[i] = Other.Segments[i];
@@ -65,24 +91,25 @@ namespace tix
 			return *this;
 		}
 
-		TString Name;
 		int32 NumVertices;
 		int32 NumTriangles;
 		TResMeshSegment Segments[ESSI_TOTAL];
+
 		TResMeshFaces Faces;
-		TString LinkedMaterialInstance;
 
 		// Data
 		TVector<float> Vertices;
 		TVector<int32> Indices;
 
-		TVector< TVector<uint32> > ClusterIndices;
-		TVector< aabbox3df > ClusterBBoxes;
-		TVector< vector4df > ClusterCones;
-
 		void AddSegment(E_MESH_STREAM_INDEX InStreamType, float* InData, int32 InStrideInByte);
 		void SetFaces(int32* Indices, int32 Count);
-		void SetMaterial(const TString& MaterialName);
+
+		TVector<TResMeshSection> Sections;
+
+		TVector<TCollisionSet::TSphere> ColSpheres;
+		TVector<TCollisionSet::TBox> ColBoxes;
+		TVector<TCollisionSet::TCapsule> ColCapsules;
+		TVector<TCollisionSet::TConvex> ColConvexes;
 	};
 
 	class TResMeshHelper
@@ -92,27 +119,17 @@ namespace tix
 		~TResMeshHelper();
 
 		static bool LoadMeshFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
-		static bool LoadObjFile(const TString& Filename, TStream& OutStream, TVector<TString>& OutStrings);
 
-		void AllocateMeshes(int32 Size)
+		TResMeshDefine& GetMesh()
 		{
-			Meshes.resize(Size);
-		}
-		TResMeshDefine& GetMesh(int32 Index)
-		{
-			return Meshes[Index];
+			return Mesh;
 		}
 		void OutputMesh(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:
 
 	private:
-		TVector<TResMeshDefine> Meshes;
-
-		TVector<TCollisionSet::TSphere> ColSpheres;
-		TVector<TCollisionSet::TBox> ColBoxes;
-		TVector<TCollisionSet::TCapsule> ColCapsules;
-		TVector<TCollisionSet::TConvex> ColConvexes;
+		TResMeshDefine Mesh;
 
 	};
 }
