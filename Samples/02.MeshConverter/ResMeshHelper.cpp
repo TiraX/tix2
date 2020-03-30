@@ -348,6 +348,7 @@ namespace tix
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
 			FillZero4(HeaderStream);
 			HeaderStream.Put(MeshSections.data(), (uint32)(sizeof(THeaderMeshSection) * MeshSections.size()));
+			FillZero4(HeaderStream);
 		}
 
 		// Collision data

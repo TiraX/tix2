@@ -107,11 +107,15 @@ namespace tix
 								TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshResources[Section].get());
 								TI_ASSERT(Mesh->MeshBufferResource != nullptr);
 
+								const TMeshSection& MeshSection = Mesh->GetMeshSection(Section);
+
 								FPrimitivePtr Primitive = ti_new FPrimitive;
 								Primitive->SetMesh(
 									Mesh->MeshBufferResource,
+									MeshSection.IndexStart,
+									MeshSection.Triangles,
 									Mesh->GetBBox(),
-									Mesh->GetDefaultMaterial(),
+									MeshSection.DefaultMaterial,
 									SceneTileResource->MeshInstanceBuffer->InstanceResource,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y

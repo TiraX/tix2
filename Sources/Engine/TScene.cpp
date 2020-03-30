@@ -84,9 +84,7 @@ namespace tix
 		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
 
 		// Link primitive to node
-		TVector<TMeshBufferPtr> Meshes;
-		Meshes.push_back(InMesh);
-		StaticMesh->LinkMeshBuffer(Meshes, nullptr, 0, 0, bCastShadow, bReceiveShadow);
+		StaticMesh->LinkMeshBuffer(InMesh, nullptr, 0, 0, bCastShadow, bReceiveShadow);
 		
 		return StaticMesh;
 	}

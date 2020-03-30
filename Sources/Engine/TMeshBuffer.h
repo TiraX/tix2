@@ -7,6 +7,19 @@
 
 namespace tix
 {
+	// TMeshSection, hold mesh section info
+	struct TMeshSection
+	{
+		TMeshSection()
+			: IndexStart(0)
+			, Triangles(0)
+		{}
+
+		TMaterialInstancePtr DefaultMaterial;
+		int32 IndexStart;
+		int32 Triangles;
+	};
+
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
 	class TI_API TMeshBuffer : public TResource
 	{
@@ -107,14 +120,19 @@ namespace tix
 			return ClusterData;
 		}
 
-		void SetDefaultMaterial(TMaterialInstancePtr Material)
+		void AddMeshSection(const TMeshSection& Section)
 		{
-			DefaultMaterial = Material;
+			Sections.push_back(Section);
 		}
 
-		TMaterialInstancePtr GetDefaultMaterial()
+		uint32 GetMeshSectionCount() const
 		{
-			return DefaultMaterial;
+			return (uint32)Sections.size();
+		}
+
+		const TMeshSection& GetMeshSection(int32 SectionIndex) const
+		{
+			return Sections[SectionIndex];
 		}
 	protected:
 
@@ -135,7 +153,7 @@ namespace tix
 		uint32 VsFormat;
 		uint32 Stride;
 
-		TMaterialInstancePtr DefaultMaterial;
+		TVector<TMeshSection> Sections;
 	};
 
 	///////////////////////////////////////////////////////////

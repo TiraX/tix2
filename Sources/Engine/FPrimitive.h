@@ -25,6 +25,8 @@ namespace tix
 
 		void SetMesh(
 			FMeshBufferPtr InMeshBuffer,
+			uint32 InIndexStart,
+			uint32 InTriangles,
 			const aabbox3df& InMeshBBox,
 			TMaterialInstancePtr InMInstance,
 			FInstanceBufferPtr InInstanceBuffer,
@@ -116,6 +118,8 @@ namespace tix
 		uint32 PrimitiveFlag;
 
 		FMeshBufferPtr MeshBuffer;
+		uint32 IndexStart;
+		uint32 Triangles;
 		FInstanceBufferPtr InstanceBuffer;
 		uint32 InstanceCount;
 		uint32 InstanceOffset;

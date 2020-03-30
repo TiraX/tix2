@@ -10,6 +10,8 @@ namespace tix
 {
 	FPrimitive::FPrimitive()
 		: PrimitiveFlag(0)
+		, IndexStart(0)
+		, Triangles(0)
 		, InstanceCount(0)
 		, InstanceOffset(0)
 		, GlobalInstanceOffset(0)
@@ -26,6 +28,8 @@ namespace tix
 
 	void FPrimitive::SetMesh(
 		FMeshBufferPtr InMeshBuffer, 
+		uint32 InIndexStart,
+		uint32 InTriangles,
 		const aabbox3df& InMeshBBox, 
 		TMaterialInstancePtr InMInstance, 
 		FInstanceBufferPtr InInstanceBuffer,
@@ -37,6 +41,8 @@ namespace tix
 
 		// Add mesh buffer
 		MeshBuffer = InMeshBuffer;
+		IndexStart = InIndexStart;
+		Triangles = InTriangles;
 
 		// Add instance buffer
 		InstanceBuffer = InInstanceBuffer;

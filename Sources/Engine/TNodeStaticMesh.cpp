@@ -36,17 +36,11 @@ namespace tix
 		{
 			if (MeshAsset->IsLoaded())
 			{
-				// Gather loaded mesh resources
-				TVector<TMeshBufferPtr> Meshes;
-				Meshes.reserve(MeshAsset->GetResources().size());
-				for (auto Res : MeshAsset->GetResources())
-				{
-					TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(Res.get());
-					Meshes.push_back(Mesh);
-				}
+				TI_ASSERT(MeshAsset->GetResources().size() == 1);
+				TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshAsset->GetResources()[0].get());
 
 				// Create static mesh node
-				LinkMeshBuffer(Meshes, MeshInstance, InstanceCount, InstanceOffset, false, false);
+				LinkMeshBuffer(Mesh, MeshInstance, InstanceCount, InstanceOffset, false, false);
 
 				// Remove the reference holder
 				MeshAsset = nullptr;
@@ -62,7 +56,7 @@ namespace tix
 	}
 
 	void TNodeStaticMesh::LinkMeshBuffer(
-		const TVector<TMeshBufferPtr>& InMeshes, 
+		TMeshBufferPtr InMesh, 
 		TInstanceBufferPtr InInstanceBuffer,
 		uint32 InInstanceCount,
 		uint32 InInstanceOffset, 
@@ -71,18 +65,21 @@ namespace tix
 	{
 		// Create Primitives
 		LinkedPrimitives.empty();
-		LinkedPrimitives.reserve(InMeshes.size());
+		LinkedPrimitives.reserve(InMesh->GetMeshSectionCount());
 
 		TNode* SceneTileParent = GetParent(ENT_SceneTile);
 		TNodeSceneTile * SceneTileNode = static_cast<TNodeSceneTile *>(SceneTileParent);
-		for (const auto& M : InMeshes)
+		for (uint32 s = 0 ; s < InMesh->GetMeshSectionCount() ; ++ s)
 		{
-			TI_ASSERT(M->MeshBufferResource != nullptr);
+			const TMeshSection& MeshSection = InMesh->GetMeshSection(s);
+			TI_ASSERT(InMesh->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
 			Primitive->SetMesh(
-				M->MeshBufferResource, 
-				M->GetBBox(), 
-				M->GetDefaultMaterial(), 
+				InMesh->MeshBufferResource, 
+				MeshSection.IndexStart,
+				MeshSection.Triangles,
+				InMesh->GetBBox(), 
+				MeshSection.DefaultMaterial, 
 				InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr,
 				InInstanceCount,
 				InInstanceOffset

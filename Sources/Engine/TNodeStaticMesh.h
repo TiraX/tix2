@@ -26,7 +26,7 @@ namespace tix
 			bool bCastShadow, 
 			bool bReceiveShadow);
 		void LinkMeshBuffer(
-			const TVector<TMeshBufferPtr>& InMeshes, 
+			TMeshBufferPtr InMesh, 
 			TInstanceBufferPtr InInstanceBuffer,
 			uint32 InInstanceCount,
 			uint32 InInstanceOffset, 

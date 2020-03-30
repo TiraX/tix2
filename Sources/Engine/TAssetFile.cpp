@@ -185,55 +185,72 @@ namespace tix
 			return;
 		}
 		
+		TI_TODO("Maybe we dont need TVector<TResourcePtr> to hold multi res. ONLY return 1 resource");
+		// New mesh format should have 1 mesh buffer ONLY, and multiple mesh sections
+		TI_ASSERT(MeshCount == 1);
 		// Mesh sections and 1 collision
 		OutResources.reserve(MeshCount + 1);
 
 		// Load meshes
 		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderCollisionSet);
-		int32 MeshDataOffset = 0;
-		for (int32 i = 0; i < MeshCount; ++i)
+		const int8* SectionDataStart = (const int8*)(MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)));
+
+		const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart);
+		const THeaderMeshSection * HeaderSections = (const THeaderMeshSection*)(SectionDataStart);
+
+		TI_ASSERT(Header->Sections > 0);
+		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections + sizeof(THeaderCollisionSet);
+
+		TMeshBufferPtr Mesh = ti_new TMeshBuffer();
+
+		// Load vertex data and index data
+		const int32 IndexStride = (Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
+		const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
+		const int8* VertexData = VertexDataStart;
+		const int8* IndexData = VertexDataStart + ti_align4(Header->VertexCount * VertexStride);
+		const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
+		Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
+		if (Header->Clusters > 0)
 		{
-			const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * i);
-			TMeshBufferPtr Mesh = ti_new TMeshBuffer();
+			Mesh->SetClusterData(ClusterData, Header->Clusters);
+		}
+		Mesh->SetBBox(Header->BBox);
+		TI_ASSERT(Header->ClusterSize == 0 || (Header->PrimitiveCount == Header->Clusters * Header->ClusterSize));
 
-			// Load vertex data and index data
-			const int32 IndexStride = (Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
-			const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
-			const int8* VertexData = VertexDataStart + MeshDataOffset;
-			const int8* IndexData = VertexDataStart + MeshDataOffset + ti_align4(Header->VertexCount * VertexStride);
-			const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
-			Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
-			if (Header->Clusters > 0)
-			{
-				Mesh->SetClusterData(ClusterData, Header->Clusters);
-			}
-			Mesh->SetBBox(Header->BBox);
-			MeshDataOffset += ti_align4(Header->VertexCount * VertexStride)		// Vertex data size
-				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3))	// Index data size
-				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshClusterDef)));	// Cluster data size
-			TI_ASSERT(Header->PrimitiveCount == Header->Clusters * Header->ClusterSize);
+		FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
+		FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
 
-			FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
-			FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
+		OutResources.push_back(Mesh);
+
+		// Load sections
+		for (int32 s = 0 ; s < Header->Sections ; ++ s)
+		{
+			const THeaderMeshSection& HeaderSection = HeaderSections[s];
+
+			TMeshSection MeshSection;
+			MeshSection.IndexStart = HeaderSection.IndexStart;
+			MeshSection.Triangles = HeaderSection.Triangles;
 
 			// Load material
-			TString MaterialResName = GetString(Header->StrMaterialInstance);
+			TString MaterialResName = GetString(HeaderSection.StrMaterialInstance);
 			TAssetPtr MIRes = TAssetLibrary::Get()->LoadAsset(MaterialResName);
 			if (MIRes->GetResources().size() == 0)
 			{
 				_LOG(Error, "Failed to load default material instance [%s] for mesh [%s].\n", MaterialResName.c_str(), Filename.c_str());
 			}
 			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes->GetResourcePtr());
-			Mesh->SetDefaultMaterial(MaterialInstance);
+			MeshSection.DefaultMaterial = MaterialInstance;
 
-			OutResources.push_back(Mesh);
+			Mesh->AddMeshSection(MeshSection);
 		}
 
 		// Load collisions
 		{
-			const int8* CollisionHeaderStart = MeshDataStart + sizeof(THeaderMesh) * MeshCount;
-			const int8* CollisionDataStart = VertexDataStart + MeshDataOffset;
+			const int8* CollisionHeaderStart = MeshDataStart + sizeof(THeaderMesh) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections;
+			const int8* CollisionDataStart = VertexDataStart + 
+				ti_align4(Header->VertexCount * VertexStride)	// Vertex data size
+				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3))		// Index data size
+				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshClusterDef)));	// Cluster data size
 			THeaderCollisionSet * HeaderCollision = (THeaderCollisionSet*)CollisionHeaderStart;
 
 			const int8* CollisionSphereData = CollisionDataStart;
