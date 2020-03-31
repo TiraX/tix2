@@ -10,7 +10,7 @@
 namespace tix
 {
 	TMeshBuffer::TMeshBuffer()
-		: TResource(ERES_MESH)
+		: TResource(ERES_MESH_BUFFER)
 		, PrimitiveType(EPT_TRIANGLELIST)
 		, VsData(nullptr)
 		, VsDataCount(0)

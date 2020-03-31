@@ -78,13 +78,13 @@ namespace tix
 		return DefaultEnvironment;
 	}
 
-	TNodeStaticMesh* TScene::AddStaticMesh(TMeshBufferPtr InMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
+	TNodeStaticMesh* TScene::AddStaticMesh(TStaticMeshPtr InStaticMesh, TMaterialInstancePtr InMInstance, bool bCastShadow, bool bReceiveShadow)
 	{
 		// Create a static mesh node to hold mesh resource
 		TNodeStaticMesh* StaticMesh = TNodeFactory::CreateNode<TNodeStaticMesh>(NodeRoot);
 
 		// Link primitive to node
-		StaticMesh->LinkMeshBuffer(InMesh, nullptr, 0, 0, bCastShadow, bReceiveShadow);
+		StaticMesh->LinkStaticMesh(InStaticMesh, nullptr, 0, 0, bCastShadow, bReceiveShadow);
 		
 		return StaticMesh;
 	}

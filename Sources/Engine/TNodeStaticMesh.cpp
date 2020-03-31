@@ -37,10 +37,11 @@ namespace tix
 			if (MeshAsset->IsLoaded())
 			{
 				TI_ASSERT(MeshAsset->GetResources().size() == 1);
-				TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshAsset->GetResources()[0].get());
+				TI_ASSERT(MeshAsset->GetResources()[0]->GetType() == ERES_STATIC_MESH);
+				TStaticMeshPtr StaticMesh = static_cast<TStaticMesh*>(MeshAsset->GetResources()[0].get());
 
 				// Create static mesh node
-				LinkMeshBuffer(Mesh, MeshInstance, InstanceCount, InstanceOffset, false, false);
+				LinkStaticMesh(StaticMesh, MeshInstance, InstanceCount, InstanceOffset, false, false);
 
 				// Remove the reference holder
 				MeshAsset = nullptr;
@@ -55,8 +56,8 @@ namespace tix
 		}
 	}
 
-	void TNodeStaticMesh::LinkMeshBuffer(
-		TMeshBufferPtr InMesh, 
+	void TNodeStaticMesh::LinkStaticMesh(
+		TStaticMeshPtr InStaticMesh,
 		TInstanceBufferPtr InInstanceBuffer,
 		uint32 InInstanceCount,
 		uint32 InInstanceOffset, 
@@ -65,20 +66,20 @@ namespace tix
 	{
 		// Create Primitives
 		LinkedPrimitives.empty();
-		LinkedPrimitives.reserve(InMesh->GetMeshSectionCount());
+		LinkedPrimitives.reserve(InStaticMesh->GetMeshSectionCount());
 
 		TNode* SceneTileParent = GetParent(ENT_SceneTile);
 		TNodeSceneTile * SceneTileNode = static_cast<TNodeSceneTile *>(SceneTileParent);
-		for (uint32 s = 0 ; s < InMesh->GetMeshSectionCount() ; ++ s)
+		for (uint32 s = 0 ; s < InStaticMesh->GetMeshSectionCount() ; ++ s)
 		{
-			const TMeshSection& MeshSection = InMesh->GetMeshSection(s);
-			TI_ASSERT(InMesh->MeshBufferResource != nullptr);
+			const TMeshSection& MeshSection = InStaticMesh->GetMeshSection(s);
+			TI_ASSERT(InStaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
 			Primitive->SetMesh(
-				InMesh->MeshBufferResource, 
+				InStaticMesh->GetMeshBuffer()->MeshBufferResource,
 				MeshSection.IndexStart,
 				MeshSection.Triangles,
-				InMesh->GetBBox(), 
+				InStaticMesh->GetMeshBuffer()->GetBBox(),
 				MeshSection.DefaultMaterial, 
 				InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr,
 				InInstanceCount,

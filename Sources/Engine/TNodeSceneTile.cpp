@@ -94,52 +94,45 @@ namespace tix
 							// Gather loaded mesh resources
 							TVector<FPrimitivePtr> LinkedPrimitives;
 							TVector<uint32> PrimitiveIndices;
-							// MeshResources Include mesh sections and 1 collision set
+
 							const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
+							TI_ASSERT(MeshResources[0]->GetType() == ERES_STATIC_MESH);
+							TStaticMeshPtr StaticMesh = static_cast<TStaticMesh*>(MeshResources[0].get());
+							// MeshResources Include mesh sections and 1 collision set
 							// Mesh sections
-							const int32 TotalSections = (int32)MeshResources.size() - 1;
+							const uint32 TotalSections = StaticMesh->GetMeshSectionCount();
 							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
 							LinkedPrimitives.reserve(TotalSections);
 							PrimitiveIndices.reserve(TotalSections);
 							for (int32 Section = 0 ; Section < TotalSections ; ++ Section)
 							{
-								TI_ASSERT(MeshResources[Section]->GetType() == ERES_MESH);
-								TMeshBufferPtr Mesh = static_cast<TMeshBuffer*>(MeshResources[Section].get());
-								TI_ASSERT(Mesh->MeshBufferResource != nullptr);
+								TI_ASSERT(StaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
 
-								const TMeshSection& MeshSection = Mesh->GetMeshSection(Section);
+								const TMeshSection& MeshSection = StaticMesh->GetMeshSection(Section);
 
 								FPrimitivePtr Primitive = ti_new FPrimitive;
 								Primitive->SetMesh(
-									Mesh->MeshBufferResource,
+									StaticMesh->GetMeshBuffer()->MeshBufferResource,
 									MeshSection.IndexStart,
 									MeshSection.Triangles,
-									Mesh->GetBBox(),
+									StaticMesh->GetMeshBuffer()->GetBBox(),
 									MeshSection.DefaultMaterial,
 									SceneTileResource->MeshInstanceBuffer->InstanceResource,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
 								);
-								Primitive->SetClusterMetaData(Mesh->MeshClusterDataResource);
+								Primitive->SetClusterMetaData(StaticMesh->GetMeshBuffer()->MeshClusterDataResource);
 								Primitive->SetSceneTilePos(SceneTileResource->Position);
 								LinkedPrimitives.push_back(Primitive);
 								PrimitiveIndices.push_back(MeshSectionOffset + Section);
 							}
 
 							// Collisions
-							TI_TODO("Create one Collision Resource for each mesh (Now create one for each tile.)");
-							TResourcePtr CollisionResource = MeshResources[TotalSections];
-							TI_ASSERT(CollisionResource->GetType() == ERES_COLLISION);
-							TCollisionSetPtr CollisionSet = static_cast<TCollisionSet*>(CollisionResource.get());
-							TMeshBufferPtr OccluderMesh = CollisionSet->ConvertToMesh();
-							if (OccluderMesh != nullptr)
+							if (StaticMesh->GetOccludeMesh() != nullptr)
 							{
-								OccluderMesh->SetResourceName(MeshAsset->GetName() + "Occluder");
-								OccluderMesh->InitRenderThreadResource();
-								// Only add to Primitive[0], since all primitives from the same mesh shares the same occluder.
-								LinkedPrimitives[0]->SetOccluder(OccluderMesh->MeshBufferResource);
+								TI_ASSERT(StaticMesh->GetOccludeMesh()->MeshBufferResource != nullptr);
+								LinkedPrimitives[0]->SetOccluder(StaticMesh->GetOccludeMesh()->MeshBufferResource);
 							}
-
 							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
 
 							// Add primitive to scene

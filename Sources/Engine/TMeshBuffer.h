@@ -20,19 +20,19 @@ namespace tix
 		int32 Triangles;
 	};
 
+	struct TMeshClusterData
+	{
+		FFloat4 MinEdge;
+		FFloat4 MaxEdge;
+		FFloat4 Cone;
+	};
+
 	// TMeshBuffer, hold mesh vertex and index data memory in game thread
 	class TI_API TMeshBuffer : public TResource
 	{
 	public:
 		TMeshBuffer();
 		~TMeshBuffer();
-
-		struct TMeshClusterData
-		{
-			FFloat4 MinEdge;
-			FFloat4 MaxEdge;
-			FFloat4 Cone;
-		};
 
 		static const int32 SemanticSize[ESSI_TOTAL];
 		static const int8* SemanticName[ESSI_TOTAL];
@@ -119,21 +119,6 @@ namespace tix
 		{
 			return ClusterData;
 		}
-
-		void AddMeshSection(const TMeshSection& Section)
-		{
-			Sections.push_back(Section);
-		}
-
-		uint32 GetMeshSectionCount() const
-		{
-			return (uint32)Sections.size();
-		}
-
-		const TMeshSection& GetMeshSection(int32 SectionIndex) const
-		{
-			return Sections[SectionIndex];
-		}
 	protected:
 
 	protected:
@@ -152,8 +137,6 @@ namespace tix
 
 		uint32 VsFormat;
 		uint32 Stride;
-
-		TVector<TMeshSection> Sections;
 	};
 
 	///////////////////////////////////////////////////////////

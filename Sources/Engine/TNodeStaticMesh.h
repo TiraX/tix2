@@ -25,8 +25,8 @@ namespace tix
 			uint32 InInstanceOffset, 
 			bool bCastShadow, 
 			bool bReceiveShadow);
-		void LinkMeshBuffer(
-			TMeshBufferPtr InMesh, 
+		void LinkStaticMesh(
+			TStaticMeshPtr InStaticMesh, 
 			TInstanceBufferPtr InInstanceBuffer,
 			uint32 InInstanceCount,
 			uint32 InInstanceOffset, 

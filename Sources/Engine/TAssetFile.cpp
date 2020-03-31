@@ -201,7 +201,9 @@ namespace tix
 		TI_ASSERT(Header->Sections > 0);
 		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections + sizeof(THeaderCollisionSet);
 
-		TMeshBufferPtr Mesh = ti_new TMeshBuffer();
+		// Create mesh buffer resource
+		TMeshBufferPtr MeshBuffer = ti_new TMeshBuffer();
+		TStaticMeshPtr StaticMesh = ti_new TStaticMesh(MeshBuffer);
 
 		// Load vertex data and index data
 		const int32 IndexStride = (Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
@@ -209,18 +211,16 @@ namespace tix
 		const int8* VertexData = VertexDataStart;
 		const int8* IndexData = VertexDataStart + ti_align4(Header->VertexCount * VertexStride);
 		const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
-		Mesh->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
+		MeshBuffer->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 		if (Header->Clusters > 0)
 		{
-			Mesh->SetClusterData(ClusterData, Header->Clusters);
+			MeshBuffer->SetClusterData(ClusterData, Header->Clusters);
 		}
-		Mesh->SetBBox(Header->BBox);
+		MeshBuffer->SetBBox(Header->BBox);
 		TI_ASSERT(Header->ClusterSize == 0 || (Header->PrimitiveCount == Header->Clusters * Header->ClusterSize));
 
 		FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
 		FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
-
-		OutResources.push_back(Mesh);
 
 		// Load sections
 		for (int32 s = 0 ; s < Header->Sections ; ++ s)
@@ -241,7 +241,7 @@ namespace tix
 			TMaterialInstancePtr MaterialInstance = static_cast<TMaterialInstance*>(MIRes->GetResourcePtr());
 			MeshSection.DefaultMaterial = MaterialInstance;
 
-			Mesh->AddMeshSection(MeshSection);
+			StaticMesh->AddMeshSection(MeshSection);
 		}
 
 		// Load collisions
@@ -300,8 +300,13 @@ namespace tix
 				memcpy(CollisionSet->Convexes[i].IndexData.data(), CollisionConvexData + ConvexDataOffset, IndexCount * sizeof(uint16));
 				ConvexDataOffset += ti_align4(uint32(IndexCount * sizeof(uint16)));
 			}
-			OutResources.push_back(CollisionSet);
+			StaticMesh->SetCollision(CollisionSet);
 		}
+
+		// Create occlude mesh from collision
+		StaticMesh->CreateOccludeMeshFromCollision();
+
+		OutResources.push_back(StaticMesh);
 	}
 
 	void TAssetFile::CreateTexture(TVector<TResourcePtr>& OutResources)

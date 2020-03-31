@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\Sources\Engine\TShader.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TShaderBinding.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TShape.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTaskThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTexture.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="..\..\Sources\Engine\TShader.h" />
     <ClInclude Include="..\..\Sources\Engine\TShaderBinding.h" />
     <ClInclude Include="..\..\Sources\Engine\TShape.h" />
+    <ClInclude Include="..\..\Sources\Engine\TStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TStringExt.h" />
     <ClInclude Include="..\..\Sources\Engine\TTaskThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TTexture.h" />

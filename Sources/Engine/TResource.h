@@ -9,7 +9,7 @@ namespace tix
 {
 	enum E_RESOURCE_TYPE
 	{
-		ERES_MESH,
+		ERES_MESH_BUFFER,
 		ERES_TEXTURE,
 		ERES_PIPELINE,
         ERES_TILEPIPELINE,
@@ -20,6 +20,7 @@ namespace tix
 		ERES_INSTANCE,
 		ERES_SCENE_TILE,
 		ERES_COLLISION,
+		ERES_STATIC_MESH,
 
 		ERES_COUNT,
 	};
