@@ -43,7 +43,7 @@ namespace tix
 		OccludeMesh = CollisionSet->ConvertToMesh();
 		if (OccludeMesh != nullptr)
 		{
-			OccludeMesh->SetResourceName(MeshBuffer->GetResourceName() + "Occluder");
+			OccludeMesh->SetResourceName(MeshBuffer->GetResourceName() + "-Occluder");
 		}
 	}
 }

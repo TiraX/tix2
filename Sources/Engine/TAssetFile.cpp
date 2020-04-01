@@ -203,6 +203,7 @@ namespace tix
 
 		// Create mesh buffer resource
 		TMeshBufferPtr MeshBuffer = ti_new TMeshBuffer();
+		MeshBuffer->SetResourceName(Filename + "-MB");
 		TStaticMeshPtr StaticMesh = ti_new TStaticMesh(MeshBuffer);
 
 		// Load vertex data and index data
