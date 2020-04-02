@@ -50,6 +50,12 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 1, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
+	// Setup depth only render target
+	RT_DepthOnly = FRenderTarget::Create(RTWidth, RTHeight);
+	RT_DepthOnly->SetResourceName("RT_DepthOnly");
+	RT_DepthOnly->AddDepthStencilBuffer(EPF_DEPTH32, 1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_DepthOnly->Compile();
+
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
@@ -64,11 +70,11 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
 	// Load Pre-Z pipeline.
-	//const TString DepthOnlyMaterialName = "M_DepthOnly.tasset";
-	//TAssetPtr DepthOnlyMaterialAsset = TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterialName);
-	//TResourcePtr DepthOnlyMaterialResource = DepthOnlyMaterialAsset->GetResourcePtr();
-	//TMaterialPtr DepthOnlyMaterial = static_cast<TMaterial*>(DepthOnlyMaterialResource.get());
-	//DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
+	const TString DepthOnlyMaterialName = "M_DepthOnly.tasset";
+	TAssetPtr DepthOnlyMaterialAsset = TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterialName);
+	TResourcePtr DepthOnlyMaterialResource = DepthOnlyMaterialAsset->GetResourcePtr();
+	TMaterialPtr DepthOnlyMaterial = static_cast<TMaterial*>(DepthOnlyMaterialResource.get());
+	DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
 
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
@@ -77,6 +83,9 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	GPUCommandSignature = RHI->CreateGPUCommandSignature(DebugPipeline, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUCommandSignature);
+
+	GPUOccludeCommandSignature = RHI->CreateGPUCommandSignature(DepthOnlyPipeline, CommandStructure);
+	RHI->UpdateHardwareResourceGPUCommandSig(GPUOccludeCommandSignature);
 
 	// Create frustum uniform buffer
 	FrustumUniform = ti_new FCameraFrustumUniform;
@@ -105,13 +114,19 @@ void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
-void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FMeshBufferPtr MeshBuffer, FInstanceBufferPtr InstanceBuffer, FGPUCommandBufferPtr CommandBuffer)
+void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(
+	FRHI * RHI,
+	FScene * Scene,
+	FMeshBufferPtr MeshBuffer,
+	FInstanceBufferPtr InstanceBuffer,
+	FGPUCommandSignaturePtr CommandSignature,
+	FGPUCommandBufferPtr CommandBuffer)
 {
 	if (CommandBuffer != nullptr)
 	{
 		RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetMeshBuffer(MeshBuffer, InstanceBuffer);
-		RHI->SetGraphicsPipeline(GPUCommandSignature->GetPipeline());
+		RHI->SetGraphicsPipeline(CommandSignature->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		RHI->ExecuteGPUDrawCommands(CommandBuffer);
 	}
@@ -135,8 +150,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
 			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
-			GPUCommandSignature,
-			SceneMetaInfo->GetGPUCommandBuffer()
+			GPUOccludeCommandSignature,
+			SceneMetaInfo->GetGPUOccludeCommandBuffer()
 		);
 	}
 
@@ -151,6 +166,17 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	// Render preZ depth
+	if (bGPUCull)
+	{
+		RHI->BeginRenderToRenderTarget(RT_DepthOnly, 0, "PreZ");
+		TestDrawSceneIndirectCommandBuffer(RHI, 
+			Scene, 
+			SceneMetaInfo->GetMergedOccludeMeshBuffer(), 
+			InstanceFrustumCullCS->GetCompactInstanceBuffer(), 
+			GPUOccludeCommandSignature,
+			InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
+		//RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
+	}
 
 	// Option1: Instance occlusion cull / Cluster cull / Triangle cull
 
@@ -159,7 +185,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		// Do test
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
-		TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
+		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
 		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer(), SceneMetaInfo->GetGPUCommandBuffer());
 	}
 

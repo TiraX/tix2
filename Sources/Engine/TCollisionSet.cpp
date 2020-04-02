@@ -28,7 +28,7 @@ namespace tix
 	TMeshBufferPtr TCollisionSet::ConvertToMesh() const
 	{
 		TVector<vector3df> Positions;
-		TVector<uint16> Indices;
+		TVector<uint32> Indices;
 		Positions.reserve(64 * 1024);
 		Indices.reserve(128 * 1024);
 
@@ -49,11 +49,11 @@ namespace tix
 
 		for (const auto& Convex : Convexes)
 		{
-			uint16 IndexOffset = (uint16)Positions.size();
+			uint32 IndexOffset = (uint32)Positions.size();
 			Positions.insert(Positions.end(), Convex.VertexData.begin(), Convex.VertexData.end());
 			for (auto I : Convex.IndexData)
 			{
-				uint16 Index = I + IndexOffset;
+				uint32 Index = I + IndexOffset;
 				Indices.push_back(Index);
 			}
 		}
@@ -61,7 +61,7 @@ namespace tix
 		if (Positions.size() > 0)
 		{
 			TMeshBufferPtr Mesh = ti_new TMeshBuffer;
-			Mesh->SetVertexStreamData(EVSSEG_POSITION, Positions.data(), (uint32)Positions.size(), EIT_16BIT, Indices.data(), (uint32)Indices.size());
+			Mesh->SetVertexStreamData(EVSSEG_POSITION, Positions.data(), (uint32)Positions.size(), EIT_32BIT, Indices.data(), (uint32)Indices.size());
 
 			return Mesh;
 		}

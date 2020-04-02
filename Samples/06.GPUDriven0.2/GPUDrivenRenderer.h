@@ -23,7 +23,14 @@ public:
 	void UpdateFrustumUniform(const SViewFrustum& Frustum);
 
 private:
-	void TestDrawSceneIndirectCommandBuffer(FRHI * RHI, FScene * Scene, FMeshBufferPtr MeshBuffer, FInstanceBufferPtr InstanceBuffer, FGPUCommandBufferPtr CommandBuffer);
+	void TestDrawSceneIndirectCommandBuffer(
+		FRHI * RHI, 
+		FScene * Scene, 
+		FMeshBufferPtr MeshBuffer, 
+		FInstanceBufferPtr InstanceBuffer,
+		FGPUCommandSignaturePtr CommandSignature,
+		FGPUCommandBufferPtr CommandBuffer
+	);
 
 private:
 	FSceneMetaInfos * SceneMetaInfo;
@@ -33,7 +40,11 @@ private:
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 
+	FRenderTargetPtr RT_DepthOnly;
+	FPipelinePtr DepthOnlyPipeline;
+
 	FGPUCommandSignaturePtr GPUCommandSignature;
+	FGPUCommandSignaturePtr GPUOccludeCommandSignature;
 	FGPUCommandBufferPtr ProcessedGPUCommandBuffer;
 
 	FGPUCommandSignaturePtr PreZGPUCommandSignature;

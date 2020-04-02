@@ -33,8 +33,11 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 
 		uint32 TotalInstances = 0;
 		uint32 TotalLoadedMeshes = 0;
-		uint32 TotalVertexCount = 0;
-		uint32 TotalIndexCount = 0;
+		uint32 TotalLoadedOccludes = 0;
+		uint32 SceneMeshesVertexCount = 0;
+		uint32 SceneMeshIndexCount = 0;
+		uint32 SceneOccludeVertexCount = 0;
+		uint32 SceneOccludeIndexCount = 0;
 		uint32 VBFormat = 0;
 		for (const auto& T : SceneTileResources)
 		{
@@ -50,30 +53,63 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 				if (Prim != nullptr)
 				{
 					FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
-					TotalVertexCount += MeshBuffer->GetVerticesCount();
-					TotalIndexCount += MeshBuffer->GetIndicesCount();
+					SceneMeshesVertexCount += MeshBuffer->GetVerticesCount();
+					SceneMeshIndexCount += MeshBuffer->GetIndicesCount();
 					TI_ASSERT(MeshBuffer->GetIndexType() == EIT_32BIT);	// Compute shader can only access 32bit aligned data
 					TI_ASSERT(VBFormat == 0 || VBFormat == MeshBuffer->GetVSFormat());
 					VBFormat = MeshBuffer->GetVSFormat();
+
+					FMeshBufferPtr OccludeMeshBuffer = Prim->GetOccluderMesh();
+					TI_ASSERT(OccludeMeshBuffer != nullptr);	// OccludeMeshBuffer can be nullptr ???
+					if (OccludeMeshBuffer != nullptr)
+					{
+						SceneOccludeVertexCount += OccludeMeshBuffer->GetVerticesCount();
+						SceneOccludeIndexCount += OccludeMeshBuffer->GetIndicesCount();
+						TI_ASSERT(OccludeMeshBuffer->GetVSFormat() == EVSSEG_POSITION);
+						TI_ASSERT(OccludeMeshBuffer->GetIndexType() == EIT_32BIT);	// Compute shader can only access 32bit aligned data
+						++TotalLoadedOccludes;
+					}
+
 					++TotalLoadedMeshes;
 				}
 			}
-			TI_ASSERT(TotalVertexCount > 0 && TotalIndexCount > 0);
+			TI_ASSERT(TotalLoadedOccludes == TotalLoadedMeshes);
+			TI_ASSERT(SceneMeshesVertexCount > 0 && SceneMeshIndexCount > 0);
 		}
 
 		TI_ASSERT(TotalInstances > 0 && TotalLoadedMeshes > 0);
 
 		// Allocate space for draw arguments
-		TVector<FDrawInstanceArgument> DrawArguments;
+		TVector<FDrawInstanceArgument> DrawArguments, OccludeDrawArguments;
 		DrawArguments.resize(TotalLoadedMeshes);
+		OccludeDrawArguments.resize(TotalLoadedOccludes);
 
 		// Merge meshes and instances
 		{
 			// Create MergedMeshBuffer resource
 			const uint32 VertexStride = TMeshBuffer::GetStrideFromFormat(VBFormat);
-			MergedMeshBuffer = RHI->CreateEmptyMeshBuffer(EPT_TRIANGLELIST, VBFormat, TotalVertexCount, EIT_32BIT, TotalIndexCount);
+			MergedMeshBuffer = RHI->CreateEmptyMeshBuffer(EPT_TRIANGLELIST, VBFormat, SceneMeshesVertexCount, EIT_32BIT, SceneMeshIndexCount);
 			MergedMeshBuffer->SetResourceName("MergedMeshBuffer");
-			RHI->UpdateHardwareResourceMesh(MergedMeshBuffer, TotalVertexCount * VertexStride, VertexStride, TotalIndexCount * sizeof(uint32), EIT_32BIT, "MergedMeshBuffer");
+			RHI->UpdateHardwareResourceMesh(
+				MergedMeshBuffer, 
+				SceneMeshesVertexCount * VertexStride, 
+				VertexStride, 
+				SceneMeshIndexCount * sizeof(uint32), 
+				EIT_32BIT, 
+				"MergedMeshBuffer"
+			);
+
+			// Create MergedOccludeMeshBuffer resource
+			MergedOccludeMeshBuffer = RHI->CreateEmptyMeshBuffer(EPT_TRIANGLELIST, EVSSEG_POSITION, SceneOccludeVertexCount, EIT_32BIT, SceneOccludeIndexCount);
+			MergedOccludeMeshBuffer->SetResourceName("MergedOccludeMeshBuffer");
+			RHI->UpdateHardwareResourceMesh(
+				MergedOccludeMeshBuffer, 
+				SceneOccludeVertexCount * sizeof(vector3df), 
+				sizeof(vector3df), 
+				SceneOccludeIndexCount * sizeof(uint32), 
+				EIT_32BIT, 
+				"MergedOccludeMeshBuffer"
+			);
 
 			// Create MergedInstanceBuffer resource
 			MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
@@ -86,7 +122,8 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			// Create instance meta info UniformBuffer resource
 			InstanceMetaInfoUniform = ti_new FSceneInstanceMetaInfo(TotalInstances);
 
-			uint32 VBOffset = 0, IBOffset = 0;
+			uint32 SceneVBOffset = 0, SceneIBOffset = 0;
+			uint32 OccludeVBOffset = 0, OccludeIBOffset = 0;
 			uint32 PrimIndex = 0;
 			uint32 InstanceDstOffset = 0;
 			for (const auto& T : SceneTileResources)
@@ -104,26 +141,53 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 					{
 						if (Prim != nullptr)
 						{
+							// Scene mesh buffer
 							FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
 							RHI->SetResourceStateMB(MeshBuffer, RESOURCE_STATE_COPY_SOURCE);
-
 							RHI->CopyBufferRegion(
 								MergedMeshBuffer,
-								VBOffset,
-								IBOffset,
+								SceneVBOffset,
+								SceneIBOffset,
 								MeshBuffer,
 								0,
 								MeshBuffer->GetVerticesCount() * VertexStride,
 								0,
-								MeshBuffer->GetIndicesCount() * sizeof(uint32));
+								MeshBuffer->GetIndicesCount() * sizeof(uint32)
+							);
 
 							// Remember draw arguments
 							FDrawInstanceArgument& DrawArg = DrawArguments[PrimIndex];
 							DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
 							DrawArg.InstanceCount = Prim->GetInstanceCount();
-							DrawArg.StartIndexLocation = IBOffset / sizeof(uint32);
-							DrawArg.BaseVertexLocation = VBOffset / VertexStride;
+							DrawArg.StartIndexLocation = SceneIBOffset / sizeof(uint32);
+							DrawArg.BaseVertexLocation = SceneVBOffset / VertexStride;
 							DrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset();
+
+							// Scene occlude mesh buffer
+							FMeshBufferPtr OccludeMeshBuffer = Prim->GetOccluderMesh();
+							TI_ASSERT(OccludeMeshBuffer != nullptr); // can be nullptr ???
+							if (OccludeMeshBuffer != nullptr)
+							{
+								RHI->SetResourceStateMB(OccludeMeshBuffer, RESOURCE_STATE_COPY_SOURCE);
+								RHI->CopyBufferRegion(
+									MergedOccludeMeshBuffer,
+									OccludeVBOffset,
+									OccludeIBOffset,
+									OccludeMeshBuffer,
+									0,
+									OccludeMeshBuffer->GetVerticesCount() * sizeof(vector3df),
+									0,
+									OccludeMeshBuffer->GetIndicesCount() * sizeof(uint32)
+								);
+
+								// Remember draw arguments
+								FDrawInstanceArgument& OccludeDrawArg = OccludeDrawArguments[PrimIndex];
+								OccludeDrawArg.IndexCountPerInstance = OccludeMeshBuffer->GetIndicesCount();
+								OccludeDrawArg.InstanceCount = Prim->GetInstanceCount();
+								OccludeDrawArg.StartIndexLocation = OccludeIBOffset / sizeof(uint32);
+								OccludeDrawArg.BaseVertexLocation = OccludeVBOffset / sizeof(vector3df);
+								OccludeDrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset();
+							}
 
 							// Fill primitive bbox uniform buffer data
 							const aabbox3df& BBox = Prim->GetBBox();
@@ -138,8 +202,8 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							}
 
 							// Remember offsets
-							VBOffset += MeshBuffer->GetVerticesCount() * VertexStride;
-							IBOffset += MeshBuffer->GetIndicesCount() * sizeof(uint32);
+							SceneVBOffset += MeshBuffer->GetVerticesCount() * VertexStride;
+							SceneIBOffset += MeshBuffer->GetIndicesCount() * sizeof(uint32);
 
 							++PrimIndex;
 						}
@@ -163,7 +227,8 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 
 		// Create scene indirect draw command buffer
 		{
-			GPUCommandBuffer = RHI->CreateGPUCommandBuffer(CommandSignature, DrawArguments.size(), UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+			// Scene indirect draw command buffer
+			GPUCommandBuffer = RHI->CreateGPUCommandBuffer(CommandSignature, (uint32)DrawArguments.size(), UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 			GPUCommandBuffer->SetResourceName("GPUCommandBuffer");
 
 			uint32 CommandIndex = 0;
@@ -177,8 +242,24 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 					Arg.StartInstanceLocation);
 				++CommandIndex;
 			}
-
 			RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBuffer);
+
+			// Occlude scene indirect draw command buffer
+			GPUOccludeCommandBuffer = RHI->CreateGPUCommandBuffer(CommandSignature, (uint32)OccludeDrawArguments.size(), UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+			GPUOccludeCommandBuffer->SetResourceName("GPUOccludeCommandBuffer");
+
+			CommandIndex = 0;
+			for (const auto& Arg : OccludeDrawArguments)
+			{
+				GPUOccludeCommandBuffer->EncodeSetDrawIndexed(CommandIndex, 0,
+					Arg.IndexCountPerInstance,
+					Arg.InstanceCount,
+					Arg.StartIndexLocation,
+					Arg.BaseVertexLocation,
+					Arg.StartInstanceLocation);
+				++CommandIndex;
+			}
+			RHI->UpdateHardwareResourceGPUCommandBuffer(GPUOccludeCommandBuffer);
 		}
 
 		Inited = true;

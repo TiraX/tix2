@@ -15,14 +15,14 @@ namespace tix
 			const vector3df& Center, 
 			float Radius, 
 			TVector<vector3df>& OutPositions, 
-			TVector<uint16>& OutIndices);
+			TVector<uint32>& OutIndices);
 
 		static void CreateBox(
 			const vector3df& Center, 
 			const vector3df& Edges, 
 			const quaternion& Rotation, 
 			TVector<vector3df>& OutPositions, 
-			TVector<uint16>& OutIndices);
+			TVector<uint32>& OutIndices);
 
 		static void CreateCapsule(
 			uint32 Latitude,
@@ -32,6 +32,6 @@ namespace tix
 			float Length, 
 			const quaternion& Rotation, 
 			TVector<vector3df>& OutPositions, 
-			TVector<uint16>& OutIndices);
+			TVector<uint32>& OutIndices);
 	};
 }

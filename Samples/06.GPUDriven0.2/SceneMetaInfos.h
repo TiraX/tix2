@@ -30,6 +30,14 @@ public:
 	{
 		return GPUCommandBuffer;
 	}
+	FMeshBufferPtr GetMergedOccludeMeshBuffer()
+	{
+		return MergedOccludeMeshBuffer;
+	}
+	FGPUCommandBufferPtr GetGPUOccludeCommandBuffer()
+	{
+		return GPUOccludeCommandBuffer;
+	}
 	FScenePrimitiveBBoxesPtr GetPrimitiveBBoxesUniform()
 	{
 		return PrimitiveBBoxesUniform;
@@ -44,8 +52,12 @@ private:
 private:
 	bool Inited;
 	FInstanceBufferPtr MergedInstanceBuffer;
+
 	FMeshBufferPtr MergedMeshBuffer;
 	FGPUCommandBufferPtr GPUCommandBuffer;
+
+	FMeshBufferPtr MergedOccludeMeshBuffer;
+	FGPUCommandBufferPtr GPUOccludeCommandBuffer;
 
 	FScenePrimitiveBBoxesPtr PrimitiveBBoxesUniform;
 	FSceneInstanceMetaInfoPtr InstanceMetaInfoUniform;

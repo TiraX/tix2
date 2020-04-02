@@ -8,7 +8,7 @@
 
 namespace tix
 {
-	void _CreateICOSphere(uint32 Frequency, TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
+	void _CreateICOSphere(uint32 Frequency, TVector<vector3df>& OutPositions, TVector<uint32>& OutIndices)
 	{
 		TI_ASSERT(Frequency >= 1 && Frequency < 80);
 
@@ -90,7 +90,7 @@ namespace tix
 				PointsMap[Key] = (uint32)(OutPositions.size() - 1);
 			}
 			TI_ASSERT(PointsMap[Key] < 65535);
-			return uint16(PointsMap[Key]);
+			return uint32(PointsMap[Key]);
 		};
 
 		const uint32 TesselationPoints = (1 + (Frequency + 1)) * (Frequency + 1) / 2;
@@ -111,7 +111,7 @@ namespace tix
 			vector3df StepRight = (P2 - P0) * FreqInv;
 
 			// Generate points
-			uint16 PointIndex = AddSharedPoint(Key, P0, PointsMap, OutPositions);
+			uint32 PointIndex = AddSharedPoint(Key, P0, PointsMap, OutPositions);
 			IndicesMap.push_back(PointIndex);
 
 			for (uint32 StepY = 0; StepY < Frequency; ++StepY)
@@ -168,7 +168,7 @@ namespace tix
 		}
 	}
 
-	void _CreateLongLatitudeSphere(uint32 Longitude, uint32 Latitude, TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
+	void _CreateLongLatitudeSphere(uint32 Longitude, uint32 Latitude, TVector<vector3df>& OutPositions, TVector<uint32>& OutIndices)
 	{
 		//(x, y, z) = (sin(Pi * m/M) cos(2Pi * n/N), sin(Pi * m/M) sin(2Pi * n/N), cos(Pi * m/M))
 		OutPositions.clear();
@@ -233,7 +233,7 @@ namespace tix
 		}
 	}
 
-	void _CreateUnitBox(TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
+	void _CreateUnitBox(TVector<vector3df>& OutPositions, TVector<uint32>& OutIndices)
 	{
 		static const vector3df Points[] =
 		{ 
@@ -246,7 +246,7 @@ namespace tix
 			vector3df( 0.5f, 0.5f, 0.5f),
 			vector3df(-0.5f, 0.5f, 0.5f)
 		};
-		static const uint16 Faces[] =
+		static const uint32 Faces[] =
 		{
 			1, 5, 4,
 			2, 6, 5,
@@ -273,7 +273,7 @@ namespace tix
 		memcpy(OutIndices.data(), Faces, sizeof(Faces));
 	}
 
-	void _CreateCapsule(uint32 Latitude, uint32 Longitude, TVector<vector3df>& OutPositions, TVector<uint16>& OutIndices)
+	void _CreateCapsule(uint32 Latitude, uint32 Longitude, TVector<vector3df>& OutPositions, TVector<uint32>& OutIndices)
 	{
 		//(x, y, z) = (sin(Pi * m/M) cos(2Pi * n/N), sin(Pi * m/M) sin(2Pi * n/N), cos(Pi * m/M))
 		OutPositions.clear();
@@ -357,10 +357,10 @@ namespace tix
 		const vector3df& Center, 
 		float Radius, 
 		TVector<vector3df>& OutPositions, 
-		TVector<uint16>& OutIndices)
+		TVector<uint32>& OutIndices)
 	{
 		static TVector<vector3df> SpherePositions;
-		static TVector<uint16> SphereIndices;
+		static TVector<uint32> SphereIndices;
 		static uint32 LastFrequency = 0;
 		if (LastFrequency != Frequency)
 		{
@@ -370,7 +370,7 @@ namespace tix
 			LastFrequency = Frequency;
 		}
 
-		const uint16 IndexOffset = (uint16)(OutPositions.size());
+		const uint32 IndexOffset = (uint32)(OutPositions.size());
 		for (const auto& P : SpherePositions)
 		{
 			vector3df NewP = P * Radius + Center;
@@ -378,7 +378,7 @@ namespace tix
 		}
 		for (const auto& I : SphereIndices)
 		{
-			uint16 Index = I + IndexOffset;
+			uint32 Index = I + IndexOffset;
 			OutIndices.push_back(Index);
 		}
 	} 
@@ -388,16 +388,16 @@ namespace tix
 		const vector3df& Edges,
 		const quaternion& Rotation,
 		TVector<vector3df>& OutPositions,
-		TVector<uint16>& OutIndices)
+		TVector<uint32>& OutIndices)
 	{
 		static TVector<vector3df> BoxPositions;
-		static TVector<uint16> BoxIndices;
+		static TVector<uint32> BoxIndices;
 		if (BoxPositions.size() == 0)
 		{
 			_CreateUnitBox(BoxPositions, BoxIndices);
 		}
 
-		const uint16 IndexOffset = (uint16)(OutPositions.size());
+		const uint32 IndexOffset = (uint32)(OutPositions.size());
 		if (Rotation == quaternion())
 		{
 			for (const auto& P : BoxPositions)
@@ -421,7 +421,7 @@ namespace tix
 		}
 		for (const auto& I : BoxIndices)
 		{
-			uint16 Index = I + IndexOffset;
+			uint32 Index = I + IndexOffset;
 			OutIndices.push_back(Index);
 		}
 	}
@@ -434,10 +434,10 @@ namespace tix
 		float Length,
 		const quaternion& Rotation,
 		TVector<vector3df>& OutPositions,
-		TVector<uint16>& OutIndices)
+		TVector<uint32>& OutIndices)
 	{
 		static TVector<vector3df> CapsulePositions;
-		static TVector<uint16> CapsuleIndices;
+		static TVector<uint32> CapsuleIndices;
 		static vector2di LatLong;
 		if (LatLong != vector2di(Latitude, Longitude))
 		{
@@ -465,7 +465,7 @@ namespace tix
 		}
 
 		// Apply rotation
-		const uint16 IndexOffset = (uint16)(OutPositions.size());
+		const uint32 IndexOffset = (uint32)(OutPositions.size());
 		if (Rotation == quaternion())
 		{
 			for (const auto& P : CapsulePositions)
@@ -489,7 +489,7 @@ namespace tix
 		}
 		for (const auto& I : CapsuleIndices)
 		{
-			uint16 Index = I + IndexOffset;
+			uint32 Index = I + IndexOffset;
 			OutIndices.push_back(Index);
 		}
 	}
