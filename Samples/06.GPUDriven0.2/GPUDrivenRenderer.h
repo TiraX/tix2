@@ -40,6 +40,8 @@ private:
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 
+	FTexturePtr HiZTexture;
+
 	FRenderTargetPtr RT_DepthOnly;
 	FPipelinePtr DepthOnlyPipeline;
 
@@ -56,4 +58,5 @@ private:
 
 	// Compute Tasks
 	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;
+	FHiZDownSampleCSPtr HiZDownSample;
 };

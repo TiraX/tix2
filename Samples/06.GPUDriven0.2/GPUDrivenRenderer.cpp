@@ -76,6 +76,20 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TMaterialPtr DepthOnlyMaterial = static_cast<TMaterial*>(DepthOnlyMaterialResource.get());
 	DepthOnlyPipeline = DepthOnlyMaterial->PipelineResource;
 
+	TTextureDesc HiZTextureDesc;
+	HiZTextureDesc.Type = ETT_TEXTURE_2D;
+	HiZTextureDesc.Format = EPF_R32F;
+	HiZTextureDesc.Width = RTWidth;
+	HiZTextureDesc.Height = RTHeight;
+	HiZTextureDesc.AddressMode = ETC_CLAMP_TO_EDGE;
+	HiZTextureDesc.SRGB = 0;
+	HiZTextureDesc.Mips = FHiZDownSampleCS::HiZLevels;
+
+	HiZTexture = RHI->CreateTexture(HiZTextureDesc);
+	HiZTexture->SetTextureFlag(ETF_UAV, true);
+	HiZTexture->SetResourceName("HiZTextures");
+	RHI->UpdateHardwareResourceTexture(HiZTexture);
+
 	// Init GPU command buffer
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
 	CommandStructure.resize(1);
@@ -96,6 +110,11 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS = ti_new FInstanceFrustumCullCS();
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
+
+	// Down sample HiZ 
+	HiZDownSample = ti_new FHiZDownSampleCS;
+	HiZDownSample->Finalize();
+	HiZDownSample->PrepareResources(RHI, vector2di(RTWidth, RTHeight), HiZTexture);
 }
 
 void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
@@ -175,7 +194,21 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceFrustumCullCS->GetCompactInstanceBuffer(), 
 			GPUOccludeCommandSignature,
 			InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
-		//RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
+		RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
+
+
+		RHI->BeginComputeTask();
+		// Down Sample Depth
+		{
+			RHI->BeginEvent("Down Sample HiZ");
+			for (uint32 i = 1; i < FHiZDownSampleCS::HiZLevels; ++i)
+			{
+				HiZDownSample->UpdateComputeArguments(RHI, i);
+				HiZDownSample->Run(RHI);
+			}
+			RHI->EndEvent();
+		}
+		RHI->EndComputeTask();
 	}
 
 	// Option1: Instance occlusion cull / Cluster cull / Triangle cull
