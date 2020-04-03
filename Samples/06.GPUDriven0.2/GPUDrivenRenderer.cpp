@@ -188,15 +188,17 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	if (bGPUCull)
 	{
 		RHI->BeginRenderToRenderTarget(RT_DepthOnly, 0, "PreZ");
-		TestDrawSceneIndirectCommandBuffer(RHI, 
-			Scene, 
-			SceneMetaInfo->GetMergedOccludeMeshBuffer(), 
-			InstanceFrustumCullCS->GetCompactInstanceBuffer(), 
+		TestDrawSceneIndirectCommandBuffer(RHI,
+			Scene,
+			SceneMetaInfo->GetMergedOccludeMeshBuffer(),
+			InstanceFrustumCullCS->GetCompactInstanceBuffer(),
 			GPUOccludeCommandSignature,
 			InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
 		RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
+	}
 
-
+	if (bGPUCull)
+	{
 		RHI->BeginComputeTask();
 		// Down Sample Depth
 		{
