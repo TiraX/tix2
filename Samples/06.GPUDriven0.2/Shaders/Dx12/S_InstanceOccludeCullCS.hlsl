@@ -9,16 +9,19 @@
 //
 //*********************************************************
 
-#define InstanceFrustumCull_RootSig \
+#define InstanceOccludeCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=2)),"
+    "DescriptorTable(SRV(t0, numDescriptors=7), UAV(u0, numDescriptors=2))," \
+	"StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
+						"addressV = TEXTURE_ADDRESS_CLAMP, " \
+						"addressW = TEXTURE_ADDRESS_CLAMP, " \
+						"filter = FILTER_MIN_MAG_MIP_POINT)"
 
 
-cbuffer FFrustum : register(b0)
+cbuffer FOcclusionInfo : register(b0)
 {
-	float4 BBoxMin;
-	float4 BBoxMax;
-	float4 Planes[6];
+	float4x4 ViewProjection;
+	uint4 RTSize;	// xy = size, z = max_mip_level
 };
 
 struct FBBox
@@ -57,20 +60,14 @@ StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
 StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
+StructuredBuffer<uint> VisibleInstanceIndex : register(t4);
+StructuredBuffer<uint4> VisibleInstanceCount : register(t5);	// x = Visible instance count; y = Dispatch thread group count;
+Texture2D<float> HiZTexture : register(t6);
 
-RWStructuredBuffer<FInstanceTransform> OutputInstanceData : register(u0);
+RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);
 RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);
 
-inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
-{
-	float3 P;
-	P.x = Plane.x >= 0.0 ? MinEdge.x : MaxEdge.x;
-	P.y = Plane.y >= 0.0 ? MinEdge.y : MaxEdge.y;
-	P.z = Plane.z >= 0.0 ? MinEdge.z : MaxEdge.z;
-
-	float dis = dot(Plane.xyz, P) + Plane.w;
-	return dis <= 0.0;
-}
+SamplerState PointSampler : register(s0);
 
 inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout float4 MaxEdge)
 {
@@ -95,33 +92,105 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 
 #define threadBlockSize 128
 
-[RootSignature(InstanceFrustumCull_RootSig)]
+[RootSignature(InstanceOccludeCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
-
-	if (InstanceMetaInfo[InstanceIndex].Info.w > 0)	// Test loaded primitives
+	//*
+	uint ThreadIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
+	if (ThreadIndex < VisibleInstanceCount[0].x)
 	{
+		uint InstanceIndex = VisibleInstanceIndex[ThreadIndex];
+		// This tile intersect view frustum, need to cull instances one by one
+		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+
 		// Transform primitive bbox
 		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
 		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
-		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
-			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
+		float3 BBoxMin = MinEdge.xyz;
+		float3 BBoxMax = MaxEdge.xyz;
+		float3 BBoxSize = BBoxMax - BBoxMin;
+
+		float3 BBoxCorners[] =
+		{
+			BBoxMin.xyz,
+			BBoxMin.xyz + float3(BBoxSize.x,0,0),
+			BBoxMin.xyz + float3(0, BBoxSize.y,0),
+			BBoxMin.xyz + float3(0, 0, BBoxSize.z),
+			BBoxMin.xyz + float3(BBoxSize.xy,0),
+			BBoxMin.xyz + float3(0, BBoxSize.yz),
+			BBoxMin.xyz + float3(BBoxSize.x, 0, BBoxSize.z),
+			BBoxMin.xyz + BBoxSize.xyz
+		};
+
+		float minZ = 1;
+		float2 minXY = 1;
+		float2 maxXY = 0;
+
+		[unroll]
+		float Zzz[8];
+		for (int i = 0; i < 8; i++)
+		{
+			//transform world space aaBox to NDC
+			float4 ClipPos = mul(float4(BBoxCorners[i], 1), ViewProjection);
+
+			Zzz[i] = ClipPos.z / ClipPos.w;
+
+			ClipPos.z = max(ClipPos.z, 0);
+
+			ClipPos.xyz = ClipPos.xyz / ClipPos.w;
+
+			ClipPos.xy = clamp(ClipPos.xy, -1, 1);
+			ClipPos.xy = ClipPos.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+
+			minXY = min(ClipPos.xy, minXY);
+			maxXY = max(ClipPos.xy, maxXY);
+
+			minZ = saturate(min(minZ, ClipPos.z));
+		}
+
+		float4 BoxUVs = float4(minXY, maxXY);
+
+		// Calculate hi-Z buffer mip
+		int2 Size = int2((maxXY - minXY) * RTSize.xy);
+		float Mip = ceil(log2(max(Size.x, Size.y)));
+
+		uint MaxMipLevel = RTSize.z;
+		Mip = clamp(Mip, 0, MaxMipLevel);
+
+		// Texel footprint for the lower (finer-grained) level
+		float  level_lower = max(Mip - 1, 0);
+		float2 scale = exp2(-level_lower);
+		float2 a = floor(BoxUVs.xy*scale);
+		float2 b = ceil(BoxUVs.zw*scale);
+		float2 dims = b - a;
+
+		// Use the lower level if we only touch <= 2 texels in both dimensions
+		if (dims.x <= 2 && dims.y <= 2)
+			Mip = level_lower;
+
+		//load depths from high z buffer
+		float4 Depth =
+		{
+			HiZTexture.SampleLevel(PointSampler, BoxUVs.xy, Mip),
+			HiZTexture.SampleLevel(PointSampler, BoxUVs.zy, Mip),
+			HiZTexture.SampleLevel(PointSampler, BoxUVs.xw, Mip),
+			HiZTexture.SampleLevel(PointSampler, BoxUVs.zw, Mip)
+		};
+
+		//find the max depth
+		float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
+
+		if (minZ <= maxDepth)
 		{
 			// Increate visible instances count
 			uint CurrentInstanceCount;
 			InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
 
 			// Copy instance data to compaced position
-			OutputInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+			CompactInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
 
 			// Modify Draw command
 			OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
@@ -131,4 +200,5 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
 		}
 	}
+	//*/
 }

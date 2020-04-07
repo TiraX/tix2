@@ -11,7 +11,7 @@
 
 #define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=2)),"
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=4)),"
 
 
 cbuffer FFrustum : register(b0)
@@ -58,8 +58,10 @@ StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
 
-RWStructuredBuffer<FInstanceTransform> OutputInstanceData : register(u0);
+RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);
 RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);
+RWStructuredBuffer<uint> VisibleInstanceIndex : register(u2);
+RWStructuredBuffer<uint4> VisibleInstanceCount : register(u3);	// x = Visible instance count; y = Dispatch thread group count;
 
 inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
 {
@@ -121,7 +123,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
 
 			// Copy instance data to compaced position
-			OutputInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+			CompactInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
 
 			// Modify Draw command
 			OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
@@ -129,6 +131,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
 			OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
 			OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
+
+			// Add visible instance to array
+			uint TotalInstanceCount;
+			InterlockedAdd(VisibleInstanceCount[0].x, 1, TotalInstanceCount);
+			VisibleInstanceCount[0].y = (TotalInstanceCount + 127) / 128;
+			VisibleInstanceIndex[TotalInstanceCount] = InstanceIndex;
 		}
 	}
 }

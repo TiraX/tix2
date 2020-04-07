@@ -111,6 +111,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
+	InstanceOcclusionCullCS = ti_new FInstanceOccludeCullCS();
+	InstanceOcclusionCullCS->Finalize();
+	InstanceOcclusionCullCS->PrepareResources(RHI);
+
 	// Down sample HiZ 
 	HiZDownSample = ti_new FHiZDownSampleCS;
 	HiZDownSample->Finalize();
@@ -160,6 +164,17 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	bool bGPUCull = bGPUCullEnabled && SceneMetaInfo->IsInited();
 	TI_TODO("Use depth from last frame. Think carefully about it. NOT a clear solution yet.");
 
+	// Update occlusion info uniform
+	{
+		const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+		FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
+
+		OcclusionInfo = ti_new FOcclusionInfo;
+		OcclusionInfo->UniformBufferData[0].ViewProjection = MatVP;
+		OcclusionInfo->UniformBufferData[0].RTSize = FUInt4(HiZTexture->GetWidth(), HiZTexture->GetHeight(), FHiZDownSampleCS::HiZLevels, 0);
+		OcclusionInfo->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+	}
+
 	// Prepare compute parameters
 	if (bGPUCull)
 	{
@@ -171,6 +186,19 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUOccludeCommandSignature,
 			SceneMetaInfo->GetGPUOccludeCommandBuffer()
+		);
+
+		InstanceOcclusionCullCS->UpdataComputeParams(
+			RHI,
+			OcclusionInfo->UniformBuffer,
+			SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
+			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			GPUCommandSignature,
+			SceneMetaInfo->GetGPUCommandBuffer(),
+			InstanceFrustumCullCS->GetVisibleInstanceIndex(),
+			InstanceFrustumCullCS->GetVisibleInstanceCount(),
+			HiZTexture
 		);
 	}
 
@@ -210,6 +238,13 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			}
 			RHI->EndEvent();
 		}
+
+		// Instance Occlusion Cull
+		{
+			RHI->BeginEvent("Instance Occlusion Cull");
+			InstanceOcclusionCullCS->Run(RHI);
+			RHI->EndEvent();
+		}
 		RHI->EndComputeTask();
 	}
 
@@ -220,6 +255,12 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		// Do test
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+		TestDrawSceneIndirectCommandBuffer(RHI,
+			Scene,
+			SceneMetaInfo->GetMergedSceneMeshBuffer(),
+			InstanceOcclusionCullCS->GetCompactInstanceBuffer(),
+			GPUCommandSignature,
+			InstanceOcclusionCullCS->GetCulledDrawCommandBuffer());
 		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
 		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer(), SceneMetaInfo->GetGPUCommandBuffer());
 	}

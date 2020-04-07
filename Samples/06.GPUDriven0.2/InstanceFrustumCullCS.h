@@ -33,7 +33,31 @@ public:
 	{
 		return CompactInstanceData;
 	}
+
+	FUniformBufferPtr GetVisibleInstanceIndex()
+	{
+		return VisibleInstanceIndex;
+	}
+
+	FUniformBufferPtr GetVisibleInstanceCount()
+	{
+		return VisibleInstanceCount;
+	}
 private:
+	enum 
+	{
+		PARAM_PRIMITIVE_BBOXES,
+		PARAM_INSTANCE_METAINFO,
+		PARAM_INSTANCE_DATA,
+		PARAM_DRAW_COMMAND_BUFFER,
+
+		PARAM_COMPACT_INSTANCE_DATA,
+		PARAM_CULLED_DRAW_COMMAND_BUFFER,
+		PARAM_VISIBLE_INSTANCE_INDEX,
+		PARAM_VISIBLE_INSTANCE_COUNT,
+
+		PARAM_TOTAL_COUNT,
+	};
 
 private:
 	FRenderResourceTablePtr ResourceTable;
@@ -48,6 +72,8 @@ private:
 
 	FInstanceBufferPtr CompactInstanceData;	// u0
 	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u1
+	FUniformBufferPtr VisibleInstanceIndex;	// u2
+	FUniformBufferPtr VisibleInstanceCount;	// u3
 
 	FUniformBufferPtr ResetCommandBuffer;
 };
