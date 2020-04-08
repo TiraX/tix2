@@ -19,6 +19,19 @@ FInstanceOccludeCullCS::~FInstanceOccludeCullCS()
 void FInstanceOccludeCullCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
+
+	// Init GPU dispatch command buffer signature
+	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
+	CommandStructure.resize(1);
+	CommandStructure[0] = GPU_COMMAND_DISPATCH;
+
+	DispatchCommandSig = RHI->CreateGPUCommandSignature(nullptr, CommandStructure);
+	RHI->UpdateHardwareResourceGPUCommandSig(DispatchCommandSig);
+
+	DispatchCommandBuffer = RHI->CreateGPUCommandBuffer(DispatchCommandSig, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+	DispatchCommandBuffer->SetResourceName("InstanceOcclusionCullDispatchCB");
+	DispatchCommandBuffer->EncodeSetDispatch(0, 0, 1, 1, 1);
+	RHI->UpdateHardwareResourceGPUCommandBuffer(DispatchCommandBuffer);
 }
 
 void FInstanceOccludeCullCS::UpdataComputeParams(
@@ -38,28 +51,28 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 
 	if (PrimitiveBBoxes != InPrimitiveBBoxes)
 	{
-		ResourceTable->PutUniformBufferInTable(InPrimitiveBBoxes, PARAM_PRIMITIVE_BBOXES);
+		ResourceTable->PutUniformBufferInTable(InPrimitiveBBoxes, SRV_PRIMITIVE_BBOXES);
 		PrimitiveBBoxes = InPrimitiveBBoxes;
 	}
 	if (InstanceMetaInfo != InInstanceMetaInfo)
 	{
-		ResourceTable->PutUniformBufferInTable(InInstanceMetaInfo, PARAM_INSTANCE_METAINFO);
+		ResourceTable->PutUniformBufferInTable(InInstanceMetaInfo, SRV_INSTANCE_METAINFO);
 		InstanceMetaInfo = InInstanceMetaInfo;
 	}
 	if (InstanceData != InInstanceData)
 	{
-		ResourceTable->PutInstanceBufferInTable(InInstanceData, PARAM_INSTANCE_DATA);
+		ResourceTable->PutInstanceBufferInTable(InInstanceData, SRV_INSTANCE_DATA);
 		InstanceData = InInstanceData;
 
 		// Update new CompactInstanceData
 		CompactInstanceData = RHI->CreateEmptyInstanceBuffer(InInstanceData->GetInstancesCount(), TInstanceBuffer::InstanceStride);
-		CompactInstanceData->SetResourceName("FrustumCulledInstanceData");
+		CompactInstanceData->SetResourceName("OcclusionCulledInstanceData");
 		RHI->UpdateHardwareResourceIB(CompactInstanceData, nullptr);
-		ResourceTable->PutInstanceBufferInTable(CompactInstanceData, PARAM_COMPACT_INSTANCE_DATA);
+		ResourceTable->PutInstanceBufferInTable(CompactInstanceData, UAV_COMPACT_INSTANCE_DATA);
 	}
 	if (DrawCommandBuffer != InDrawCommandBuffer)
 	{
-		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), PARAM_DRAW_COMMAND_BUFFER);
+		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMAND_BUFFER);
 		DrawCommandBuffer = InDrawCommandBuffer;
 
 		// Update new CulledDrawCommandBuffer
@@ -70,7 +83,7 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 		);
 		CulledDrawCommandBuffer->SetResourceName("OcclusionCulledCommandBuffer");
 		RHI->UpdateHardwareResourceGPUCommandBuffer(CulledDrawCommandBuffer);
-		ResourceTable->PutUniformBufferInTable(CulledDrawCommandBuffer->GetCommandBuffer(), PARAM_CULLED_DRAW_COMMAND_BUFFER);
+		ResourceTable->PutUniformBufferInTable(CulledDrawCommandBuffer->GetCommandBuffer(), UAV_CULLED_DRAW_COMMAND_BUFFER);
 
 		// Create Zero reset command buffer
 		ResetCommandBuffer = RHI->CreateUniformBuffer(InCommandSignature->GetCommandStrideInBytes(), InDrawCommandBuffer->GetEncodedCommandsCount(), UB_FLAG_INTERMEDIATE);
@@ -81,17 +94,17 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 	}
 	if (VisibleInstanceIndex != InVisibleInstanceIndex)
 	{
-		ResourceTable->PutUniformBufferInTable(InVisibleInstanceIndex, PARAM_VISIBLE_INSTANCE_INDEX);
+		ResourceTable->PutUniformBufferInTable(InVisibleInstanceIndex, SRV_VISIBLE_INSTANCE_INDEX);
 		VisibleInstanceIndex = InVisibleInstanceIndex;
 	}
 	if (VisibleInstanceCount != InVisibleInstanceCount)
 	{
-		ResourceTable->PutUniformBufferInTable(InVisibleInstanceCount, PARAM_VISIBLE_INSTANCE_COUNT);
+		ResourceTable->PutUniformBufferInTable(InVisibleInstanceCount, SRV_VISIBLE_INSTANCE_COUNT);
 		VisibleInstanceCount = InVisibleInstanceCount;
 	}
 	if (HiZTexture != InHiZTexture)
 	{
-		ResourceTable->PutTextureInTable(InHiZTexture, PARAM_HIZ_TEXTURE);
+		ResourceTable->PutTextureInTable(InHiZTexture, SRV_HIZ_TEXTURE);
 		HiZTexture = InHiZTexture;
 	}
 }
@@ -104,16 +117,17 @@ void FInstanceOccludeCullCS::Run(FRHI * RHI)
 	{
 		// Reset culled command buffer
 		RHI->CopyBufferRegion(CulledDrawCommandBuffer->GetCommandBuffer(), 0, ResetCommandBuffer, ResetCommandBuffer->GetTotalBufferSize());
-		//RHI->CopyBufferRegion(VisibilityResult, 0, FrustumCullResult, VisibilityResult->GetTotalBufferSize());
-		// Reset command buffer counter
-		//RHI->ComputeCopyBuffer(VisibleInstanceClusters, VisibleInstanceClusters->GetCounterOffset(), CounterReset->UniformBuffer, 0, sizeof(uint32));
 
+		// Copy dispatch thread group count
+		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_COPY_DEST);
+		RHI->ComputeCopyBuffer(DispatchCommandBuffer->GetCommandBuffer(), 0, VisibleInstanceCount, 4, sizeof(uint32));
+		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
+		
 		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeConstantBuffer(0, OcclusionInfo);
 		RHI->SetComputeResourceTable(1, ResourceTable);
 
-		TI_TODO("Dispatch indirect , since GROUP 3 is hard coded.");
-		RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(3, 1, 1));
+		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(3, 1, 1));
+		RHI->ExecuteGPUComputeCommands(DispatchCommandBuffer);
 	}
 }
-
