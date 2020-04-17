@@ -44,7 +44,8 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 	FGPUCommandBufferPtr InDrawCommandBuffer,
 	FUniformBufferPtr InVisibleInstanceIndex,
 	FUniformBufferPtr InVisibleInstanceCount,
-	FTexturePtr InHiZTexture
+	FTexturePtr InHiZTexture,
+	FUniformBufferPtr InDispatchThreadCount
 )
 {
 	OcclusionInfo = InOcclusionInfo;
@@ -107,6 +108,10 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 		ResourceTable->PutTextureInTable(InHiZTexture, SRV_HIZ_TEXTURE);
 		HiZTexture = InHiZTexture;
 	}
+	if (DispatchThreadCount != InDispatchThreadCount)
+	{
+		DispatchThreadCount = InDispatchThreadCount;
+	}
 }
 
 void FInstanceOccludeCullCS::Run(FRHI * RHI)
@@ -120,7 +125,8 @@ void FInstanceOccludeCullCS::Run(FRHI * RHI)
 
 		// Copy dispatch thread group count
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_COPY_DEST);
-		RHI->ComputeCopyBuffer(DispatchCommandBuffer->GetCommandBuffer(), 0, VisibleInstanceCount, 4, sizeof(uint32));
+		RHI->SetResourceStateUB(DispatchThreadCount, RESOURCE_STATE_COPY_SOURCE);
+		RHI->ComputeCopyBuffer(DispatchCommandBuffer->GetCommandBuffer(), 0, DispatchThreadCount, 0, sizeof(uint32));
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		
 		RHI->SetComputePipeline(ComputePipeline);

@@ -111,6 +111,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
+	OcclusionDispatchCmdCS = ti_new FOcclusionDispatchCmdCS();
+	OcclusionDispatchCmdCS->Finalize();
+	OcclusionDispatchCmdCS->PrepareResources(RHI);
+
 	InstanceOcclusionCullCS = ti_new FInstanceOccludeCullCS();
 	InstanceOcclusionCullCS->Finalize();
 	InstanceOcclusionCullCS->PrepareResources(RHI);
@@ -188,6 +192,11 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetGPUOccludeCommandBuffer()
 		);
 
+		OcclusionDispatchCmdCS->UpdataComputeParams(
+			RHI,
+			InstanceFrustumCullCS->GetVisibleInstanceCount()
+			);
+
 		InstanceOcclusionCullCS->UpdataComputeParams(
 			RHI,
 			OcclusionInfo->UniformBuffer,
@@ -198,7 +207,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetGPUCommandBuffer(),
 			InstanceFrustumCullCS->GetVisibleInstanceIndex(),
 			InstanceFrustumCullCS->GetVisibleInstanceCount(),
-			HiZTexture
+			HiZTexture,
+			OcclusionDispatchCmdCS->GetDispatchThreadCount()
 		);
 	}
 
@@ -242,6 +252,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		// Instance Occlusion Cull
 		{
 			RHI->BeginEvent("Instance Occlusion Cull");
+			OcclusionDispatchCmdCS->Run(RHI);
 			InstanceOcclusionCullCS->Run(RHI);
 			RHI->EndEvent();
 		}

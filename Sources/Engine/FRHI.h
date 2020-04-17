@@ -227,6 +227,7 @@ namespace tix
 		{
 			++NumGPUFrames;
 		}
+		// Frames count that GPU done
 		static uint32 NumGPUFrames;
 	protected:
 		E_RHI_TYPE RHIType;

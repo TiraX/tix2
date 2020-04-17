@@ -7,6 +7,7 @@
 #include "SceneMetaInfos.h"
 #include "HiZDownSampleCS.h"
 #include "InstanceFrustumCullCS.h"
+#include "OcclusionDispatchCmd.h"
 #include "InstanceOccludeCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
@@ -61,5 +62,6 @@ private:
 	// Compute Tasks
 	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;
 	FHiZDownSampleCSPtr HiZDownSample;
+	FOcclusionDispatchCmdCSPtr OcclusionDispatchCmdCS;
 	FInstanceOccludeCullCSPtr InstanceOcclusionCullCS;
 };

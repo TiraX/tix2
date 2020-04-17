@@ -24,7 +24,8 @@ public:
 		FGPUCommandBufferPtr InDrawCommandBuffer,
 		FUniformBufferPtr InVisibleInstanceIndex,
 		FUniformBufferPtr InVisibleInstanceCount,
-		FTexturePtr InHiZTexture
+		FTexturePtr InHiZTexture,
+		FUniformBufferPtr InDispatchThreadCount
 		);
 
 	FGPUCommandBufferPtr GetCulledDrawCommandBuffer()
@@ -74,6 +75,7 @@ private:
 	FInstanceBufferPtr CompactInstanceData;	// u0
 	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u1
 
+	FUniformBufferPtr DispatchThreadCount;
 	FUniformBufferPtr ResetCommandBuffer;
 };
 typedef TI_INTRUSIVE_PTR(FInstanceOccludeCullCS) FInstanceOccludeCullCSPtr;

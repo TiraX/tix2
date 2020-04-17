@@ -135,7 +135,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			// Add visible instance to array
 			uint TotalInstanceCount;
 			InterlockedAdd(VisibleInstanceCount[0].x, 1, TotalInstanceCount);
-			VisibleInstanceCount[0].y = (TotalInstanceCount + 127) / 128;
+			//VisibleInstanceCount[0].y = uint(TotalInstanceCount + 127) / 128;
 			VisibleInstanceIndex[TotalInstanceCount] = InstanceIndex;
 		}
 	}

@@ -104,7 +104,7 @@ namespace tix
 							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
 							LinkedPrimitives.reserve(TotalSections);
 							PrimitiveIndices.reserve(TotalSections);
-							for (int32 Section = 0 ; Section < TotalSections ; ++ Section)
+							for (uint32 Section = 0 ; Section < TotalSections ; ++ Section)
 							{
 								TI_ASSERT(StaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
 

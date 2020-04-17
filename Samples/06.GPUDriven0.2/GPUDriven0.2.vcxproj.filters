@@ -37,6 +37,9 @@
     <ClCompile Include="InstanceOccludeCullCS.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
+    <ClCompile Include="OcclusionDispatchCmd.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUDrivenRenderer.h">
@@ -61,6 +64,9 @@
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
     <ClInclude Include="InstanceOccludeCullCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="OcclusionDispatchCmd.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,6 +98,9 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_InstanceOccludeCullCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_OcclusionDispatchCmdCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
