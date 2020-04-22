@@ -241,4 +241,19 @@ namespace tix
 	{
 		return dynamic_cast<T *>(p.get());
 	}
+
 } // namespace tix
+
+
+// for std::unordered_map
+namespace std
+{
+	template<typename T>
+	struct hash< tix::IInstrusivePtr<T> >
+	{
+		size_t operator() (const tix::IInstrusivePtr<T>& ptr) const noexcept
+		{
+			return (size_t)(ptr.get());
+		}
+	};
+}
