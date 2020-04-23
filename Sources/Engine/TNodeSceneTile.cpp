@@ -115,25 +115,27 @@ namespace tix
 									StaticMesh->GetMeshBuffer()->MeshBufferResource,
 									MeshSection.IndexStart,
 									MeshSection.Triangles,
-									StaticMesh->GetMeshBuffer()->GetBBox(),
 									MeshSection.DefaultMaterial,
 									SceneTileResource->MeshInstanceBuffer->InstanceResource,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
 									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
 								);
-								Primitive->SetClusterMetaData(StaticMesh->GetMeshBuffer()->MeshClusterDataResource);
 								Primitive->SetSceneTilePos(SceneTileResource->Position);
 								LinkedPrimitives.push_back(Primitive);
 								PrimitiveIndices.push_back(MeshSectionOffset + Section);
 							}
 
-							// Collisions
-							if (StaticMesh->GetOccludeMesh() != nullptr)
-							{
-								TI_ASSERT(StaticMesh->GetOccludeMesh()->MeshBufferResource != nullptr);
-								LinkedPrimitives[0]->SetOccluder(StaticMesh->GetOccludeMesh()->MeshBufferResource);
-							}
 							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
+
+							// Add static mesh to scene
+							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileStaticMeshToFScene,
+								FMeshBufferPtr, StaticMeshResource, StaticMesh->GetMeshBuffer()->MeshBufferResource,
+								FMeshBufferPtr, StaticOccludeMeshResource, StaticMesh->GetOccludeMesh()->MeshBufferResource,
+								FUniformBufferPtr, ClusterData, StaticMesh->GetMeshBuffer()->MeshClusterDataResource,
+								{
+									FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(StaticMeshResource, StaticOccludeMeshResource, ClusterData);
+								});
+
 
 							// Add primitive to scene
 							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileMeshPrimitivesToFSceneTile,

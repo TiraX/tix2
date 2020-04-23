@@ -30,15 +30,11 @@ namespace tix
 		FMeshBufferPtr InMeshBuffer, 
 		uint32 InIndexStart,
 		uint32 InTriangles,
-		const aabbox3df& InMeshBBox, 
 		TMaterialInstancePtr InMInstance, 
 		FInstanceBufferPtr InInstanceBuffer,
 		uint32 InInstanceCount,
 		uint32 InInstanceOffset)
 	{
-		// Add bounding box
-		BBox = InMeshBBox;
-
 		// Add mesh buffer
 		MeshBuffer = InMeshBuffer;
 		IndexStart = InIndexStart;

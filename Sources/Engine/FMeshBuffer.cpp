@@ -23,7 +23,9 @@ namespace tix
 		uint32 InVSFormat, 
 		uint32 InVertexCount, 
 		E_INDEX_TYPE InIndexType,
-		uint32 InIndexCount)
+		uint32 InIndexCount,
+		const aabbox3df& InBBox
+	)
 		: FRenderResource(RRT_VERTEX_BUFFER)
 		, PrimitiveType(InPrimType)
 		, VsDataCount(InVertexCount)
@@ -31,6 +33,7 @@ namespace tix
 		, PsDataCount(InIndexCount)
 		, VsFormat(InVSFormat)
 		, Stride(0)
+		, BBox(InBBox)
 	{
 		Stride = TMeshBuffer::GetStrideFromFormat(InVSFormat);
 	}

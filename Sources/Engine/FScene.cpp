@@ -124,4 +124,30 @@ namespace tix
 		TI_TODO("Add scene tile unregister.");
 		TI_ASSERT(0);
 	}
+
+	void FScene::AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData)
+	{
+		THMap<FMeshBufferPtr, FSceneMeshInfo>::iterator It = SceneMeshes.find(InMesh);
+		if (It != SceneMeshes.end())
+		{
+			TI_ASSERT(It->second.OccludeMesh == InOccludeMesh && It->second.ClusterData == InClusterData);
+			++It->second.References;
+		}
+		else
+		{
+			SceneMeshes[InMesh] = FSceneMeshInfo(1, InOccludeMesh, InClusterData);
+		}
+	}
+
+	void FScene::RemoveSceneMeshBuffer(FMeshBufferPtr InMesh)
+	{
+		THMap<FMeshBufferPtr, FSceneMeshInfo>::iterator It = SceneMeshes.find(InMesh);
+		TI_ASSERT(It != SceneMeshes.end() && It->second.References > 0);
+
+		--It->second.References;
+		if (It->second.References == 0)
+		{
+			SceneMeshes.erase(It);
+		}
+	}
 }

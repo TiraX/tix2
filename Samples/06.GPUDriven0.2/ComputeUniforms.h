@@ -33,12 +33,12 @@ END_UNIFORM_BUFFER_STRUCT(FCullUniform)
 
 // Primitive BBox info
 //#define MAX_STATIC_MESH_IN_SCENE (2048)
-BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FScenePrimitiveBBoxes)
+BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneMeshBBoxes)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MinEdge)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
-END_UNIFORM_BUFFER_STRUCT(FScenePrimitiveBBoxes)
+END_UNIFORM_BUFFER_STRUCT(FSceneMeshBBoxes)
 
-// Info.x = primitive index this instance link to, in scene tile order, to access primitive bbox
+// Info.x = scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
 // Info.y = cluster index begin
 // Info.z = cluster count
 // Info.w = if this primitive is loaded. 1 = loaded; 0 = loading

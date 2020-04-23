@@ -34,13 +34,17 @@ public:
 	{
 		return MergedOccludeMeshBuffer;
 	}
+	FUniformBufferPtr GetMergedClusterMetaInfo()
+	{
+		return MergedClusterMetaInfo;
+	}
 	FGPUCommandBufferPtr GetGPUOccludeCommandBuffer()
 	{
 		return GPUOccludeCommandBuffer;
 	}
-	FScenePrimitiveBBoxesPtr GetPrimitiveBBoxesUniform()
+	FSceneMeshBBoxesPtr GetSceneMeshBBoxesUniform()
 	{
-		return PrimitiveBBoxesUniform;
+		return SceneMeshBBoxesUniform;
 	}
 	FSceneInstanceMetaInfoPtr GetInstanceMetaInfoUniform()
 	{
@@ -59,7 +63,9 @@ private:
 	FMeshBufferPtr MergedOccludeMeshBuffer;
 	FGPUCommandBufferPtr GPUOccludeCommandBuffer;
 
-	FScenePrimitiveBBoxesPtr PrimitiveBBoxesUniform;
+	FUniformBufferPtr MergedClusterMetaInfo;
+
+	FSceneMeshBBoxesPtr SceneMeshBBoxesUniform;
 	FSceneInstanceMetaInfoPtr InstanceMetaInfoUniform;
 
 	friend class FScene;

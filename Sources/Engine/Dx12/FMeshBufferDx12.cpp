@@ -31,9 +31,10 @@ namespace tix
 		uint32 InVSFormat,
 		uint32 InVertexCount,
 		E_INDEX_TYPE InIndexType,
-		uint32 InIndexCount
+		uint32 InIndexCount,
+		const aabbox3df& InBBox
 	)
-		: FMeshBuffer(InPrimType, InVSFormat, InVertexCount, InIndexType, InIndexCount)
+		: FMeshBuffer(InPrimType, InVSFormat, InVertexCount, InIndexType, InIndexCount, InBBox)
 	{}
 
 	FMeshBufferDx12::~FMeshBufferDx12()

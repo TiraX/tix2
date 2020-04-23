@@ -17,7 +17,8 @@ namespace tix
 			uint32 InVSFormat,
 			uint32 InVertexCount,
 			E_INDEX_TYPE InIndexType,
-			uint32 InIndexCount
+			uint32 InIndexCount,
+			const aabbox3df& InBBox
 		);
 		virtual ~FMeshBuffer();
 
@@ -63,18 +64,25 @@ namespace tix
 		{
 			return Usage;
 		}
+
+		const aabbox3df& GetBBox() const
+		{
+			return BBox;
+		}
 	protected:
 
 	protected:
-		E_PRIMITIVE_TYPE	PrimitiveType;
+		E_PRIMITIVE_TYPE PrimitiveType;
 
-		uint32				VsDataCount;
+		uint32 VsDataCount;
 
-		E_INDEX_TYPE		IndexType;
-		uint32				PsDataCount;
+		E_INDEX_TYPE IndexType;
+		uint32 PsDataCount;
 
-		uint32				VsFormat;
-		uint32				Stride;
+		uint32 VsFormat;
+		uint32 Stride;
+
+		aabbox3df BBox;
 	};
 
 	///////////////////////////////////////////////////////////

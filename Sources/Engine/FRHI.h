@@ -98,7 +98,8 @@ namespace tix
 			uint32 InVSFormat,
 			uint32 InVertexCount,
 			E_INDEX_TYPE InIndexType,
-			uint32 InIndexCount
+			uint32 InIndexCount,
+			const aabbox3df& InMeshBBox
 		) = 0;
 		virtual FInstanceBufferPtr CreateInstanceBuffer() = 0;
 		virtual FInstanceBufferPtr CreateEmptyInstanceBuffer(uint32 InstanceCount, uint32 InstanceStride) = 0;

@@ -79,7 +79,6 @@ namespace tix
 				InStaticMesh->GetMeshBuffer()->MeshBufferResource,
 				MeshSection.IndexStart,
 				MeshSection.Triangles,
-				InStaticMesh->GetMeshBuffer()->GetBBox(),
 				MeshSection.DefaultMaterial, 
 				InInstanceBuffer != nullptr ? InInstanceBuffer->InstanceResource : nullptr,
 				InInstanceCount,
@@ -118,10 +117,10 @@ namespace tix
 		if (HasFlag(ENF_ABSOLUTETRANSFORMATION_UPDATED))
 		{
 			TI_ASSERT(LinkedPrimitives.size() > 0);
-			TransformedBBox = LinkedPrimitives[0]->GetBBox();
+			TransformedBBox = LinkedPrimitives[0]->GetMeshBuffer()->GetBBox();
 			for (int32 i = 1; i < (int32)LinkedPrimitives.size(); ++i)
 			{
-				TransformedBBox.addInternalBox(LinkedPrimitives[i]->GetBBox());
+				TransformedBBox.addInternalBox(LinkedPrimitives[i]->GetMeshBuffer()->GetBBox());
 			}
 			AbsoluteTransformation.transformBoxEx(TransformedBBox);
 

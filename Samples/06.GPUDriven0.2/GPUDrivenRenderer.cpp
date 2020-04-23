@@ -185,7 +185,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		InstanceFrustumCullCS->UpdataComputeParams(
 			RHI,
 			FrustumUniform->UniformBuffer,
-			SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
+			SceneMetaInfo->GetSceneMeshBBoxesUniform()->UniformBuffer,
 			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUOccludeCommandSignature,
@@ -200,7 +200,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		InstanceOcclusionCullCS->UpdataComputeParams(
 			RHI,
 			OcclusionInfo->UniformBuffer,
-			SceneMetaInfo->GetPrimitiveBBoxesUniform()->UniformBuffer,
+			SceneMetaInfo->GetSceneMeshBBoxesUniform()->UniformBuffer,
 			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUCommandSignature,
@@ -256,6 +256,9 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceOcclusionCullCS->Run(RHI);
 			RHI->EndEvent();
 		}
+
+		// Cluster Cull
+
 		RHI->EndComputeTask();
 	}
 

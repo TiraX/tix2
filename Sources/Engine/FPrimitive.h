@@ -27,17 +27,11 @@ namespace tix
 			FMeshBufferPtr InMeshBuffer,
 			uint32 InIndexStart,
 			uint32 InTriangles,
-			const aabbox3df& InMeshBBox,
 			TMaterialInstancePtr InMInstance,
 			FInstanceBufferPtr InInstanceBuffer,
 			uint32 InInstanceCount,
 			uint32 InInstanceOffset
 		);
-
-		void SetClusterMetaData(FUniformBufferPtr InClusterData)
-		{
-			ClusterMetaData = InClusterData;
-		}
 
 		void SetGlobalInstanceOffset(uint32 InOffset)
 		{
@@ -49,17 +43,9 @@ namespace tix
 		{
 			return MeshBuffer;
 		}
-		FMeshBufferPtr GetOccluderMesh()
-		{
-			return Occluder;
-		}
 		FInstanceBufferPtr GetInstanceBuffer()
 		{
 			return InstanceBuffer;
-		}
-		FUniformBufferPtr GetClusterData()
-		{
-			return ClusterMetaData;
 		}
 		uint32 GetInstanceCount() const
 		{
@@ -85,10 +71,6 @@ namespace tix
 		{
 			return PrimitiveUniformBuffer;
 		}
-		const aabbox3df& GetBBox() const
-		{
-			return BBox;
-		}
 		E_DRAWLIST_TYPE GetDrawList() const
 		{
 			return DrawList;
@@ -108,10 +90,6 @@ namespace tix
 		{
 			SceneTilePos = InPos;
 		}
-		void SetOccluder(FMeshBufferPtr OccluderMesh)
-		{
-			Occluder = OccluderMesh;
-		}
 
 		void UpdatePrimitiveBuffer_RenderThread();
 	private:
@@ -125,16 +103,11 @@ namespace tix
 		uint32 InstanceOffset;
 		uint32 GlobalInstanceOffset;
 
-		FUniformBufferPtr ClusterMetaData;
-
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;
 
-		FMeshBufferPtr Occluder;
-
 		// Every primitive has a unique Primitive uniform buffer, because VT UVTransform
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
-		aabbox3df BBox;
 
 		vector2di SceneTilePos;
 
