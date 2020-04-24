@@ -38,13 +38,15 @@ BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneMeshBBoxes)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MaxEdge)
 END_UNIFORM_BUFFER_STRUCT(FSceneMeshBBoxes)
 
-// Info.x = scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
-// Info.y = cluster index begin
-// Info.z = cluster count
-// Info.w = if this primitive is loaded. 1 = loaded; 0 = loading
+// Info1.x = scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
+// Info1.y = draw call index
+// Info1.w = if this primitive is loaded. 1 = loaded; 0 = loading
+// Info2.x = cluster index begin
+// Info2.y = cluster count
 //#define MAX_INSTANCES_IN_SCENE (40 * 1024)
 BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FSceneInstanceMetaInfo)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info1)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FUInt4, Info2)
 END_UNIFORM_BUFFER_STRUCT(FSceneInstanceMetaInfo)
 
 // Info.x = primitive index

@@ -218,7 +218,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			}
 
 			uint32 InstanceDstOffset = 0;
-			uint32 PrimIndex = 0;
+			uint32 DrawCmdIndex = 0;
 			for (const auto& T : SceneTileResources)
 			{
 				FSceneTileResourcePtr TileRes = T.second;
@@ -236,7 +236,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							// Remember draw arguments
 							FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
 							const vector2di& MeshDataOffset = MeshDataOffsets[MeshBuffer];
-							FDrawInstanceArgument& DrawArg = DrawArguments[PrimIndex];
+							FDrawInstanceArgument& DrawArg = DrawArguments[DrawCmdIndex];
 							DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
 							DrawArg.InstanceCount = Prim->GetInstanceCount();
 							DrawArg.StartIndexLocation = MeshDataOffset.Y / sizeof(uint32);
@@ -252,7 +252,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							{
 								// Remember draw arguments
 								const vector2di& OccludeMeshDataOffset = OccludeMeshDataOffsets[MeshBuffer];
-								FDrawInstanceArgument& OccludeDrawArg = OccludeDrawArguments[PrimIndex];
+								FDrawInstanceArgument& OccludeDrawArg = OccludeDrawArguments[DrawCmdIndex];
 								OccludeDrawArg.IndexCountPerInstance = OccludeMeshBuffer->GetIndicesCount();
 								OccludeDrawArg.InstanceCount = Prim->GetInstanceCount();
 								OccludeDrawArg.StartIndexLocation = OccludeMeshDataOffset.Y / sizeof(uint32);
@@ -264,11 +264,12 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							const int32 MeshOrder = MeshOrderMap[MeshBuffer];
 							for (uint32 Ins = DrawArg.StartInstanceLocation ; Ins < DrawArg.StartInstanceLocation + DrawArg.InstanceCount ; ++ Ins)
 							{
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info.X = MeshOrder;	// scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info.W = 1;	// Mark as Loaded
+								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.X = MeshOrder;	// scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
+								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.Y = DrawCmdIndex;	// draw call index
+								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.W = 1;	// Mark as Loaded
 							}
 
-							++PrimIndex;
+							++DrawCmdIndex;
 						}
 					}
 				}
@@ -282,7 +283,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 				}
 			}
 			TI_ASSERT(InstanceDstOffset == TotalInstances);
-			TI_ASSERT(PrimIndex == TotalDrawCommands);
+			TI_ASSERT(DrawCmdIndex == TotalDrawCommands);
 
 			SceneMeshBBoxesUniform->InitUniformBuffer();
 			InstanceMetaInfoUniform->InitUniformBuffer();

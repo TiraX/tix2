@@ -29,8 +29,11 @@ struct FBBox
 
 struct FInstanceMetaInfo
 {
-	// x = draw call index
-	uint4 Info;
+	// x = mesh bbox index
+	// y = draw call index
+	// w = loaded
+	uint4 Info1;
+	uint4 Info2;
 };
 
 struct FInstanceTransform
@@ -53,7 +56,7 @@ struct FDrawInstanceCommand
 };
 
 
-StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
+StructuredBuffer<FBBox> SceneMeshBBox : register(t0);
 StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
@@ -102,13 +105,14 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+	uint MeshIndex = InstanceMetaInfo[InstanceIndex].Info1.x;
+	uint DrawCmdIndex = InstanceMetaInfo[InstanceIndex].Info1.y;
 
-	if (InstanceMetaInfo[InstanceIndex].Info.w > 0)	// Test loaded primitives
+	if (InstanceMetaInfo[InstanceIndex].Info1.w > 0)	// Test loaded primitives
 	{
 		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+		float4 MinEdge = SceneMeshBBox[MeshIndex].MinEdge;
+		float4 MaxEdge = SceneMeshBBox[MeshIndex].MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
 		if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
@@ -120,17 +124,17 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		{
 			// Increate visible instances count
 			uint CurrentInstanceCount;
-			InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
+			InterlockedAdd(OutputDrawCommandBuffer[DrawCmdIndex].Params.y, 1, CurrentInstanceCount);
 
 			// Copy instance data to compaced position
-			CompactInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+			CompactInstanceData[DrawCommandBuffer[DrawCmdIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
 
 			// Modify Draw command
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-			//OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
-			OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
+			//OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
+			OutputDrawCommandBuffer[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
 
 			// Add visible instance to array
 			uint TotalInstanceCount;
