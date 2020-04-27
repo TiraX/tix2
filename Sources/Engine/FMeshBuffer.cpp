@@ -50,6 +50,7 @@ namespace tix
 		PsDataCount = InMeshBuffer->GetIndicesCount();
 		VsFormat = InMeshBuffer->GetVSFormat();
 		Stride = InMeshBuffer->GetStride();
+		BBox = InMeshBuffer->GetBBox();
 	}
 
 	///////////////////////////////////////////////////////////

@@ -41,6 +41,7 @@ namespace tix
 	{
 		TI_ASSERT(OccludeMesh == nullptr);
 		OccludeMesh = CollisionSet->ConvertToMesh();
+		OccludeMesh->SetBBox(MeshBuffer->GetBBox());
 		if (OccludeMesh != nullptr)
 		{
 			OccludeMesh->SetResourceName(MeshBuffer->GetResourceName() + "-Occluder");
