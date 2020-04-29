@@ -32,8 +32,11 @@ struct FBBox
 
 struct FInstanceMetaInfo
 {
-	// x = draw call index
-	uint4 Info;
+	// x = mesh bbox index
+	// y = draw call index
+	// w = loaded
+	uint4 Info1;
+	uint4 Info2;
 };
 
 struct FInstanceTransform
@@ -102,11 +105,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	{
 		uint InstanceIndex = VisibleInstanceIndex[ThreadIndex];
 		// This tile intersect view frustum, need to cull instances one by one
-		uint PrimitiveIndex = InstanceMetaInfo[InstanceIndex].Info.x;
+		uint MeshIndex = InstanceMetaInfo[InstanceIndex].Info1.x;
+		uint DrawCmdIndex = InstanceMetaInfo[InstanceIndex].Info1.y;
 
 		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[PrimitiveIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[PrimitiveIndex].MaxEdge;
+		float4 MinEdge = PrimitiveBBoxes[MeshIndex].MinEdge;
+		float4 MaxEdge = PrimitiveBBoxes[MeshIndex].MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
 		float3 BBoxMin = MinEdge.xyz;
@@ -187,17 +191,21 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		{
 			// Increate visible instances count
 			uint CurrentInstanceCount;
-			InterlockedAdd(OutputDrawCommandBuffer[PrimitiveIndex].Params.y, 1, CurrentInstanceCount);
+			InterlockedAdd(OutputDrawCommandBuffer[DrawCmdIndex].Params.y, 1, CurrentInstanceCount);
 
 			// Copy instance data to compaced position
-			CompactInstanceData[DrawCommandBuffer[PrimitiveIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
+			CompactInstanceData[DrawCommandBuffer[DrawCmdIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
 
 			// Modify Draw command
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-			//OutputDrawCommandBuffer[PrimitiveIndex].Params.x = DrawCommandBuffer[PrimitiveIndex].Params.x;
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.z = DrawCommandBuffer[PrimitiveIndex].Params.z;
-			OutputDrawCommandBuffer[PrimitiveIndex].Params.w = DrawCommandBuffer[PrimitiveIndex].Params.w;
-			OutputDrawCommandBuffer[PrimitiveIndex].Param = DrawCommandBuffer[PrimitiveIndex].Param;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
+			//OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
+			OutputDrawCommandBuffer[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
+			OutputDrawCommandBuffer[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
+
+			// Collect clusters for culling
+			uint CurrentClusterIndex;
+			//InterlockAdd(CollectedClustersCount[0].x, , CurrentClusterIndex);
 		}
 	}
 	//*/
