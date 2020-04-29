@@ -153,7 +153,10 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			uint32 SceneVBOffset = 0, SceneIBOffset = 0;
 			uint32 OccludeVBOffset = 0, OccludeIBOffset = 0;
 			uint32 ClusterOffset = 0;
-			THMap<FMeshBufferPtr, vector2di> MeshDataOffsets, OccludeMeshDataOffsets;
+			// X, Y = VBOffset, IBOffset;
+			// Z, W = ClusterOffset, ClusterCount;
+			THMap<FMeshBufferPtr, vector4di> MeshDataOffsets;
+			THMap<FMeshBufferPtr, vector2di> OccludeMeshDataOffsets;
 			MeshDataOffsets.reserve(SceneMeshes.size());
 			OccludeMeshDataOffsets.reserve(SceneMeshes.size());
 			for (const auto& M : SceneMeshes)
@@ -171,8 +174,10 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 					0,
 					MeshBuffer->GetIndicesCount() * sizeof(uint32)
 				);
+
 				// Remember offset for this mesh
-				MeshDataOffsets[MeshBuffer] = vector2di(SceneVBOffset, SceneIBOffset);
+				const uint32 ClusterCount = M.second.ClusterData->GetElements();
+				MeshDataOffsets[MeshBuffer] = vector4di(SceneVBOffset, SceneIBOffset, ClusterOffset, ClusterCount);
 
 				// Increase offsets
 				SceneVBOffset += MeshBuffer->GetVerticesCount() * VertexStride;
@@ -211,14 +216,15 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 				SceneMeshBBoxesUniform->UniformBufferData[MeshOrder].MaxEdge = FFloat4(BBox.MaxEdge.X, BBox.MaxEdge.Y, BBox.MaxEdge.Z, 0.f);
 
 				// Copy Cluster meta info
-				uint32 ClusterCount = M.second.ClusterData->GetElements();
 				RHI->CopyBufferRegion(MergedClusterMetaInfo, ClusterOffset * ClusterDataSize, M.second.ClusterData, ClusterCount * ClusterDataSize);
 				ClusterOffset += M.second.ClusterData->GetElements();
 				TI_ASSERT(ClusterOffset <= TotalClusters);
 			}
+			TI_ASSERT(ClusterOffset == TotalClusters);
 
 			uint32 InstanceDstOffset = 0;
 			uint32 DrawCmdIndex = 0;
+			TotalInstanceClusters = 0;
 			for (const auto& T : SceneTileResources)
 			{
 				FSceneTileResourcePtr TileRes = T.second;
@@ -235,7 +241,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 						{
 							// Remember draw arguments
 							FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
-							const vector2di& MeshDataOffset = MeshDataOffsets[MeshBuffer];
+							const vector4di& MeshDataOffset = MeshDataOffsets[MeshBuffer];
 							FDrawInstanceArgument& DrawArg = DrawArguments[DrawCmdIndex];
 							DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
 							DrawArg.InstanceCount = Prim->GetInstanceCount();
@@ -267,6 +273,11 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.X = MeshOrder;	// scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
 								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.Y = DrawCmdIndex;	// draw call index
 								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.W = 1;	// Mark as Loaded
+
+								InstanceMetaInfoUniform->UniformBufferData[Ins].Info2.X = MeshDataOffset.Z;	// cluster index begin
+								InstanceMetaInfoUniform->UniformBufferData[Ins].Info2.Y = MeshDataOffset.W;	// cluster count
+
+								TotalInstanceClusters += MeshDataOffset.W;
 							}
 
 							++DrawCmdIndex;

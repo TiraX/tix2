@@ -9,37 +9,50 @@
 //
 //*********************************************************
 
-#define InstanceOccludeCull_RootSig \
+#define ClusterCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=7), UAV(u0, numDescriptors=4))," \
-	"StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
-						"addressV = TEXTURE_ADDRESS_CLAMP, " \
-						"addressW = TEXTURE_ADDRESS_CLAMP, " \
-						"filter = FILTER_MIN_MAG_MIP_POINT)"
+	"CBV(b1) ," \
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))," \
+    "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
+                      "addressV = TEXTURE_ADDRESS_CLAMP, " \
+                      "addressW = TEXTURE_ADDRESS_CLAMP, " \
+                        "filter = FILTER_MIN_MAG_MIP_POINT)"
 
-
-cbuffer FOcclusionInfo : register(b0)
+cbuffer FViewInfoUniform : register(b0)
 {
+	float3 ViewDir;
 	float4x4 ViewProjection;
 	uint4 RTSize;	// xy = size, z = max_mip_level
+	float4 Planes[6];
+};
+cbuffer FClusterCount : register(b1)
+{
+	uint4 ClusterCount;
 };
 
-struct FBBox
+struct FClusterBoundingInfo
 {
 	float4 MinEdge;
 	float4 MaxEdge;
+	float4 Cone;
 };
 
-// PUT shared struct in a single header
 struct FInstanceMetaInfo
 {
-	// Info1.x = mesh bbox index
-	// Info1.y = draw call index
-	// Info1.w = loaded
-	uint4 Info1;
-	// Info2.x = cluster index begin
-	// Info2.y = cluster count
-	uint4 Info2;
+	// x = primitive index
+	// y = cluster index begin
+	// z = cluster count
+	// w = primitive was loaded.
+	uint4 Info;
+};
+
+struct FClusterMetaInfo
+{
+	// x = instance global index
+	// y = cluster global index
+	// z = draw command index
+	// w = cluster local index
+	uint4 Info;
 };
 
 struct FInstanceTransform
@@ -50,32 +63,25 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
-struct FDrawInstanceCommand
-{
-	//uint32 IndexCountPerInstance;
-	//uint32 InstanceCount;
-	//uint32 StartIndexLocation;
-	//uint32 BaseVertexLocation;
-	//uint32 StartInstanceLocation;
-	uint4 Params;
-	uint Param;
-};
+StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
+StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
+StructuredBuffer<FClusterMetaInfo> ClusterQueue : register(t2);
+Texture2D<float> HiZTexture : register(t3);
 
-
-StructuredBuffer<FBBox> PrimitiveBBoxes : register(t0);
-StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
-StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
-StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
-StructuredBuffer<uint> VisibleInstanceIndex : register(t4);
-StructuredBuffer<uint4> VisibleInstanceCount : register(t5);	// x = Visible instance count; y = Dispatch thread group count;
-Texture2D<float> HiZTexture : register(t6);
-
-RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);	// For render test
-RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);	// For render test
-RWStructuredBuffer<uint4> CollectedClustersCount : register(u2);
-RWStructuredBuffer<uint> CollectedClusters : register(u3);
+AppendStructuredBuffer<FClusterMetaInfo> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
+
+inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
+{
+	float3 P;
+	P.x = Plane.x >= 0.0 ? MinEdge.x : MaxEdge.x;
+	P.y = Plane.y >= 0.0 ? MinEdge.y : MaxEdge.y;
+	P.z = Plane.z >= 0.0 ? MinEdge.z : MaxEdge.z;
+
+	float dis = dot(Plane.xyz, P) + Plane.w;
+	return dis <= 0.0;
+}
 
 inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout float4 MaxEdge)
 {
@@ -100,22 +106,31 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 
 #define threadBlockSize 128
 
-[RootSignature(InstanceOccludeCull_RootSig)]
+[RootSignature(ClusterCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	//*
-	uint ThreadIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	if (ThreadIndex < VisibleInstanceCount[0].x)
-	{
-		uint InstanceIndex = VisibleInstanceIndex[ThreadIndex];
-		// This tile intersect view frustum, need to cull instances one by one
-		uint MeshIndex = InstanceMetaInfo[InstanceIndex].Info1.x;
-		uint DrawCmdIndex = InstanceMetaInfo[InstanceIndex].Info1.y;
+	uint QueueIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
 
-		// Transform primitive bbox
-		float4 MinEdge = PrimitiveBBoxes[MeshIndex].MinEdge;
-		float4 MaxEdge = PrimitiveBBoxes[MeshIndex].MaxEdge;
+	if (QueueIndex >= ClusterCount.x)
+		return;
+
+	uint InstanceIndex = ClusterQueue[QueueIndex].Info.x;
+	uint ClusterIndex = ClusterQueue[QueueIndex].Info.y;
+
+	FClusterBoundingInfo Cluster = ClusterBoundingData[ClusterIndex];
+
+	uint Result = 0;
+	// Orientition cull
+	if (dot(-ViewDir, Cluster.Cone.xyz) < Cluster.Cone.w)
+	{
+		// cull it
+	}
+	else
+	{
+		// HiZ culling
+		float4 MinEdge = Cluster.MinEdge;
+		float4 MaxEdge = Cluster.MaxEdge;
 		TransformBBox(InstanceData[InstanceIndex], MinEdge, MaxEdge);
 
 		float3 BBoxMin = MinEdge.xyz;
@@ -139,13 +154,10 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		float2 maxXY = 0;
 
 		[unroll]
-		float Zzz[8];
 		for (int i = 0; i < 8; i++)
 		{
 			//transform world space aaBox to NDC
 			float4 ClipPos = mul(float4(BBoxCorners[i], 1), ViewProjection);
-
-			Zzz[i] = ClipPos.z / ClipPos.w;
 
 			ClipPos.z = max(ClipPos.z, 0);
 
@@ -192,32 +204,28 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		//find the max depth
 		float maxDepth = max(max(max(Depth.x, Depth.y), Depth.z), Depth.w);
 
-		if (minZ <= maxDepth)
+		if (minZ > maxDepth)
 		{
-			// Increate visible instances count
-			uint CurrentInstanceCount;
-			InterlockedAdd(OutputDrawCommandBuffer[DrawCmdIndex].Params.y, 1, CurrentInstanceCount);
-
-			// Copy instance data to compaced position
-			CompactInstanceData[DrawCommandBuffer[DrawCmdIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
-
-			// Modify Draw command
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
-			//OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
-			OutputDrawCommandBuffer[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
-
-			// Collect clusters for culling
-			uint ClusterBegin = InstanceMetaInfo[InstanceIndex].Info2.x;
-			uint ClusterCount = InstanceMetaInfo[InstanceIndex].Info2.y;
-			uint CurrentClusterIndex;
-			InterlockedAdd(CollectedClustersCount[0].x, ClusterCount, CurrentClusterIndex);
-			for (uint i = 0; i < ClusterCount; ++i)
+			// Cull it
+		}
+		else
+		{
+			// Frustum cull
+			if (IntersectPlaneBBox(Planes[0], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[1], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[2], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[3], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
+				IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 			{
-				CollectedClusters[CurrentClusterIndex + i] = ClusterBegin + i;
+				Result = 1;
 			}
 		}
 	}
-	//*/
+
+	if (Result > 0)
+	{
+		// Encode triangle compute indirect command
+		VisibleClusters.Append(ClusterQueue[QueueIndex]);
+	}
 }

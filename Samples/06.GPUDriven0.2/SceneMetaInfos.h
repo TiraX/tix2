@@ -50,6 +50,10 @@ public:
 	{
 		return InstanceMetaInfoUniform;
 	}
+	uint32 GetMaxInstanceClusterCount()
+	{
+		return TotalInstanceClusters;
+	}
 private:
 
 
@@ -64,9 +68,10 @@ private:
 	FGPUCommandBufferPtr GPUOccludeCommandBuffer;
 
 	FUniformBufferPtr MergedClusterMetaInfo;
-
 	FSceneMeshBBoxesPtr SceneMeshBBoxesUniform;
 	FSceneInstanceMetaInfoPtr InstanceMetaInfoUniform;
+
+	uint32 TotalInstanceClusters;
 
 	friend class FScene;
 };

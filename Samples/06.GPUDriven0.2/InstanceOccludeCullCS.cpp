@@ -32,6 +32,11 @@ void FInstanceOccludeCullCS::PrepareResources(FRHI * RHI)
 	DispatchCommandBuffer->SetResourceName("InstanceOcclusionCullDispatchCB");
 	DispatchCommandBuffer->EncodeSetDispatch(0, 0, 1, 1, 1);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(DispatchCommandBuffer);
+
+	CollectedClustersCount = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_COMPUTE_WRITABLE);
+	CollectedClustersCount->SetResourceName("CollectedClustersCount");
+	RHI->UpdateHardwareResourceUB(CollectedClustersCount, nullptr);
+	ResourceTable->PutUniformBufferInTable(CollectedClustersCount, UAV_COLLECTED_CLUSTERS_COUNT);
 }
 
 void FInstanceOccludeCullCS::UpdataComputeParams(
@@ -45,9 +50,11 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 	FUniformBufferPtr InVisibleInstanceIndex,
 	FUniformBufferPtr InVisibleInstanceCount,
 	FTexturePtr InHiZTexture,
-	FUniformBufferPtr InDispatchThreadCount
+	FUniformBufferPtr InDispatchThreadCount,
+	uint32 InTotalClusterCount
 )
 {
+	TI_TODO("Remove draw command related code here. Draw command only used for debug");
 	OcclusionInfo = InOcclusionInfo;
 
 	if (PrimitiveBBoxes != InPrimitiveBBoxes)
@@ -112,6 +119,14 @@ void FInstanceOccludeCullCS::UpdataComputeParams(
 	{
 		DispatchThreadCount = InDispatchThreadCount;
 	}
+	if (CollectedClusters == nullptr || CollectedClusters->GetElements() != InTotalClusterCount)
+	{
+		TI_ASSERT(InTotalClusterCount > 0);
+		CollectedClusters = RHI->CreateUniformBuffer(sizeof(uint32), InTotalClusterCount, UB_FLAG_COMPUTE_WRITABLE);
+		CollectedClusters->SetResourceName("CollectedClusters");
+		RHI->UpdateHardwareResourceUB(CollectedClusters, nullptr);
+		ResourceTable->PutUniformBufferInTable(CollectedClusters, UAV_COLLECTED_CLUSTERS);
+	}
 }
 
 void FInstanceOccludeCullCS::Run(FRHI * RHI)
@@ -122,6 +137,7 @@ void FInstanceOccludeCullCS::Run(FRHI * RHI)
 	{
 		// Reset culled command buffer
 		RHI->CopyBufferRegion(CulledDrawCommandBuffer->GetCommandBuffer(), 0, ResetCommandBuffer, ResetCommandBuffer->GetTotalBufferSize());
+		RHI->CopyBufferRegion(CollectedClustersCount, 0, ResetCommandBuffer, 4);
 
 		// Copy dispatch thread group count
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_COPY_DEST);

@@ -4,19 +4,19 @@
 */
 
 #include "stdafx.h"
-#include "OcclusionDispatchCmd.h"
+#include "ComputeDispatchCmd.h"
 #include "SceneMetaInfos.h"
 
-FOcclusionDispatchCmdCS::FOcclusionDispatchCmdCS()
-	: FComputeTask("S_OcclusionDispatchCmdCS")
+FComputeDispatchCmdCS::FComputeDispatchCmdCS()
+	: FComputeTask("S_ComputeDispatchCmdCS")
 {
 }
 
-FOcclusionDispatchCmdCS::~FOcclusionDispatchCmdCS()
+FComputeDispatchCmdCS::~FComputeDispatchCmdCS()
 {
 }
 
-void FOcclusionDispatchCmdCS::PrepareResources(FRHI * RHI)
+void FComputeDispatchCmdCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 	
@@ -26,7 +26,7 @@ void FOcclusionDispatchCmdCS::PrepareResources(FRHI * RHI)
 	ResourceTable->PutUniformBufferInTable(DispatchThreadCount, PARAM_DISPATCH_THREAD_COUNT);
 }
 
-void FOcclusionDispatchCmdCS::UpdataComputeParams(
+void FComputeDispatchCmdCS::UpdataComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InVisibleInstanceCount
 )
@@ -37,7 +37,7 @@ void FOcclusionDispatchCmdCS::UpdataComputeParams(
 	}
 }
 
-void FOcclusionDispatchCmdCS::Run(FRHI * RHI)
+void FComputeDispatchCmdCS::Run(FRHI * RHI)
 {
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, VisibleInstanceCount);

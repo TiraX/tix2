@@ -5,11 +5,11 @@
 
 #pragma once
 
-class FOcclusionDispatchCmdCS : public FComputeTask
+class FComputeDispatchCmdCS : public FComputeTask
 {
 public:
-	FOcclusionDispatchCmdCS();
-	virtual ~FOcclusionDispatchCmdCS();
+	FComputeDispatchCmdCS();
+	virtual ~FComputeDispatchCmdCS();
 
 	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
@@ -40,4 +40,4 @@ private:
 
 	FUniformBufferPtr DispatchThreadCount;	// u0
 };
-typedef TI_INTRUSIVE_PTR(FOcclusionDispatchCmdCS) FOcclusionDispatchCmdCSPtr;
+typedef TI_INTRUSIVE_PTR(FComputeDispatchCmdCS) FComputeDispatchCmdCSPtr;

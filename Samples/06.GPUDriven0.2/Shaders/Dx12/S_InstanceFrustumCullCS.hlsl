@@ -27,12 +27,15 @@ struct FBBox
 	float4 MaxEdge;
 };
 
+// PUT shared struct in a single header
 struct FInstanceMetaInfo
 {
-	// x = mesh bbox index
-	// y = draw call index
-	// w = loaded
+	// Info1.x = mesh bbox index
+	// Info1.y = draw call index
+	// Info1.w = loaded
 	uint4 Info1;
+	// Info2.x = cluster index begin
+	// Info2.y = cluster count
 	uint4 Info2;
 };
 

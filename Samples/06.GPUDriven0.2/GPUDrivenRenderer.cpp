@@ -111,13 +111,21 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
-	OcclusionDispatchCmdCS = ti_new FOcclusionDispatchCmdCS();
+	OcclusionDispatchCmdCS = ti_new FComputeDispatchCmdCS();
 	OcclusionDispatchCmdCS->Finalize();
 	OcclusionDispatchCmdCS->PrepareResources(RHI);
 
 	InstanceOcclusionCullCS = ti_new FInstanceOccludeCullCS();
 	InstanceOcclusionCullCS->Finalize();
 	InstanceOcclusionCullCS->PrepareResources(RHI);
+
+	ClusterDispatchCmdCS = ti_new FComputeDispatchCmdCS();
+	ClusterDispatchCmdCS->Finalize();
+	ClusterDispatchCmdCS->PrepareResources(RHI);
+
+	ClusterCullCS = ti_new FClusterCullCS();
+	ClusterCullCS->Finalize();
+	ClusterCullCS->PrepareResources(RHI);
 
 	// Down sample HiZ 
 	HiZDownSample = ti_new FHiZDownSampleCS;
@@ -208,8 +216,16 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceFrustumCullCS->GetVisibleInstanceIndex(),
 			InstanceFrustumCullCS->GetVisibleInstanceCount(),
 			HiZTexture,
-			OcclusionDispatchCmdCS->GetDispatchThreadCount()
+			OcclusionDispatchCmdCS->GetDispatchThreadCount(),
+			SceneMetaInfo->GetMaxInstanceClusterCount()
 		);
+
+		ClusterDispatchCmdCS->UpdataComputeParams(
+			RHI,
+			InstanceOcclusionCullCS->GetCollectedClustersCount()
+			);
+
+		ClusterCullCS->UpdataComputeParams(RHI);
 	}
 
 	// Frustum cull instances before preZ
@@ -258,6 +274,12 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 
 		// Cluster Cull
+		{
+			RHI->BeginEvent("Cluster Cull");
+			ClusterDispatchCmdCS->Run(RHI);
+			ClusterCullCS->Run(RHI);
+			RHI->EndEvent();
+		}
 
 		RHI->EndComputeTask();
 	}

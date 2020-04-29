@@ -25,7 +25,8 @@ public:
 		FUniformBufferPtr InVisibleInstanceIndex,
 		FUniformBufferPtr InVisibleInstanceCount,
 		FTexturePtr InHiZTexture,
-		FUniformBufferPtr InDispatchThreadCount
+		FUniformBufferPtr InDispatchThreadCount,
+		uint32 InTotalClusterCount
 		);
 
 	FGPUCommandBufferPtr GetCulledDrawCommandBuffer()
@@ -36,6 +37,11 @@ public:
 	FInstanceBufferPtr GetCompactInstanceBuffer()
 	{
 		return CompactInstanceData;
+	}
+
+	FUniformBufferPtr GetCollectedClustersCount()
+	{
+		return CollectedClustersCount;
 	}
 private:
 	enum
@@ -50,6 +56,8 @@ private:
 
 		UAV_COMPACT_INSTANCE_DATA,
 		UAV_CULLED_DRAW_COMMAND_BUFFER,
+		UAV_COLLECTED_CLUSTERS_COUNT,
+		UAV_COLLECTED_CLUSTERS,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -74,6 +82,8 @@ private:
 
 	FInstanceBufferPtr CompactInstanceData;	// u0
 	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u1
+	FUniformBufferPtr CollectedClustersCount;	// u2
+	FUniformBufferPtr CollectedClusters;	// u3
 
 	FUniformBufferPtr DispatchThreadCount;
 	FUniformBufferPtr ResetCommandBuffer;

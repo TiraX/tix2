@@ -17,8 +17,6 @@ namespace tix
 		, IndexType(EIT_16BIT)
 		, PsData(nullptr)
 		, PsDataCount(0)
-		, ClusterData(nullptr)
-		, ClusterCount(0)
 		, VsFormat(0)
 		, Stride(0)
 	{
@@ -28,7 +26,6 @@ namespace tix
 	{
 		SAFE_DELETE(VsData);
 		SAFE_DELETE(PsData);
-		SAFE_DELETE_ARRAY(ClusterData);
 	}
 
 	uint32 TMeshBuffer::GetStrideFromFormat(uint32 Format)
@@ -62,22 +59,22 @@ namespace tix
 	{
 		TI_ASSERT(MeshBufferResource == nullptr);
 		MeshBufferResource = FRHI::Get()->CreateMeshBuffer();
-		if (ClusterCount > 0)
+		if (ClusterData.size() > 0)
 		{
 			TI_ASSERT(MeshClusterDataResource == nullptr);
-			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshClusterData), ClusterCount, UB_FLAG_INTERMEDIATE);
+			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshClusterData), (uint32)ClusterData.size(), UB_FLAG_INTERMEDIATE);
 		}
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TMeshBufferUpdateFMeshBuffer,
 			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
-			FUniformBufferPtr, ClusterData, MeshClusterDataResource,
+			FUniformBufferPtr, ClusterDataBuffer, MeshClusterDataResource,
 			TMeshBufferPtr, InMeshData, this,
 			{
 				MeshBuffer->SetFromTMeshBuffer(InMeshData);
 				FRHI::Get()->UpdateHardwareResourceMesh(MeshBuffer, InMeshData);
-				if (ClusterData != nullptr)
+				if (ClusterDataBuffer != nullptr)
 				{
-					FRHI::Get()->UpdateHardwareResourceUB(ClusterData, InMeshData->GetClusterData());
+					FRHI::Get()->UpdateHardwareResourceUB(ClusterDataBuffer, InMeshData->GetClusterData().data());
 				}
 			});
 	}
@@ -123,9 +120,9 @@ namespace tix
 
 	void TMeshBuffer::SetClusterData(const void* InClusterData, uint32 InClusterCount)
 	{
-		ClusterCount = InClusterCount;
-		TI_ASSERT(ClusterData == nullptr);
-		ClusterData = ti_new TMeshClusterData[InClusterCount];
+		TI_ASSERT(InClusterCount > 0);
+		ClusterData.resize(InClusterCount);
+
 		const TMeshClusterDef* InData = (const TMeshClusterDef*)InClusterData;
 		for (uint32 c = 0 ; c < InClusterCount ; ++ c)
 		{

@@ -165,13 +165,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClusterCullCS.cpp" />
+    <ClCompile Include="ComputeDispatchCmd.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
     <ClCompile Include="GPUDrivenTicker.cpp" />
     <ClCompile Include="HiZDownSampleCS.cpp" />
     <ClCompile Include="InstanceFrustumCullCS.cpp" />
     <ClCompile Include="InstanceOccludeCullCS.cpp" />
-    <ClCompile Include="OcclusionDispatchCmd.cpp" />
     <ClCompile Include="SceneMetaInfos.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -179,13 +180,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClusterCullCS.h" />
+    <ClInclude Include="ComputeDispatchCmd.h" />
     <ClInclude Include="ComputeUniforms.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
     <ClInclude Include="GPUDrivenTicker.h" />
     <ClInclude Include="HiZDownSampleCS.h" />
     <ClInclude Include="InstanceFrustumCullCS.h" />
     <ClInclude Include="InstanceOccludeCullCS.h" />
-    <ClInclude Include="OcclusionDispatchCmd.h" />
     <ClInclude Include="SceneMetaInfos.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -195,6 +197,18 @@
     <None Include="Shaders\Dx12\VS_Instanced.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_ComputeDispatchCmdCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -226,12 +240,6 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_InstanceOccludeCullCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_OcclusionDispatchCmdCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>

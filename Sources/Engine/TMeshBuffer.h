@@ -65,11 +65,6 @@ namespace tix
 			return PsDataCount;
 		}
 
-		uint32 GetClusterCount() const
-		{
-			return ClusterCount;
-		}
-
 		E_PRIMITIVE_TYPE GetPrimitiveType() const
 		{
 			return PrimitiveType;
@@ -115,7 +110,7 @@ namespace tix
 			return PsData;
 		}
 
-		const void* GetClusterData() const
+		const TVector<TMeshClusterData>& GetClusterData() const
 		{
 			return ClusterData;
 		}
@@ -132,8 +127,7 @@ namespace tix
 		uint8* PsData;
 		uint32 PsDataCount;
 
-		TMeshClusterData* ClusterData;
-		uint32 ClusterCount;
+		TVector<TMeshClusterData> ClusterData;
 
 		uint32 VsFormat;
 		uint32 Stride;
