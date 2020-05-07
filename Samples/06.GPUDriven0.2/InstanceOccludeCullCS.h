@@ -43,6 +43,10 @@ public:
 	{
 		return CollectedClustersCount;
 	}
+	FUniformBufferPtr GetCollectedClusters()
+	{
+		return CollectedClusters;
+	}
 private:
 	enum
 	{

@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "ComputeUniforms.h"
 
 class FClusterCullCS : public FComputeTask
 {
@@ -15,31 +16,53 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdataComputeParams(
-		FRHI * RHI
+		FRHI * RHI,
+		const vector2di& InRTSize,
+		const vector3df& InViewDir,
+		const FMatrix& InViewProjection,
+		const SViewFrustum& InFrustum,
+		FUniformBufferPtr InCollectedCount,
+		FUniformBufferPtr InClusterBoundingData,
+		FInstanceBufferPtr InInstanceData,
+		FTexturePtr InHiZTexture,
+		FUniformBufferPtr InCollectedClusters,
+		FUniformBufferPtr InDispatchThreadCount
 		);
 
 
 private:
 	enum
 	{
-		SRV_PRIMITIVE_BBOXES,
-		SRV_INSTANCE_METAINFO,
+		SRV_CLUSTER_BOUNDING_DATA,
 		SRV_INSTANCE_DATA,
-		SRV_DRAW_COMMAND_BUFFER,
-		SRV_VISIBLE_INSTANCE_INDEX,
-		SRV_VISIBLE_INSTANCE_COUNT,
 		SRV_HIZ_TEXTURE,
+		SRV_COLLECTED_CLUSTERS,
 
-		UAV_COMPACT_INSTANCE_DATA,
-		UAV_CULLED_DRAW_COMMAND_BUFFER,
-		UAV_COLLECTED_CLUSTERS_COUNT,
-		UAV_COLLECTED_CLUSTERS,
+		UAV_VISIBLE_CLUSTERS,
 
 		PARAM_TOTAL_COUNT,
 	};
 
 private:
 	FRenderResourceTablePtr ResourceTable;
+
+	// Dispatch command signature
+	FGPUCommandSignaturePtr DispatchCommandSig;
+	FGPUCommandBufferPtr DispatchCommandBuffer;
+
+	// Compute params
+	FCullUniformPtr FrustumUniform;	// b0
+	FUniformBufferPtr CollectedCountUniform;	// b1
+
+	FUniformBufferPtr ClusterBoundingData;	// t0
+	FInstanceBufferPtr InstanceData;	// t1
+	FTexturePtr HiZTexture;	// t2
+	FUniformBufferPtr CollectedClusters;	// t3
+
+	FUniformBufferPtr VisibleClusters;	// u0
+
+	FUniformBufferPtr DispatchThreadCount;
+	FUniformBufferPtr ResetCounterBuffer;
 
 };
 typedef TI_INTRUSIVE_PTR(FClusterCullCS) FClusterCullCSPtr;

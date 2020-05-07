@@ -213,6 +213,11 @@ namespace tix
 			return RHIType;
 		}
 
+		const FViewport& GetViewport() const
+		{
+			return Viewport;
+		}
+
 		FRenderResourceHeap& GetRenderResourceHeap(int32 Index)
 		{
 			TI_ASSERT(Index >= 0 && Index < EHT_COUNT);

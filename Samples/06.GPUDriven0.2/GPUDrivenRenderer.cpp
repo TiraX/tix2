@@ -113,7 +113,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	OcclusionDispatchCmdCS = ti_new FComputeDispatchCmdCS();
 	OcclusionDispatchCmdCS->Finalize();
-	OcclusionDispatchCmdCS->PrepareResources(RHI);
+	OcclusionDispatchCmdCS->PrepareResources(RHI, "DispatchCmd-InstanceOcclusion");
 
 	InstanceOcclusionCullCS = ti_new FInstanceOccludeCullCS();
 	InstanceOcclusionCullCS->Finalize();
@@ -121,7 +121,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 
 	ClusterDispatchCmdCS = ti_new FComputeDispatchCmdCS();
 	ClusterDispatchCmdCS->Finalize();
-	ClusterDispatchCmdCS->PrepareResources(RHI);
+	ClusterDispatchCmdCS->PrepareResources(RHI, "DispatchCmd-ClusterCull");
 
 	ClusterCullCS = ti_new FClusterCullCS();
 	ClusterCullCS->Finalize();
@@ -177,6 +177,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	TI_TODO("Use depth from last frame. Think carefully about it. NOT a clear solution yet.");
 
 	// Update occlusion info uniform
+	const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
+	FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
 	{
 		const FViewProjectionInfo&  ViewProjection = Scene->GetViewProjection();
 		FMatrix MatVP = ViewProjection.MatProj * ViewProjection.MatView;
@@ -223,9 +225,21 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		ClusterDispatchCmdCS->UpdataComputeParams(
 			RHI,
 			InstanceOcclusionCullCS->GetCollectedClustersCount()
-			);
+		);
 
-		ClusterCullCS->UpdataComputeParams(RHI);
+		ClusterCullCS->UpdataComputeParams(
+			RHI,
+			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
+			ViewProjection.CamDir,
+			MatVP,
+			Frustum,
+			InstanceOcclusionCullCS->GetCollectedClustersCount(),
+			SceneMetaInfo->GetMergedClusterMetaInfo(),
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			HiZTexture,
+			InstanceOcclusionCullCS->GetCollectedClusters(),
+			ClusterDispatchCmdCS->GetDispatchThreadCount()
+		);
 	}
 
 	// Frustum cull instances before preZ

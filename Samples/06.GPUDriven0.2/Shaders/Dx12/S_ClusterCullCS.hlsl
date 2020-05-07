@@ -37,24 +37,6 @@ struct FClusterBoundingInfo
 	float4 Cone;
 };
 
-struct FInstanceMetaInfo
-{
-	// x = primitive index
-	// y = cluster index begin
-	// z = cluster count
-	// w = primitive was loaded.
-	uint4 Info;
-};
-
-struct FClusterMetaInfo
-{
-	// x = instance global index
-	// y = cluster global index
-	// z = draw command index
-	// w = cluster local index
-	uint4 Info;
-};
-
 struct FInstanceTransform
 {
 	float4 ins_transition;
@@ -65,10 +47,10 @@ struct FInstanceTransform
 
 StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
-StructuredBuffer<FClusterMetaInfo> ClusterQueue : register(t2);
-Texture2D<float> HiZTexture : register(t3);
+Texture2D<float> HiZTexture : register(t2);
+StructuredBuffer<uint2> CollectedClusters : register(t3);
 
-AppendStructuredBuffer<FClusterMetaInfo> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
+AppendStructuredBuffer<uint> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
 SamplerState PointSampler : register(s0);
 
@@ -115,8 +97,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (QueueIndex >= ClusterCount.x)
 		return;
 
-	uint InstanceIndex = ClusterQueue[QueueIndex].Info.x;
-	uint ClusterIndex = ClusterQueue[QueueIndex].Info.y;
+	uint ClusterIndex = CollectedClusters[QueueIndex].x;
+	uint InstanceIndex = CollectedClusters[QueueIndex].y;
 
 	FClusterBoundingInfo Cluster = ClusterBoundingData[ClusterIndex];
 
@@ -226,6 +208,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Result > 0)
 	{
 		// Encode triangle compute indirect command
-		VisibleClusters.Append(ClusterQueue[QueueIndex]);
+		VisibleClusters.Append(CollectedClusters[QueueIndex].x);
 	}
 }

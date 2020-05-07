@@ -16,12 +16,12 @@ FComputeDispatchCmdCS::~FComputeDispatchCmdCS()
 {
 }
 
-void FComputeDispatchCmdCS::PrepareResources(FRHI * RHI)
+void FComputeDispatchCmdCS::PrepareResources(FRHI * RHI, const TString& InName)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 	
 	DispatchThreadCount = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_COMPUTE_WRITABLE);
-	DispatchThreadCount->SetResourceName("DispatchThreadCount");
+	DispatchThreadCount->SetResourceName(InName);
 	RHI->UpdateHardwareResourceUB(DispatchThreadCount, nullptr);
 	ResourceTable->PutUniformBufferInTable(DispatchThreadCount, PARAM_DISPATCH_THREAD_COUNT);
 }

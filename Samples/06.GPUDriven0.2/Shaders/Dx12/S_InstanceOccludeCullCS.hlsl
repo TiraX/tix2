@@ -73,7 +73,7 @@ Texture2D<float> HiZTexture : register(t6);
 RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);	// For render test
 RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);	// For render test
 RWStructuredBuffer<uint4> CollectedClustersCount : register(u2);
-RWStructuredBuffer<uint> CollectedClusters : register(u3);
+RWStructuredBuffer<uint2> CollectedClusters : register(u3);	// x = Cluster Index; y = Instance Index
 
 SamplerState PointSampler : register(s0);
 
@@ -215,7 +215,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			InterlockedAdd(CollectedClustersCount[0].x, ClusterCount, CurrentClusterIndex);
 			for (uint i = 0; i < ClusterCount; ++i)
 			{
-				CollectedClusters[CurrentClusterIndex + i] = ClusterBegin + i;
+				CollectedClusters[CurrentClusterIndex + i].x = ClusterBegin + i;
+				CollectedClusters[CurrentClusterIndex + i].y = InstanceIndex;
 			}
 		}
 	}

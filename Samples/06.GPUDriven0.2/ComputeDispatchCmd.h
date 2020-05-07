@@ -11,7 +11,7 @@ public:
 	FComputeDispatchCmdCS();
 	virtual ~FComputeDispatchCmdCS();
 
-	void PrepareResources(FRHI * RHI);
+	void PrepareResources(FRHI * RHI, const TString& InName);
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdataComputeParams(
