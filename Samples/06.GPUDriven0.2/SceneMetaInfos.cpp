@@ -93,11 +93,12 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			{
 				if (Prim != nullptr)
 				{
-					++TotalDrawCommands;
+					TotalDrawCommands += Prim->GetInstanceCount();
 				}
 			}
 		}
 
+		TI_ASSERT(TotalInstances == TotalDrawCommands); // ??? should be the same or NOT ??? I see not
 		TI_ASSERT(TotalInstances > 0 && TotalLoadedMeshes > 0);
 		TI_ASSERT(TotalClusters > 0);
 
@@ -148,7 +149,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			SceneMeshBBoxesUniform = ti_new FSceneMeshBBoxes(TotalLoadedMeshes);
 
 			// Create instance meta info UniformBuffer resource
-			InstanceMetaInfoUniform = ti_new FSceneInstanceMetaInfo(TotalInstances);
+			InstanceMetaInfoUniform = ti_new FSceneInstanceMetaInfo(TotalDrawCommands);
 
 			uint32 SceneVBOffset = 0, SceneIBOffset = 0;
 			uint32 OccludeVBOffset = 0, OccludeIBOffset = 0;
@@ -242,45 +243,47 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							// Remember draw arguments
 							FMeshBufferPtr MeshBuffer = Prim->GetMeshBuffer();
 							const vector4di& MeshDataOffset = MeshDataOffsets[MeshBuffer];
-							FDrawInstanceArgument& DrawArg = DrawArguments[DrawCmdIndex];
-							DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
-							DrawArg.InstanceCount = Prim->GetInstanceCount();
-							DrawArg.StartIndexLocation = MeshDataOffset.Y / sizeof(uint32);
-							DrawArg.BaseVertexLocation = MeshDataOffset.X / VertexStride;
-							DrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset();
 
 							// Scene occlude mesh buffer
 							THMap<FMeshBufferPtr, FSceneMeshInfo>::const_iterator CIt = SceneMeshes.find(MeshBuffer);
 							TI_ASSERT(CIt != SceneMeshes.end());
 							FMeshBufferPtr OccludeMeshBuffer = CIt->second.OccludeMesh;
 							TI_ASSERT(OccludeMeshBuffer != nullptr); // can be nullptr ???
-							if (OccludeMeshBuffer != nullptr)
-							{
-								// Remember draw arguments
-								const vector2di& OccludeMeshDataOffset = OccludeMeshDataOffsets[MeshBuffer];
-								FDrawInstanceArgument& OccludeDrawArg = OccludeDrawArguments[DrawCmdIndex];
-								OccludeDrawArg.IndexCountPerInstance = OccludeMeshBuffer->GetIndicesCount();
-								OccludeDrawArg.InstanceCount = Prim->GetInstanceCount();
-								OccludeDrawArg.StartIndexLocation = OccludeMeshDataOffset.Y / sizeof(uint32);
-								OccludeDrawArg.BaseVertexLocation = OccludeMeshDataOffset.X / sizeof(vector3df);
-								OccludeDrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset();
-							}
 
-							// Fill instance meta info uniform buffer data
 							const int32 MeshOrder = MeshOrderMap[MeshBuffer];
-							for (uint32 Ins = DrawArg.StartInstanceLocation ; Ins < DrawArg.StartInstanceLocation + DrawArg.InstanceCount ; ++ Ins)
-							{
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.X = MeshOrder;	// scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.Y = DrawCmdIndex;	// draw call index
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info1.W = 1;	// Mark as Loaded
 
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info2.X = MeshDataOffset.Z;	// cluster index begin
-								InstanceMetaInfoUniform->UniformBufferData[Ins].Info2.Y = MeshDataOffset.W;	// cluster count
+							for (uint32 Ins = 0 ; Ins < Prim->GetInstanceCount() ; ++ Ins)
+							{
+								FDrawInstanceArgument& DrawArg = DrawArguments[DrawCmdIndex];
+								DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
+								DrawArg.InstanceCount = 1;
+								DrawArg.StartIndexLocation = MeshDataOffset.Y / sizeof(uint32);
+								DrawArg.BaseVertexLocation = MeshDataOffset.X / VertexStride;
+								DrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset() + Ins;
+
+								if (OccludeMeshBuffer != nullptr)
+								{
+									// Remember draw arguments
+									const vector2di& OccludeMeshDataOffset = OccludeMeshDataOffsets[MeshBuffer];
+									FDrawInstanceArgument& OccludeDrawArg = OccludeDrawArguments[DrawCmdIndex];
+									OccludeDrawArg.IndexCountPerInstance = OccludeMeshBuffer->GetIndicesCount();
+									OccludeDrawArg.InstanceCount = 1;
+									OccludeDrawArg.StartIndexLocation = OccludeMeshDataOffset.Y / sizeof(uint32);
+									OccludeDrawArg.BaseVertexLocation = OccludeMeshDataOffset.X / sizeof(vector3df);
+									OccludeDrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset() + Ins;
+								}
+
+								// Fill instance meta info uniform buffer data
+								InstanceMetaInfoUniform->UniformBufferData[DrawCmdIndex].Info.X = MeshOrder;	// scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
+								InstanceMetaInfoUniform->UniformBufferData[DrawCmdIndex].Info.Y = 1;	// Mark as Loaded
+
+								InstanceMetaInfoUniform->UniformBufferData[DrawCmdIndex].Info.Z = MeshDataOffset.Z;	// cluster index begin
+								InstanceMetaInfoUniform->UniformBufferData[DrawCmdIndex].Info.W = MeshDataOffset.W;	// cluster count
 
 								TotalInstanceClusters += MeshDataOffset.W;
-							}
 
-							++DrawCmdIndex;
+								++DrawCmdIndex;
+							}
 						}
 					}
 				}

@@ -11,7 +11,7 @@
 
 #define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=4)),"
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1)),"
 
 
 cbuffer FFrustum : register(b0)
@@ -30,13 +30,11 @@ struct FBBox
 // PUT shared struct in a single header
 struct FInstanceMetaInfo
 {
-	// Info1.x = mesh bbox index
-	// Info1.y = draw call index
-	// Info1.w = loaded
-	uint4 Info1;
-	// Info2.x = cluster index begin
-	// Info2.y = cluster count
-	uint4 Info2;
+	// Info.x = scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
+	// Info.y = if this primitive is loaded. 1 = loaded; 0 = loading
+	// Info.z = cluster index begin
+	// Info.w = cluster count
+	uint4 Info;
 };
 
 struct FInstanceTransform
@@ -64,10 +62,7 @@ StructuredBuffer<FInstanceMetaInfo> InstanceMetaInfo : register(t1);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
 
-RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);
-RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);
-RWStructuredBuffer<uint> VisibleInstanceIndex : register(u2);
-RWStructuredBuffer<uint4> VisibleInstanceCount : register(u3);	// x = Visible instance count; y = Dispatch thread group count;
+AppendStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u0);
 
 inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
 {
@@ -107,12 +102,12 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	uint InstanceIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
-	uint MeshIndex = InstanceMetaInfo[InstanceIndex].Info1.x;
-	uint DrawCmdIndex = InstanceMetaInfo[InstanceIndex].Info1.y;
+	uint DrawCmdIndex = dispatchThreadId.x;
 
-	if (InstanceMetaInfo[InstanceIndex].Info1.w > 0)	// Test loaded primitives
+	if (InstanceMetaInfo[DrawCmdIndex].Info.y > 0)	// Test loaded primitives
 	{
+		uint InstanceIndex = DrawCommandBuffer[DrawCmdIndex].Param;
+		uint MeshIndex = InstanceMetaInfo[DrawCmdIndex].Info.x;
 		// Transform primitive bbox
 		float4 MinEdge = SceneMeshBBox[MeshIndex].MinEdge;
 		float4 MaxEdge = SceneMeshBBox[MeshIndex].MaxEdge;
@@ -125,25 +120,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
 			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 		{
-			// Increate visible instances count
-			uint CurrentInstanceCount;
-			InterlockedAdd(OutputDrawCommandBuffer[DrawCmdIndex].Params.y, 1, CurrentInstanceCount);
-
-			// Copy instance data to compaced position
-			CompactInstanceData[DrawCommandBuffer[DrawCmdIndex].Param + CurrentInstanceCount] = InstanceData[InstanceIndex];
-
-			// Modify Draw command
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
-			//OutputDrawCommandBuffer[DrawCmdIndex].Params.x = DrawCommandBuffer[DrawCmdIndex].Params.x;
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
-			OutputDrawCommandBuffer[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
-			OutputDrawCommandBuffer[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
-
-			// Add visible instance to array
-			uint TotalInstanceCount;
-			InterlockedAdd(VisibleInstanceCount[0].x, 1, TotalInstanceCount);
-			//VisibleInstanceCount[0].y = uint(TotalInstanceCount + 127) / 128;
-			VisibleInstanceIndex[TotalInstanceCount] = InstanceIndex;
+			OutputDrawCommandBuffer.Append(DrawCommandBuffer[DrawCmdIndex]);
 		}
 	}
 }

@@ -28,21 +28,6 @@ public:
 	{
 		return CulledDrawCommandBuffer;
 	}
-
-	FInstanceBufferPtr GetCompactInstanceBuffer()
-	{
-		return CompactInstanceData;
-	}
-
-	FUniformBufferPtr GetVisibleInstanceIndex()
-	{
-		return VisibleInstanceIndex;
-	}
-
-	FUniformBufferPtr GetVisibleInstanceCount()
-	{
-		return VisibleInstanceCount;
-	}
 private:
 	enum 
 	{
@@ -51,10 +36,7 @@ private:
 		PARAM_INSTANCE_DATA,
 		PARAM_DRAW_COMMAND_BUFFER,
 
-		PARAM_COMPACT_INSTANCE_DATA,
 		PARAM_CULLED_DRAW_COMMAND_BUFFER,
-		PARAM_VISIBLE_INSTANCE_INDEX,
-		PARAM_VISIBLE_INSTANCE_COUNT,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -70,10 +52,7 @@ private:
 	FInstanceBufferPtr InstanceData;	// t2
 	FGPUCommandBufferPtr DrawCommandBuffer;	// t3
 
-	FInstanceBufferPtr CompactInstanceData;	// u0
-	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u1
-	FUniformBufferPtr VisibleInstanceIndex;	// u2
-	FUniformBufferPtr VisibleInstanceCount;	// u3
+	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u0
 
 	FUniformBufferPtr ResetCommandBuffer;
 };

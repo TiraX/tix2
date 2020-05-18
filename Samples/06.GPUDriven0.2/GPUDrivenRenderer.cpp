@@ -111,15 +111,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
-	OcclusionDispatchCmdCS = ti_new FComputeDispatchCmdCS();
-	OcclusionDispatchCmdCS->Finalize();
-	OcclusionDispatchCmdCS->PrepareResources(RHI, "DispatchCmd-InstanceOcclusion");
-
-	InstanceOcclusionCullCS = ti_new FInstanceOccludeCullCS();
-	InstanceOcclusionCullCS->Finalize();
-	InstanceOcclusionCullCS->PrepareResources(RHI);
-
-	ClusterDispatchCmdCS = ti_new FComputeDispatchCmdCS();
+	ClusterDispatchCmdCS = ti_new FClusterDispatchCmdCS();
 	ClusterDispatchCmdCS->Finalize();
 	ClusterDispatchCmdCS->PrepareResources(RHI, "DispatchCmd-ClusterCull");
 
@@ -202,44 +194,24 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetGPUOccludeCommandBuffer()
 		);
 
-		OcclusionDispatchCmdCS->UpdataComputeParams(
-			RHI,
-			InstanceFrustumCullCS->GetVisibleInstanceCount()
-			);
+		//ClusterDispatchCmdCS->UpdataComputeParams(
+		//	RHI,
+		//	InstanceOcclusionCullCS->GetCollectedClustersCount()
+		//);
 
-		InstanceOcclusionCullCS->UpdataComputeParams(
-			RHI,
-			OcclusionInfo->UniformBuffer,
-			SceneMetaInfo->GetSceneMeshBBoxesUniform()->UniformBuffer,
-			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
-			SceneMetaInfo->GetMergedInstanceBuffer(),
-			GPUCommandSignature,
-			SceneMetaInfo->GetGPUCommandBuffer(),
-			InstanceFrustumCullCS->GetVisibleInstanceIndex(),
-			InstanceFrustumCullCS->GetVisibleInstanceCount(),
-			HiZTexture,
-			OcclusionDispatchCmdCS->GetDispatchThreadCount(),
-			SceneMetaInfo->GetMaxInstanceClusterCount()
-		);
-
-		ClusterDispatchCmdCS->UpdataComputeParams(
-			RHI,
-			InstanceOcclusionCullCS->GetCollectedClustersCount()
-		);
-
-		ClusterCullCS->UpdataComputeParams(
-			RHI,
-			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
-			ViewProjection.CamDir,
-			MatVP,
-			Frustum,
-			InstanceOcclusionCullCS->GetCollectedClustersCount(),
-			SceneMetaInfo->GetMergedClusterMetaInfo(),
-			SceneMetaInfo->GetMergedInstanceBuffer(),
-			HiZTexture,
-			InstanceOcclusionCullCS->GetCollectedClusters(),
-			ClusterDispatchCmdCS->GetDispatchThreadCount()
-		);
+		//ClusterCullCS->UpdataComputeParams(
+		//	RHI,
+		//	vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
+		//	ViewProjection.CamDir,
+		//	MatVP,
+		//	Frustum,
+		//	InstanceOcclusionCullCS->GetCollectedClustersCount(),
+		//	SceneMetaInfo->GetMergedClusterMetaInfo(),
+		//	SceneMetaInfo->GetMergedInstanceBuffer(),
+		//	HiZTexture,
+		//	InstanceOcclusionCullCS->GetCollectedClusters(),
+		//	ClusterDispatchCmdCS->GetDispatchThreadCount()
+		//);
 	}
 
 	// Frustum cull instances before preZ
@@ -259,7 +231,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		TestDrawSceneIndirectCommandBuffer(RHI,
 			Scene,
 			SceneMetaInfo->GetMergedOccludeMeshBuffer(),
-			InstanceFrustumCullCS->GetCompactInstanceBuffer(),
+			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUOccludeCommandSignature,
 			InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
 		RHI->CopyTextureRegion(HiZTexture, recti(0, 0, HiZTexture->GetWidth(), HiZTexture->GetHeight()), 0, RT_DepthOnly->GetDepthStencilBuffer().Texture, 0);
@@ -276,14 +248,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 				HiZDownSample->UpdateComputeArguments(RHI, i);
 				HiZDownSample->Run(RHI);
 			}
-			RHI->EndEvent();
-		}
-
-		// Instance Occlusion Cull
-		{
-			RHI->BeginEvent("Instance Occlusion Cull");
-			OcclusionDispatchCmdCS->Run(RHI);
-			InstanceOcclusionCullCS->Run(RHI);
 			RHI->EndEvent();
 		}
 
@@ -305,12 +269,12 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		// Do test
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
-		TestDrawSceneIndirectCommandBuffer(RHI,
-			Scene,
-			SceneMetaInfo->GetMergedSceneMeshBuffer(),
-			InstanceOcclusionCullCS->GetCompactInstanceBuffer(),
-			GPUCommandSignature,
-			InstanceOcclusionCullCS->GetCulledDrawCommandBuffer());
+		//TestDrawSceneIndirectCommandBuffer(RHI,
+		//	Scene,
+		//	SceneMetaInfo->GetMergedSceneMeshBuffer(),
+		//	InstanceOcclusionCullCS->GetCompactInstanceBuffer(),
+		//	GPUCommandSignature,
+		//	InstanceOcclusionCullCS->GetCulledDrawCommandBuffer());
 		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
 		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer(), SceneMetaInfo->GetGPUCommandBuffer());
 	}

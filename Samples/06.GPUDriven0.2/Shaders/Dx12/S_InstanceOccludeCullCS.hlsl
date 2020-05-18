@@ -33,13 +33,11 @@ struct FBBox
 // PUT shared struct in a single header
 struct FInstanceMetaInfo
 {
-	// Info1.x = mesh bbox index
-	// Info1.y = draw call index
-	// Info1.w = loaded
-	uint4 Info1;
-	// Info2.x = cluster index begin
-	// Info2.y = cluster count
-	uint4 Info2;
+	// Info.x = scene mesh index this instance link to, in FScene::SceneMeshes order, to access scene mesh bbox
+	// Info.y = if this primitive is loaded. 1 = loaded; 0 = loading
+	// Info.z = cluster index begin
+	// Info.w = cluster count
+	uint4 Info;
 };
 
 struct FInstanceTransform
@@ -72,8 +70,8 @@ Texture2D<float> HiZTexture : register(t6);
 
 RWStructuredBuffer<FInstanceTransform> CompactInstanceData : register(u0);	// For render test
 RWStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u1);	// For render test
-RWStructuredBuffer<uint4> CollectedClustersCount : register(u2);
-RWStructuredBuffer<uint2> CollectedClusters : register(u3);	// x = Cluster Index; y = Instance Index
+RWStructuredBuffer<uint2> CollectedClusters : register(u2);	// x = Cluster Index; y = Instance Index
+RWStructuredBuffer<uint4> CollectedClustersCount : register(u3);
 
 SamplerState PointSampler : register(s0);
 
@@ -104,7 +102,7 @@ inline void TransformBBox(FInstanceTransform Trans, inout float4 MinEdge, inout 
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	//*
+	/*
 	uint ThreadIndex = dispatchThreadId.x;// groupId.x * threadBlockSize + threadIDInGroup.x;
 	if (ThreadIndex < VisibleInstanceCount[0].x)
 	{
@@ -213,6 +211,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			uint ClusterCount = InstanceMetaInfo[InstanceIndex].Info2.y;
 			uint CurrentClusterIndex;
 			InterlockedAdd(CollectedClustersCount[0].x, ClusterCount, CurrentClusterIndex);
+			CollectedClustersCount[0].y = CollectedClustersCount[0].x;
+			CollectedClustersCount[0].z = CollectedClustersCount[0].x;
+			CollectedClustersCount[0].w = CollectedClustersCount[0].x;
 			for (uint i = 0; i < ClusterCount; ++i)
 			{
 				CollectedClusters[CurrentClusterIndex + i].x = ClusterBegin + i;
