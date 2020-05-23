@@ -60,7 +60,7 @@ StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t2);
 Texture2D<float> HiZTexture : register(t3);
-StructuredBuffer<uint2> CollectedClusters : register(t4);
+StructuredBuffer<uint4> CollectedClusters : register(t4); // x = Cluster Begin Index; y = Indirect Draw Command Index; z = Cluster Offset in this command
 
 AppendStructuredBuffer<uint> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
@@ -108,8 +108,10 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
 	if (QueueIndex >= ClusterCount.x)
 		return;
-
-	uint ClusterIndex = CollectedClusters[QueueIndex].x;
+    // x = Cluster Begin Index; 
+    // y = Indirect Draw Command Index; 
+    // z = Cluster Offset in this command
+    uint ClusterIndex = CollectedClusters[QueueIndex].x + CollectedClusters[QueueIndex].z;
     uint DrawCmdIndex = CollectedClusters[QueueIndex].y;
     uint InstanceIndex = DrawCommandBuffer[DrawCmdIndex].Param;
 
@@ -222,5 +224,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	{
 		// Encode triangle compute indirect command
 		VisibleClusters.Append(CollectedClusters[QueueIndex].x);
+        begin here
 	}
 }

@@ -25,15 +25,15 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI, uint32 InMaxClustersInScene)
 
 	// Init GPU triangle cull command buffer signature
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
-	CommandStructure.resize(2);
-	CommandStructure[0] = GPU_COMMAND_CONSTANT;
-	CommandStructure[1] = GPU_COMMAND_DISPATCH;
+	CommandStructure.resize(1);
+	CommandStructure[0] = GPU_COMMAND_DISPATCH;
 
-	TriangleCullingCSig = RHI->CreateGPUCommandSignature(ComputePipeline, CommandStructure);
+	TriangleCullingCSig = RHI->CreateGPUCommandSignature(nullptr, CommandStructure);
 	RHI->UpdateHardwareResourceGPUCommandSig(TriangleCullingCSig);
 
-	TriangleCullingCB = RHI->CreateGPUCommandBuffer(TriangleCullingCSig, InMaxClustersInScene, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
-	TriangleCullingCB->SetResourceName("TriangleCullingCommandBuffer");
+	TriangleCullingCB = RHI->CreateGPUCommandBuffer(TriangleCullingCSig, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+	TriangleCullingCB->SetResourceName("ClusterCullDispatchCB");
+	TriangleCullingCB->EncodeSetDispatch(0, 0, 1, 1, 1);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullingCB);
 
 	// Create Zero reset command buffer

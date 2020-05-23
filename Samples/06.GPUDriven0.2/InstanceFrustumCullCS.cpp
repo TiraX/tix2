@@ -79,7 +79,7 @@ void FInstanceFrustumCullCS::UpdataComputeParams(
 	if (CollectedClusters == nullptr || CollectedClusters->GetElements() != InTotalClustersCount)
 	{
 		TI_ASSERT(InTotalClustersCount > 0);
-		CollectedClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, InTotalClustersCount, UB_FLAG_COMPUTE_WRITABLE);
+		CollectedClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, InTotalClustersCount, UB_FLAG_COMPUTE_WRITABLE);
 		CollectedClusters->SetResourceName("CollectedClusters");
 		RHI->UpdateHardwareResourceUB(CollectedClusters, nullptr);
 		ResourceTable->PutUniformBufferInTable(CollectedClusters, UAV_COLLECTED_CLUSTERS);
