@@ -11,7 +11,7 @@
 
 #define InstanceFrustumCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1)),"
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=3)),"
 
 
 cbuffer FFrustum : register(b0)
@@ -63,6 +63,8 @@ StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
 
 AppendStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u0);
+RWStructuredBuffer<uint2> CollectedClusters : register(u1); // x = Cluster Index; y = Instance Index
+RWStructuredBuffer<uint4> CollectedClustersCount : register(u2);
 
 inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
 {
@@ -120,7 +122,19 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 			IntersectPlaneBBox(Planes[4], MinEdge, MaxEdge) &&
 			IntersectPlaneBBox(Planes[5], MinEdge, MaxEdge))
 		{
+            // Output visible draw command buffer for PreZ pass
 			OutputDrawCommandBuffer.Append(DrawCommandBuffer[DrawCmdIndex]);
-		}
+            
+            // Output visible cluster infos for Cluster Culling
+            uint ClusterBegin = InstanceMetaInfo[DrawCmdIndex].Info.z;
+            uint ClusterCount = InstanceMetaInfo[DrawCmdIndex].Info.w;
+            uint CurrentClusterIndex;
+            InterlockedAdd(CollectedClustersCount[0].x, ClusterCount, CurrentClusterIndex);
+            for (uint i = 0; i < ClusterCount; ++i)
+            {
+                CollectedClusters[CurrentClusterIndex + i].x = ClusterBegin + i;
+                CollectedClusters[CurrentClusterIndex + i].y = InstanceIndex;
+            }
+        }
 	}
 }

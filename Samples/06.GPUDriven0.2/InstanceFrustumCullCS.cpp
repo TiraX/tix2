@@ -19,6 +19,11 @@ FInstanceFrustumCullCS::~FInstanceFrustumCullCS()
 void FInstanceFrustumCullCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
+
+	CollectedClustersCount = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_COMPUTE_WRITABLE);
+	CollectedClustersCount->SetResourceName("CollectedClustersCount");
+	RHI->UpdateHardwareResourceUB(CollectedClustersCount, nullptr);
+	ResourceTable->PutUniformBufferInTable(CollectedClustersCount, UAV_COLLECTED_CLUSTERS_COUNT);
 }
 
 void FInstanceFrustumCullCS::UpdataComputeParams(
@@ -28,29 +33,30 @@ void FInstanceFrustumCullCS::UpdataComputeParams(
 	FUniformBufferPtr InInstanceMetaInfo,
 	FInstanceBufferPtr InInstanceData,
 	FGPUCommandSignaturePtr InCommandSignature,
-	FGPUCommandBufferPtr InDrawCommandBuffer
+	FGPUCommandBufferPtr InDrawCommandBuffer,
+	uint32 InTotalClustersCount
 )
 {
 	FrustumUniform = InFrustumUniform;
 
 	if (PrimitiveBBoxes != InPrimitiveBBoxes)
 	{
-		ResourceTable->PutUniformBufferInTable(InPrimitiveBBoxes, PARAM_PRIMITIVE_BBOXES);
+		ResourceTable->PutUniformBufferInTable(InPrimitiveBBoxes, SRV_PRIMITIVE_BBOXES);
 		PrimitiveBBoxes = InPrimitiveBBoxes;
 	}
 	if (InstanceMetaInfo != InInstanceMetaInfo)
 	{
-		ResourceTable->PutUniformBufferInTable(InInstanceMetaInfo, PARAM_INSTANCE_METAINFO);
+		ResourceTable->PutUniformBufferInTable(InInstanceMetaInfo, SRV_INSTANCE_METAINFO);
 		InstanceMetaInfo = InInstanceMetaInfo;
 	}
 	if (InstanceData != InInstanceData)
 	{
-		ResourceTable->PutInstanceBufferInTable(InInstanceData, PARAM_INSTANCE_DATA);
+		ResourceTable->PutInstanceBufferInTable(InInstanceData, SRV_INSTANCE_DATA);
 		InstanceData = InInstanceData;
 	}
 	if (DrawCommandBuffer != InDrawCommandBuffer)
 	{
-		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), PARAM_DRAW_COMMAND_BUFFER);
+		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMAND_BUFFER);
 		DrawCommandBuffer = InDrawCommandBuffer;
 
 		// Update new CulledDrawCommandBuffer
@@ -61,14 +67,22 @@ void FInstanceFrustumCullCS::UpdataComputeParams(
 		);
 		CulledDrawCommandBuffer->SetResourceName("FrustumCulledCommandBuffer");
 		RHI->UpdateHardwareResourceGPUCommandBuffer(CulledDrawCommandBuffer);
-		ResourceTable->PutUniformBufferInTable(CulledDrawCommandBuffer->GetCommandBuffer(), PARAM_CULLED_DRAW_COMMAND_BUFFER);
+		ResourceTable->PutUniformBufferInTable(CulledDrawCommandBuffer->GetCommandBuffer(), UAV_CULLED_DRAW_COMMAND_BUFFER);
 
 		// Create Zero reset command buffer
 		ResetCommandBuffer = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_INTERMEDIATE);
 		uint8 * ZeroData = ti_new uint8[sizeof(uint32) * 4];
-		memset(ZeroData, 0, InCommandSignature->GetCommandStrideInBytes() * InDrawCommandBuffer->GetEncodedCommandsCount());
+		memset(ZeroData, 0, sizeof(uint32) * 4);
 		RHI->UpdateHardwareResourceUB(ResetCommandBuffer, ZeroData);
 		ti_delete[] ZeroData;
+	}
+	if (CollectedClusters == nullptr || CollectedClusters->GetElements() != InTotalClustersCount)
+	{
+		TI_ASSERT(InTotalClustersCount > 0);
+		CollectedClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 2, InTotalClustersCount, UB_FLAG_COMPUTE_WRITABLE);
+		CollectedClusters->SetResourceName("CollectedClusters");
+		RHI->UpdateHardwareResourceUB(CollectedClusters, nullptr);
+		ResourceTable->PutUniformBufferInTable(CollectedClusters, UAV_COLLECTED_CLUSTERS);
 	}
 }
 
@@ -82,6 +96,7 @@ void FInstanceFrustumCullCS::Run(FRHI * RHI)
 		CulledDrawCommandBuffer->GetCommandBuffer(), 
 		CulledDrawCommandBuffer->GetCommandBuffer()->GetCounterOffset(), 
 		ResetCommandBuffer, sizeof(uint32));
+	RHI->CopyBufferRegion(CollectedClustersCount, 0, ResetCommandBuffer, 4);
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, FrustumUniform);

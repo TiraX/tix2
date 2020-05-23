@@ -111,7 +111,7 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	InstanceFrustumCullCS->Finalize();
 	InstanceFrustumCullCS->PrepareResources(RHI);
 
-	ClusterDispatchCmdCS = ti_new FClusterDispatchCmdCS();
+	ClusterDispatchCmdCS = ti_new FComputeDispatchCmdCS();
 	ClusterDispatchCmdCS->Finalize();
 	ClusterDispatchCmdCS->PrepareResources(RHI, "DispatchCmd-ClusterCull");
 
@@ -191,27 +191,28 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUOccludeCommandSignature,
-			SceneMetaInfo->GetGPUOccludeCommandBuffer()
+			SceneMetaInfo->GetGPUOccludeCommandBuffer(),
+			SceneMetaInfo->GetMaxInstanceClusterCount()
 		);
 
-		//ClusterDispatchCmdCS->UpdataComputeParams(
-		//	RHI,
-		//	InstanceOcclusionCullCS->GetCollectedClustersCount()
-		//);
+		ClusterDispatchCmdCS->UpdataComputeParams(
+			RHI,
+			InstanceFrustumCullCS->GetCollectedClustersCount()
+		);
 
-		//ClusterCullCS->UpdataComputeParams(
-		//	RHI,
-		//	vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
-		//	ViewProjection.CamDir,
-		//	MatVP,
-		//	Frustum,
-		//	InstanceOcclusionCullCS->GetCollectedClustersCount(),
-		//	SceneMetaInfo->GetMergedClusterMetaInfo(),
-		//	SceneMetaInfo->GetMergedInstanceBuffer(),
-		//	HiZTexture,
-		//	InstanceOcclusionCullCS->GetCollectedClusters(),
-		//	ClusterDispatchCmdCS->GetDispatchThreadCount()
-		//);
+		ClusterCullCS->UpdataComputeParams(
+			RHI,
+			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
+			ViewProjection.CamDir,
+			MatVP,
+			Frustum,
+			InstanceFrustumCullCS->GetCollectedClustersCount(),
+			SceneMetaInfo->GetMergedClusterMetaInfo(),
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			HiZTexture,
+			InstanceFrustumCullCS->GetCollectedClusters(),
+			ClusterDispatchCmdCS->GetDispatchThreadCount()
+		);
 	}
 
 	// Frustum cull instances before preZ

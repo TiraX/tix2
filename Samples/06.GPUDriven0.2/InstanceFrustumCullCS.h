@@ -21,22 +21,33 @@ public:
 		FUniformBufferPtr InInstanceMetaInfo,
 		FInstanceBufferPtr InInstanceData,
 		FGPUCommandSignaturePtr InCommandSignature,
-		FGPUCommandBufferPtr InDrawCommandBuffer
+		FGPUCommandBufferPtr InDrawCommandBuffer,
+		uint32 InTotalClustersCount
 	);
 
 	FGPUCommandBufferPtr GetCulledDrawCommandBuffer()
 	{
 		return CulledDrawCommandBuffer;
 	}
+	FUniformBufferPtr GetCollectedClusters()
+	{
+		return CollectedClusters;
+	}
+	FUniformBufferPtr GetCollectedClustersCount()
+	{
+		return CollectedClustersCount;
+	}
 private:
 	enum 
 	{
-		PARAM_PRIMITIVE_BBOXES,
-		PARAM_INSTANCE_METAINFO,
-		PARAM_INSTANCE_DATA,
-		PARAM_DRAW_COMMAND_BUFFER,
+		SRV_PRIMITIVE_BBOXES,
+		SRV_INSTANCE_METAINFO,
+		SRV_INSTANCE_DATA,
+		SRV_DRAW_COMMAND_BUFFER,
 
-		PARAM_CULLED_DRAW_COMMAND_BUFFER,
+		UAV_CULLED_DRAW_COMMAND_BUFFER,
+		UAV_COLLECTED_CLUSTERS,
+		UAV_COLLECTED_CLUSTERS_COUNT,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -53,6 +64,8 @@ private:
 	FGPUCommandBufferPtr DrawCommandBuffer;	// t3
 
 	FGPUCommandBufferPtr CulledDrawCommandBuffer;	// u0
+	FUniformBufferPtr CollectedClusters;	// u1
+	FUniformBufferPtr CollectedClustersCount;	// u2
 
 	FUniformBufferPtr ResetCommandBuffer;
 };

@@ -116,7 +116,7 @@ void FClusterCullCS::Run(FRHI * RHI)
 		// Copy dispatch thread group count
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_COPY_DEST);
 		RHI->SetResourceStateUB(DispatchThreadCount, RESOURCE_STATE_COPY_SOURCE);
-		RHI->ComputeCopyBuffer(DispatchCommandBuffer->GetCommandBuffer(), 0, DispatchThreadCount, sizeof(uint32), sizeof(uint32));
+		RHI->ComputeCopyBuffer(DispatchCommandBuffer->GetCommandBuffer(), 0, DispatchThreadCount, 0, sizeof(uint32));
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 		// Reset visible cluster counter

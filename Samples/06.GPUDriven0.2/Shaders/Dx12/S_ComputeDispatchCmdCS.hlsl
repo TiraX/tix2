@@ -25,5 +25,6 @@ RWStructuredBuffer<uint4> DispatchThreadCount : register(u0);
 [numthreads(1, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-	DispatchThreadCount[0].x = uint((Count.x + 127) / 128);
+    uint DispatchCount = uint((Count.x + 127) / 128);
+    DispatchThreadCount[0] = uint4(DispatchCount, 0, 0, 0);
 }

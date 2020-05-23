@@ -34,16 +34,10 @@
     <ClCompile Include="InstanceFrustumCullCS.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
-    <ClCompile Include="InstanceOccludeCullCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
     <ClCompile Include="ComputeDispatchCmd.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
     <ClCompile Include="ClusterCullCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="ClusterDispatchCmd.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,16 +63,10 @@
     <ClInclude Include="ComputeUniforms.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
-    <ClInclude Include="InstanceOccludeCullCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
     <ClInclude Include="ComputeDispatchCmd.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
     <ClInclude Include="ClusterCullCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="ClusterDispatchCmd.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>
@@ -109,16 +97,10 @@
     <FxCompile Include="Shaders\Dx12\S_InstanceFrustumCullCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_InstanceOccludeCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_ComputeDispatchCmdCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_ClusterDispatchCmdCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

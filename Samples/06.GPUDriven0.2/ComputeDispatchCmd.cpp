@@ -28,19 +28,19 @@ void FComputeDispatchCmdCS::PrepareResources(FRHI * RHI, const TString& InName)
 
 void FComputeDispatchCmdCS::UpdataComputeParams(
 	FRHI * RHI,
-	FUniformBufferPtr InVisibleInstanceCount
+	FUniformBufferPtr InVisibleComputeCount
 )
 {
-	if (VisibleInstanceCount != InVisibleInstanceCount)
+	if (VisibleComputeCount != InVisibleComputeCount)
 	{
-		VisibleInstanceCount = InVisibleInstanceCount;
+		VisibleComputeCount = InVisibleComputeCount;
 	}
 }
 
 void FComputeDispatchCmdCS::Run(FRHI * RHI)
 {
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeConstantBuffer(0, VisibleInstanceCount);
+	RHI->SetComputeConstantBuffer(0, VisibleComputeCount);
 	RHI->SetComputeResourceTable(1, ResourceTable);
 	RHI->DispatchCompute(vector3di(1, 1, 1), vector3di(1, 1, 1));
 }

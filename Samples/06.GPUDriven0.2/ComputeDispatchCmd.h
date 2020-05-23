@@ -36,7 +36,7 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 
 	// Compute params
-	FUniformBufferPtr VisibleInstanceCount;	// b0
+	FUniformBufferPtr VisibleComputeCount;	// b0
 
 	FUniformBufferPtr DispatchThreadCount;	// u0
 };

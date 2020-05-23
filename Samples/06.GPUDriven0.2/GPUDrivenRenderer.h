@@ -8,8 +8,6 @@
 #include "HiZDownSampleCS.h"
 #include "InstanceFrustumCullCS.h"
 #include "ComputeDispatchCmd.h"
-#include "InstanceOccludeCullCS.h"
-#include "ClusterDispatchCmd.h"
 #include "ClusterCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
@@ -65,7 +63,6 @@ private:
 	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;
 	FHiZDownSampleCSPtr HiZDownSample;
 
-	//FComputeDispatchCmdCSPtr ClusterDispatchCmdCS;
-	FClusterDispatchCmdCSPtr ClusterDispatchCmdCS;
+	FComputeDispatchCmdCSPtr ClusterDispatchCmdCS;
 	FClusterCullCSPtr ClusterCullCS;
 };
