@@ -209,6 +209,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceFrustumCullCS->GetCollectedClustersCount(),
 			SceneMetaInfo->GetMergedClusterMetaInfo(),
 			SceneMetaInfo->GetMergedInstanceBuffer(),
+			SceneMetaInfo->GetGPUCommandBuffer(),
 			HiZTexture,
 			InstanceFrustumCullCS->GetCollectedClusters(),
 			ClusterDispatchCmdCS->GetDispatchThreadCount()

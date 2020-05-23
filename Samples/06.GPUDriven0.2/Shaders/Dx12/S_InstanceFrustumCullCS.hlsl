@@ -63,7 +63,7 @@ StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
 StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
 
 AppendStructuredBuffer<FDrawInstanceCommand> OutputDrawCommandBuffer : register(u0);
-RWStructuredBuffer<uint2> CollectedClusters : register(u1); // x = Cluster Index; y = Instance Index
+RWStructuredBuffer<uint2> CollectedClusters : register(u1); // x = Cluster Index; y = Indirect Draw Command Index
 RWStructuredBuffer<uint4> CollectedClustersCount : register(u2);
 
 inline bool IntersectPlaneBBox(float4 Plane, float4 MinEdge, float4 MaxEdge)
@@ -133,7 +133,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
             for (uint i = 0; i < ClusterCount; ++i)
             {
                 CollectedClusters[CurrentClusterIndex + i].x = ClusterBegin + i;
-                CollectedClusters[CurrentClusterIndex + i].y = InstanceIndex;
+                CollectedClusters[CurrentClusterIndex + i].y = DrawCmdIndex;
             }
         }
 	}

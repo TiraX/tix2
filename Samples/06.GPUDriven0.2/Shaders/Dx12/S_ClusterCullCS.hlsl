@@ -12,7 +12,7 @@
 #define ClusterCull_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -45,10 +45,22 @@ struct FInstanceTransform
 	float4 ins_transform2;
 };
 
+struct FDrawInstanceCommand
+{
+	//uint32 IndexCountPerInstance;
+	//uint32 InstanceCount;
+	//uint32 StartIndexLocation;
+	//uint32 BaseVertexLocation;
+	//uint32 StartInstanceLocation;
+    uint4 Params;
+    uint Param;
+};
+
 StructuredBuffer<FClusterBoundingInfo> ClusterBoundingData: register(t0);
 StructuredBuffer<FInstanceTransform> InstanceData : register(t1);
-Texture2D<float> HiZTexture : register(t2);
-StructuredBuffer<uint2> CollectedClusters : register(t3);
+StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t2);
+Texture2D<float> HiZTexture : register(t3);
+StructuredBuffer<uint2> CollectedClusters : register(t4);
 
 AppendStructuredBuffer<uint> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
 
@@ -98,7 +110,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		return;
 
 	uint ClusterIndex = CollectedClusters[QueueIndex].x;
-	uint InstanceIndex = CollectedClusters[QueueIndex].y;
+    uint DrawCmdIndex = CollectedClusters[QueueIndex].y;
+    uint InstanceIndex = DrawCommandBuffer[DrawCmdIndex].Param;
 
 	FClusterBoundingInfo Cluster = ClusterBoundingData[ClusterIndex];
 

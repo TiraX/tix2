@@ -53,6 +53,7 @@ void FClusterCullCS::UpdataComputeParams(
 	FUniformBufferPtr InCollectedCount,
 	FUniformBufferPtr InClusterBoundingData,
 	FInstanceBufferPtr InInstanceData,
+	FGPUCommandBufferPtr InDrawCommandBuffer,
 	FTexturePtr InHiZTexture,
 	FUniformBufferPtr InCollectedClusters,
 	FUniformBufferPtr InDispatchThreadCount
@@ -82,6 +83,11 @@ void FClusterCullCS::UpdataComputeParams(
 	{
 		ResourceTable->PutInstanceBufferInTable(InInstanceData, SRV_INSTANCE_DATA);
 		InstanceData = InInstanceData;
+	}
+	if (DrawCommandBuffer != InDrawCommandBuffer)
+	{
+		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMANDS);
+		DrawCommandBuffer = InDrawCommandBuffer;
 	}
 	if (HiZTexture != InHiZTexture)
 	{

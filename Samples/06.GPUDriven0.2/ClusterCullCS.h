@@ -23,7 +23,8 @@ public:
 		const SViewFrustum& InFrustum,
 		FUniformBufferPtr InCollectedCount,
 		FUniformBufferPtr InClusterBoundingData,
-		FInstanceBufferPtr InInstanceData,
+		FInstanceBufferPtr InInstanceData, 
+		FGPUCommandBufferPtr InCommandBuffer,
 		FTexturePtr InHiZTexture,
 		FUniformBufferPtr InCollectedClusters,
 		FUniformBufferPtr InDispatchThreadCount
@@ -35,6 +36,7 @@ private:
 	{
 		SRV_CLUSTER_BOUNDING_DATA,
 		SRV_INSTANCE_DATA,
+		SRV_DRAW_COMMANDS,
 		SRV_HIZ_TEXTURE,
 		SRV_COLLECTED_CLUSTERS,
 
@@ -56,8 +58,9 @@ private:
 
 	FUniformBufferPtr ClusterBoundingData;	// t0
 	FInstanceBufferPtr InstanceData;	// t1
-	FTexturePtr HiZTexture;	// t2
-	FUniformBufferPtr CollectedClusters;	// t3
+	FGPUCommandBufferPtr DrawCommandBuffer;	// t2
+	FTexturePtr HiZTexture;	// t3
+	FUniformBufferPtr CollectedClusters;	// t4
 
 	FUniformBufferPtr VisibleClusters;	// u0
 
