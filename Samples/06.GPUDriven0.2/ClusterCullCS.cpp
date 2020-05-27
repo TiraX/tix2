@@ -126,6 +126,7 @@ void FClusterCullCS::Run(FRHI * RHI)
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 		// Reset visible cluster counter
+		RHI->SetResourceStateUB(VisibleClusters, RESOURCE_STATE_COPY_DEST);
 		RHI->CopyBufferRegion(VisibleClusters, VisibleClusters->GetCounterOffset(), ResetCounterBuffer, sizeof(uint32));
 
 		RHI->SetComputePipeline(ComputePipeline);
@@ -133,7 +134,7 @@ void FClusterCullCS::Run(FRHI * RHI)
 		RHI->SetComputeConstantBuffer(1, CollectedCountUniform);
 		RHI->SetComputeResourceTable(2, ResourceTable);
 
-		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(3, 1, 1));
+		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(23, 1, 1));
 		RHI->ExecuteGPUComputeCommands(DispatchCommandBuffer);
 	}
 }

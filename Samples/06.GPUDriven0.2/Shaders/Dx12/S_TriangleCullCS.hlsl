@@ -10,16 +10,14 @@
 //*********************************************************
 
 #define TriangleCull_RootSig \
-    "RootConstants(num32BitConstants=4, b0), " \
-    "DescriptorTable(CBV(b1, numDescriptors=1), SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))," \
+	"CBV(b0) ," \
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
 
-uint4 ClusterInfo : register(b0);
-
-cbuffer FViewInfoUniform : register(b1)
+cbuffer FViewInfoUniform : register(b0)
 {
 	float3 ViewDir;
 	float4x4 ViewProjection;
@@ -46,11 +44,15 @@ struct FDrawInstanceCommand
     uint Param;
 };
 
-StructuredBuffer<FInstanceTransform> InstanceData : register(t0);
-StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t1);
-Texture2D<float> HiZTexture : register(t2);
+StructuredBuffer<float> VertexData : register(t0);
+StructuredBuffer<uint> IndexData : register(t1);
+StructuredBuffer<FInstanceTransform> InstanceData : register(t2);
+StructuredBuffer<FDrawInstanceCommand> DrawCommandBuffer : register(t3);
+Texture2D<float> HiZTexture : register(t4);
+StructuredBuffer<uint4> VisibleClusters : register(t5); // x = Cluster Begin Index; y = Indirect Draw Command Index; z = Cluster Offset in this command
 
-AppendStructuredBuffer<uint> VisibleClusters : register(u0);	// Visible clusters, perform triangle cull
+RWStructuredBuffer<uint3> VisibleTriangleIndex : register(u0);
+RWStructuredBuffer<FDrawInstanceCommand> OutCommands : register(u1);
 
 SamplerState PointSampler : register(s0);
 
@@ -211,31 +213,26 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 
 #define threadBlockSize 128
 
-groupshared uint localValidDraws;
+groupshared uint localValidTriangles;
 
 [RootSignature(TriangleCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
     if (threadIDInGroup.x == 0)
-        localValidDraws = 0;
+        localValidTriangles = 0;
     GroupMemoryBarrierWithGroupSync();
 
     uint ClusterIndex = groupId.x;
-    if (ClusterIndex >= VisibleClusterCount.x)
-        return;
-
-    FClusterMetaInfo ClusterInfo = VisibleClusters[ClusterIndex];
-
-    uint InstanceIndex = ClusterInfo.Info.x;
-    uint MeshBufferIndex = ClusterInfo.Info.z;
-    uint ClusterLocalIndex = ClusterInfo.Info.w;
-
-    FSceneMeshBufferInfo MeshBufferInfo = SceneMeshBufferInfo[MeshBufferIndex];
-
-    uint VertexDataOffset = MeshBufferInfo.Info.x;
-    uint IndexDataOffset = MeshBufferInfo.Info.y;
-
+    uint DrawCmdIndex = VisibleClusters[ClusterIndex].y;
+    uint InstanceIndex = DrawCommandBuffer[DrawCmdIndex].Param;
+    uint ClusterLocalIndex = VisibleClusters[ClusterIndex].z;
+    
+    // Get Vertex data and Index data from draw commands
+    uint VertexDataOffset = DrawCommandBuffer[DrawCmdIndex].Params.w;
+    uint IndexDataOffset = DrawCommandBuffer[DrawCmdIndex].Params.z;
+   
+    // Calc index data offset
     uint TriangleIndex = ClusterLocalIndex * threadBlockSize + threadIDInGroup.x;
     uint IndexDataIndex = IndexDataOffset + TriangleIndex * 3;
 
@@ -258,7 +255,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
     }
     oIndex.w = IndexDataIndex;
-	//DebugGroup.Append(Vertices[0]);
+    
 	// Perform cull
     if (!CullTriangle(Indices, Vertices))
     {
@@ -267,34 +264,23 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         TIndex.x = Indices[0];
         TIndex.y = Indices[1];
         TIndex.z = Indices[2];
-		//VisibleTriangleIndex.Append(TIndex);
 
 		// remember visible triangle count
-        uint localCount;
-        InterlockedAdd(localValidDraws, 1, localCount);
+        uint localTriangleCount;
+        InterlockedAdd(localValidTriangles, 1, localTriangleCount);
 
-        VisibleTriangleIndex[localCount + ClusterIndex * threadBlockSize] = TIndex;
+        VisibleTriangleIndex[IndexDataIndex / 3 + localTriangleCount] = TIndex;
     }
 
 	// record indirect draw commands
     GroupMemoryBarrierWithGroupSync();
-    if (threadIDInGroup.x == 0 && localValidDraws > 0)
+    if (threadIDInGroup.x == 0 && localValidTriangles > 0)
     {
-		//struct FIndirectCommand
-		//{
-		//	uint4 DrawArguments0;	// x=IndexCountPerInstance,y=InstanceCount,z=StartIndexLocation,w=BaseVertexLocation
-		//	uint DrawArguments1;	// x=StartInstanceLocation
-		//};
-
-        uint VerticesOffset = VertexDataOffset / 6;
-        FIndirectCommand Cmd;
-        Cmd.DrawArguments0.x = localValidDraws * 3;
-        Cmd.DrawArguments0.y = 1;
-        Cmd.DrawArguments0.z = ClusterIndex * threadBlockSize * 3;
-        Cmd.DrawArguments0.w = VerticesOffset;
-        Cmd.DrawArguments1 = InstanceIndex;
-
-        IndirectCommands.Append(Cmd);
+        uint IndicesCount;
+        InterlockedAdd(OutCommands[DrawCmdIndex].Params.x, localValidTriangles * 3, IndicesCount);
+        OutCommands[DrawCmdIndex].Params.y = 1;
+        OutCommands[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
+        OutCommands[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
+        OutCommands[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
     }
-
 }

@@ -17,7 +17,7 @@ FTriangleCullCS::~FTriangleCullCS()
 {
 }
 
-void FTriangleCullCS::PrepareResources(FRHI * RHI, uint32 InMaxClustersInScene)
+void FTriangleCullCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
@@ -29,10 +29,11 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI, uint32 InMaxClustersInScene)
 	CommandStructure[0] = GPU_COMMAND_DISPATCH;
 
 	TriangleCullingCSig = RHI->CreateGPUCommandSignature(nullptr, CommandStructure);
+	TriangleCullingCSig->SetResourceName("TriangleCullingCSig");
 	RHI->UpdateHardwareResourceGPUCommandSig(TriangleCullingCSig);
 
 	TriangleCullingCB = RHI->CreateGPUCommandBuffer(TriangleCullingCSig, 1, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
-	TriangleCullingCB->SetResourceName("ClusterCullDispatchCB");
+	TriangleCullingCB->SetResourceName("TriangleCullDispatchCB");
 	TriangleCullingCB->EncodeSetDispatch(0, 0, 1, 1, 1);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullingCB);
 
@@ -51,12 +52,15 @@ void FTriangleCullCS::UpdataComputeParams(
 	const vector3df& InViewDir,
 	const FMatrix& InViewProjection,
 	const SViewFrustum& InFrustum,
+	FMeshBufferPtr InSceneMeshBuffer,
 	FInstanceBufferPtr InInstanceData,
-	FGPUCommandBufferPtr InDrawCommandBuffer,
-	FTexturePtr InHiZTexture
+	FGPUCommandBufferPtr InCommandBuffer,
+	FTexturePtr InHiZTexture,
+	FUniformBufferPtr InVisibleClusters
 )
 {
 	TI_TODO("Pass in an unified Frustum Uniform, do NOT create everywhere");
+	// Create frustum uniform buffer
 	FrustumUniform->UniformBufferData[0].RTSize = FUInt4(InRTSize.X, InRTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
 	FrustumUniform->UniformBufferData[0].ViewDir = InViewDir;
 	FrustumUniform->UniformBufferData[0].ViewProjection = InViewProjection;
@@ -70,43 +74,83 @@ void FTriangleCullCS::UpdataComputeParams(
 	}
 	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
+	if (MeshData != InSceneMeshBuffer)
+	{
+		ResourceTable->PutMeshBufferInTable(InSceneMeshBuffer, SRV_VERTEX_DATA, SRV_INDEX_DATA);
+		MeshData = InSceneMeshBuffer;
+
+		// Create visible triangle index buffer, same size with merged mesh buffer
+		VisibleTriangleIndices = RHI->CreateUniformBuffer(sizeof(uint32) * 3, MeshData->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
+		VisibleTriangleIndices->SetResourceName("VisibleTriangleIndices");
+		RHI->UpdateHardwareResourceUB(VisibleTriangleIndices, nullptr);
+		ResourceTable->PutUniformBufferInTable(VisibleTriangleIndices, UAV_VISIBLE_TRIANGLE_INDICES);
+	}
 	if (InstanceData != InInstanceData)
 	{
 		ResourceTable->PutInstanceBufferInTable(InInstanceData, SRV_INSTANCE_DATA);
 		InstanceData = InInstanceData;
 	}
-	if (DrawCommandBuffer != InDrawCommandBuffer)
+	if (DrawCommandBuffer != InCommandBuffer)
 	{
-		ResourceTable->PutUniformBufferInTable(InDrawCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMANDS);
-		DrawCommandBuffer = InDrawCommandBuffer;
+		ResourceTable->PutUniformBufferInTable(InCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMANDS);
+		DrawCommandBuffer = InCommandBuffer;
+
+		// Output draw command buffer
+		OutDrawCommands = RHI->CreateGPUCommandBuffer(
+			DrawCommandBuffer->GetGPUCommandSignature(),
+			DrawCommandBuffer->GetEncodedCommandsCount(),
+			UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE
+		);
+		OutDrawCommands->SetResourceName("OutDrawCommands");
+		RHI->UpdateHardwareResourceGPUCommandBuffer(OutDrawCommands);
+		ResourceTable->PutUniformBufferInTable(OutDrawCommands->GetCommandBuffer(), UAV_OUTPUT_COMMANDS);
+
+		// Create empty command buffer for reset output draw commands
+		EmptyCommandBuffer = RHI->CreateGPUCommandBuffer(
+			DrawCommandBuffer->GetGPUCommandSignature(),
+			DrawCommandBuffer->GetEncodedCommandsCount(),
+			UB_FLAG_GPU_COMMAND_BUFFER
+		);
+		EmptyCommandBuffer->SetResourceName("EmptyCommandBuffer");
+		for (uint32 c = 0 ; c < DrawCommandBuffer->GetEncodedCommandsCount() ; ++ c)
+		{
+			DrawCommandBuffer->EncodeEmptyCommand(c);
+		}
+		RHI->UpdateHardwareResourceGPUCommandBuffer(EmptyCommandBuffer);
 	}
 	if (HiZTexture != InHiZTexture)
 	{
 		ResourceTable->PutTextureInTable(InHiZTexture, SRV_HIZ_TEXTURE);
 		HiZTexture = InHiZTexture;
 	}
+	if (VisibleClusters != InVisibleClusters)
+	{
+		ResourceTable->PutUniformBufferInTable(InVisibleClusters, SRV_VISIBLE_CLUSTERS);
+		VisibleClusters = InVisibleClusters;
+	}
 }
 
 void FTriangleCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-
 	if (FrustumUniform != nullptr)
 	{
 		// Copy dispatch thread group count
-		//RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_COPY_DEST);
-		//RHI->ComputeCopyBuffer(TriangleCullingCB->GetCommandBuffer(), 0, DispatchThreadCount, 0, sizeof(uint32));
-		//RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_INDIRECT_ARGUMENT);
+		RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_COPY_DEST);
+		RHI->SetResourceStateUB(VisibleClusters, RESOURCE_STATE_COPY_SOURCE);
+		TI_ASSERT(VisibleClusters->GetCounterOffset() > 0);
+		RHI->ComputeCopyBuffer(TriangleCullingCB->GetCommandBuffer(), 0, VisibleClusters, VisibleClusters->GetCounterOffset(), sizeof(uint32));
+		RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_INDIRECT_ARGUMENT);
 
-		//// Reset visible cluster counter
-		//RHI->CopyBufferRegion(VisibleClusters, VisibleClusters->GetCounterOffset(), ResetCounterBuffer, sizeof(uint32));
+		// Reset output draw commands
+		RHI->CopyBufferRegion(OutDrawCommands->GetCommandBuffer(), 0, EmptyCommandBuffer->GetCommandBuffer(), EmptyCommandBuffer->GetEncodedCommandsCount() * sizeof(uint32) * 5);
 
-		//RHI->SetComputePipeline(ComputePipeline);
-		//RHI->SetComputeConstantBuffer(0, FrustumUniform->UniformBuffer);
+		RHI->SetComputePipeline(ComputePipeline);
+		RHI->SetComputeConstantBuffer(0, FrustumUniform->UniformBuffer);
 		//RHI->SetComputeConstantBuffer(1, CollectedCountUniform);
-		//RHI->SetComputeResourceTable(2, ResourceTable);
+		RHI->SetComputeResourceTable(1, ResourceTable);
 
-		////RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(3, 1, 1));
-		//RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
+		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
+		RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
 	}
 }

@@ -9,6 +9,7 @@
 #include "InstanceFrustumCullCS.h"
 #include "ComputeDispatchCmd.h"
 #include "ClusterCullCS.h"
+#include "TriangleCullCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -65,4 +66,6 @@ private:
 
 	FComputeDispatchCmdCSPtr ClusterDispatchCmdCS;
 	FClusterCullCSPtr ClusterCullCS;
+
+	FTriangleCullCSPtr TriangleCullCS;
 };

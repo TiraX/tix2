@@ -30,6 +30,10 @@ public:
 		FUniformBufferPtr InDispatchThreadCount
 		);
 
+	FUniformBufferPtr GetVisibleClusters()
+	{
+		return VisibleClusters;
+	}
 
 private:
 	enum

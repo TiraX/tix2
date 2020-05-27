@@ -119,6 +119,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	ClusterCullCS->Finalize();
 	ClusterCullCS->PrepareResources(RHI);
 
+	TriangleCullCS = ti_new FTriangleCullCS();
+	TriangleCullCS->Finalize();
+	TriangleCullCS->PrepareResources(RHI);
+
 	// Down sample HiZ 
 	HiZDownSample = ti_new FHiZDownSampleCS;
 	HiZDownSample->Finalize();
@@ -214,6 +218,19 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			InstanceFrustumCullCS->GetCollectedClusters(),
 			ClusterDispatchCmdCS->GetDispatchThreadCount()
 		);
+
+		TriangleCullCS->UpdataComputeParams(
+			RHI,
+			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
+			ViewProjection.CamDir,
+			MatVP,
+			Frustum,
+			SceneMetaInfo->GetMergedSceneMeshBuffer(),
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			SceneMetaInfo->GetGPUCommandBuffer(),
+			HiZTexture,
+			ClusterCullCS->GetVisibleClusters()
+		);
 	}
 
 	// Frustum cull instances before preZ
@@ -258,6 +275,13 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->BeginEvent("Cluster Cull");
 			ClusterDispatchCmdCS->Run(RHI);
 			ClusterCullCS->Run(RHI);
+			RHI->EndEvent();
+		}
+
+		// Triangle Cull
+		{
+			RHI->BeginEvent("Triangle Cull");
+			TriangleCullCS->Run(RHI);
 			RHI->EndEvent();
 		}
 

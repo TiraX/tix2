@@ -12,7 +12,7 @@ public:
 	FTriangleCullCS();
 	virtual ~FTriangleCullCS();
 
-	void PrepareResources(FRHI * RHI, uint32 InMaxClustersInScene);
+	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdataComputeParams(
@@ -21,22 +21,26 @@ public:
 		const vector3df& InViewDir,
 		const FMatrix& InViewProjection,
 		const SViewFrustum& InFrustum,
+		FMeshBufferPtr InSceneMeshBuffer,
 		FInstanceBufferPtr InInstanceData, 
 		FGPUCommandBufferPtr InCommandBuffer,
-		FTexturePtr InHiZTexture
+		FTexturePtr InHiZTexture,
+		FUniformBufferPtr InVisibleClusters
 		);
 
 
 private:
 	enum
 	{
-		CBV_VIEW_INFO,
-
+		SRV_VERTEX_DATA,
+		SRV_INDEX_DATA,
 		SRV_INSTANCE_DATA,
 		SRV_DRAW_COMMANDS,
 		SRV_HIZ_TEXTURE,
+		SRV_VISIBLE_CLUSTERS,
 
-		UAV_VISIBLE_CLUSTERS,
+		UAV_VISIBLE_TRIANGLE_INDICES,
+		UAV_OUTPUT_COMMANDS,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -49,17 +53,19 @@ private:
 	FGPUCommandBufferPtr TriangleCullingCB;
 
 	// Compute params
-	// Root Constant b0 in command buffer
+	FCullUniformPtr FrustumUniform;	// b0
 
-	FCullUniformPtr FrustumUniform;	// b1
+	FMeshBufferPtr MeshData;	// t0 t1
+	FInstanceBufferPtr InstanceData;	// t2
+	FGPUCommandBufferPtr DrawCommandBuffer;	// t3
+	FTexturePtr HiZTexture;	// t4
+	FUniformBufferPtr VisibleClusters;	// t5
 
-	FInstanceBufferPtr InstanceData;	// t0
-	FGPUCommandBufferPtr DrawCommandBuffer;	// t1
-	FTexturePtr HiZTexture;	// t2
-
-	FUniformBufferPtr VisibleClusters;	// u0
+	FUniformBufferPtr VisibleTriangleIndices;	// u0
+	FGPUCommandBufferPtr OutDrawCommands;	// u1
 
 	FUniformBufferPtr ResetCounterBuffer;
+	FGPUCommandBufferPtr EmptyCommandBuffer;
 
 };
 typedef TI_INTRUSIVE_PTR(FTriangleCullCS) FTriangleCullCSPtr;
