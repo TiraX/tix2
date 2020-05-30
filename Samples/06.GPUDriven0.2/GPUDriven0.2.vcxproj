@@ -166,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClusterCullCS.cpp" />
+    <ClCompile Include="CompactDrawCommandsCS.cpp" />
     <ClCompile Include="ComputeDispatchCmd.cpp" />
     <ClCompile Include="GPUDrivenRenderer.cpp" />
     <ClCompile Include="GPUDrivenSample.cpp" />
@@ -181,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClusterCullCS.h" />
+    <ClInclude Include="CompactDrawCommandsCS.h" />
     <ClInclude Include="ComputeDispatchCmd.h" />
     <ClInclude Include="ComputeUniforms.h" />
     <ClInclude Include="GPUDrivenRenderer.h" />
@@ -198,6 +200,12 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_ClusterCullCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CompactDrawCommandsCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>

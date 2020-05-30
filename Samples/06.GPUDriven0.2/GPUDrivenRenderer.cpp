@@ -123,6 +123,10 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	TriangleCullCS->Finalize();
 	TriangleCullCS->PrepareResources(RHI);
 
+	CompactDCCS = ti_new FCompactDrawCommandsCS();
+	CompactDCCS->Finalize();
+	CompactDCCS->PrepareResources(RHI);
+
 	// Down sample HiZ 
 	HiZDownSample = ti_new FHiZDownSampleCS;
 	HiZDownSample->Finalize();
@@ -237,6 +241,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			ClusterCullCS->GetVisibleClusters(),
 			SceneMetaInfo->GetTotalTrianglesInScene()
 		);
+
+		CompactDCCS->UpdataComputeParams(RHI, TriangleCullCS->GetCulledDrawCommands());
 	}
 
 	// Frustum cull instances before preZ
@@ -292,6 +298,13 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			RHI->EndEvent();
 		}
 
+		// Compact Draw Commands
+		{
+			RHI->BeginEvent("Compact DC");
+			CompactDCCS->Run(RHI);
+			RHI->EndEvent();
+		}
+
 		RHI->EndComputeTask();
 	}
 
@@ -325,7 +338,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			TriangleCullCS->GetCulledTriangleIndices(),
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUCommandSignature,
-			TriangleCullCS->GetCulledDrawCommands()
+			CompactDCCS->GetCompactDrawCommands()
 		);
 	}
 

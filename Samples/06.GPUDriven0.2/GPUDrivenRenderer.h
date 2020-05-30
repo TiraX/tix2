@@ -10,6 +10,7 @@
 #include "ComputeDispatchCmd.h"
 #include "ClusterCullCS.h"
 #include "TriangleCullCS.h"
+#include "CompactDrawCommandsCS.h"
 
 class FGPUDrivenRenderer : public FDefaultRenderer
 {
@@ -69,4 +70,5 @@ private:
 	FClusterCullCSPtr ClusterCullCS;
 
 	FTriangleCullCSPtr TriangleCullCS;
+	FCompactDrawCommandsCSPtr CompactDCCS;
 };

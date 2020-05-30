@@ -43,6 +43,9 @@
     <ClCompile Include="TriangleCullCS.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
+    <ClCompile Include="CompactDrawCommandsCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPUDrivenRenderer.h">
@@ -73,6 +76,9 @@
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
     <ClInclude Include="TriangleCullCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="CompactDrawCommandsCS.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,6 +116,9 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_TriangleCullCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CompactDrawCommandsCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
