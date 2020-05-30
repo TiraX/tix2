@@ -170,8 +170,8 @@ namespace tix
 	{
 		int32 StrId_Name;
 		int32 StrMaterialInstance;
-		int32 IndexStart;
-		int32 Triangles;
+		uint32 IndexStart;
+		uint32 Triangles;
 
 		THeaderMeshSection()
 			: StrId_Name(0)

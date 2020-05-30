@@ -50,8 +50,8 @@ namespace tix
 
 		TString Name;
 		TString LinkedMaterialInstance;
-		int32 IndexStart;
-		int32 Triangles;
+		uint32 IndexStart;
+		uint32 Triangles;
 
 		TVector< TVector<uint32> > ClusterIndices;
 		TVector< aabbox3df > ClusterBBoxes;

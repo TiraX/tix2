@@ -16,8 +16,8 @@ namespace tix
 		{}
 
 		TMaterialInstancePtr DefaultMaterial;
-		int32 IndexStart;
-		int32 Triangles;
+		uint32 IndexStart;
+		uint32 Triangles;
 	};
 
 	struct TMeshClusterData
