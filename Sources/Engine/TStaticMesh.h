@@ -30,6 +30,7 @@ namespace tix
 
 		void AddMeshSection(const TMeshSection& InSection)
 		{
+			TI_ASSERT(InSection.Triangles <= MeshBuffer->GetIndicesCount() / 3);
 			MeshSections.push_back(InSection);
 		}
 

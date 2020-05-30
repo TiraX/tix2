@@ -149,6 +149,7 @@ void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(
 	FRHI * RHI,
 	FScene * Scene,
 	FMeshBufferPtr MeshBuffer,
+	FUniformBufferPtr CulledIndexBuffer,
 	FInstanceBufferPtr InstanceBuffer,
 	FGPUCommandSignaturePtr CommandSignature,
 	FGPUCommandBufferPtr CommandBuffer)
@@ -157,6 +158,10 @@ void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(
 	{
 		RHI->SetResourceStateCB(CommandBuffer, RESOURCE_STATE_INDIRECT_ARGUMENT);
 		RHI->SetMeshBuffer(MeshBuffer, InstanceBuffer);
+		if (CulledIndexBuffer != nullptr)
+		{
+			RHI->SetIndexBufferFromUniformBuffer(CulledIndexBuffer);
+		}
 		RHI->SetGraphicsPipeline(CommandSignature->GetPipeline());
 		RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 		RHI->ExecuteGPUDrawCommands(CommandBuffer);
@@ -229,7 +234,8 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			SceneMetaInfo->GetGPUCommandBuffer(),
 			HiZTexture,
-			ClusterCullCS->GetVisibleClusters()
+			ClusterCullCS->GetVisibleClusters(),
+			SceneMetaInfo->GetTotalTrianglesInScene()
 		);
 	}
 
@@ -250,6 +256,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		TestDrawSceneIndirectCommandBuffer(RHI,
 			Scene,
 			SceneMetaInfo->GetMergedOccludeMeshBuffer(),
+			nullptr,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			GPUOccludeCommandSignature,
 			InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
@@ -288,10 +295,6 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->EndComputeTask();
 	}
 
-	// Option1: Instance occlusion cull / Cluster cull / Triangle cull
-
-	// Option2: Cluster cull / Triangle cull
-
 	{
 		// Do test
 		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
@@ -301,8 +304,29 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 		//	InstanceOcclusionCullCS->GetCompactInstanceBuffer(),
 		//	GPUCommandSignature,
 		//	InstanceOcclusionCullCS->GetCulledDrawCommandBuffer());
-		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), InstanceFrustumCullCS->GetCompactInstanceBuffer(), InstanceFrustumCullCS->GetCulledDrawCommandBuffer());
-		//TestDrawSceneIndirectCommandBuffer(RHI, Scene, SceneMetaInfo->GetMergedSceneMeshBuffer(), SceneMetaInfo->GetMergedInstanceBuffer(), SceneMetaInfo->GetGPUCommandBuffer());
+		//TestDrawSceneIndirectCommandBuffer(
+		//	RHI, 
+		//	Scene, 
+		//	SceneMetaInfo->GetMergedSceneMeshBuffer(), 
+		//	InstanceFrustumCullCS->GetCompactInstanceBuffer(), 
+		//	InstanceFrustumCullCS->GetCulledDrawCommandBuffer()
+		//);
+		//TestDrawSceneIndirectCommandBuffer(
+		//	RHI, 
+		//	Scene, 
+		//	SceneMetaInfo->GetMergedSceneMeshBuffer(), 
+		//	SceneMetaInfo->GetMergedInstanceBuffer(), 
+		//	SceneMetaInfo->GetGPUCommandBuffer()
+		//);
+		TestDrawSceneIndirectCommandBuffer(
+			RHI,
+			Scene,
+			SceneMetaInfo->GetMergedSceneMeshBuffer(),
+			TriangleCullCS->GetCulledTriangleIndices(),
+			SceneMetaInfo->GetMergedInstanceBuffer(),
+			GPUCommandSignature,
+			TriangleCullCS->GetCulledDrawCommands()
+		);
 	}
 
 	RHI->BeginRenderToFrameBuffer();

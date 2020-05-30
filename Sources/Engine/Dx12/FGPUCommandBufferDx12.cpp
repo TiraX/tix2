@@ -49,6 +49,7 @@ namespace tix
 		uint32 CommandPos = CommandIndex * CommandStride;
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->FillWithZero(CommandStride);
+		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetVertexBuffer(

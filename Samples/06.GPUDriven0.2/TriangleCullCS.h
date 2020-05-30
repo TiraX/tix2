@@ -25,10 +25,19 @@ public:
 		FInstanceBufferPtr InInstanceData, 
 		FGPUCommandBufferPtr InCommandBuffer,
 		FTexturePtr InHiZTexture,
-		FUniformBufferPtr InVisibleClusters
+		FUniformBufferPtr InVisibleClusters,
+		uint32 InTotalTrianglesInScene
 		);
 
+	FUniformBufferPtr GetCulledTriangleIndices()
+	{
+		return VisibleTriangleIndices;
+	}
 
+	FGPUCommandBufferPtr GetCulledDrawCommands()
+	{
+		return OutDrawCommands;
+	}
 private:
 	enum
 	{
@@ -41,6 +50,7 @@ private:
 
 		UAV_VISIBLE_TRIANGLE_INDICES,
 		UAV_OUTPUT_COMMANDS,
+		UAV_DEBUG_INFO1,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -63,6 +73,7 @@ private:
 
 	FUniformBufferPtr VisibleTriangleIndices;	// u0
 	FGPUCommandBufferPtr OutDrawCommands;	// u1
+	FUniformBufferPtr DebugInfo1;	// u2
 
 	FUniformBufferPtr ResetCounterBuffer;
 	FGPUCommandBufferPtr EmptyCommandBuffer;

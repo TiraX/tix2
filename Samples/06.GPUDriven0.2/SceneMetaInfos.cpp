@@ -79,6 +79,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 
 		uint32 TotalInstances = 0;
 		uint32 TotalDrawCommands = 0;
+		TotalTrianglesInScene = 0;
 		for (const auto& T : SceneTileResources)
 		{
 			FSceneTileResourcePtr TileRes = T.second;
@@ -94,6 +95,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 				if (Prim != nullptr)
 				{
 					TotalDrawCommands += Prim->GetInstanceCount();
+					TotalTrianglesInScene += Prim->GetTriangles() * Prim->GetInstanceCount();
 				}
 			}
 		}
@@ -226,6 +228,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			uint32 InstanceDstOffset = 0;
 			uint32 DrawCmdIndex = 0;
 			TotalInstanceClusters = 0;
+			uint32 IndexOffsetInExpandIndexBuffer = 0;
 			for (const auto& T : SceneTileResources)
 			{
 				FSceneTileResourcePtr TileRes = T.second;
@@ -255,11 +258,14 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 							for (uint32 Ins = 0 ; Ins < Prim->GetInstanceCount() ; ++ Ins)
 							{
 								FDrawInstanceArgument& DrawArg = DrawArguments[DrawCmdIndex];
-								DrawArg.IndexCountPerInstance = MeshBuffer->GetIndicesCount();
-								DrawArg.InstanceCount = 1;
-								DrawArg.StartIndexLocation = MeshDataOffset.Y / sizeof(uint32);
+								DrawArg.IndexCountPerInstance = Prim->GetTriangles() * 3;
+								// Trick: since instance count always be ONE. Use this variable as the draw call StartIndexLocation in the EXPANDED indices buffer
+								DrawArg.InstanceCount = IndexOffsetInExpandIndexBuffer;
+								DrawArg.StartIndexLocation = MeshDataOffset.Y / sizeof(uint32) + Prim->GetIndexStart();
 								DrawArg.BaseVertexLocation = MeshDataOffset.X / VertexStride;
 								DrawArg.StartInstanceLocation = InstanceDstOffset + Prim->GetInstanceOffset() + Ins;
+
+								IndexOffsetInExpandIndexBuffer += DrawArg.IndexCountPerInstance;
 
 								if (OccludeMeshBuffer != nullptr)
 								{

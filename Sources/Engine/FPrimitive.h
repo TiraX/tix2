@@ -47,6 +47,14 @@ namespace tix
 		{
 			return InstanceBuffer;
 		}
+		const uint32 GetIndexStart() const
+		{
+			return IndexStart;
+		}
+		const uint32 GetTriangles() const
+		{
+			return Triangles;
+		}
 		uint32 GetInstanceCount() const
 		{
 			return InstanceCount;

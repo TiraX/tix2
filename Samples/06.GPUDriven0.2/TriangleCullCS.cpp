@@ -44,6 +44,13 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI)
 	memset(ZeroData, 0, sizeof(uint32) * 4);
 	RHI->UpdateHardwareResourceUB(ResetCounterBuffer, ZeroData);
 	ti_delete[] ZeroData;
+
+	// Debug buffer
+	TI_TODO("Remove debug buffer");
+	DebugInfo1 = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1400 * 128, UB_FLAG_COMPUTE_WRITABLE);
+	DebugInfo1->SetResourceName("DebugInfo1");
+	RHI->UpdateHardwareResourceUB(DebugInfo1, nullptr);
+	ResourceTable->PutUniformBufferInTable(DebugInfo1, UAV_DEBUG_INFO1);
 }
 
 void FTriangleCullCS::UpdataComputeParams(
@@ -56,7 +63,8 @@ void FTriangleCullCS::UpdataComputeParams(
 	FInstanceBufferPtr InInstanceData,
 	FGPUCommandBufferPtr InCommandBuffer,
 	FTexturePtr InHiZTexture,
-	FUniformBufferPtr InVisibleClusters
+	FUniformBufferPtr InVisibleClusters,
+	uint32 InTotalTrianglesInScene
 )
 {
 	TI_TODO("Pass in an unified Frustum Uniform, do NOT create everywhere");
@@ -78,12 +86,6 @@ void FTriangleCullCS::UpdataComputeParams(
 	{
 		ResourceTable->PutMeshBufferInTable(InSceneMeshBuffer, SRV_VERTEX_DATA, SRV_INDEX_DATA);
 		MeshData = InSceneMeshBuffer;
-
-		// Create visible triangle index buffer, same size with merged mesh buffer
-		VisibleTriangleIndices = RHI->CreateUniformBuffer(sizeof(uint32) * 3, MeshData->GetIndicesCount() / 3, UB_FLAG_COMPUTE_WRITABLE);
-		VisibleTriangleIndices->SetResourceName("VisibleTriangleIndices");
-		RHI->UpdateHardwareResourceUB(VisibleTriangleIndices, nullptr);
-		ResourceTable->PutUniformBufferInTable(VisibleTriangleIndices, UAV_VISIBLE_TRIANGLE_INDICES);
 	}
 	if (InstanceData != InInstanceData)
 	{
@@ -114,7 +116,7 @@ void FTriangleCullCS::UpdataComputeParams(
 		EmptyCommandBuffer->SetResourceName("EmptyCommandBuffer");
 		for (uint32 c = 0 ; c < DrawCommandBuffer->GetEncodedCommandsCount() ; ++ c)
 		{
-			DrawCommandBuffer->EncodeEmptyCommand(c);
+			EmptyCommandBuffer->EncodeEmptyCommand(c);
 		}
 		RHI->UpdateHardwareResourceGPUCommandBuffer(EmptyCommandBuffer);
 	}
@@ -127,6 +129,14 @@ void FTriangleCullCS::UpdataComputeParams(
 	{
 		ResourceTable->PutUniformBufferInTable(InVisibleClusters, SRV_VISIBLE_CLUSTERS);
 		VisibleClusters = InVisibleClusters;
+	}
+	if (VisibleTriangleIndices == nullptr || VisibleTriangleIndices->GetElements() != InTotalTrianglesInScene)
+	{
+		// Create visible triangle index buffer, same size with merged mesh buffer
+		VisibleTriangleIndices = RHI->CreateUniformBuffer(sizeof(uint32) * 3, InTotalTrianglesInScene, UB_FLAG_COMPUTE_WRITABLE);
+		VisibleTriangleIndices->SetResourceName("VisibleTriangleIndices");
+		RHI->UpdateHardwareResourceUB(VisibleTriangleIndices, nullptr);
+		ResourceTable->PutUniformBufferInTable(VisibleTriangleIndices, UAV_VISIBLE_TRIANGLE_INDICES);
 	}
 }
 
@@ -143,14 +153,17 @@ void FTriangleCullCS::Run(FRHI * RHI)
 		RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 		// Reset output draw commands
+		RHI->SetResourceStateCB(OutDrawCommands, RESOURCE_STATE_COPY_DEST);
 		RHI->CopyBufferRegion(OutDrawCommands->GetCommandBuffer(), 0, EmptyCommandBuffer->GetCommandBuffer(), EmptyCommandBuffer->GetEncodedCommandsCount() * sizeof(uint32) * 5);
-
+		RHI->SetResourceStateCB(OutDrawCommands, RESOURCE_STATE_UNORDERED_ACCESS);
+		
 		RHI->SetComputePipeline(ComputePipeline);
 		RHI->SetComputeConstantBuffer(0, FrustumUniform->UniformBuffer);
 		//RHI->SetComputeConstantBuffer(1, CollectedCountUniform);
 		RHI->SetComputeResourceTable(1, ResourceTable);
 
-		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
-		RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
+		TI_TODO("Find out what wrong with indirect compute dispatch");
+		RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
+		//RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
 	}
 }

@@ -30,6 +30,7 @@ private:
 		FRHI * RHI, 
 		FScene * Scene, 
 		FMeshBufferPtr MeshBuffer, 
+		FUniformBufferPtr CulledIndexBuffer,
 		FInstanceBufferPtr InstanceBuffer,
 		FGPUCommandSignaturePtr CommandSignature,
 		FGPUCommandBufferPtr CommandBuffer

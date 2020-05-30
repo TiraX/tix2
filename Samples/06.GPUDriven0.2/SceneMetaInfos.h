@@ -50,9 +50,13 @@ public:
 	{
 		return InstanceMetaInfoUniform;
 	}
-	uint32 GetMaxInstanceClusterCount()
+	uint32 GetMaxInstanceClusterCount() const
 	{
 		return TotalInstanceClusters;
+	}
+	uint32 GetTotalTrianglesInScene() const
+	{
+		return TotalTrianglesInScene;
 	}
 private:
 
@@ -72,6 +76,7 @@ private:
 	FSceneInstanceMetaInfoPtr InstanceMetaInfoUniform;
 
 	uint32 TotalInstanceClusters;
+	uint32 TotalTrianglesInScene;
 
 	friend class FScene;
 };

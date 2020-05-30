@@ -11,7 +11,7 @@
 
 #define TriangleCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=3))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -36,7 +36,7 @@ struct FInstanceTransform
 struct FDrawInstanceCommand
 {
 	//uint32 IndexCountPerInstance;
-	//uint32 InstanceCount;
+	//uint32 InstanceCount; // Trick: also the StartIndexLocation in the expanded index buffer
 	//uint32 StartIndexLocation;
 	//uint32 BaseVertexLocation;
 	//uint32 StartInstanceLocation;
@@ -53,6 +53,7 @@ StructuredBuffer<uint4> VisibleClusters : register(t5); // x = Cluster Begin Ind
 
 RWStructuredBuffer<uint3> VisibleTriangleIndex : register(u0);
 RWStructuredBuffer<FDrawInstanceCommand> OutCommands : register(u1);
+RWStructuredBuffer<uint4> DebugInfo1 : register(u2);
 
 SamplerState PointSampler : register(s0);
 
@@ -213,16 +214,10 @@ bool CullTriangle(uint indices[3], float4 vertices[3])
 
 #define threadBlockSize 128
 
-groupshared uint localValidTriangles;
-
 [RootSignature(TriangleCull_RootSig)]
 [numthreads(threadBlockSize, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    if (threadIDInGroup.x == 0)
-        localValidTriangles = 0;
-    GroupMemoryBarrierWithGroupSync();
-
     uint ClusterIndex = groupId.x;
     uint DrawCmdIndex = VisibleClusters[ClusterIndex].y;
     uint InstanceIndex = DrawCommandBuffer[DrawCmdIndex].Param;
@@ -233,8 +228,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     uint IndexDataOffset = DrawCommandBuffer[DrawCmdIndex].Params.z;
    
     // Calc index data offset
-    uint TriangleIndex = ClusterLocalIndex * threadBlockSize + threadIDInGroup.x;
-    uint IndexDataIndex = IndexDataOffset + TriangleIndex * 3;
+    uint SrcTriangleIndex = ClusterLocalIndex * threadBlockSize + threadIDInGroup.x;
+    uint SrcIndexDataIndex = IndexDataOffset + SrcTriangleIndex * 3;
 
     uint Indices[3];
     float4 Vertices[3];
@@ -246,7 +241,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	[unroll]
     for (int i = 0; i < 3; i++)
     {
-        Indices[i] = IndexData[IndexDataIndex + i];
+        Indices[i] = IndexData[SrcIndexDataIndex + i];
         oIndex[i] = Indices[i];
         Vertex = LoadVertex(Indices[i], VertexDataOffset);
         WorldPosition = GetWorldPosition(InsTrans, Vertex);
@@ -254,8 +249,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 		// Projection space vertices
         Vertices[i] = mul(float4(WorldPosition, 1.0), ViewProjection);
     }
-    oIndex.w = IndexDataIndex;
+    oIndex.w = SrcIndexDataIndex;
     
+    uint __Index = (ClusterIndex + ClusterLocalIndex) * threadBlockSize + threadIDInGroup.x;
 	// Perform cull
     if (!CullTriangle(Indices, Vertices))
     {
@@ -266,20 +262,25 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         TIndex.z = Indices[2];
 
 		// remember visible triangle count
-        uint localTriangleCount;
-        InterlockedAdd(localValidTriangles, 1, localTriangleCount);
+        uint localIndicesCount;
+        InterlockedAdd(OutCommands[DrawCmdIndex].Params.x, 3, localIndicesCount);
 
-        VisibleTriangleIndex[IndexDataIndex / 3 + localTriangleCount] = TIndex;
+        uint triangleOffset = (DrawCommandBuffer[DrawCmdIndex].Params.y + localIndicesCount) / 3;
+        VisibleTriangleIndex[triangleOffset] = TIndex;
+        DebugInfo1[__Index].x = localIndicesCount;
+        DebugInfo1[__Index].y = DrawCommandBuffer[DrawCmdIndex].Params.y;
+        DebugInfo1[__Index].z = DrawCmdIndex;
+        DebugInfo1[__Index].w = triangleOffset;
     }
+    
+    
 
 	// record indirect draw commands
     GroupMemoryBarrierWithGroupSync();
-    if (threadIDInGroup.x == 0 && localValidTriangles > 0)
+    if (threadIDInGroup.x == 0 && OutCommands[DrawCmdIndex].Params.x > 0)
     {
-        uint IndicesCount;
-        InterlockedAdd(OutCommands[DrawCmdIndex].Params.x, localValidTriangles * 3, IndicesCount);
         OutCommands[DrawCmdIndex].Params.y = 1;
-        OutCommands[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.z;
+        OutCommands[DrawCmdIndex].Params.z = DrawCommandBuffer[DrawCmdIndex].Params.y; // StartIndexLocation is in the EXPANED index buffer
         OutCommands[DrawCmdIndex].Params.w = DrawCommandBuffer[DrawCmdIndex].Params.w;
         OutCommands[DrawCmdIndex].Param = DrawCommandBuffer[DrawCmdIndex].Param;
     }
