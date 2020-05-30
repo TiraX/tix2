@@ -101,7 +101,7 @@ void FClusterCullCS::UpdataComputeParams(
 
 		if (VisibleClusters == nullptr || (VisibleClusters->GetElements() != InCollectedClusters->GetElements()))
 		{
-			VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32), InCollectedClusters->GetElements(), UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+			VisibleClusters = RHI->CreateUniformBuffer(sizeof(uint32) * 4, InCollectedClusters->GetElements(), UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 			VisibleClusters->SetResourceName("VisibleClusters");
 			RHI->UpdateHardwareResourceUB(VisibleClusters, nullptr);
 			ResourceTable->PutUniformBufferInTable(VisibleClusters, UAV_VISIBLE_CLUSTERS);
