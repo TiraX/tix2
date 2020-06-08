@@ -11,7 +11,7 @@
 
 #define TriangleCull_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=3))," \
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -53,7 +53,6 @@ StructuredBuffer<uint4> VisibleClusters : register(t5); // x = Cluster Begin Ind
 
 RWStructuredBuffer<uint3> VisibleTriangleIndex : register(u0);
 RWStructuredBuffer<FDrawInstanceCommand> OutCommands : register(u1);
-RWStructuredBuffer<uint4> DebugInfo1 : register(u2);
 
 SamplerState PointSampler : register(s0);
 
@@ -267,10 +266,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
         uint triangleOffset = (DrawCommandBuffer[DrawCmdIndex].Params.y + localIndicesCount) / 3;
         VisibleTriangleIndex[triangleOffset] = TIndex;
-        DebugInfo1[__Index].x = localIndicesCount;
-        DebugInfo1[__Index].y = DrawCommandBuffer[DrawCmdIndex].Params.y;
-        DebugInfo1[__Index].z = DrawCmdIndex;
-        DebugInfo1[__Index].w = triangleOffset;
     }
     
     

@@ -44,13 +44,6 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI)
 	memset(ZeroData, 0, sizeof(uint32) * 4);
 	RHI->UpdateHardwareResourceUB(ResetCounterBuffer, ZeroData);
 	ti_delete[] ZeroData;
-
-	// Debug buffer
-	TI_TODO("Remove debug buffer");
-	DebugInfo1 = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1400 * 128, UB_FLAG_COMPUTE_WRITABLE);
-	DebugInfo1->SetResourceName("DebugInfo1");
-	RHI->UpdateHardwareResourceUB(DebugInfo1, nullptr);
-	ResourceTable->PutUniformBufferInTable(DebugInfo1, UAV_DEBUG_INFO1);
 }
 
 void FTriangleCullCS::UpdataComputeParams(
@@ -163,7 +156,7 @@ void FTriangleCullCS::Run(FRHI * RHI)
 		RHI->SetComputeResourceTable(1, ResourceTable);
 
 		TI_TODO("Find out what wrong with indirect compute dispatch");
-		RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
-		//RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
+		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
+		RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
 	}
 }
