@@ -15,12 +15,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04.VirtualTexture", "..\..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04.VTTextureBaker", "..\..\Samples\04.VTTextureBaker\VTTextureBaker.vcxproj", "{455FDEF7-C6C8-4221-A21C-7F6E4DB69D55}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05.GPUDriven0.2", "..\..\Samples\05.GPUDriven\GPUDriven.vcxproj", "{0D723D0A-81EC-458B-963B-AEAE044246AF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05.GPUDriven0.1", "..\..\Samples\05.GPUDriven\GPUDriven.vcxproj", "{0D723D0A-81EC-458B-963B-AEAE044246AF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{35BBC1C9-B035-492D-BED1-E952A99069BC} = {35BBC1C9-B035-492D-BED1-E952A99069BC}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06.GPUDriven0.2", "..\..\Samples\06.GPUDriven0.2\GPUDriven0.2.vcxproj", "{BF1C0BC7-C90B-4921-B98C-073A5BFB3401}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07.GTAO", "..\..\Samples\07.GTAO\GTAO.vcxproj", "{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +94,14 @@ Global
 		{BF1C0BC7-C90B-4921-B98C-073A5BFB3401}.Release|x64.Build.0 = Release|x64
 		{BF1C0BC7-C90B-4921-B98C-073A5BFB3401}.Release|x86.ActiveCfg = Release|Win32
 		{BF1C0BC7-C90B-4921-B98C-073A5BFB3401}.Release|x86.Build.0 = Release|Win32
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Debug|x64.ActiveCfg = Debug|x64
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Debug|x64.Build.0 = Debug|x64
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Debug|x86.ActiveCfg = Debug|Win32
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Debug|x86.Build.0 = Debug|Win32
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Release|x64.ActiveCfg = Release|x64
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Release|x64.Build.0 = Release|x64
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Release|x86.ActiveCfg = Release|Win32
+		{CF1EE43B-F0CC-4FA6-A239-FB7B174D68BC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
