@@ -22,7 +22,7 @@ int main()
 
 		// before tick and render
 		TEngine::Get()->AddTicker(ti_new TGPUDrivenTicker());
-		TEngine::Get()->AddRenderer(ti_new FGPUDrivenRenderer());
+		TEngine::Get()->AssignRenderer(ti_new FGPUDrivenRenderer());
 
 		// start tick and render
 

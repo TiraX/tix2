@@ -82,11 +82,11 @@ namespace tix
 	{
 	}
 
-	void FRenderThread::AddRenderer(FRenderer* Renderer)
+	void FRenderThread::AssignRenderer(FRenderer* InRenderer)
 	{
 		TI_ASSERT(IsRenderThread());
+		Renderer = InRenderer;
 		Renderer->InitInRenderThread();
-		Renderers.push_back(Renderer);
 	}
 
 	void FRenderThread::CreateRenderComponents()
@@ -112,12 +112,9 @@ namespace tix
 			DoRenderTasks();
 		}
 
-		// Release all renderers
-		for (auto Renderer : Renderers)
-		{
-			ti_delete Renderer;
-		}
-		Renderers.clear();
+		// Release renderer
+		TI_ASSERT(Renderer != nullptr);
+		ti_delete Renderer;
 
 		SAFE_DELETE(RenderScene);
 		SAFE_DELETE(VTSystem);
@@ -138,12 +135,9 @@ namespace tix
 		DoRenderTasks();
 
 		// Go through each renderer
-		for (auto Renderer : Renderers)
-		{
-			Renderer->InitRenderFrame(RenderScene);
-			Renderer->Render(RHI, RenderScene);
-			Renderer->EndRenderFrame(RenderScene);
-		}
+		Renderer->InitRenderFrame(RenderScene);
+		Renderer->Render(RHI, RenderScene);
+		Renderer->EndRenderFrame(RenderScene);
 		RHI->EndFrame();
         
 		++FrameNum;

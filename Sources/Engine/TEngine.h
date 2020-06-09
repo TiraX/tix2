@@ -54,8 +54,8 @@ namespace tix
 			return Scene;
 		}
 
-		TI_API void AddDefaultRenderer();
-		TI_API void AddRenderer(FRenderer* Renderer);
+		TI_API void UseDefaultRenderer();
+		TI_API void AssignRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);
 
         TI_API void LowMemoryWarning() {};

@@ -133,18 +133,18 @@ namespace tix
 		return Device;
 	}
 
-	void TEngine::AddDefaultRenderer()
+	void TEngine::UseDefaultRenderer()
 	{
 		FRenderer * Renderer = ti_new FDefaultRenderer;
-		AddRenderer(Renderer);
+		AssignRenderer(Renderer);
 	}
 
-	void TEngine::AddRenderer(FRenderer* Renderer)
+	void TEngine::AssignRenderer(FRenderer* Renderer)
 	{
 		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddRendererInRenderThread, 
 			FRenderer*, Renderer, Renderer,
 			{
-				FRenderThread::Get()->AddRenderer(Renderer);
+				FRenderThread::Get()->AssignRenderer(Renderer);
 			});
 	}
 

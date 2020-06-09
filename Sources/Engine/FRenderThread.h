@@ -158,7 +158,7 @@ namespace tix
 		virtual void OnThreadStart() override;
 		virtual void OnThreadEnd() override;
 
-		void AddRenderer(FRenderer* Renderer);
+		void AssignRenderer(FRenderer* InRenderer);
 
 		FScene* GetRenderScene()
 		{
@@ -200,7 +200,7 @@ namespace tix
 
 		// Render components
 		FRHI * RHI;
-		TVector<FRenderer*> Renderers;
+		FRenderer* Renderer;
 
 		FScene * RenderScene;
 		FVTSystem * VTSystem;
