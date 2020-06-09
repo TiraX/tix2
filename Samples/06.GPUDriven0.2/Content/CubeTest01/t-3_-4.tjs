@@ -1,0 +1,65 @@
+{
+	"name": "CubeTest01_t-3_-4",
+	"level": "CubeTest01",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ -3, -4 ],
+	"bbox": [ -33.5, -49.099998474121094, -1, -31.5, -47.099998474121094, 34.5 ],
+	"meshes_total": 1,
+	"mesh_sections_total": 1,
+	"instances_total": 7,
+	"texture_total": 0,
+	"dependency":
+	{
+		"textures": [],
+		"materials": [],
+		"material_instances": [],
+		"meshes": [
+			"Slums/Meshs/cube128.tasset"
+		]
+	},
+	"instances": [
+		{
+			"linked_mesh": "Slums/Meshs/cube128.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ -32.5, -48.099998474121094, 10.699999809265137 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 5.2999997138977051 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 33.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 28.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 23.100000381469727 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ -32.5, -48.099998474121094, 17.399999618530273 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		}
+	]
+}

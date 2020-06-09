@@ -1,0 +1,100 @@
+{
+	"name": "CubeTest01_t2_-2",
+	"level": "CubeTest01",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ 2, -2 ],
+	"bbox": [ 31.5, -19, -1, 38, -17, 34.5 ],
+	"meshes_total": 1,
+	"mesh_sections_total": 1,
+	"instances_total": 14,
+	"texture_total": 0,
+	"dependency":
+	{
+		"textures": [],
+		"materials": [],
+		"material_instances": [],
+		"meshes": [
+			"Slums/Meshs/Sphere.tasset"
+		]
+	},
+	"instances": [
+		{
+			"linked_mesh": "Slums/Meshs/Sphere.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 32.5, -18, 10.699999809265137 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 10.699999809265137 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 5.2999997138977051 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 5.2999997138977051 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 33.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 33.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 28.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 28.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 23.100000381469727 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 23.100000381469727 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 32.5, -18, 17.399999618530273 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				},
+				{
+					"position": [ 37, -18, 17.399999618530273 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 2, 2, 2 ]
+				}
+			]
+		}
+	]
+}
