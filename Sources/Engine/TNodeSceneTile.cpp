@@ -125,8 +125,6 @@ namespace tix
 								PrimitiveIndices.push_back(MeshSectionOffset + Section);
 							}
 
-							TI_TODO("REFACTOR static mesh, A mesh should include primitives, collisions, instances, occluders");
-
 							// Add static mesh to scene
 							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileStaticMeshToFScene,
 								FMeshBufferPtr, StaticMeshResource, StaticMesh->GetMeshBuffer()->MeshBufferResource,

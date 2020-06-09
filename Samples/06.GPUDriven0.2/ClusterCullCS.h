@@ -17,17 +17,15 @@ public:
 
 	void UpdataComputeParams(
 		FRHI * RHI,
-		const vector2di& InRTSize,
-		const vector3df& InViewDir,
-		const FMatrix& InViewProjection,
-		const SViewFrustum& InFrustum,
+		FUniformBufferPtr InViewFrustumUniform,
 		FUniformBufferPtr InCollectedCount,
 		FUniformBufferPtr InClusterBoundingData,
 		FInstanceBufferPtr InInstanceData, 
 		FGPUCommandBufferPtr InCommandBuffer,
 		FTexturePtr InHiZTexture,
 		FUniformBufferPtr InCollectedClusters,
-		FUniformBufferPtr InDispatchThreadCount
+		FUniformBufferPtr InDispatchThreadCount,
+		FUniformBufferPtr InCounterResetBuffer
 		);
 
 	FUniformBufferPtr GetVisibleClusters()
@@ -57,7 +55,7 @@ private:
 	FGPUCommandBufferPtr DispatchCommandBuffer;
 
 	// Compute params
-	FCullUniformPtr FrustumUniform;	// b0
+	FUniformBufferPtr ViewFrustumUniform;	// b0
 	FUniformBufferPtr CollectedCountUniform;	// b1
 
 	FUniformBufferPtr ClusterBoundingData;	// t0
@@ -69,7 +67,7 @@ private:
 	FUniformBufferPtr VisibleClusters;	// u0
 
 	FUniformBufferPtr DispatchThreadCount;
-	FUniformBufferPtr ResetCounterBuffer;
+	FUniformBufferPtr CounterResetBuffer;
 
 };
 typedef TI_INTRUSIVE_PTR(FClusterCullCS) FClusterCullCSPtr;

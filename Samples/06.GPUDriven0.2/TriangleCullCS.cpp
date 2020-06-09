@@ -21,8 +21,6 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
-	FrustumUniform = ti_new FCullUniform;
-
 	// Init GPU triangle cull command buffer signature
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
 	CommandStructure.resize(1);
@@ -36,22 +34,11 @@ void FTriangleCullCS::PrepareResources(FRHI * RHI)
 	TriangleCullingCB->SetResourceName("TriangleCullDispatchCB");
 	TriangleCullingCB->EncodeSetDispatch(0, 0, 1, 1, 1);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(TriangleCullingCB);
-
-	// Create Zero reset command buffer
-	TI_TODO("Create a unified ResetCounter buffer.");
-	ResetCounterBuffer = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_INTERMEDIATE);
-	uint8 * ZeroData = ti_new uint8[sizeof(uint32) * 4];
-	memset(ZeroData, 0, sizeof(uint32) * 4);
-	RHI->UpdateHardwareResourceUB(ResetCounterBuffer, ZeroData);
-	ti_delete[] ZeroData;
 }
 
 void FTriangleCullCS::UpdataComputeParams(
 	FRHI * RHI,
-	const vector2di& InRTSize,
-	const vector3df& InViewDir,
-	const FMatrix& InViewProjection,
-	const SViewFrustum& InFrustum,
+	FUniformBufferPtr InFrustumUniform,
 	FMeshBufferPtr InSceneMeshBuffer,
 	FInstanceBufferPtr InInstanceData,
 	FGPUCommandBufferPtr InCommandBuffer,
@@ -60,20 +47,7 @@ void FTriangleCullCS::UpdataComputeParams(
 	uint32 InTotalTrianglesInScene
 )
 {
-	TI_TODO("Pass in an unified Frustum Uniform, do NOT create everywhere");
-	// Create frustum uniform buffer
-	FrustumUniform->UniformBufferData[0].RTSize = FUInt4(InRTSize.X, InRTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
-	FrustumUniform->UniformBufferData[0].ViewDir = InViewDir;
-	FrustumUniform->UniformBufferData[0].ViewProjection = InViewProjection;
-	for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
-	{
-		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
-			InFrustum.Planes[i].Normal.X,
-			InFrustum.Planes[i].Normal.Y,
-			InFrustum.Planes[i].Normal.Z,
-			InFrustum.Planes[i].D);
-	}
-	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+	ViewFrustumUniform = InFrustumUniform;
 
 	if (MeshData != InSceneMeshBuffer)
 	{
@@ -136,7 +110,7 @@ void FTriangleCullCS::UpdataComputeParams(
 void FTriangleCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	if (FrustumUniform != nullptr)
+	if (ViewFrustumUniform != nullptr)
 	{
 		// Copy dispatch thread group count
 		RHI->SetResourceStateCB(TriangleCullingCB, RESOURCE_STATE_COPY_DEST);
@@ -151,12 +125,11 @@ void FTriangleCullCS::Run(FRHI * RHI)
 		RHI->SetResourceStateCB(OutDrawCommands, RESOURCE_STATE_UNORDERED_ACCESS);
 		
 		RHI->SetComputePipeline(ComputePipeline);
-		RHI->SetComputeConstantBuffer(0, FrustumUniform->UniformBuffer);
+		RHI->SetComputeConstantBuffer(0, ViewFrustumUniform);
 		//RHI->SetComputeConstantBuffer(1, CollectedCountUniform);
 		RHI->SetComputeResourceTable(1, ResourceTable);
 
-		TI_TODO("Find out what wrong with indirect compute dispatch");
-		//RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(1351, 1, 1));
+		// Indirect works correct, but wrong capture in RenderDoc
 		RHI->ExecuteGPUComputeCommands(TriangleCullingCB);
 	}
 }

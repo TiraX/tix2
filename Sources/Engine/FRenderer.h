@@ -22,6 +22,7 @@ namespace tix
 		virtual void EndRenderFrame(FScene* Scene) = 0;
 		virtual void Render(FRHI* RHI, FScene* Scene) = 0;
 
+		virtual FUniformBufferPtr GetCounterResetUniformBuffer() = 0;
 	protected:
 	};
 }

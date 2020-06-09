@@ -17,10 +17,7 @@ public:
 
 	void UpdataComputeParams(
 		FRHI * RHI,
-		const vector2di& InRTSize,
-		const vector3df& InViewDir,
-		const FMatrix& InViewProjection,
-		const SViewFrustum& InFrustum,
+		FUniformBufferPtr InFrustumUniform,
 		FMeshBufferPtr InSceneMeshBuffer,
 		FInstanceBufferPtr InInstanceData, 
 		FGPUCommandBufferPtr InCommandBuffer,
@@ -62,7 +59,7 @@ private:
 	FGPUCommandBufferPtr TriangleCullingCB;
 
 	// Compute params
-	FCullUniformPtr FrustumUniform;	// b0
+	FUniformBufferPtr ViewFrustumUniform;	// b0
 
 	FMeshBufferPtr MeshData;	// t0 t1
 	FInstanceBufferPtr InstanceData;	// t2
@@ -73,7 +70,6 @@ private:
 	FUniformBufferPtr VisibleTriangleIndices;	// u0
 	FGPUCommandBufferPtr OutDrawCommands;	// u1
 
-	FUniformBufferPtr ResetCounterBuffer;
 	FGPUCommandBufferPtr EmptyCommandBuffer;
 
 };

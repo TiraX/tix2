@@ -21,8 +21,6 @@ void FClusterCullCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
-	FrustumUniform = ti_new FCullUniform;
-
 	// Init GPU dispatch command buffer signature
 	TVector<E_GPU_COMMAND_TYPE> CommandStructure;
 	CommandStructure.resize(1);
@@ -35,44 +33,24 @@ void FClusterCullCS::PrepareResources(FRHI * RHI)
 	DispatchCommandBuffer->SetResourceName("ClusterCullDispatchCB");
 	DispatchCommandBuffer->EncodeSetDispatch(0, 0, 1, 1, 1);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(DispatchCommandBuffer);
-
-	// Create Zero reset command buffer
-	ResetCounterBuffer = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_INTERMEDIATE);
-	uint8 * ZeroData = ti_new uint8[sizeof(uint32) * 4];
-	memset(ZeroData, 0, sizeof(uint32) * 4);
-	RHI->UpdateHardwareResourceUB(ResetCounterBuffer, ZeroData);
-	ti_delete[] ZeroData;
 }
 
 void FClusterCullCS::UpdataComputeParams(
 	FRHI * RHI,
-	const vector2di& InRTSize,
-	const vector3df& InViewDir,
-	const FMatrix& InViewProjection,
-	const SViewFrustum& InFrustum,
+	FUniformBufferPtr InViewFrustumUniform,
 	FUniformBufferPtr InCollectedCount,
 	FUniformBufferPtr InClusterBoundingData,
 	FInstanceBufferPtr InInstanceData,
 	FGPUCommandBufferPtr InDrawCommandBuffer,
 	FTexturePtr InHiZTexture,
 	FUniformBufferPtr InCollectedClusters,
-	FUniformBufferPtr InDispatchThreadCount
+	FUniformBufferPtr InDispatchThreadCount,
+	FUniformBufferPtr InCounterResetBuffer
 )
 {
 	CollectedCountUniform = InCollectedCount;
-
-	FrustumUniform->UniformBufferData[0].RTSize = FUInt4(InRTSize.X, InRTSize.Y, FHiZDownSampleCS::HiZLevels, 0);
-	FrustumUniform->UniformBufferData[0].ViewDir = InViewDir;
-	FrustumUniform->UniformBufferData[0].ViewProjection = InViewProjection;
-	for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
-	{
-		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
-			InFrustum.Planes[i].Normal.X,
-			InFrustum.Planes[i].Normal.Y,
-			InFrustum.Planes[i].Normal.Z,
-			InFrustum.Planes[i].D);
-	}
-	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+	ViewFrustumUniform = InViewFrustumUniform;
+	CounterResetBuffer = InCounterResetBuffer;
 
 	if (ClusterBoundingData != InClusterBoundingData)
 	{
@@ -117,7 +95,7 @@ void FClusterCullCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 
-	if (FrustumUniform != nullptr)
+	if (ViewFrustumUniform != nullptr)
 	{
 		// Copy dispatch thread group count
 		RHI->SetResourceStateCB(DispatchCommandBuffer, RESOURCE_STATE_COPY_DEST);
@@ -127,10 +105,10 @@ void FClusterCullCS::Run(FRHI * RHI)
 
 		// Reset visible cluster counter
 		RHI->SetResourceStateUB(VisibleClusters, RESOURCE_STATE_COPY_DEST);
-		RHI->CopyBufferRegion(VisibleClusters, VisibleClusters->GetCounterOffset(), ResetCounterBuffer, sizeof(uint32));
+		RHI->CopyBufferRegion(VisibleClusters, VisibleClusters->GetCounterOffset(), CounterResetBuffer, sizeof(uint32));
 
 		RHI->SetComputePipeline(ComputePipeline);
-		RHI->SetComputeConstantBuffer(0, FrustumUniform->UniformBuffer);
+		RHI->SetComputeConstantBuffer(0, ViewFrustumUniform);
 		RHI->SetComputeConstantBuffer(1, CollectedCountUniform);
 		RHI->SetComputeResourceTable(2, ResourceTable);
 

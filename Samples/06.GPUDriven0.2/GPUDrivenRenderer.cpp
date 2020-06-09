@@ -34,6 +34,8 @@ void FGPUDrivenRenderer::InitRenderFrame(FScene* Scene)
 
 void FGPUDrivenRenderer::InitInRenderThread()
 {
+	FDefaultRenderer::InitInRenderThread();
+
 	FRHI * RHI = FRHI::Get();
 	FSRender.InitCommonResources(RHI);
 
@@ -102,7 +104,8 @@ void FGPUDrivenRenderer::InitInRenderThread()
 	RHI->UpdateHardwareResourceGPUCommandSig(GPUOccludeCommandSignature);
 
 	// Create frustum uniform buffer
-	FrustumUniform = ti_new FCameraFrustumUniform;
+	CameraFrustumUniform = ti_new FCameraFrustumUniform;
+	ViewFrustumUniform = ti_new FViewFrustumUniform;
 
 	// Prepare compute cull tasks
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
@@ -136,17 +139,17 @@ void FGPUDrivenRenderer::InitInRenderThread()
 void FGPUDrivenRenderer::UpdateFrustumUniform(const SViewFrustum& InFrustum)
 {
 	Frustum = InFrustum;
-	FrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(InFrustum.BoundingBox.MinEdge.X, InFrustum.BoundingBox.MinEdge.Y, InFrustum.BoundingBox.MinEdge.Z, 1.f);
-	FrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(InFrustum.BoundingBox.MaxEdge.X, InFrustum.BoundingBox.MaxEdge.Y, InFrustum.BoundingBox.MaxEdge.Z, 1.f);
+	CameraFrustumUniform->UniformBufferData[0].BBoxMin = FFloat4(InFrustum.BoundingBox.MinEdge.X, InFrustum.BoundingBox.MinEdge.Y, InFrustum.BoundingBox.MinEdge.Z, 1.f);
+	CameraFrustumUniform->UniformBufferData[0].BBoxMax = FFloat4(InFrustum.BoundingBox.MaxEdge.X, InFrustum.BoundingBox.MaxEdge.Y, InFrustum.BoundingBox.MaxEdge.Z, 1.f);
 	for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
 	{
-		FrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
+		CameraFrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
 			InFrustum.Planes[i].Normal.X,
 			InFrustum.Planes[i].Normal.Y,
 			InFrustum.Planes[i].Normal.Z,
 			InFrustum.Planes[i].D);
 	}
-	FrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+	CameraFrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FGPUDrivenRenderer::TestDrawSceneIndirectCommandBuffer(
@@ -197,9 +200,23 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Prepare compute parameters
 	if (bGPUCull)
 	{
+		// Create view frustum uniform buffer
+		ViewFrustumUniform->UniformBufferData[0].RTSize = FUInt4(RHI->GetViewport().Width, RHI->GetViewport().Height, FHiZDownSampleCS::HiZLevels, 0);
+		ViewFrustumUniform->UniformBufferData[0].ViewDir = ViewProjection.CamDir;
+		ViewFrustumUniform->UniformBufferData[0].ViewProjection = MatVP;
+		for (int32 i = SViewFrustum::VF_FAR_PLANE; i < SViewFrustum::VF_PLANE_COUNT; ++i)
+		{
+			ViewFrustumUniform->UniformBufferData[0].Planes[i] = FFloat4(
+				Frustum.Planes[i].Normal.X,
+				Frustum.Planes[i].Normal.Y,
+				Frustum.Planes[i].Normal.Z,
+				Frustum.Planes[i].D);
+		}
+		ViewFrustumUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+
 		InstanceFrustumCullCS->UpdataComputeParams(
 			RHI,
-			FrustumUniform->UniformBuffer,
+			CameraFrustumUniform->UniformBuffer,
 			SceneMetaInfo->GetSceneMeshBBoxesUniform()->UniformBuffer,
 			SceneMetaInfo->GetInstanceMetaInfoUniform()->UniformBuffer,
 			SceneMetaInfo->GetMergedInstanceBuffer(),
@@ -215,25 +232,20 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		ClusterCullCS->UpdataComputeParams(
 			RHI,
-			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
-			ViewProjection.CamDir,
-			MatVP,
-			Frustum,
+			ViewFrustumUniform->UniformBuffer,
 			InstanceFrustumCullCS->GetCollectedClustersCount(),
 			SceneMetaInfo->GetMergedClusterMetaInfo(),
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			SceneMetaInfo->GetGPUCommandBuffer(),
 			HiZTexture,
 			InstanceFrustumCullCS->GetCollectedClusters(),
-			ClusterDispatchCmdCS->GetDispatchThreadCount()
+			ClusterDispatchCmdCS->GetDispatchThreadCount(),
+			GetCounterResetUniformBuffer()
 		);
 
 		TriangleCullCS->UpdataComputeParams(
 			RHI,
-			vector2di(RHI->GetViewport().Width, RHI->GetViewport().Height),
-			ViewProjection.CamDir,
-			MatVP,
-			Frustum,
+			ViewFrustumUniform->UniformBuffer,
 			SceneMetaInfo->GetMergedSceneMeshBuffer(),
 			SceneMetaInfo->GetMergedInstanceBuffer(),
 			SceneMetaInfo->GetGPUCommandBuffer(),
@@ -242,7 +254,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 			SceneMetaInfo->GetTotalTrianglesInScene()
 		);
 
-		CompactDCCS->UpdataComputeParams(RHI, TriangleCullCS->GetCulledDrawCommands());
+		CompactDCCS->UpdataComputeParams(RHI, TriangleCullCS->GetCulledDrawCommands(), GetCounterResetUniformBuffer());
 	}
 
 	// Frustum cull instances before preZ

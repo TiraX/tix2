@@ -5,6 +5,7 @@
 
 #pragma once
 #include "SceneMetaInfos.h"
+#include "ComputeUniforms.h"
 #include "HiZDownSampleCS.h"
 #include "InstanceFrustumCullCS.h"
 #include "ComputeDispatchCmd.h"
@@ -59,8 +60,9 @@ private:
 	FGPUCommandBufferPtr ProcessedPreZGPUCommandBuffer;
 
 	SViewFrustum Frustum;
-	FCameraFrustumUniformPtr FrustumUniform;
+	FCameraFrustumUniformPtr CameraFrustumUniform;
 	FOcclusionInfoPtr OcclusionInfo;
+	FViewFrustumUniformPtr ViewFrustumUniform;
 
 	// Compute Tasks
 	FInstanceFrustumCullCSPtr InstanceFrustumCullCS;

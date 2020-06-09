@@ -24,11 +24,19 @@ namespace tix
 
 		virtual void ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive);
 		virtual void ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer);
+
+		virtual FUniformBufferPtr GetCounterResetUniformBuffer() override
+		{
+			return CounterResetUniformBuffer;
+		}
+
 	protected:
 		void RenderDrawList(FRHI* RHI, FScene* Scene, E_DRAWLIST_TYPE ListType);
 		void BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
 		void BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer);
 
 	protected:
+		// Common Resources
+		FUniformBufferPtr CounterResetUniformBuffer;
 	};
 }

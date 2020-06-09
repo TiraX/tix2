@@ -20,21 +20,15 @@ FCompactDrawCommandsCS::~FCompactDrawCommandsCS()
 void FCompactDrawCommandsCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
-
-	// Create Zero reset command buffer
-	TI_TODO("Create a unified ResetCounter buffer.");
-	ResetCounterBuffer = RHI->CreateUniformBuffer(sizeof(uint32) * 4, 1, UB_FLAG_INTERMEDIATE);
-	uint8 * ZeroData = ti_new uint8[sizeof(uint32) * 4];
-	memset(ZeroData, 0, sizeof(uint32) * 4);
-	RHI->UpdateHardwareResourceUB(ResetCounterBuffer, ZeroData);
-	ti_delete[] ZeroData;
 }
 
 void FCompactDrawCommandsCS::UpdataComputeParams(
 	FRHI * RHI,
-	FGPUCommandBufferPtr InCommandBuffer
+	FGPUCommandBufferPtr InCommandBuffer,
+	FUniformBufferPtr InCounterResetBuffer
 )
 {
+	CounterResetBuffer = InCounterResetBuffer;
 	if (DrawCommandBuffer != InCommandBuffer)
 	{
 		ResourceTable->PutUniformBufferInTable(InCommandBuffer->GetCommandBuffer(), SRV_DRAW_COMMANDS);
@@ -68,7 +62,7 @@ void FCompactDrawCommandsCS::Run(FRHI * RHI)
 
 		// Reset output draw commands
 		RHI->SetResourceStateCB(CompactDrawCommands, RESOURCE_STATE_COPY_DEST);
-		RHI->CopyBufferRegion(CompactDrawCommands->GetCommandBuffer(), CompactDrawCommands->GetCommandBuffer()->GetCounterOffset(), ResetCounterBuffer, sizeof(uint32));
+		RHI->CopyBufferRegion(CompactDrawCommands->GetCommandBuffer(), CompactDrawCommands->GetCommandBuffer()->GetCounterOffset(), CounterResetBuffer, sizeof(uint32));
 		RHI->SetResourceStateCB(CompactDrawCommands, RESOURCE_STATE_UNORDERED_ACCESS);
 		
 		RHI->SetComputePipeline(ComputePipeline);

@@ -17,7 +17,8 @@ public:
 
 	void UpdataComputeParams(
 		FRHI * RHI,
-		FGPUCommandBufferPtr InCommandBuffer
+		FGPUCommandBufferPtr InCommandBuffer,
+		FUniformBufferPtr InCounterResetBuffer
 		);
 
 	FGPUCommandBufferPtr GetCompactDrawCommands()
@@ -43,7 +44,7 @@ private:
 
 	FGPUCommandBufferPtr CompactDrawCommands;	// u0
 
-	FUniformBufferPtr ResetCounterBuffer;
+	FUniformBufferPtr CounterResetBuffer;
 
 };
 typedef TI_INTRUSIVE_PTR(FCompactDrawCommandsCS) FCompactDrawCommandsCSPtr;
