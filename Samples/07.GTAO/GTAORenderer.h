@@ -18,6 +18,7 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
+	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 private:
 	FArgumentBufferPtr AB_Result;

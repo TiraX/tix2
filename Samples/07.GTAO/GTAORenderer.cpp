@@ -54,9 +54,39 @@ void FGTAORenderer::InitInRenderThread()
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 }
 
+void FGTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
+{
+	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+	for (auto& TileIter : SceneTileResources)
+	{
+		const vector2di& TilePos = TileIter.first;
+		FSceneTileResourcePtr TileRes = TileIter.second;
+
+		const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+		for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
+		{
+			FPrimitivePtr Primitive = TilePrimitives[PIndex];
+
+			if (Primitive != nullptr)
+			{
+				FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
+				RHI->SetGraphicsPipeline(Primitive->GetPipeline());
+				RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
+				ApplyShaderParameter(RHI, Scene, Primitive);
+
+				RHI->DrawPrimitiveIndexedInstanced(
+					Primitive->GetMeshBuffer(),
+					InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
+					Primitive->GetInstanceOffset());
+			}
+		}
+	}
+}
+
 void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+	DrawSceneTiles(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

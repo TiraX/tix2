@@ -31,12 +31,6 @@ void TGTAOTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
-	// PreLoad depth only material first
-	const TString DepthOnlyMaterial = "M_DepthOnly.tasset";
-	const TString DepthOnlyMaterialInstance = "DepthOnlyMaterial.tasset";
-	TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterial);
-	TAssetLibrary::Get()->LoadAsset(DepthOnlyMaterialInstance);
-
 	// Load scene
 	const TString TargetSceneAsset = "CubeTest01.tasset";
 	//const TString TargetSceneAsset = "Slum01.tasset";

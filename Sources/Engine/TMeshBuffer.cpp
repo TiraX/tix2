@@ -203,7 +203,8 @@ namespace tix
 		InstanceResource = FRHI::Get()->CreateInstanceBuffer();
 		// Set Instance Resource Usage to USAGE_COPY_SOURCE, 
 		// as GPU Driven pipeline need to copy these instance buffer into a merged instance buffer
-		InstanceResource->SetUsage(FRenderResource::USAGE_COPY_SOURCE);
+		TI_TODO("Add gpu driven CVAR to check here.");
+		//InstanceResource->SetUsage(FRenderResource::USAGE_COPY_SOURCE);
 
 		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TInstanceBufferUpdateFInstanceBuffer,
 			FInstanceBufferPtr, InstanceBuffer, InstanceResource,

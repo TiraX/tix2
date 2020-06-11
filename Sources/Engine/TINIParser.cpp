@@ -11,6 +11,7 @@ namespace tix
 	TINIParser::TINIParser(const TString& IniFilename)
 		: FileName(IniFilename)
 	{
+		TI_TODO("Use a third party INI parser.");
 	}
 
 	TINIParser::~TINIParser()
