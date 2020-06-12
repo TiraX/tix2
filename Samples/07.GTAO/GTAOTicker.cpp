@@ -32,7 +32,7 @@ void TGTAOTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
 	// Load scene
-	const TString TargetSceneAsset = "CubeTest01.tasset";
+	const TString TargetSceneAsset = "Room.tasset";
 	//const TString TargetSceneAsset = "Slum01.tasset";
 	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }
