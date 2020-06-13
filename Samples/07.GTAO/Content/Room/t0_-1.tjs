@@ -1,0 +1,425 @@
+{
+	"name": "Room_t0_-1",
+	"level": "Room",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ 0, -1 ],
+	"bbox": [ -20, -4.889826774597168, -12, 20, 19.939998626708984, 23 ],
+	"meshes_total": 26,
+	"mesh_sections_total": 29,
+	"instances_total": 44,
+	"texture_total": 0,
+	"dependency":
+	{
+		"textures": [],
+		"materials": [],
+		"material_instances": [],
+		"meshes": [
+			"ArchVis/Mesh/SM_WallPiece5.tasset",
+			"ArchVis/Mesh/SM_FloorPiece.tasset",
+			"ArchVis/Mesh/Wire1.tasset",
+			"ArchVis/Mesh/BookLP.tasset",
+			"ArchVis/Mesh/SM_Carpet.tasset",
+			"ArchVis/Mesh/SM_Couch.tasset",
+			"ArchVis/Mesh/SM_WallPiece1.tasset",
+			"ArchVis/Mesh/SM_WallPiece2.tasset",
+			"ArchVis/Mesh/SM_WallPiece3.tasset",
+			"ArchVis/Mesh/SM_WallPiece4.tasset",
+			"ArchVis/Mesh/Mug.tasset",
+			"ArchVis/Mesh/Plug.tasset",
+			"ArchVis/Mesh/S_Trim_Floor.tasset",
+			"ArchVis/Mesh/SM_SlidingDoors.tasset",
+			"ArchVis/Mesh/SM_Balcony.tasset",
+			"ArchVis/Mesh/SM_BlackBox_Hole.tasset",
+			"ArchVis/Mesh/SM_Curtain.tasset",
+			"ArchVis/Mesh/SM_FloorLamp.tasset",
+			"ArchVis/Mesh/SM_Frame_1.tasset",
+			"ArchVis/Mesh/SM_Railing.tasset",
+			"ArchVis/Mesh/SM_Room_OuterShell.tasset",
+			"ArchVis/Mesh/SM_RoundCeilingLight.tasset",
+			"ArchVis/Mesh/SM_Shelving.tasset",
+			"ArchVis/Mesh/SM_Socket.tasset",
+			"ArchVis/Mesh/SM_Vase_1.tasset",
+			"ArchVis/Mesh/Statue.tasset"
+		]
+	},
+	"instances": [
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_WallPiece5.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_FloorPiece.tasset",
+			"mesh_sections": 2,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/Wire1.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/BookLP.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.2530505657196045, -1.5668724775314331, 0.42346179485321045 ],
+					"rotation": [ 0, -0, -0.99518477916717529, 0.09801715612411499 ],
+					"scale": [ 0.81964099407196045, 0.81964099407196045, 0.81964099407196045 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Carpet.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.2000003457069397, -7.3969363256765064e-07, 0.0038346864748746157 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Couch.tasset",
+			"mesh_sections": 2,
+			"instances": [
+				{
+					"position": [ 1.8499999046325684, -0.049999985843896866, 9.5367429508996793e-09 ],
+					"rotation": [ 0, 0, 0.019432362169027328, 0.99981117248535156 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_WallPiece1.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_WallPiece2.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_WallPiece3.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_WallPiece4.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/Mug.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.015352139249444008, -0.56195098161697388, 0.46273475885391235 ],
+					"rotation": [ 0, -0, -0.45999398827552795, 0.88792204856872559 ],
+					"scale": [ 0.75, 0.75, 0.75 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/Plug.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.993558406829834, -1.8304958343505859, 0.17499557137489319 ],
+					"rotation": [ 0, -0, -0.70710641145706177, 0.70710712671279907 ],
+					"scale": [ -1, 1, 1 ]
+				},
+				{
+					"position": [ 1.993558406829834, -1.8304958343505859, 0.20556147396564484 ],
+					"rotation": [ 0, -0, -0.70710641145706177, 0.70710712671279907 ],
+					"scale": [ -1, 1, 1 ]
+				},
+				{
+					"position": [ 1.993558406829834, -1.8304958343505859, 0.20556147396564484 ],
+					"rotation": [ 0, -0, -0.70710641145706177, 0.70710712671279907 ],
+					"scale": [ -1, 1, 1 ]
+				},
+				{
+					"position": [ 1.993558406829834, -1.8304958343505859, 0.17499557137489319 ],
+					"rotation": [ 0, -0, -0.70710641145706177, 0.70710712671279907 ],
+					"scale": [ -1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/S_Trim_Floor.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1.5 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_SlidingDoors.tasset",
+			"mesh_sections": 2,
+			"instances": [
+				{
+					"position": [ 0.25, -3.2100000381469727, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Balcony.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.239999920129776, -3.309999942779541, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 0.239999920129776, -3.309999942779541, 2.7999997138977051 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 2.8899996280670166, -3.309999942779541, 2.7999997138977051 ],
+					"rotation": [ -5.5396947118424578e-07, -0.70710676908493042, -5.5396952802766464e-07, 0.70710670948028564 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_BlackBox_Hole.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.30999994277954102, -3.1499996185302734, 1.3500000238418579 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Curtain.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.9799998998641968, -2.869999885559082, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 0.92212873697280884, 1, 1 ]
+				},
+				{
+					"position": [ 1.7699999809265137, -2.9800000190734863, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 0.50964993238449097, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_FloorLamp.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.589999794960022, -2.4700000286102295, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Frame_1.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.9900000095367432, -0.56000000238418579, 1.3700000047683716 ],
+					"rotation": [ -4.9069058150053024e-07, -0.0037713793572038412, 0.70708638429641724, 0.70711719989776611 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 1.9900000095367432, -1.5499999523162842, 1.3700000047683716 ],
+					"rotation": [ -0.0037712955381721258, -4.5984052121639252e-07, 0.70709633827209473, 0.70710718631744385 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Railing.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.29999923706054688, -4.809999942779541, 0 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 1.5999997854232788, -4.809999942779541, 0 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 4.1999988555908203, -4.809999942779541, 0 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 5.4999990463256836, -4.809999942779541, 0 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 2.9000005722045898, -4.8100004196166992, 0 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 0.29999923706054688, -4.809999942779541, 2.8799996376037598 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 1.5999997854232788, -4.809999942779541, 2.8799996376037598 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 4.1999988555908203, -4.809999942779541, 2.8799996376037598 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 5.4999990463256836, -4.809999942779541, 2.8799996376037598 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				},
+				{
+					"position": [ 2.9000005722045898, -4.8100004196166992, 2.8799996376037598 ],
+					"rotation": [ 0, 0, 1, 3.5762786865234375e-07 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Room_OuterShell.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, -0.059999994933605194, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_RoundCeilingLight.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.6699998378753662, -1.1999999284744263, 3 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 0.75, 0.75, 0.75 ]
+				},
+				{
+					"position": [ 1.6699998378753662, -0.17000007629394531, 3 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 0.75, 0.75, 0.75 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Shelving.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.5699999332427979, -1.429999828338623, -1.1199997663497925 ],
+					"rotation": [ 0, 0, 8.7266457171608636e-08, 1 ],
+					"scale": [ 1, 1.2073478698730469, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Socket.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 2, -1.8299998044967651, 0.14000000059604645 ],
+					"rotation": [ 0, 0, 0.70710653066635132, 0.7071070671081543 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/SM_Vase_1.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.10999996215105057, -0.24999995529651642, 0.45999997854232788 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 0.71615701913833618, 0.71615701913833618, 0.71615701913833618 ]
+				},
+				{
+					"position": [ 0.049999959766864777, -0.38999995589256287, 0.45999997854232788 ],
+					"rotation": [ 0, -0, -0.6895405650138855, 0.72424709796905518 ],
+					"scale": [ 0.51551467180252075, 0.51551467180252075, 0.51551467180252075 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "ArchVis/Mesh/Statue.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 1.559999942779541, -1.4299999475479126, 0.41999998688697815 ],
+					"rotation": [ 0, 0, 0.93299287557601929, 0.35989475250244141 ],
+					"scale": [ 0.73129302263259888, 0.73129302263259888, 0.73129302263259888 ]
+				}
+			]
+		}
+	]
+}
