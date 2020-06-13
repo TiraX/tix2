@@ -22,6 +22,9 @@
     <ClCompile Include="GTAOTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HBAOCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,5 +36,13 @@
     <ClInclude Include="GTAOTicker.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="HBAOCS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_HBAOCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

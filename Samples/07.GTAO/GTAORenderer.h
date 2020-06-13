@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "HBAOCS.h"
 
 class FGTAORenderer : public FDefaultRenderer
 {
@@ -25,4 +26,7 @@ private:
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	// AO Compute Shader
+	FHBAOCSCSPtr HBAOCompute;
 };
