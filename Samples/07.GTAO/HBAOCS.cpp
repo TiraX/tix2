@@ -24,11 +24,6 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 	InfoUniform->UniformBufferData[0].ScreenSize = FFloat4(float(RTW), float(RTH), 1.f / RTW, 1.f / RTH);
 
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
-	const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
-	
-	float FocalLenX = 1.f / tanf(VPInfo.Fov * 0.5f) *  (float)RTH / (float)RTW;
-	float FocalLenY = 1.f / tanf(VPInfo.Fov * 0.5f);
-	InfoUniform->UniformBufferData[0].InvFocalLen = FFloat4(1.f / FocalLenX, 1.f / FocalLenY, 0, 0);
 
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
@@ -51,11 +46,19 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 
 void FHBAOCS::UpdataComputeParams(
 	FRHI * RHI,
+	float Fov,
 	const vector3df& ViewDir,
 	FTexturePtr InSceneTexture,
 	FTexturePtr InSceneDepth
 )
 {
+	int32 RTW = RHI->GetViewport().Width;
+	int32 RTH = RHI->GetViewport().Height;
+
+	float FocalLenX = 1.f / tanf(Fov * 0.5f) *  (float)RTH / (float)RTW;
+	float FocalLenY = 1.f / tanf(Fov * 0.5f);
+	InfoUniform->UniformBufferData[0].InvFocalLen = FFloat4(1.f / FocalLenX, 1.f / FocalLenY, 0, 0);
+
 	InfoUniform->UniformBufferData[0].ViewDir = FFloat4(ViewDir.X, ViewDir.Y, ViewDir.Z, 1.f);
 	InfoUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 

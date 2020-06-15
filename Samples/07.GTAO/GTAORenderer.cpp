@@ -93,7 +93,8 @@ void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	DrawSceneTiles(RHI, Scene);
 
 	HBAOCompute->UpdataComputeParams(
-		RHI, 
+		RHI,
+		Scene->GetViewProjection().Fov,
 		Scene->GetViewProjection().CamDir,
 		RT_BasePass->GetColorBuffer(0).Texture, 
 		RT_BasePass->GetDepthStencilBuffer().Texture);

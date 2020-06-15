@@ -22,6 +22,7 @@ public:
 
 	void UpdataComputeParams(
 		FRHI * RHI,
+		float Fov,
 		const vector3df& ViewDir,
 		FTexturePtr InSceneTexture,
 		FTexturePtr InSceneDepth
