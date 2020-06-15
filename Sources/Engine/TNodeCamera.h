@@ -15,6 +15,7 @@ namespace tix
 		vector3df CamDir;
 		vector3df HorVector;
 		vector3df VerVector;
+		float Fov;
 	};
 
 	class TNodeCamera : public TNode

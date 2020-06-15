@@ -64,6 +64,7 @@ namespace tix
 			Info.CamDir = CamDir;
 			Info.HorVector = HorVector;
 			Info.VerVector = VerVector;
+			Info.Fov = Fovy;
 
 			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateViewProjectionRenderThread,
 				FViewProjectionInfo, ViewProjectionInfo, Info,

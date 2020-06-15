@@ -52,6 +52,10 @@ void FGTAORenderer::InitInRenderThread()
 	TResourcePtr DebugMaterialResource = DebugMaterialAsset->GetResourcePtr();
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
+
+	HBAOCompute = ti_new FHBAOCS();
+	HBAOCompute->Finalize();
+	HBAOCompute->PrepareResources(RHI);
 }
 
 void FGTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -87,6 +91,20 @@ void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
 	DrawSceneTiles(RHI, Scene);
+
+	HBAOCompute->UpdataComputeParams(
+		RHI, 
+		Scene->GetViewProjection().CamDir,
+		RT_BasePass->GetColorBuffer(0).Texture, 
+		RT_BasePass->GetDepthStencilBuffer().Texture);
+
+	RHI->BeginComputeTask();
+	{
+		RHI->BeginEvent("HBAO");
+		HBAOCompute->Run(RHI);
+		RHI->EndEvent();
+	}
+	RHI->EndComputeTask();
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

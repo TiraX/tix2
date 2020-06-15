@@ -5,6 +5,12 @@
 
 #pragma once
 
+BEGIN_UNIFORM_BUFFER_STRUCT(FHBAOUniform)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ScreenSize)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, InvFocalLen)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ViewDir)
+END_UNIFORM_BUFFER_STRUCT(FHBAOUniform)
+
 class FHBAOCS : public FComputeTask
 {
 public:
@@ -15,26 +21,32 @@ public:
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdataComputeParams(
-		FRHI * RHI
+		FRHI * RHI,
+		const vector3df& ViewDir,
+		FTexturePtr InSceneTexture,
+		FTexturePtr InSceneDepth
 		);
 
 private:
 	enum
 	{
-		SRV_CLUSTER_BOUNDING_DATA,
-		SRV_INSTANCE_DATA,
-		SRV_DRAW_COMMANDS,
-		SRV_HIZ_TEXTURE,
-		SRV_COLLECTED_CLUSTERS,
+		SRV_SCENE_NORMAL,
+		SRV_SCENE_DEPTH,
 
-		UAV_VISIBLE_CLUSTERS,
+		UAV_AO_RESULT,
 
 		PARAM_TOTAL_COUNT,
 	};
 
 private:
-	FRenderResourceTablePtr ResourceTable;
+	FHBAOUniformPtr InfoUniform;
 
+	FRenderResourceTablePtr ResourceTable;
+	
+	FTexturePtr SceneNormal;
+	FTexturePtr SceneDepth;
+
+	FTexturePtr AOTexture;
 
 };
 typedef TI_INTRUSIVE_PTR(FHBAOCS) FHBAOCSCSPtr;
