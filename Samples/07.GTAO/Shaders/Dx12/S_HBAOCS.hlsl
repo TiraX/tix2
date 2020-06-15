@@ -77,7 +77,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         [unroll]
         for (int s = 0; s < MAX_STEPS; ++s)
         {
-            float2 UV = (PixelCenter + Dir * STEP_LENGTH) * ScreenSize.zw;
+            float2 UV = (PixelCenter + Dir * STEP_LENGTH * s) * ScreenSize.zw;
             float Depth = SceneDepth.SampleLevel(PointSampler, UV, 0);
 
 			if (Depth > MaxDepth)
