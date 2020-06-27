@@ -8,6 +8,75 @@
 namespace tix
 {
 	template < typename T >
+	class FVec2
+	{
+	public:
+		FVec2()
+			: X(0.f)
+			, Y(0.f)
+		{}
+
+		FVec2(T InX, T InY)
+			: X(InX)
+			, Y(InY)
+		{}
+
+		~FVec2()
+		{}
+
+		FVec2& operator = (const vector2d<T>& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+
+			return *this;
+		}
+
+		FVec2& operator = (const vector3d<T>& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+
+			return *this;
+		}
+
+		FVec2& operator = (const vector4d<T>& Other)
+		{
+			X = Other.X;
+			Y = Other.Y;
+
+			return *this;
+		}
+
+		T* getDataPtr()
+		{
+			return reinterpret_cast<T*>(this);
+		}
+
+		const T* getDataPtr() const
+		{
+			return reinterpret_cast<const float*>(this);
+		}
+
+		T& operator [] (uint32 i)
+		{
+			TI_ASSERT(i < 2);
+			return getDataPtr()[i];
+		}
+
+		const T& operator [] (uint32 i) const
+		{
+			TI_ASSERT(i < 2);
+			return getDataPtr()[i];
+		}
+	public:
+		T X, Y;
+	};
+
+	typedef FVec2<float> FFloat2;
+	typedef FVec2<half> FHalf2;
+
+	template < typename T >
 	class FVec4
 	{
 	public:

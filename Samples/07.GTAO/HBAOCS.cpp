@@ -8,6 +8,7 @@
 
 FHBAOCS::FHBAOCS()
 	: FComputeTask("S_HBAOCS")
+	, FoV(0.f)
 {
 }
 
@@ -22,6 +23,15 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 
 	InfoUniform = ti_new FHBAOUniform;
 	InfoUniform->UniformBufferData[0].ScreenSize = FFloat4(float(RTW), float(RTH), 1.f / RTW, 1.f / RTH);
+	const float R = 0.08f;
+	InfoUniform->UniformBufferData[0].Radius = FFloat4(R, R * R, 1.f / R, 1.f);
+	
+	//float Inc = 2.0f * PI / (float)MAX_DIR;
+	//for (int i = 0; i < MAX_DIR; i ++)
+	//{
+	//	float Angle = Inc * i;
+	//	InfoUniform->UniformBufferData[0].Dirs[i] = FFloat2(cos(Angle), sin(Angle));
+	//}
 
 	FScene * Scene = FRenderThread::Get()->GetRenderScene();
 
@@ -46,21 +56,23 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 
 void FHBAOCS::UpdataComputeParams(
 	FRHI * RHI,
-	float Fov,
-	const vector3df& ViewDir,
+	float InFov,
 	FTexturePtr InSceneTexture,
 	FTexturePtr InSceneDepth
 )
 {
-	int32 RTW = RHI->GetViewport().Width;
-	int32 RTH = RHI->GetViewport().Height;
+	if (InFov != FoV)
+	{
+		FoV = InFov;
+		int32 RTW = RHI->GetViewport().Width;
+		int32 RTH = RHI->GetViewport().Height;
 
-	float FocalLenX = 1.f / tanf(Fov * 0.5f) *  (float)RTH / (float)RTW;
-	float FocalLenY = 1.f / tanf(Fov * 0.5f);
-	InfoUniform->UniformBufferData[0].InvFocalLen = FFloat4(1.f / FocalLenX, 1.f / FocalLenY, 0, 0);
+		float FocalLenX = 1.f / tanf(InFov * 0.5f) * (float)RTH / (float)RTW;
+		float FocalLenY = 1.f / tanf(InFov * 0.5f);
+		InfoUniform->UniformBufferData[0].FocalLen = FFloat4(FocalLenX, FocalLenY, 1.f / FocalLenX, 1.f / FocalLenY);
 
-	InfoUniform->UniformBufferData[0].ViewDir = FFloat4(ViewDir.X, ViewDir.Y, ViewDir.Z, 1.f);
-	InfoUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+		InfoUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+	}
 
 	if (SceneNormal != InSceneTexture)
 	{

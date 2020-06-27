@@ -40,12 +40,6 @@ void FGTAORenderer::InitInRenderThread()
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 1, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
-	AB_Result = RHI->CreateArgumentBuffer(1);
-	{
-		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
-	}
-
 	// Load default pipeline
 	const TString DefaultMaterial = "M_Debug.tasset";
 	TAssetPtr DebugMaterialAsset = TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
@@ -56,6 +50,13 @@ void FGTAORenderer::InitInRenderThread()
 	HBAOCompute = ti_new FHBAOCS();
 	HBAOCompute->Finalize();
 	HBAOCompute->PrepareResources(RHI);
+
+	AB_Result = RHI->CreateArgumentBuffer(1);
+	{
+		//AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
+		AB_Result->SetTexture(0, HBAOCompute->GetAOTexture());
+		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
+	}
 }
 
 void FGTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -95,7 +96,6 @@ void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	HBAOCompute->UpdataComputeParams(
 		RHI,
 		Scene->GetViewProjection().Fov,
-		Scene->GetViewProjection().CamDir,
 		RT_BasePass->GetColorBuffer(0).Texture, 
 		RT_BasePass->GetDepthStencilBuffer().Texture);
 

@@ -55,7 +55,7 @@ namespace tix
 		} \
 		uint32 GetStructureStrideInBytes() const \
 		{ \
-			return sizeof(StructTypeName::FUniformBufferStruct); \
+			return (uint32)sizeof(StructTypeName::FUniformBufferStruct); \
 		} \
 		TVector<FUniformBufferStruct> UniformBufferData; \
 		void InitToZero() \
@@ -67,7 +67,7 @@ namespace tix
 		{ \
 			TI_ASSERT(IsRenderThread()); \
 			FRHI * RHI = FRHI::Get(); \
-			UniformBuffer = RHI->CreateUniformBuffer(sizeof(StructTypeName::FUniformBufferStruct), GetElementsCount(), UBFlag); \
+			UniformBuffer = RHI->CreateUniformBuffer((uint32)sizeof(StructTypeName::FUniformBufferStruct), GetElementsCount(), UBFlag); \
 			UniformBuffer->SetResourceName(#StructTypeName); \
 			RHI->UpdateHardwareResourceUB(UniformBuffer, UniformBufferData.data()); \
 			return UniformBuffer; \
