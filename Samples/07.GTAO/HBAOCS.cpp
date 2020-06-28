@@ -6,6 +6,8 @@
 #include "stdafx.h"
 #include "HBAOCS.h"
 
+static const int RandTexSize = 64;
+
 FHBAOCS::FHBAOCS()
 	: FComputeTask("S_HBAOCS")
 	, FoV(0.f)
@@ -52,6 +54,30 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 	RHI->UpdateHardwareResourceTexture(AOTexture);
 
 	ResourceTable->PutRWTextureInTable(AOTexture, 0, UAV_AO_RESULT);
+
+	// Create random texture
+	TTextureDesc Desc;
+	Desc.Format = EPF_RGBA8;
+	Desc.Width = RandTexSize;
+	Desc.Height = RandTexSize;
+	RandomTex = RHI->CreateTexture(Desc);
+
+	TImagePtr RandomImage = ti_new TImage(EPF_RGBA8, RandTexSize, RandTexSize);
+	for (int32 y = 0; y < RandTexSize; ++y)
+	{
+		for (int32 x = 0; x < RandTexSize; ++x)
+		{
+			float Angle = 2.f * PI * randomUnit() / (float)MAX_DIR;
+			SColor R;
+			R.R = (uint8)(cos(Angle) * 127.5f + 127.5f);
+			R.G = (uint8)(sin(Angle) * 127.5f + 127.5f);
+			R.B = (uint8)(randomUnit() * 127.5f + 127.5f);
+			//R.B = (uint8)(randomUnit() * 255.f);
+			RandomImage->SetPixel(x, y, R);
+		}
+	}
+	RHI->UpdateHardwareResourceTexture(RandomTex, RandomImage);
+	ResourceTable->PutTextureInTable(RandomTex, SRV_RANDOM_TEXTURE);
 }
 
 void FHBAOCS::UpdataComputeParams(

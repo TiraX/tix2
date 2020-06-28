@@ -11,7 +11,7 @@
 
 #define HBAO_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=2), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -23,6 +23,7 @@ static const float MAX_DIR_INV = 1.0 / float(MAX_DIR);
 static const int MAX_STEPS = 12;
 static const float STEP_LENGTH = 2.f;
 static const float ANGLE_STEP = PI * 2.f / MAX_DIR;
+static const int RAND_TEX_SIZE = 64 - 1;
 
 cbuffer FInfoUniform : register(b0)
 {
@@ -33,6 +34,7 @@ cbuffer FInfoUniform : register(b0)
 
 Texture2D<float4> SceneNormal : register(t0);
 Texture2D<float> SceneDepth : register(t1);
+Texture2D<float4> RandomTex : register(t2);
 
 RWTexture2D<float> AOResult : register(u0);
 
@@ -79,7 +81,7 @@ float AccumulatedHorizonOcclusion(float2 deltaUV,
 {
     // Randomize starting point within the first sample distance
     //float2 uv = uv0 + snap_uv_offset(randstep * deltaUV);
-    float2 uv = uv0 + deltaUV;
+    float2 uv = uv0 + randstep * deltaUV;
 
     // Snap increments to pixels to avoid disparities between xy 
     // and z sample locations and sample along a line
@@ -150,14 +152,18 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float3 dPdU = MinDiff(P, R, L);
     float3 dPdV = MinDiff(P, T, B) * (ScreenSize.y * ScreenSize.z);
 
+    // load random (cos(alpha), sin(alpha), jitter)
+    float3 RandDir = RandomTex.Load(int3((int)(dispatchThreadId.x & RAND_TEX_SIZE), (int)(dispatchThreadId.y & RAND_TEX_SIZE), 0)).xyz;
+    RandDir = RandDir * 2.f - 1.f;
+
     float AO = 0.f;
 	[unroll]
     for (int d = 0; d < MAX_DIR; d++)
     {
         float2 Dir = float2(cos(d * ANGLE_STEP), sin(d * ANGLE_STEP));
-        float2 DeltaUV = float2(Dir.x - Dir.y, Dir.x + Dir.y) * StepSize.xy;
+        float2 DeltaUV = float2(Dir.x * RandDir.x - Dir.y * RandDir.y, Dir.x * RandDir.y + Dir.y * RandDir.x) * StepSize.xy;
 
-        AO += AccumulatedHorizonOcclusion(DeltaUV, UV, P, NumSteps, 0.f, dPdU, dPdV);
+        AO += AccumulatedHorizonOcclusion(DeltaUV, UV, P, NumSteps, RandDir.z, dPdU, dPdV);
     }
 
     AO = 1.0 - AO / MAX_DIR;

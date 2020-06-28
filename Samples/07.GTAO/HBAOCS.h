@@ -37,6 +37,7 @@ private:
 	{
 		SRV_SCENE_NORMAL,
 		SRV_SCENE_DEPTH,
+		SRV_RANDOM_TEXTURE,
 
 		UAV_AO_RESULT,
 
@@ -50,6 +51,7 @@ private:
 	
 	FTexturePtr SceneNormal;
 	FTexturePtr SceneDepth;
+	FTexturePtr RandomTex;
 
 	float FoV;
 

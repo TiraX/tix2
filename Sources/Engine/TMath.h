@@ -168,7 +168,7 @@ inline int ti_log(unsigned int value)
 //! returns a float value between 0.0 ~ 1.0
 inline float randomUnit()
 {
-	const float k_inv	= 1.0f / 0x7fff;
+	const float k_inv	= 1.0f / RAND_MAX;
 	return (rand() & 0x7fff) * k_inv;
 }
 
