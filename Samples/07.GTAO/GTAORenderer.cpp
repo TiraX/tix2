@@ -6,6 +6,11 @@
 #include "stdafx.h"
 #include "GTAORenderer.h"
 
+static const int32 USE_HBAO = 0;
+static const int32 USE_GTAO = 1;
+
+static const int32 AO_METHOD = USE_GTAO;
+
 FGTAORenderer::FGTAORenderer()
 {
 }
@@ -51,10 +56,17 @@ void FGTAORenderer::InitInRenderThread()
 	HBAOCompute->Finalize();
 	HBAOCompute->PrepareResources(RHI);
 
+	GTAOCompute = ti_new FGTAOCS();
+	GTAOCompute->Finalize();
+	GTAOCompute->PrepareResources(RHI);
+
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		//AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		AB_Result->SetTexture(0, HBAOCompute->GetAOTexture());
+		if (AO_METHOD == USE_GTAO)
+			AB_Result->SetTexture(0, GTAOCompute->GetAOTexture());
+		else
+			AB_Result->SetTexture(0, HBAOCompute->GetAOTexture());
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
 }
@@ -93,19 +105,38 @@ void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
-	HBAOCompute->UpdataComputeParams(
-		RHI,
-		Scene->GetViewProjection().Fov,
-		RT_BasePass->GetColorBuffer(0).Texture, 
-		RT_BasePass->GetDepthStencilBuffer().Texture);
-
-	RHI->BeginComputeTask();
+	if (AO_METHOD == USE_GTAO)
 	{
-		RHI->BeginEvent("HBAO");
-		HBAOCompute->Run(RHI);
-		RHI->EndEvent();
+		GTAOCompute->UpdataComputeParams(
+			RHI,
+			Scene->GetViewProjection().Fov,
+			RT_BasePass->GetColorBuffer(0).Texture,
+			RT_BasePass->GetDepthStencilBuffer().Texture);
+
+		RHI->BeginComputeTask();
+		{
+			RHI->BeginEvent("GTAO");
+			GTAOCompute->Run(RHI);
+			RHI->EndEvent();
+		}
+		RHI->EndComputeTask();
 	}
-	RHI->EndComputeTask();
+	else
+	{
+		HBAOCompute->UpdataComputeParams(
+			RHI,
+			Scene->GetViewProjection().Fov,
+			RT_BasePass->GetColorBuffer(0).Texture,
+			RT_BasePass->GetDepthStencilBuffer().Texture);
+
+		RHI->BeginComputeTask();
+		{
+			RHI->BeginEvent("HBAO");
+			HBAOCompute->Run(RHI);
+			RHI->EndEvent();
+		}
+		RHI->EndComputeTask();
+	}
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

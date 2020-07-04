@@ -65,7 +65,7 @@ namespace tix
 		bool bReceiveShadow)
 	{
 		// Create Primitives
-		LinkedPrimitives.empty();
+		LinkedPrimitives.clear();
 		LinkedPrimitives.reserve(InStaticMesh->GetMeshSectionCount());
 
 		TNode* SceneTileParent = GetParent(ENT_SceneTile);

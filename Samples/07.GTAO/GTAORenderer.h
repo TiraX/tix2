@@ -5,6 +5,7 @@
 
 #pragma once
 #include "HBAOCS.h"
+#include "GTAOCS.h"
 
 class FGTAORenderer : public FDefaultRenderer
 {
@@ -29,4 +30,5 @@ private:
 
 	// AO Compute Shader
 	FHBAOCSCSPtr HBAOCompute;
+	FGTAOCSCSPtr GTAOCompute;
 };
