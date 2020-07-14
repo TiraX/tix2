@@ -25,7 +25,7 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 
 	InfoUniform = ti_new FHBAOUniform;
 	InfoUniform->UniformBufferData[0].ScreenSize = FFloat4(float(RTW), float(RTH), 1.f / RTW, 1.f / RTH);
-	const float R = 0.08f;
+	const float R = 0.1f;
 	InfoUniform->UniformBufferData[0].Radius = FFloat4(R, R * R, 1.f / R, 1.f);
 	
 	//float Inc = 2.0f * PI / (float)MAX_DIR;

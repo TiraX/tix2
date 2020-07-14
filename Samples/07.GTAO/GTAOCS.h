@@ -10,7 +10,6 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FGTAOUniform)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ScreenSize)	// xy = Size; zw = InvSize;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, FocalLen)		// xy = FocalLen; zw = InvFocalLen;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Radius)		// x = radius; y = radius^2; z = 1.0/radius
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Falloff)		// x = radius; y = radius^2; z = 1.0/radius
 END_UNIFORM_BUFFER_STRUCT(FGTAOUniform)
 
 class FGTAOCS : public FComputeTask

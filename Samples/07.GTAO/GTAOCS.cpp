@@ -25,9 +25,8 @@ void FGTAOCS::PrepareResources(FRHI * RHI)
 
 	InfoUniform = ti_new FGTAOUniform;
 	InfoUniform->UniformBufferData[0].ScreenSize = FFloat4(float(RTW), float(RTH), 1.f / RTW, 1.f / RTH);
-	const float R = 0.28f;
+	const float R = 0.1f;
 	InfoUniform->UniformBufferData[0].Radius = FFloat4(R, R * R, 1.f / R, 1.f);
-	InfoUniform->UniformBufferData[0].Falloff = FFloat4(0.00003f, -0.3333f, 1.f, 1.f);
 	
 	//float Inc = 2.0f * PI / (float)MAX_DIR;
 	//for (int i = 0; i < MAX_DIR; i ++)
@@ -42,7 +41,7 @@ void FGTAOCS::PrepareResources(FRHI * RHI)
 
 	TTextureDesc AOTextureDesc;
 	AOTextureDesc.Type = ETT_TEXTURE_2D;
-	AOTextureDesc.Format = EPF_R32F;
+	AOTextureDesc.Format = EPF_RGBA32F;
 	AOTextureDesc.Width = RHI->GetViewport().Width;
 	AOTextureDesc.Height = RHI->GetViewport().Height;
 	AOTextureDesc.AddressMode = ETC_CLAMP_TO_EDGE;
