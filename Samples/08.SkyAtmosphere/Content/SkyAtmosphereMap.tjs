@@ -1,0 +1,33 @@
+{
+	"name": "SkyAtmosphereMap",
+	"type": "scene",
+	"version": 1,
+	"desc": "Scene tiles information from TiX exporter.",
+	"mesh_total": 1,
+	"instances_total": 3,
+	"texture_total": "Unknown Yet",
+	"cameras": [
+		{
+			"location": [ 38.097492218017578, 13.848416328430176, 7.4125933647155762 ],
+			"target": [ 37.137855529785156, 13.918986320495605, 7.6848440170288086 ],
+			"rotator": [ 15.798240661621094, 175.79411315917969, 8.9838094936567359e-06 ],
+			"fov": 90,
+			"aspect": 1.7777780294418335
+		}
+	],
+	"environment":
+	{
+		"sun_light":
+		{
+			"name": "DirectionalLight_1",
+			"direction": [ 0.96126216650009155, 0, -0.27563580870628357 ],
+			"color": [ 1, 1, 1, 1 ],
+			"intensity": 10
+		}
+	},
+	"tiles": [
+		[ 0, 1 ],
+		[ 0, 0 ],
+		[ 0, -1 ]
+	]
+}

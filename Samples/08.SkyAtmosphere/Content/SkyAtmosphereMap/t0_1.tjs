@@ -1,0 +1,35 @@
+{
+	"name": "SkyAtmosphereMap_t0_1",
+	"level": "SkyAtmosphereMap",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ 0, 1 ],
+	"bbox": [ -4.5, 21.100000381469726, -0.625, 4.5, 30.099998474121094, 39.625 ],
+	"meshes_total": 1,
+	"mesh_sections_total": 1,
+	"instances_total": 1,
+	"texture_total": 0,
+	"dependency":
+	{
+		"textures": [],
+		"materials": [],
+		"material_instances": [],
+		"meshes": [
+			"Cube.tasset"
+		]
+	},
+	"instances": [
+		{
+			"linked_mesh": "Cube.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 25.599998474121094, 19.5 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 9, 9, 40.25 ]
+				}
+			]
+		}
+	]
+}
