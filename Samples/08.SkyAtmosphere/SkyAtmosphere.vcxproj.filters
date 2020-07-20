@@ -22,6 +22,21 @@
     <ClCompile Include="SkyAtmosphereTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CameraVolumeLut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DistantSkyLightLut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeanIllumLutCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyViewLut.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TransmittanceLutCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,12 +48,42 @@
     <ClInclude Include="SkyAtmosphereTicker.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CameraVolumeLut.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DistantSkyLightLut.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeanIllumLutCS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyViewLut.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransmittanceLutCS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaqueVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CameraVolumeLutCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_DistantSkyLightLutCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_MeanIllumLutCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyViewLutCS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_TransmittanceLutCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

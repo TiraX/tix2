@@ -165,20 +165,31 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraVolumeLut.cpp" />
+    <ClCompile Include="DistantSkyLightLut.cpp" />
+    <ClCompile Include="MeanIllumLutCS.cpp" />
     <ClCompile Include="SkyAtmosphereRenderer.cpp" />
     <ClCompile Include="SkyAtmosphereSample.cpp" />
     <ClCompile Include="SkyAtmosphereTicker.cpp" />
+    <ClCompile Include="SkyViewLut.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TransmittanceLutCS.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CameraVolumeLut.h" />
+    <ClInclude Include="DistantSkyLightLut.h" />
+    <ClInclude Include="MeanIllumLutCS.h" />
     <ClInclude Include="SkyAtmosphereRenderer.h" />
     <ClInclude Include="SkyAtmosphereTicker.h" />
+    <ClInclude Include="SkyViewLut.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TransmittanceLutCS.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_CameraVolumeLutCS.hlsl" />
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -191,6 +202,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_DistantSkyLightLutCS.hlsl" />
+    <FxCompile Include="Shaders\Dx12\S_MeanIllumLutCS.hlsl" />
+    <FxCompile Include="Shaders\Dx12\S_SkyViewLutCS.hlsl" />
+    <FxCompile Include="Shaders\Dx12\S_TransmittanceLutCS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Dx12\Common.hlsli" />

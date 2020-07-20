@@ -11,7 +11,7 @@ int main()
 	//_CrtSetBreakAlloc(-1);
 	{
 		TEngineDesc Desc;
-		Desc.Name = "SkyAtmosphere App";
+		Desc.Name = "SkyAtmosphere UE4 App";
 		Desc.Width = 1600;
 		Desc.Height = 900;
 
