@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#define GTAO_RootSig \
+#define TransmittanceLut_RootSig \
 	"CBV(b0) ," \
     "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
@@ -17,239 +17,451 @@
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_POINT)"
 
-static const float PI = 3.14159f;
-static const float PI_HALF = PI * 0.5f;
-static const int MAX_DIR = 16;
-static const float MAX_DIR_INV = 1.0 / float(MAX_DIR);
-static const int MAX_STEPS = 12;
-static const float STEP_LENGTH = 2.f;
-static const float ANGLE_STEP = PI * 2.f / MAX_DIR;
-static const int RAND_TEX_SIZE = 64 - 1;
-
-#define SSAO_LIMIT 100
-#define SSAO_SAMPLES 4
-#define SSAO_RADIUS 2.5
-#define SSAO_FALLOFF 1.5
-#define SSAO_THICKNESSMIX 0.2
-#define SSAO_MAX_STRIDE 32
-
-cbuffer FInfoUniform : register(b0)
+cbuffer FAtmosphereParam : register(b0)
 {
-    float4 ScreenSize;  // xy = Size; zw = InvSize;
-    float4 FocalLen;    // xy = FocalLen; zw = InvFocalLen;
-    float4 Radius;      // x = radius; y = radius^2; z = 1.0/radius
+    float4 TransmittanceLutSizeAndInv;  // xy = Size; zw = InvSize;
+    float4 RadiusRange;    // x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
+	float TransmittanceSampleCount;
+	float MiePhaseG;
+	float ViewPreExposure;
+	float MieDensityExpScale;
+	float RayleighDensityExpScale;
+	float AbsorptionDensity0LayerWidth;
+	float4 AbsorptionDensity01MA;
+	float4 MieScattering;
+	float4 MieAbsorption;
+	float4 MieExtinction;
+	float4 RayleighScattering;
+	float4 AbsorptionExtinction;
+	float4 GroundAlbedo;
 };
 
-Texture2D<float4> SceneNormal : register(t0);
-Texture2D<float> SceneDepth : register(t1);
-Texture2D<float4> RandomTex : register(t2);
+RWTexture2D<float3> TransmittanceLut : register(u0);
 
-RWTexture2D<float4> AOResult : register(u0);
+static const float PI = 3.14159f;
 
-SamplerState PointSampler : register(s0);
+////////////////////////////////////////////////////////////
+// LUT functions
+////////////////////////////////////////////////////////////
 
-// Relative error : ~3.4% over full
-// Precise format : ~small float
-// 2 ALU
-float rsqrtFast(float x)
+// Transmittance LUT function parameterisation from Bruneton 2017 https://github.com/ebruneton/precomputed_atmospheric_scattering
+// uv in [0,1]
+// ViewZenithCosAngle in [-1,1]
+// ViewHeight in [bottomRAdius, topRadius]
+
+void UvToLutTransmittanceParams(out float ViewHeight, out float ViewZenithCosAngle, in float2 UV)
 {
-    int i = asint(x);
-    i = 0x5f3759df - (i >> 1);
-    return asfloat(i);
+	float Xmu = UV.x;
+	float Xr = UV.y;
+
+    float H = RadiusRange.z;
+	float Rho = H * Xr;
+	ViewHeight = sqrt(Rho * Rho + RadiusRange.w);
+
+	float Dmin = RadiusRange.x - ViewHeight;
+	float Dmax = Rho + H;
+	float D = Dmin + Xmu * (Dmax - Dmin);
+	ViewZenithCosAngle = D == 0.0f ? 1.0f : (H * H - Rho * Rho - D * D) / (2.0f * ViewHeight * D);
+	ViewZenithCosAngle = clamp(ViewZenithCosAngle, -1.0f, 1.0f);
 }
 
-// Relative error : < 0.7% over full
-// Precise format : ~small float
-// 1 ALU
-float sqrtFast(float x)
+void getTransmittanceLutUvs(
+	in float viewHeight, in float viewZenithCosAngle,
+	out float2 UV)
 {
-    int i = asint(x);
-    i = 0x1FBD1DF5 + (i >> 1);
-    return asfloat(i);
+	float H = RadiusRange.z;
+	float Rho = sqrt(max(0.0f, viewHeight * viewHeight - RadiusRange.w));
+
+	float Discriminant = viewHeight * viewHeight * (viewZenithCosAngle * viewZenithCosAngle - 1.0f) + RadiusRange.x * RadiusRange.x;
+	float D = max(0.0f, (-viewHeight * viewZenithCosAngle + sqrt(Discriminant)));
+
+	float Dmin = RadiusRange.x - viewHeight;
+	float Dmax = Rho + H;
+	float Xmu = (D - Dmin) / (Dmax - Dmin);
+	float Xr = Rho / H;
+
+	UV = float2(Xmu, Xr);
+
 }
 
-// max absolute error 9.0x10^-3
-// Eberly's polynomial degree 1 - respect bounds
-// 4 VGPR, 12 FR (8 FR, 1 QR), 1 scalar
-// input [-1, 1] and output [0, PI]
-float acosFast(float inX)
+void LutTransmittanceParamsToUv(in float ViewHeight, in float ViewZenithCosAngle, out float2 UV)
 {
-    float x = abs(inX);
-    float res = -0.156583f * x + (0.5 * PI);
-    res *= sqrtFast(1.0f - x);
-    return (inX >= 0) ? res : PI - res;
+	getTransmittanceLutUvs(ViewHeight, ViewZenithCosAngle, UV);
 }
 
-// Same cost as acosFast + 1 FR
-// Same error
-// input [-1, 1] and output [-PI/2, PI/2]
-float asinFast(float x)
+float2 RayIntersectSphere(float3 RayOrigin, float3 RayDirection, float4 Sphere)
 {
-    return (0.5 * PI) - acosFast(x);
+	float3 LocalPosition = RayOrigin - Sphere.xyz;
+	float LocalPositionSqr = dot(LocalPosition, LocalPosition);
+
+	float3 QuadraticCoef;
+	QuadraticCoef.x = dot(RayDirection, RayDirection);
+	QuadraticCoef.y = 2 * dot(RayDirection, LocalPosition);
+	QuadraticCoef.z = LocalPositionSqr - Sphere.w * Sphere.w;
+
+	float Discriminant = QuadraticCoef.y * QuadraticCoef.y - 4 * QuadraticCoef.x * QuadraticCoef.z;
+
+	float2 Intersections = -1;
+
+
+	[flatten]
+	if (Discriminant >= 0)
+	{
+		float SqrtDiscriminant = sqrt(Discriminant);
+		Intersections = (-QuadraticCoef.y + float2(-1, 1) * SqrtDiscriminant) / (2 * QuadraticCoef.x);
+	}
+
+	return Intersections;
+}
+// - RayOrigin: ray origin
+// - RayDir: normalized ray direction
+// - SphereCenter: sphere center
+// - SphereRadius: sphere radius
+// - Returns distance from RayOrigin to closest intersecion with sphere,
+//   or -1.0 if no intersection.
+float RaySphereIntersectNearest(float3 RayOrigin, float3 RayDir, float3 SphereCenter, float SphereRadius)
+{
+	float2 Sol = RayIntersectSphere(RayOrigin, RayDir, float4(SphereCenter, SphereRadius));
+	float Sol0 = Sol.x;
+	float Sol1 = Sol.y;
+	if (Sol0 < 0.0f && Sol1 < 0.0f)
+	{
+		return -1.0f;
+	}
+	if (Sol0 < 0.0f)
+	{
+		return max(0.0f, Sol1);
+	}
+	else if (Sol1 < 0.0f)
+	{
+		return max(0.0f, Sol0);
+	}
+	return max(0.0f, min(Sol0, Sol1));
 }
 
-float3 ScreenToViewPos(float2 UV, float Depth)
+////////////////////////////////////////////////////////////
+// Participating medium properties
+////////////////////////////////////////////////////////////
+
+float RayleighPhase(float CosTheta)
 {
-    UV = UV * float2(2.0, 2.0) - float2(1.0, 1.0);
-    return float3(UV * FocalLen.zw * Depth, Depth);
+	float Factor = 3.0f / (16.0f * PI);
+	return Factor * (1.0f + CosTheta * CosTheta);
 }
 
-float3 ScreenToViewPos(float2 UV)
+float HgPhase(float G, float CosTheta)
 {
-    float Depth = SceneDepth.SampleLevel(PointSampler, UV, 0);
-    return ScreenToViewPos(UV, Depth);
+	// Reference implementation (i.e. not schlick approximation). 
+	// See http://www.pbr-book.org/3ed-2018/Volume_Scattering/Phase_Functions.html
+	float Numer = 1.0f - G * G;
+	float Denom = 1.0f + G * G + 2.0f * G * CosTheta;
+	return Numer / (4.0f * PI * Denom * sqrt(Denom));
 }
 
-float tangent(float3 T)
+float3 GetAlbedo(float3 Scattering, float3 Extinction)
 {
-    return -T.z / length(T.xy);
+	return Scattering / max(0.001f, Extinction);
 }
 
-float tangent(float3 P, float3 S)
+float3 GetTransmittance(in float LightZenithCosAngle, in float PHeight)
 {
-    return (P.z - S.z) / length(S.xy - P.xy);
+	float2 UV;
+	LutTransmittanceParamsToUv(PHeight, LightZenithCosAngle, UV);
+	float3 TransmittanceToLight = 1.0f;
+	return TransmittanceToLight;
 }
 
-float3 MinDiff(float3 P, float3 R, float3 L)
+////////////////////////////////////////////////////////////
+// Main scattering/transmitance integration function
+////////////////////////////////////////////////////////////
+
+struct SingleScatteringResult
 {
-    float3 V1 = R - P;
-    float3 V2 = P - L;
-    return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
+	float3 L;						// Scattered light (luminance)
+	float3 OpticalDepth;			// Optical depth (1/m)
+	float3 Transmittance;			// Transmittance in [0,1] (unitless)
+	float3 MultiScatAs1;
+};
+
+struct SamplingSetup
+{
+	bool VariableSampleCount;
+	float SampleCountIni;			// Used when VariableSampleCount is false
+	float MinSampleCount;
+	float MaxSampleCount;
+	float DistanceToSampleCountMaxInv;
+};
+
+struct MediumSampleRGB
+{
+	float3 Scattering;
+	float3 Absorption;
+	float3 Extinction;
+
+	float3 ScatteringMie;
+	float3 AbsorptionMie;
+	float3 ExtinctionMie;
+
+	float3 ScatteringRay;
+	float3 AbsorptionRay;
+	float3 ExtinctionRay;
+
+	float3 ScatteringOzo;
+	float3 AbsorptionOzo;
+	float3 ExtinctionOzo;
+
+	float3 Albedo;
+};
+
+// If this is changed, please also update USkyAtmosphereComponent::GetTransmittance 
+MediumSampleRGB SampleMediumRGB(in float3 WorldPos)
+{
+	const float SampleHeight = max(0.0, (length(WorldPos) - RadiusRange.y));
+
+	const float DensityMie = exp(MieDensityExpScale * SampleHeight);
+
+	const float DensityRay = exp(RayleighDensityExpScale * SampleHeight);
+
+	const float DensityOzo = SampleHeight < AbsorptionDensity0LayerWidth ?
+		saturate(AbsorptionDensity01MA.x * SampleHeight + AbsorptionDensity01MA.y) :	// We use saturate to allow the user to create plateau, and it is free on GCN.
+		saturate(AbsorptionDensity01MA.z * SampleHeight + AbsorptionDensity01MA.w);
+
+	MediumSampleRGB s;
+
+	s.ScatteringMie = DensityMie * MieScattering.rgb;
+	s.AbsorptionMie = DensityMie * MieAbsorption.rgb;
+	s.ExtinctionMie = DensityMie * MieExtinction.rgb;
+
+	s.ScatteringRay = DensityRay * RayleighScattering.rgb;
+	s.AbsorptionRay = 0.0f;
+	s.ExtinctionRay = s.ScatteringRay + s.AbsorptionRay;
+
+	s.ScatteringOzo = 0.0f;
+	s.AbsorptionOzo = DensityOzo * AbsorptionExtinction.rgb;
+	s.ExtinctionOzo = s.ScatteringOzo + s.AbsorptionOzo;
+
+	s.Scattering = s.ScatteringMie + s.ScatteringRay + s.ScatteringOzo;
+	s.Absorption = s.AbsorptionMie + s.AbsorptionRay + s.AbsorptionOzo;
+	s.Extinction = s.ExtinctionMie + s.ExtinctionRay + s.ExtinctionOzo;
+	s.Albedo = GetAlbedo(s.Scattering, s.Extinction);
+
+	return s;
 }
 
-//----------------------------------------------------------------------------------
-float SearchForLargestAngle(float2 deltaUV,
-    float2 uv0,
-    float3 P,
-    float3 V,
-    float numSteps,
-    float randstep)
+#define FarDepthValue 0.f
+#define DEFAULT_SAMPLE_OFFSET 0.3f
+
+SingleScatteringResult IntegrateSingleScatteredLuminance(
+	in float4 SVPos, in float3 WorldPos, in float3 WorldDir,
+	in bool Ground, in SamplingSetup Sampling, in float DeviceZ, in bool MieRayPhase,
+	in float3 Light0Dir, in float3 Light1Dir, in float3 Light0Illuminance, in float3 Light1Illuminance,
+	in float AerialPespectiveViewDistanceScale,
+	in float tMaxMax = 9000000.f)
 {
-    // Randomize starting point within the first sample distance
-    //float2 uv = uv0 + snap_uv_offset(randstep * deltaUV);
-    float2 uv = uv0 +randstep * deltaUV;
+	SingleScatteringResult Result;
+	Result.L = 0;
+	Result.OpticalDepth = 0;
+	Result.Transmittance = 1.f;
+	Result.MultiScatAs1 = 0;
 
-    float CosValue = -1;
-    for (float j = 1; j <= numSteps; ++j) {
-        uv += deltaUV;
-        float3 S = ScreenToViewPos(uv);
+	if (dot(WorldPos, WorldPos) <= RadiusRange.w)
+	{
+		return Result;	// Camera is inside the planet ground
+	}
 
-        // Ignore any samples outside the radius of influence
-        float3 D = (S - P);
-        float D2 = dot(D, D);
-        if (D2 < Radius.y)
-        {
-            float Current = dot(normalize(D), V);
+	float2 PixPos = SVPos.xy;
 
-            float Falloff = clamp((Radius.x - length(D)) / SSAO_FALLOFF, 0.f, 1.f);
-            if (Current > CosValue)
-                CosValue = Current;// lerp(CosValue, Current, Falloff);
-            //CosValue = lerp(CosValue, Current, SSAO_THICKNESSMIX * Falloff);
-        }
-    }
+	// Compute next intersection with atmosphere or ground
+	float3 PlanetO = float3(0.f, 0.f, 0.f);
+	float tBottom = RaySphereIntersectNearest(WorldPos, WorldDir, PlanetO, RadiusRange.y);
+	float tTop = RaySphereIntersectNearest(WorldPos, WorldDir, PlanetO, RadiusRange.x);
+	float tMax = 0.f;
+	if (tBottom < 0.f)
+	{
+		if (tTop < 0.f)
+		{
+			tMax = 0.f;	// No intersection with planet nor its atmosphere: stop right away
+			return Result;
+		}
+		else
+		{
+			tMax = tTop;
+		}
+	}
+	else
+	{
+		if (tTop > 0.f)
+		{
+			tMax = min(tTop, tBottom);
+		}
+	}
 
-    return CosValue;
+	float PlanetOnOpaque = 1.f;	// This is used to hide opaque meshes under the planet ground
+	tMax = min(tMax, tMaxMax);
+
+	// Sample Count
+	float SampleCount = Sampling.SampleCountIni;
+	float SampleCountFloor = Sampling.SampleCountIni;
+	float tMaxFloor = tMax;
+	if (Sampling.VariableSampleCount)
+	{
+		SampleCount = lerp(Sampling.MinSampleCount, Sampling.MaxSampleCount, saturate(tMax * Sampling.DistanceToSampleCountMaxInv));
+		SampleCountFloor = floor(SampleCount);
+		tMaxFloor = tMax * SampleCountFloor / SampleCount;	// rescale tMax to map to the last entire step segment
+	}
+	float dt = tMax / SampleCount;
+
+	// Phase functions
+	const float uniformPhase = 1.f / (4.f * PI);
+	const float3 wi = Light0Dir;
+	const float3 wo = WorldDir;
+	float cosTheta = dot(wi, wo);
+	float MiePhaseValueLight0 = HgPhase(MiePhaseG, -cosTheta);
+	float RayleighPhaseValueLight0 = RayleighPhase(cosTheta);
+
+	// Ray march the atmosphere to integrate optical depth
+	float3 L = 0.f;
+	float3 Throughput = 1.f;
+	float3 OpticalDepth = 0.f;
+	float t = 0.f;
+	float tPrev = 0.f;
+
+	float3 ExposedLight0Illuminance = Light0Illuminance * ViewPreExposure;
+
+	float PixelNoise = DEFAULT_SAMPLE_OFFSET;
+	for (float SampleI = 0.f; SampleI < SampleCount; SampleI += 1.f)
+	{
+		// Compute Current ray t and sample point P
+		if (Sampling.VariableSampleCount)
+		{
+			// More expenssive but artefact free
+			float t0 = (SampleI) / SampleCountFloor;
+			float t1 = (SampleI + 1.f) / SampleCountFloor;
+
+			// Non linear distribution of samples within the range
+			t0 = t0 * t0;
+			t1 = t1 * t1;
+			
+			// Make t0 and t1 world space distance
+			t0 = tMaxFloor * t0;
+			if (t1 > 1.f)
+			{
+				t1 = tMax;
+			}
+			else
+			{
+				t1 = tMaxFloor * t1;
+			}
+			t = t0 + (t1 - t0) * PixelNoise;
+			dt = t1 - t0;
+		}
+		else
+		{
+			t = tMax * (SampleI + PixelNoise) / SampleCount;
+		}
+		float3 P = WorldPos + t * WorldDir;
+		float PHeight = length(P);
+
+		// Sample the medium
+		MediumSampleRGB Medium = SampleMediumRGB(P);
+		const float3 SampleOpticalDepth = Medium.Extinction * dt * AerialPespectiveViewDistanceScale;
+		const float3 SampleTransmittance = exp(-SampleOpticalDepth);
+		OpticalDepth += SampleOpticalDepth;
+
+		// Phase and transmittance for light0
+		const float3 UpVector = P / PHeight;
+		float Light0ZenithCosAngle = dot(Light0Dir, UpVector);
+		float3 TransmittanceToLight0 = GetTransmittance(Light0ZenithCosAngle, PHeight);
+		float3 PhaseTimesScattering0;
+		if (MieRayPhase)
+		{
+			PhaseTimesScattering0 = Medium.ScatteringMie * MiePhaseValueLight0 + Medium.ScatteringRay * RayleighPhaseValueLight0;
+		}
+		else
+		{
+			PhaseTimesScattering0 = Medium.Scattering * uniformPhase;
+		}
+
+		// Multiple scattering approximation
+		float3 MultiScatteredLuminance0 = 0.f;
+
+		// Planet shadow
+		float tPlanet0 = RaySphereIntersectNearest(P, Light0Dir, PlanetO + 0.001f * UpVector, RadiusRange.y);
+		float PlanetShadow0 = tPlanet0 >= 0.f ? 0.f : 1.f;
+		// MultiScatteredLuminance is already pre-exposed, atmospheric light contribution needs to be pre exposed
+		// Multi-scattering is also not affected by PlanetShadow or TransmittanceToLight because it contains diffuse light after single scattering.
+		float3 S = ExposedLight0Illuminance * (PlanetShadow0 * TransmittanceToLight0 * PhaseTimesScattering0 + MultiScatteredLuminance0 * Medium.Scattering);
+
+		// When using the power serie to accumulate all sattering order, serie r must be <1 for a serie to converge. 
+		// Under extreme coefficient, MultiScatAs1 can grow larger and thus results in broken visuals. 
+		// The way to fix that is to use a proper analytical integration as porposed in slide 28 of http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/ 
+		// However, it is possible to disable as it can also work using simple power serie sum unroll up to 5th order. The rest of the orders has a really low contribution. 
+
+		// 1 is the integration of luminance over the 4pi of a sphere, and assuming an isotropic phase function of 1.0/(4*PI) 
+		Result.MultiScatAs1 += Throughput * Medium.Scattering * 1.0f * dt;
+
+		// See slide 28 at http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/ 
+		float3 Sint = (S - S * SampleTransmittance) / Medium.Extinction;	// integrate along the current step segment 
+		L += Throughput * Sint;														// accumulate and also take into account the transmittance from previous steps
+		Throughput *= SampleTransmittance;
+
+		tPrev = t;
+	}
+	
+	if (Ground && tMax == tBottom)
+	{
+		// Account for bounced light off the planet
+		float3 P = WorldPos + tBottom * WorldDir;
+		float PHeight = length(P);
+
+		const float3 UpVector = P / PHeight;
+		float Light0ZenithCosAngle = dot(Light0Dir, UpVector);
+		float3 TransmittanceToLight0 = GetTransmittance(Light0ZenithCosAngle, PHeight);
+
+		const float NdotL0 = saturate(dot(UpVector, Light0Dir));
+		L += Light0Illuminance * TransmittanceToLight0 * Throughput * NdotL0 * GroundAlbedo.rgb / PI;
+	}
+
+	Result.L = L;
+	Result.OpticalDepth = OpticalDepth;
+	Result.Transmittance = Throughput * PlanetOnOpaque;
+
+	return Result;
 }
 
-float2 SearchAxisForAngles(float2 deltaUV,
-    float2 uv0,
-    float3 P,
-    float3 V,
-    float numSteps,
-    float randstep)
-{
-    float h1 = SearchForLargestAngle(deltaUV, uv0, P, V, numSteps, randstep);
-    float h2 = SearchForLargestAngle(-deltaUV, uv0, P, V, numSteps, randstep);
-
-    return float2(h1, h2);
-}
-
-float ComputeInnerIntegral(float2 Angles, float NoV, float n)
-{
-    float cosN = NoV;
-    float sinN = sqrt(1.f - NoV * NoV);
-    float a1 = -cos(Angles.x * 2.f - n);
-    float a2 = -cos(Angles.y * 2.f - n);
-
-    //return (a1 + cosN + Angles.x * 2.f * sinN + a2 + cosN + Angles.y * 2.f * sinN) * 0.25f;
-    return 2.f - cos(Angles.x) - cos(Angles.y);
-}
-
-float IntegrateArc(float h1, float h2, float n)
-{
-    float cosN = cos(n);
-    float sinN = sin(n);
-    return 0.25 * (-cos(2.0 * h1 - n) + cosN + 2.0 * h1 * sinN - cos(2.0 * h2 - n) + cosN + 2.0 * h2 * sinN);
-    //return 2.f - cos(h1) - cos(h2);
-}
-
-[RootSignature(GTAO_RootSig)]
+[RootSignature(TransmittanceLut_RootSig)]
 [numthreads(8, 8, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    if (dispatchThreadId.x >= (uint)ScreenSize.x || dispatchThreadId.y >= (uint)ScreenSize.y)
-        return;
+    float2 PixPos = float2(dispatchThreadId.xy) + 0.5f;
 
-    float2 PixelCenter = dispatchThreadId.xy + float2(0.5, 0.5);
-    float2 UV = PixelCenter * ScreenSize.zw;
-    float3 P = ScreenToViewPos(UV);
-    float3 V = -normalize(P);
+    // Compute camera position from LUT coords
+    float2 UV = PixPos * TransmittanceLutSizeAndInv.zw;
+    float ViewHeight;
+    float ViewZenithCosAngle;
+    UvToLutTransmittanceParams(ViewHeight, ViewZenithCosAngle, UV);
 
-    // Project radius from eye space to texture space
-    float2 StepSize = 0.5f * Radius.x * FocalLen.xy / P.z;
+    // A few extra needed constants
+    float3 WorldPos = float3(0.f, 0.f, ViewHeight);
+    float3 WorldDir = float3(0.f, sqrt(1.f - ViewZenithCosAngle * ViewZenithCosAngle), ViewZenithCosAngle);
 
-    // Early out if the projected radius is smaller than 1 pixel
-    float NumSteps = min(MAX_STEPS, min(StepSize.x * ScreenSize.x, StepSize.y * ScreenSize.y));
-    StepSize = StepSize / (float)(NumSteps + 1);
+	SamplingSetup Sampling;
+	Sampling.VariableSampleCount = false;
+	Sampling.SampleCountIni = TransmittanceSampleCount;
 
-    float3 L, R, T, B;
-    L = ScreenToViewPos(UV + float2(-ScreenSize.z, 0));
-    R = ScreenToViewPos(UV + float2(ScreenSize.z, 0));
-    T = ScreenToViewPos(UV + float2(0, ScreenSize.w));
-    B = ScreenToViewPos(UV + float2(0, -ScreenSize.w));
-    float3 N = normalize(cross(R - L, T - B));
+	const bool Ground = false;
+	const float DeviceZ = FarDepthValue;
+	const bool MieRayPhase = false;
+	const float3 NullLightDirection = float3(0.f, 0.f, 1.f);
+	const float3 NullLightIlluminance = float3(0.f, 0.f, 0.f);
+	const float AerialPespectiveViewDistanceScale = 1.f;
+	SingleScatteringResult ss = IntegrateSingleScatteredLuminance(
+		float4(PixPos, 0.f, 1.f), WorldPos, WorldDir,
+		Ground, Sampling, DeviceZ, MieRayPhase,
+		NullLightDirection, NullLightDirection, NullLightIlluminance, NullLightIlluminance,
+		AerialPespectiveViewDistanceScale
+	);
 
-    float Stride = 6;// min((1.0 / length(P)) * SSAO_LIMIT, SSAO_MAX_STRIDE);
-    float2 dirMult = ScreenSize.zw * Stride;
-
-    float3 dPdU = MinDiff(P, R, L);
-    float3 dPdV = MinDiff(P, T, B) * (ScreenSize.y * ScreenSize.z);
-
-    // load random (cos(alpha), sin(alpha), jitter)
-    float3 RandDir = RandomTex.Load(int3((int)(dispatchThreadId.x & RAND_TEX_SIZE), (int)(dispatchThreadId.y & RAND_TEX_SIZE), 0)).xyz;
-    RandDir = RandDir * 2.f - 1.f;
-
-    float3 debug = float3(2,2,2);
-    float AO = 0.f;
-    [unroll]
-    for (int d = 0; d < MAX_DIR; d++)
-    {
-        float2 Dir = float2(cos(d * ANGLE_STEP), sin(d * ANGLE_STEP));
-        float2 DeltaUV = float2(Dir.x * RandDir.x - Dir.y * RandDir.y, Dir.x * RandDir.y + Dir.y * RandDir.x) * StepSize.xy;
-    
-        // TODO , here do NOT need to sample depth in ScreenToViewPos
-        float3 toDir = ScreenToViewPos(UV + DeltaUV);
-        float3 planeNormal = normalize(cross(V, -toDir));
-        float3 projectedNormal = N - planeNormal * dot(N, planeNormal);
-
-        float3 projectedDir = normalize(normalize(toDir) + V);
-        float n = acosFast(dot(-projectedDir, normalize(projectedNormal))) - PI_HALF;
-
-        float2 CosValues = SearchAxisForAngles(DeltaUV, UV, P, V, NumSteps, RandDir.z);
-
-        float h1a = -acosFast(CosValues.x);
-        float h2a = acosFast(CosValues.y);
-
-        float h1 = n + max(h1a - n, -PI_HALF);
-        float h2 = n + min(h2a - n, PI_HALF);
-
-        debug.x = h1a * 180.0f / PI;
-        debug.y = h2a * 180.0f / PI;
-        debug.z = n * 180.0f / PI;
-        AO += lerp(1.f, IntegrateArc(h1, h2, n), length(projectedNormal));
-    }
-
-    AO = AO / MAX_DIR;
-
-    AOResult[dispatchThreadId.xy] = float4(AO, AO, AO, 1);
+	float3 Transmittance = exp(-ss.OpticalDepth);
+	TransmittanceLut[dispatchThreadId.xy] = Transmittance;
 }
