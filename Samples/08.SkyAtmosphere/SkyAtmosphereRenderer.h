@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "TransmittanceLutCS.h"
 
 class FSkyAtmosphereRenderer : public FDefaultRenderer
 {
@@ -25,4 +26,7 @@ private:
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	// Lut Compute Shaders
+	FTransmittanceLutCSPtr TransmittanceCS;
 };

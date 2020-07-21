@@ -52,6 +52,11 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
+
+	// Init Lut Shaders
+	TransmittanceCS = ti_new FTransmittanceLutCS();
+	TransmittanceCS->Finalize();
+	TransmittanceCS->PrepareResources(RHI);
 }
 
 void FSkyAtmosphereRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -85,6 +90,14 @@ void FSkyAtmosphereRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 
 void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	RHI->BeginComputeTask();
+	{
+		RHI->BeginEvent("TransmittanceLut");
+		TransmittanceCS->Run(RHI);
+		RHI->EndEvent();
+	}
+	RHI->EndComputeTask();
+
 	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 

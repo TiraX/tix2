@@ -11,7 +11,7 @@
 
 #define TransmittanceLut_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
@@ -20,13 +20,15 @@
 cbuffer FAtmosphereParam : register(b0)
 {
     float4 TransmittanceLutSizeAndInv;  // xy = Size; zw = InvSize;
-    float4 RadiusRange;    // x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
-	float TransmittanceSampleCount;
-	float MiePhaseG;
-	float ViewPreExposure;
-	float MieDensityExpScale;
-	float RayleighDensityExpScale;
-	float AbsorptionDensity0LayerWidth;
+    float4 RadiusRange;		// x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
+	float4 MieRayleigh;		// x = MiePhaseG; y = MieDensityExpScale; z = RayleighDensityExpScale; w = 1;
+	//float MiePhaseG;
+	//float MieDensityExpScale;
+	//float RayleighDensityExpScale;
+	float4 Params1;		// x = TransmittanceSampleCount; y = ViewPreExposure; z = AbsorptionDensity0LayerWidth; w = 1
+	//float TransmittanceSampleCount;
+	//float ViewPreExposure;
+	//float AbsorptionDensity0LayerWidth;
 	float4 AbsorptionDensity01MA;
 	float4 MieScattering;
 	float4 MieAbsorption;
@@ -36,7 +38,7 @@ cbuffer FAtmosphereParam : register(b0)
 	float4 GroundAlbedo;
 };
 
-RWTexture2D<float3> TransmittanceLut : register(u0);
+RWTexture2D<float4> TransmittanceLut : register(u0);
 
 static const float PI = 3.14159f;
 
@@ -218,11 +220,11 @@ MediumSampleRGB SampleMediumRGB(in float3 WorldPos)
 {
 	const float SampleHeight = max(0.0, (length(WorldPos) - RadiusRange.y));
 
-	const float DensityMie = exp(MieDensityExpScale * SampleHeight);
+	const float DensityMie = exp(MieRayleigh.y * SampleHeight);
 
-	const float DensityRay = exp(RayleighDensityExpScale * SampleHeight);
+	const float DensityRay = exp(MieRayleigh.z * SampleHeight);
 
-	const float DensityOzo = SampleHeight < AbsorptionDensity0LayerWidth ?
+	const float DensityOzo = SampleHeight < Params1.z ? //AbsorptionDensity0LayerWidth ?
 		saturate(AbsorptionDensity01MA.x * SampleHeight + AbsorptionDensity01MA.y) :	// We use saturate to allow the user to create plateau, and it is free on GCN.
 		saturate(AbsorptionDensity01MA.z * SampleHeight + AbsorptionDensity01MA.w);
 
@@ -316,7 +318,8 @@ SingleScatteringResult IntegrateSingleScatteredLuminance(
 	const float3 wi = Light0Dir;
 	const float3 wo = WorldDir;
 	float cosTheta = dot(wi, wo);
-	float MiePhaseValueLight0 = HgPhase(MiePhaseG, -cosTheta);
+	//float MiePhaseValueLight0 = HgPhase(MiePhaseG, -cosTheta);
+	float MiePhaseValueLight0 = HgPhase(MieRayleigh.x, -cosTheta);
 	float RayleighPhaseValueLight0 = RayleighPhase(cosTheta);
 
 	// Ray march the atmosphere to integrate optical depth
@@ -326,7 +329,7 @@ SingleScatteringResult IntegrateSingleScatteredLuminance(
 	float t = 0.f;
 	float tPrev = 0.f;
 
-	float3 ExposedLight0Illuminance = Light0Illuminance * ViewPreExposure;
+	float3 ExposedLight0Illuminance = Light0Illuminance * Params1.y;// ViewPreExposure;
 
 	float PixelNoise = DEFAULT_SAMPLE_OFFSET;
 	for (float SampleI = 0.f; SampleI < SampleCount; SampleI += 1.f)
@@ -447,7 +450,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
 	SamplingSetup Sampling;
 	Sampling.VariableSampleCount = false;
-	Sampling.SampleCountIni = TransmittanceSampleCount;
+	Sampling.SampleCountIni = Params1.x;// TransmittanceSampleCount;
 
 	const bool Ground = false;
 	const float DeviceZ = FarDepthValue;
@@ -463,5 +466,5 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	);
 
 	float3 Transmittance = exp(-ss.OpticalDepth);
-	TransmittanceLut[dispatchThreadId.xy] = Transmittance;
+	TransmittanceLut[dispatchThreadId.xy] = float4(Transmittance.xyz, 1.0);
 }
