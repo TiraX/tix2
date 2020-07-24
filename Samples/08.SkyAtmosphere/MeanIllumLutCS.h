@@ -8,6 +8,9 @@
 class FMeanIllumLutCS : public FComputeTask
 {
 public:
+	static const int32 LUT_W = 32;
+	static const int32 LUT_H = 32;
+
 	FMeanIllumLutCS();
 	virtual ~FMeanIllumLutCS();
 
@@ -15,22 +18,25 @@ public:
 	virtual void Run(FRHI* RHI) override;
 
 	void UpdataComputeParams(
-		FRHI* RHI
+		FRHI* RHI,
+		FUniformBufferPtr InAtmosphereParam,
+		FTexturePtr InTransmittanceLut
 	);
 
 private:
 	enum
 	{
-		SRV_SCENE_NORMAL,
-		SRV_SCENE_DEPTH,
-		SRV_RANDOM_TEXTURE,
-
-		UAV_AO_RESULT,
+		SRV_LUT_TRANSMITTANCE,
+		UAV_LUT_RESULT,
 
 		PARAM_TOTAL_COUNT,
 	};
 
 private:
+	FRenderResourceTablePtr ResourceTable;
 
+	FUniformBufferPtr AtmosphereParam;
+	FTexturePtr TransmittanceLut;
+	FTexturePtr MultiScatteredLuminanceLut;
 };
 typedef TI_INTRUSIVE_PTR(FMeanIllumLutCS) FMeanIllumLutCSPtr;

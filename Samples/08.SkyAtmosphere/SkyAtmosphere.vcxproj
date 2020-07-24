@@ -182,6 +182,7 @@
     <ClInclude Include="CameraVolumeLut.h" />
     <ClInclude Include="DistantSkyLightLut.h" />
     <ClInclude Include="MeanIllumLutCS.h" />
+    <ClInclude Include="Shaders\Dx12\S_SkyAtomsphere.h" />
     <ClInclude Include="SkyAtmosphereRenderer.h" />
     <ClInclude Include="SkyAtmosphereTicker.h" />
     <ClInclude Include="SkyViewLut.h" />

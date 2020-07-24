@@ -63,6 +63,9 @@
     <ClInclude Include="TransmittanceLutCS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\Dx12\S_SkyAtomsphere.h">
+      <Filter>Source Files\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">

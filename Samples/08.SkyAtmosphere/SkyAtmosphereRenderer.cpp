@@ -57,6 +57,32 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	TransmittanceCS = ti_new FTransmittanceLutCS();
 	TransmittanceCS->Finalize();
 	TransmittanceCS->PrepareResources(RHI);
+
+	MeanIllumLutCS = ti_new FMeanIllumLutCS();
+	MeanIllumLutCS->Finalize();
+	MeanIllumLutCS->PrepareResources(RHI);
+
+	// Init Atmosphere uniform param
+	AtmosphereParam = ti_new FAtmosphereParam;
+	AtmosphereParam->UniformBufferData[0].TransmittanceLutSizeAndInv = 
+		FFloat4(float(FTransmittanceLutCS::LUT_W), float(FTransmittanceLutCS::LUT_H), 
+		1.f / float(FTransmittanceLutCS::LUT_W), 1.f / float(FTransmittanceLutCS::LUT_H));
+	AtmosphereParam->UniformBufferData[0].MultiScatteredLuminanceLutSizeAndInv = 
+		FFloat4(float(FMeanIllumLutCS::LUT_W), float(FMeanIllumLutCS::LUT_H), 
+		1.f / float(FMeanIllumLutCS::LUT_W), 1.f / float(FMeanIllumLutCS::LUT_H));
+	const float TopRadiusKm = 6420.f;
+	const float BottomRadiusKm = 6360.f;
+	AtmosphereParam->UniformBufferData[0].RadiusRange = FFloat4(TopRadiusKm, BottomRadiusKm, sqrt(TopRadiusKm * TopRadiusKm - BottomRadiusKm * BottomRadiusKm), BottomRadiusKm * BottomRadiusKm);
+	AtmosphereParam->UniformBufferData[0].MieRayleigh = FFloat4(0.8f, -0.83333f, -0.125f, 1.f);
+	AtmosphereParam->UniformBufferData[0].Params1 = FFloat4(10.f, 1.f, 25.f, 15.f);
+	AtmosphereParam->UniformBufferData[0].AbsorptionDensity01MA = FFloat4(0.06667f, -0.6667f, -0.06667f, 2.66667f);
+	AtmosphereParam->UniformBufferData[0].MieScattering = FFloat4(0.004f, 0.004f, 0.004f, 0.004f);
+	AtmosphereParam->UniformBufferData[0].MieAbsorption = FFloat4(0.00044f, 0.00044f, 0.00044f, 0.00044f);
+	AtmosphereParam->UniformBufferData[0].MieExtinction = FFloat4(0.00444f, 0.00444f, 0.00444f, 0.00444f);
+	AtmosphereParam->UniformBufferData[0].RayleighScattering = FFloat4(0.0058f, 0.01356f, 0.0331f, 1.f);
+	AtmosphereParam->UniformBufferData[0].AbsorptionExtinction = FFloat4(0.00065f, 0.00188f, 0.00008f, 1.f);
+	AtmosphereParam->UniformBufferData[0].GroundAlbedo = FFloat4(0.40198f, 0.40198f, 0.40198f, 1.f);
+	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FSkyAtmosphereRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -90,10 +116,17 @@ void FSkyAtmosphereRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 
 void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	TransmittanceCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer);
+	MeanIllumLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture());
+
 	RHI->BeginComputeTask();
 	{
 		RHI->BeginEvent("TransmittanceLut");
 		TransmittanceCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("MeanIllumLut");
+		MeanIllumLutCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();
