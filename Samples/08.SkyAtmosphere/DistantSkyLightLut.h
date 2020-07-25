@@ -8,6 +8,9 @@
 class FDistantSkyLightLutCS : public FComputeTask
 {
 public:
+	static const int32 LUT_W = 1;
+	static const int32 LUT_H = 1;
+
 	FDistantSkyLightLutCS();
 	virtual ~FDistantSkyLightLutCS();
 
@@ -15,22 +18,31 @@ public:
 	virtual void Run(FRHI* RHI) override;
 
 	void UpdataComputeParams(
-		FRHI* RHI
+		FRHI* RHI,
+		FUniformBufferPtr InAtmosphereParam,
+		FTexturePtr InTransmittanceLut,
+		FTexturePtr InMultiScatteredLuminanceLut
 	);
 
 private:
 	enum
 	{
-		SRV_SCENE_NORMAL,
-		SRV_SCENE_DEPTH,
-		SRV_RANDOM_TEXTURE,
-
-		UAV_AO_RESULT,
+		SRV_LUT_TRANSMITTANCE,
+		SRV_LUT_MULTI_SCATTERED_LUMINANCE,
+		SRV_SPHERE_SAMPLES,
+		UAV_LUT_RESULT,
 
 		PARAM_TOTAL_COUNT,
 	};
 
 private:
+	FRenderResourceTablePtr ResourceTable;
 
+	FUniformBufferPtr AtmosphereParam;
+	FTexturePtr TransmittanceLut;
+	FTexturePtr MultiScatteredLuminanceLut;
+	FUniformBufferPtr UniformSphereSamplesBuffer;
+
+	FTexturePtr DistantSkyLightLut;
 };
 typedef TI_INTRUSIVE_PTR(FDistantSkyLightLutCS) FDistantSkyLightLutCSPtr;

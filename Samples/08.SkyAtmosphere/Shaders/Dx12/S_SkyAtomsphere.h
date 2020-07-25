@@ -14,6 +14,7 @@ cbuffer FAtmosphereParam : register(b0)
 {
     float4 TransmittanceLutSizeAndInv;  // xy = Size; zw = InvSize;
 	float4 MultiScatteredLuminanceLutSizeAndInv;
+	float4 SkyViewLutSizeAndInv;
     float4 RadiusRange;		// x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
 	float4 MieRayleigh;		// x = MiePhaseG; y = MieDensityExpScale; z = RayleighDensityExpScale; w = MultiScatteringFactor;
 	//float MiePhaseG;
@@ -32,6 +33,13 @@ cbuffer FAtmosphereParam : register(b0)
 	float4 RayleighScattering;
 	float4 AbsorptionExtinction;
 	float4 GroundAlbedo;
+
+	float4 AtmosphereLightDirection0;
+	float4 AtmosphereLightDirection1;
+	float4 AtmosphereLightColor0;
+	float4 AtmosphereLightColor1;
+	float4 SkyLuminanceFactor;
+	float4 DistantSkyLightSampleAltitude;
 };
 
 static const float PI = 3.14159f;

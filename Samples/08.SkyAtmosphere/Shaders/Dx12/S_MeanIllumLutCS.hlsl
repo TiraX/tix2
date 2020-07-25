@@ -29,10 +29,10 @@ SingleScatteringResult IntegrateSingleScatteredLuminance(
 	in float tMaxMax = 9000000.f)
 {
 	SingleScatteringResult Result;
-	Result.L = 0;
-	Result.OpticalDepth = 0;
-	Result.Transmittance = 1.f;
-	Result.MultiScatAs1 = 0;
+	Result.L = float3(0.f, 0.f, 0.f);
+	Result.OpticalDepth = float3(0.f, 0.f, 0.f);
+	Result.Transmittance = float3(1.f, 1.f, 1.f);
+	Result.MultiScatAs1 = float3(0.f, 0.f, 0.f);
 
 	if (dot(WorldPos, WorldPos) <= RadiusRange.w)
 	{

@@ -23,6 +23,10 @@ public:
 		FTexturePtr InTransmittanceLut
 	);
 
+	FTexturePtr GetMultiScatteredLuminanceLut()
+	{
+		return MultiScatteredLuminanceLut;
+	}
 private:
 	enum
 	{

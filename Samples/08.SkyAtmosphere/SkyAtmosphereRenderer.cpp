@@ -62,14 +62,21 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	MeanIllumLutCS->Finalize();
 	MeanIllumLutCS->PrepareResources(RHI);
 
+	DistantSkyLightLutCS = ti_new FDistantSkyLightLutCS();
+	DistantSkyLightLutCS->Finalize();
+	DistantSkyLightLutCS->PrepareResources(RHI);
+
 	// Init Atmosphere uniform param
 	AtmosphereParam = ti_new FAtmosphereParam;
 	AtmosphereParam->UniformBufferData[0].TransmittanceLutSizeAndInv = 
 		FFloat4(float(FTransmittanceLutCS::LUT_W), float(FTransmittanceLutCS::LUT_H), 
 		1.f / float(FTransmittanceLutCS::LUT_W), 1.f / float(FTransmittanceLutCS::LUT_H));
-	AtmosphereParam->UniformBufferData[0].MultiScatteredLuminanceLutSizeAndInv = 
-		FFloat4(float(FMeanIllumLutCS::LUT_W), float(FMeanIllumLutCS::LUT_H), 
-		1.f / float(FMeanIllumLutCS::LUT_W), 1.f / float(FMeanIllumLutCS::LUT_H));
+	AtmosphereParam->UniformBufferData[0].MultiScatteredLuminanceLutSizeAndInv =
+		FFloat4(float(FMeanIllumLutCS::LUT_W), float(FMeanIllumLutCS::LUT_H),
+			1.f / float(FMeanIllumLutCS::LUT_W), 1.f / float(FMeanIllumLutCS::LUT_H));
+	AtmosphereParam->UniformBufferData[0].SkyViewLutSizeAndInv =
+		FFloat4(float(FDistantSkyLightLutCS::LUT_W), float(FDistantSkyLightLutCS::LUT_H),
+			1.f / float(FDistantSkyLightLutCS::LUT_W), 1.f / float(FDistantSkyLightLutCS::LUT_H));
 	const float TopRadiusKm = 6420.f;
 	const float BottomRadiusKm = 6360.f;
 	AtmosphereParam->UniformBufferData[0].RadiusRange = FFloat4(TopRadiusKm, BottomRadiusKm, sqrt(TopRadiusKm * TopRadiusKm - BottomRadiusKm * BottomRadiusKm), BottomRadiusKm * BottomRadiusKm);
@@ -82,6 +89,12 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	AtmosphereParam->UniformBufferData[0].RayleighScattering = FFloat4(0.0058f, 0.01356f, 0.0331f, 1.f);
 	AtmosphereParam->UniformBufferData[0].AbsorptionExtinction = FFloat4(0.00065f, 0.00188f, 0.00008f, 1.f);
 	AtmosphereParam->UniformBufferData[0].GroundAlbedo = FFloat4(0.40198f, 0.40198f, 0.40198f, 1.f);
+	AtmosphereParam->UniformBufferData[0].AtmosphereLightDirection0 = FFloat4(-0.96126f, 0.f, 0.27564f, 1.f);
+	AtmosphereParam->UniformBufferData[0].AtmosphereLightDirection1 = FFloat4(0.125f, 0.08333f, 0.66667f, 0.00391f);
+	AtmosphereParam->UniformBufferData[0].AtmosphereLightColor0 = FFloat4(10.f, 10.f, 10.f, 10.f);
+	AtmosphereParam->UniformBufferData[0].AtmosphereLightColor1 = FFloat4(0.f, 0.f, 0.f, 0.f);
+	AtmosphereParam->UniformBufferData[0].SkyLuminanceFactor = FFloat4(1.f, 1.f, 1.f, 1.f);
+	AtmosphereParam->UniformBufferData[0].DistantSkyLightSampleAltitude = FFloat4(6.f, 0.f, 0.f, 0.f);
 	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
@@ -118,6 +131,7 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	TransmittanceCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer);
 	MeanIllumLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture());
+	DistantSkyLightLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
 
 	RHI->BeginComputeTask();
 	{
@@ -127,6 +141,10 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		RHI->BeginEvent("MeanIllumLut");
 		MeanIllumLutCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("DistantSkyLightLut");
+		DistantSkyLightLutCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();
