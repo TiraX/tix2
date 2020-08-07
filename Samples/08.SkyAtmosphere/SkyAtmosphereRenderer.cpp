@@ -66,7 +66,13 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	DistantSkyLightLutCS->Finalize();
 	DistantSkyLightLutCS->PrepareResources(RHI);
 
+	SkyViewLutCS = ti_new FSkyViewLutCS();
+	SkyViewLutCS->Finalize();
+	SkyViewLutCS->PrepareResources(RHI);
+
 	// Init Atmosphere uniform param
+	const FViewProjectionInfo& ViewProjection = FRenderThread::Get()->GetRenderScene()->GetViewProjection();
+
 	AtmosphereParam = ti_new FAtmosphereParam;
 	AtmosphereParam->UniformBufferData[0].TransmittanceLutSizeAndInv = 
 		FFloat4(float(FTransmittanceLutCS::LUT_W), float(FTransmittanceLutCS::LUT_H), 
@@ -75,8 +81,8 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 		FFloat4(float(FMeanIllumLutCS::LUT_W), float(FMeanIllumLutCS::LUT_H),
 			1.f / float(FMeanIllumLutCS::LUT_W), 1.f / float(FMeanIllumLutCS::LUT_H));
 	AtmosphereParam->UniformBufferData[0].SkyViewLutSizeAndInv =
-		FFloat4(float(FDistantSkyLightLutCS::LUT_W), float(FDistantSkyLightLutCS::LUT_H),
-			1.f / float(FDistantSkyLightLutCS::LUT_W), 1.f / float(FDistantSkyLightLutCS::LUT_H));
+		FFloat4(float(FSkyViewLutCS::LUT_W), float(FSkyViewLutCS::LUT_H),
+			1.f / float(FSkyViewLutCS::LUT_W), 1.f / float(FSkyViewLutCS::LUT_H));
 	const float TopRadiusKm = 6420.f;
 	const float BottomRadiusKm = 6360.f;
 	AtmosphereParam->UniformBufferData[0].RadiusRange = FFloat4(TopRadiusKm, BottomRadiusKm, sqrt(TopRadiusKm * TopRadiusKm - BottomRadiusKm * BottomRadiusKm), BottomRadiusKm * BottomRadiusKm);
@@ -95,6 +101,31 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	AtmosphereParam->UniformBufferData[0].AtmosphereLightColor1 = FFloat4(0.f, 0.f, 0.f, 0.f);
 	AtmosphereParam->UniformBufferData[0].SkyLuminanceFactor = FFloat4(1.f, 1.f, 1.f, 1.f);
 	AtmosphereParam->UniformBufferData[0].DistantSkyLightSampleAltitude = FFloat4(6.f, 0.f, 0.f, 0.f);
+	AtmosphereParam->UniformBufferData[0].ViewForward = FFloat4(-0.99351f, 0.07306f, -0.08719f, 0.f);
+	AtmosphereParam->UniformBufferData[0].ViewRight = FFloat4(-0.07334f, -0.99731f, -2.31944e-8f, 0.f);
+	AtmosphereParam->UniformBufferData[0].SkySampleParam = FFloat4(4.f, 32.f, 0.00667f, 1.f);// x = FastSkySampleCountMin; y = FastSkySampleCountMax; z = FastSkyDistanceToSampleCountMaxInv; w = 1
+	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 0.f);
+	AtmosphereParam->UniformBufferData[0].SkyPlanetCenterAndViewHeight = FFloat4(0.f, 0.f, -6.36e6f, 6.36e6f);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDirection0 = FFloat4(-0.96126f, 0.f, 0.27564f, 1.f);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDirection1 = FFloat4(0.f, 0.f, 1.f, 1.f);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor0 = FFloat4(10.f, 10.f, 10.f, 1.f);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor1 = FFloat4(0.f, 0.f, 0.f, 0.f);
+
+	const float InvRTW = 1.f / RTWidth;
+	const float InvRTH = 1.f / RTHeight;
+	float Mx = 2.f * InvRTW;
+	float My = -2.f * InvRTH;
+	float Ax = -1.f;
+	float Ay = 1.f;
+	matrix4 mat(Mx, 0, 0, 0,
+		0, My, 0, 0,
+		0, 0, 1, 0,
+		Ax, Ay, 0, 1);
+	matrix4 MatVP = ViewProjection.MatProj * ViewProjection.MatView;
+	matrix4 InvVP;
+	MatVP.getInverse(InvVP);
+	AtmosphereParam->UniformBufferData[0].SVPositionToTranslatedWorld = mat * InvVP;
+
 	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
@@ -129,9 +160,31 @@ void FSkyAtmosphereRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 
 void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	int32 RTW = RHI->GetViewport().Width;
+	int32 RTH = RHI->GetViewport().Height;
+	const FViewProjectionInfo& ViewProjection = Scene->GetViewProjection();
+	const float InvRTW = 1.f / RTW;
+	const float InvRTH = 1.f / RTH;
+	float Mx = 2.f * InvRTW;
+	float My = -2.f * InvRTH;
+	float Ax = -1.f;
+	float Ay = 1.f;
+	matrix4 mat(Mx, 0, 0, 0,
+		0, My, 0, 0,
+		0, 0, 1, 0,
+		Ax, Ay, 0, 1);
+	matrix4 MatVP = ViewProjection.MatProj * ViewProjection.MatView;
+	matrix4 InvVP;
+	MatVP.getInverse(InvVP);
+	AtmosphereParam->UniformBufferData[0].SVPositionToTranslatedWorld = mat * InvVP;
+	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 0.f);
+
+	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+
 	TransmittanceCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer);
 	MeanIllumLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture());
 	DistantSkyLightLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
+	SkyViewLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
 
 	RHI->BeginComputeTask();
 	{
@@ -145,6 +198,10 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		RHI->BeginEvent("DistantSkyLightLut");
 		DistantSkyLightLutCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("SkyViewLut");
+		SkyViewLutCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();

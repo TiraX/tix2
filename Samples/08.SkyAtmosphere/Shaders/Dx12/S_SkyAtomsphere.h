@@ -40,6 +40,19 @@ cbuffer FAtmosphereParam : register(b0)
 	float4 AtmosphereLightColor1;
 	float4 SkyLuminanceFactor;
 	float4 DistantSkyLightSampleAltitude;
+
+	float4 ViewForward;
+	float4 ViewRight;
+	float FastSkySampleCountMin;
+	float FastSkySampleCountMax;
+	float FastSkyDistanceToSampleCountMaxInv;
+	float4 SkyWorldCameraOrigin;	// perframe, should be isolated
+	float4 SkyPlanetCenterAndViewHeight;
+	float4 View_AtmosphereLightDirection0;
+	float4 View_AtmosphereLightDirection1;
+	float4 View_AtmosphereLightColor0;
+	float4 View_AtmosphereLightColor1;
+	float4x4 SVPositionToTranslatedWorld;
 };
 
 static const float PI = 3.14159f;
@@ -47,6 +60,9 @@ static const float PI = 3.14159f;
 ////////////////////////////////////////////////////////////
 // LUT functions
 ////////////////////////////////////////////////////////////
+
+float2 FromUnitToSubUvs(float2 uv, float4 SizeAndInvSize) { return (uv + 0.5f * SizeAndInvSize.zw) * (SizeAndInvSize.xy / (SizeAndInvSize.xy + 1.0f)); }
+float2 FromSubUvsToUnit(float2 uv, float4 SizeAndInvSize) { return (uv - 0.5f * SizeAndInvSize.zw) * (SizeAndInvSize.xy / (SizeAndInvSize.xy - 1.0f)); }
 
 // Transmittance LUT function parameterisation from Bruneton 2017 https://github.com/ebruneton/precomputed_atmospheric_scattering
 // uv in [0,1]

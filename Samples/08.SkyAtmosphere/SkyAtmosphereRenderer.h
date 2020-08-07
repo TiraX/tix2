@@ -7,39 +7,8 @@
 #include "TransmittanceLutCS.h"
 #include "MeanIllumLutCS.h"
 #include "DistantSkyLightLut.h"
+#include "SkyViewLut.h"
 
-
-//cbuffer FAtmosphereParam : register(b0)
-//{
-//	float4 TransmittanceLutSizeAndInv;  // xy = Size; zw = InvSize;
-//	float4 MultiScatteredLuminanceLutSizeAndInv;
-//	float4 SkyViewLutSizeAndInv;
-//	float4 RadiusRange;		// x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
-//	float4 MieRayleigh;		// x = MiePhaseG; y = MieDensityExpScale; z = RayleighDensityExpScale; w = MultiScatteringFactor;
-//	//float MiePhaseG;
-//	//float MieDensityExpScale;
-//	//float RayleighDensityExpScale;
-//	//float MultiScatteringFactor;
-//	float4 Params1;		// x = TransmittanceSampleCount; y = ViewPreExposure; z = AbsorptionDensity0LayerWidth; w = MultiScatteringSampleCount
-//	//float TransmittanceSampleCount;
-//	//float ViewPreExposure;
-//	//float AbsorptionDensity0LayerWidth;
-//	//float MultiScatteringSampleCount;
-//	float4 AbsorptionDensity01MA;
-//	float4 MieScattering;
-//	float4 MieAbsorption;
-//	float4 MieExtinction;
-//	float4 RayleighScattering;
-//	float4 AbsorptionExtinction;
-//	float4 GroundAlbedo;
-//
-//	float DistantSkyLightSampleAltitude;
-//	float4 AtmosphereLightDirection0;
-//	float4 AtmosphereLightDirection1;
-//	float4 AtmosphereLightColor0;
-//	float4 AtmosphereLightColor1;
-//	float4 SkyLuminanceFactor;
-//};
 BEGIN_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, TransmittanceLutSizeAndInv)	// xy = Size; zw = InvSize;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MultiScatteredLuminanceLutSizeAndInv)	// xy = Size; zw = InvSize;
@@ -60,6 +29,16 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, AtmosphereLightColor1)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, SkyLuminanceFactor)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, DistantSkyLightSampleAltitude)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ViewForward)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ViewRight)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, SkySampleParam)	// x = FastSkySampleCountMin; y = FastSkySampleCountMax; z = FastSkyDistanceToSampleCountMaxInv; w = 1
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, SkyWorldCameraOrigin)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, SkyPlanetCenterAndViewHeight)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightDirection0)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightDirection1)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightColor0)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightColor1)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, SVPositionToTranslatedWorld)
 END_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 
 class FSkyAtmosphereRenderer : public FDefaultRenderer
@@ -89,4 +68,5 @@ private:
 	FTransmittanceLutCSPtr TransmittanceCS;
 	FMeanIllumLutCSPtr MeanIllumLutCS;
 	FDistantSkyLightLutCSPtr DistantSkyLightLutCS;
+	FSkyViewLutCSPtr SkyViewLutCS;
 };

@@ -1,255 +1,410 @@
-//*********************************************************
-//
-// Copyright (c) Microsoft. All rights reserved.
-// This code is licensed under the MIT License (MIT).
-// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
-// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
-// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
-//
-//*********************************************************
+#include "S_SkyAtomsphere.h"
 
-#define GTAO_RootSig \
+#define SkyViewLut_RootSig \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))," \
+    "DescriptorTable(SRV(t0, numDescriptors=2), UAV(u0, numDescriptors=1))," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_CLAMP, " \
                       "addressV = TEXTURE_ADDRESS_CLAMP, " \
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
-                        "filter = FILTER_MIN_MAG_MIP_POINT)"
+                        "filter = FILTER_MIN_MAG_MIP_LINEAR)"
 
-static const float PI = 3.14159f;
-static const float PI_HALF = PI * 0.5f;
-static const int MAX_DIR = 16;
-static const float MAX_DIR_INV = 1.0 / float(MAX_DIR);
-static const int MAX_STEPS = 12;
-static const float STEP_LENGTH = 2.f;
-static const float ANGLE_STEP = PI * 2.f / MAX_DIR;
-static const int RAND_TEX_SIZE = 64 - 1;
+Texture2D<float4> TransmittanceLut : register(t0);
+Texture2D<float4> MultiScatteredLuminanceLut : register(t1);
+RWTexture2D<float4> SkyViewLut : register(u0);
+SamplerState LinearSampler : register(s0);
 
-#define SSAO_LIMIT 100
-#define SSAO_SAMPLES 4
-#define SSAO_RADIUS 2.5
-#define SSAO_FALLOFF 1.5
-#define SSAO_THICKNESSMIX 0.2
-#define SSAO_MAX_STRIDE 32
-
-cbuffer FInfoUniform : register(b0)
+// 4th order polynomial approximation
+// 4 VGRP, 16 ALU Full Rate
+// 7 * 10^-5 radians precision
+// Reference : Handbook of Mathematical Functions (chapter : Elementary Transcendental Functions), M. Abramowitz and I.A. Stegun, Ed.
+float acosFast4(float inX)
 {
-    float4 ScreenSize;  // xy = Size; zw = InvSize;
-    float4 FocalLen;    // xy = FocalLen; zw = InvFocalLen;
-    float4 Radius;      // x = radius; y = radius^2; z = 1.0/radius
-};
+	float x1 = abs(inX);
+	float x2 = x1 * x1;
+	float x3 = x2 * x1;
+	float s;
 
-Texture2D<float4> SceneNormal : register(t0);
-Texture2D<float> SceneDepth : register(t1);
-Texture2D<float4> RandomTex : register(t2);
+	s = -0.2121144f * x1 + 1.5707288f;
+	s = 0.0742610f * x2 + s;
+	s = -0.0187293f * x3 + s;
+	s = sqrt(1.0f - x1) * s;
 
-RWTexture2D<float4> AOResult : register(u0);
-
-SamplerState PointSampler : register(s0);
-
-// Relative error : ~3.4% over full
-// Precise format : ~small float
-// 2 ALU
-float rsqrtFast(float x)
-{
-    int i = asint(x);
-    i = 0x5f3759df - (i >> 1);
-    return asfloat(i);
+	// acos function mirroring
+	// check per platform if compiles to a selector - no branch neeeded
+	return inX >= 0.0f ? s : PI - s;
 }
 
-// Relative error : < 0.7% over full
-// Precise format : ~small float
-// 1 ALU
-float sqrtFast(float x)
+#define M_TO_SKY_UNIT 0.001f
+
+float3 GetCameraPlanetPos()
 {
-    int i = asint(x);
-    i = 0x1FBD1DF5 + (i >> 1);
-    return asfloat(i);
+	return (SkyWorldCameraOrigin.xyz - SkyPlanetCenterAndViewHeight.xyz) * M_TO_SKY_UNIT;
 }
 
-// max absolute error 9.0x10^-3
-// Eberly's polynomial degree 1 - respect bounds
-// 4 VGPR, 12 FR (8 FR, 1 QR), 1 scalar
-// input [-1, 1] and output [0, PI]
-float acosFast(float inX)
+float3x3 GetSkyViewLutReferential(in float3 WorldPos, in float3 ViewForward, in float3 ViewRight)
 {
-    float x = abs(inX);
-    float res = -0.156583f * x + (0.5 * PI);
-    res *= sqrtFast(1.0f - x);
-    return (inX >= 0) ? res : PI - res;
+	float3 Up = normalize(WorldPos);
+	float3 Forward = ViewForward;
+	float3 Left = normalize(cross(Forward, Up));
+	if (abs(dot(Forward, Up)) > 0.99f)
+	{
+		Left = -ViewRight;
+	}
+	Forward = normalize(cross(Up, Left));
+	float3x3 LocalReferencial = transpose(float3x3(Forward, Left, Up));
+	return LocalReferencial;
 }
 
-// Same cost as acosFast + 1 FR
-// Same error
-// input [-1, 1] and output [-PI/2, PI/2]
-float asinFast(float x)
+// SkyViewLut is a new texture used for fast sky rendering.
+// It is low resolution of the sky rendering around the camera,
+// basically a lat/long parameterisation with more texel close to the horizon for more accuracy during sun set.
+
+void UvToSkyViewLutParams(out float3 ViewDir, in float ViewHeight, in float2 UV)
 {
-    return (0.5 * PI) - acosFast(x);
+	// Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
+	UV = FromSubUvsToUnit(UV, SkyViewLutSizeAndInv);
+
+	float Vhorizon = sqrt(ViewHeight * ViewHeight - RadiusRange.w);
+	float CosBeta = Vhorizon / ViewHeight;				// cos of zenith angle from horizon to zeniht
+	float Beta = acosFast4(CosBeta);
+	float ZenithHorizonAngle = PI - Beta;
+
+	float ViewZenithAngle;
+	if (UV.y < 0.5f)
+	{
+		float Coord = 2.0f * UV.y;
+		Coord = 1.0f - Coord;
+		Coord *= Coord;
+		Coord = 1.0f - Coord;
+		ViewZenithAngle = ZenithHorizonAngle * Coord;
+	}
+	else
+	{
+		float Coord = UV.y * 2.0f - 1.0f;
+		Coord *= Coord;
+		ViewZenithAngle = ZenithHorizonAngle + Beta * Coord;
+	}
+	float CosViewZenithAngle = cos(ViewZenithAngle);
+	float SinViewZenithAngle = sqrt(1.0 - CosViewZenithAngle * CosViewZenithAngle) * (ViewZenithAngle > 0.0f ? 1.0f : -1.0f); // Equivalent to sin(ViewZenithAngle)
+
+	float LongitudeViewCosAngle = UV.x * 2.0f * PI;
+
+	// Make sure those values are in range as it could disrupt other math done later such as sqrt(1.0-c*c)
+	float CosLongitudeViewCosAngle = cos(LongitudeViewCosAngle);
+	float SinLongitudeViewCosAngle = sqrt(1.0 - CosLongitudeViewCosAngle * CosLongitudeViewCosAngle) * (LongitudeViewCosAngle <= PI ? 1.0f : -1.0f); // Equivalent to sin(LongitudeViewCosAngle)
+	ViewDir = float3(
+		SinViewZenithAngle * CosLongitudeViewCosAngle,
+		SinViewZenithAngle * SinLongitudeViewCosAngle,
+		CosViewZenithAngle
+		);
 }
 
-float3 ScreenToViewPos(float2 UV, float Depth)
+bool MoveToTopAtmosphere(inout float3 WorldPos, in float3 WorldDir, in float AtmosphereTopRadius)
 {
-    UV = UV * float2(2.0, 2.0) - float2(1.0, 1.0);
-    return float3(UV * FocalLen.zw * Depth, Depth);
+	float ViewHeight = length(WorldPos);
+	if (ViewHeight > AtmosphereTopRadius)
+	{
+		float TTop = RaySphereIntersectNearest(WorldPos, WorldDir, float3(0.0f, 0.0f, 0.0f), AtmosphereTopRadius);
+		if (TTop >= 0.0f)
+		{
+			float3 UpVector = WorldPos / ViewHeight;
+			float3 UpOffset = UpVector * -0.001f;
+			WorldPos = WorldPos + WorldDir * TTop + UpOffset;
+		}
+		else
+		{
+
+			return false;
+		}
+	}
+	return true;
 }
 
-float3 ScreenToViewPos(float2 UV)
+float4 GetScreenWorldPos(float4 SVPos, float DeviceZ)
 {
-    float Depth = SceneDepth.SampleLevel(PointSampler, UV, 0);
-    return ScreenToViewPos(UV, Depth);
+
+	DeviceZ = max(0.000000000001, DeviceZ);
+
+	float4 Pos = mul(float4(SVPos.xyz, 1.f), SVPositionToTranslatedWorld);
+	float3 P = Pos.xyz / Pos.w;
+	return float4(P, 1.f);
 }
 
-float tangent(float3 T)
+float3 GetTransmittance(in float LightZenithCosAngle, in float PHeight)
 {
-    return -T.z / length(T.xy);
+	float2 UV;
+	LutTransmittanceParamsToUv(PHeight, LightZenithCosAngle, UV);
+	float3 TransmittanceToLight = TransmittanceLut.SampleLevel(LinearSampler, UV, 0).rgb;
+	return TransmittanceToLight;
 }
 
-float tangent(float3 P, float3 S)
+float3 GetMultipleScattering(float3 WorlPos, float ViewZenithCosAngle)
 {
-    return (P.z - S.z) / length(S.xy - P.xy);
+	float2 UV = saturate(float2(ViewZenithCosAngle * 0.5f + 0.5f, (length(WorlPos) - RadiusRange.y) / (RadiusRange.x - RadiusRange.y)));
+
+	float3 MultiScatteredLuminance = MultiScatteredLuminanceLut.SampleLevel(LinearSampler, UV, 0).rgb;
+	return MultiScatteredLuminance;
 }
 
-float3 MinDiff(float3 P, float3 R, float3 L)
+SingleScatteringResult IntegrateSingleScatteredLuminance(
+	in float4 SVPos, in float3 WorldPos, in float3 WorldDir,
+	in bool Ground, in SamplingSetup Sampling, in float DeviceZ, in bool MieRayPhase,
+	in float3 Light0Dir, in float3 Light1Dir, in float3 Light0Illuminance, in float3 Light1Illuminance,
+	in float AerialPespectiveViewDistanceScale,
+	in float tMaxMax = 9000000.f)
 {
-    float3 V1 = R - P;
-    float3 V2 = P - L;
-    return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
+	SingleScatteringResult Result;
+	Result.L = 0;
+	Result.OpticalDepth = 0;
+	Result.Transmittance = 1.f;
+	Result.MultiScatAs1 = 0;
+
+	if (dot(WorldPos, WorldPos) <= RadiusRange.w)
+	{
+		return Result;	// Camera is inside the planet ground
+	}
+
+	float2 PixPos = SVPos.xy;
+
+	// Compute next intersection with atmosphere or ground
+	float3 PlanetO = float3(0.f, 0.f, 0.f);
+	float tBottom = RaySphereIntersectNearest(WorldPos, WorldDir, PlanetO, RadiusRange.y);
+	float tTop = RaySphereIntersectNearest(WorldPos, WorldDir, PlanetO, RadiusRange.x);
+	float tMax = 0.f;
+	if (tBottom < 0.f)
+	{
+		if (tTop < 0.f)
+		{
+			tMax = 0.f;	// No intersection with planet nor its atmosphere: stop right away
+			return Result;
+		}
+		else
+		{
+			tMax = tTop;
+		}
+	}
+	else
+	{
+		if (tTop > 0.f)
+		{
+			tMax = min(tTop, tBottom);
+		}
+	}
+
+	float PlanetOnOpaque = 1.f;	// This is used to hide opaque meshes under the planet ground
+	if (DeviceZ != (0.f))
+	{
+		const float3 DepthBufferWorldPosKm = GetScreenWorldPos(SVPos, DeviceZ).xyz * M_TO_SKY_UNIT;
+		const float3 TraceStartWorldPosKm = WorldPos + SkyPlanetCenterAndViewHeight.xyz * M_TO_SKY_UNIT;
+		const float3 TraceStartToSurfaceWorldKm = DepthBufferWorldPosKm - TraceStartWorldPosKm;
+		float tDepth = length(TraceStartToSurfaceWorldKm);
+		if (tDepth < tMax)
+		{
+			tMax = tDepth;
+		}
+		else
+		{
+			// Artists did not like that we handle automatic hiding of opaque element behind the planet.
+			// Now, pixel under the surface of earht will receive aerial perspective as if they were  on the ground.
+			//PlanetOnOpaque = 0.0;
+		}
+
+		//if the ray intersects with the atmosphere boundary, make sure we do not apply atmosphere on surfaces are front of it. 
+		if (dot(WorldDir, TraceStartToSurfaceWorldKm) < 0.0)
+		{
+			return Result;
+		}
+	}
+	tMax = min(tMax, tMaxMax);
+
+	// Sample Count
+	float SampleCount = Sampling.SampleCountIni;
+	float SampleCountFloor = Sampling.SampleCountIni;
+	float tMaxFloor = tMax;
+	if (Sampling.VariableSampleCount)
+	{
+		SampleCount = lerp(Sampling.MinSampleCount, Sampling.MaxSampleCount, saturate(tMax * Sampling.DistanceToSampleCountMaxInv));
+		SampleCountFloor = floor(SampleCount);
+		tMaxFloor = tMax * SampleCountFloor / SampleCount;	// rescale tMax to map to the last entire step segment
+	}
+	float dt = tMax / SampleCount;
+
+	// Phase functions
+	const float uniformPhase = 1.f / (4.f * PI);
+	const float3 wi = Light0Dir;
+	const float3 wo = WorldDir;
+	float cosTheta = dot(wi, wo);
+	//float MiePhaseValueLight0 = HgPhase(MiePhaseG, -cosTheta);
+	float MiePhaseValueLight0 = HgPhase(MieRayleigh.x, -cosTheta);
+	float RayleighPhaseValueLight0 = RayleighPhase(cosTheta);
+
+	// Ray march the atmosphere to integrate optical depth
+	float3 L = 0.f;
+	float3 Throughput = 1.f;
+	float3 OpticalDepth = 0.f;
+	float t = 0.f;
+	float tPrev = 0.f;
+
+	float3 ExposedLight0Illuminance = Light0Illuminance * Params1.y;// ViewPreExposure;
+
+	float PixelNoise = DEFAULT_SAMPLE_OFFSET;
+	for (float SampleI = 0.f; SampleI < SampleCount; SampleI += 1.f)
+	{
+		// Compute Current ray t and sample point P
+		if (Sampling.VariableSampleCount)
+		{
+			// More expenssive but artefact free
+			float t0 = (SampleI) / SampleCountFloor;
+			float t1 = (SampleI + 1.f) / SampleCountFloor;
+
+			// Non linear distribution of samples within the range
+			t0 = t0 * t0;
+			t1 = t1 * t1;
+
+			// Make t0 and t1 world space distance
+			t0 = tMaxFloor * t0;
+			if (t1 > 1.f)
+			{
+				t1 = tMax;
+			}
+			else
+			{
+				t1 = tMaxFloor * t1;
+			}
+			t = t0 + (t1 - t0) * PixelNoise;
+			dt = t1 - t0;
+		}
+		else
+		{
+			t = tMax * (SampleI + PixelNoise) / SampleCount;
+		}
+		float3 P = WorldPos + t * WorldDir;
+		float PHeight = length(P);
+
+		// Sample the medium
+		MediumSampleRGB Medium = SampleMediumRGB(P);
+		const float3 SampleOpticalDepth = Medium.Extinction * dt * AerialPespectiveViewDistanceScale;
+		const float3 SampleTransmittance = exp(-SampleOpticalDepth);
+		OpticalDepth += SampleOpticalDepth;
+
+		// Phase and transmittance for light0
+		const float3 UpVector = P / PHeight;
+		float Light0ZenithCosAngle = dot(Light0Dir, UpVector);
+		float3 TransmittanceToLight0 = GetTransmittance(Light0ZenithCosAngle, PHeight);
+		float3 PhaseTimesScattering0;
+		if (MieRayPhase)
+		{
+			PhaseTimesScattering0 = Medium.ScatteringMie * MiePhaseValueLight0 + Medium.ScatteringRay * RayleighPhaseValueLight0;
+		}
+		else
+		{
+			PhaseTimesScattering0 = Medium.Scattering * uniformPhase;
+		}
+
+		// Multiple scattering approximation
+		float3 MultiScatteredLuminance0 = 0.f;
+		MultiScatteredLuminance0 = GetMultipleScattering(P, Light0ZenithCosAngle);
+
+		// Planet shadow
+		float tPlanet0 = RaySphereIntersectNearest(P, Light0Dir, PlanetO + 0.001f * UpVector, RadiusRange.y);
+		float PlanetShadow0 = tPlanet0 >= 0.f ? 0.f : 1.f;
+		// MultiScatteredLuminance is already pre-exposed, atmospheric light contribution needs to be pre exposed
+		// Multi-scattering is also not affected by PlanetShadow or TransmittanceToLight because it contains diffuse light after single scattering.
+		float3 S = ExposedLight0Illuminance * (PlanetShadow0 * TransmittanceToLight0 * PhaseTimesScattering0 + MultiScatteredLuminance0 * Medium.Scattering);
+
+		// When using the power serie to accumulate all sattering order, serie r must be <1 for a serie to converge. 
+		// Under extreme coefficient, MultiScatAs1 can grow larger and thus results in broken visuals. 
+		// The way to fix that is to use a proper analytical integration as porposed in slide 28 of http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/ 
+		// However, it is possible to disable as it can also work using simple power serie sum unroll up to 5th order. The rest of the orders has a really low contribution. 
+
+		// 1 is the integration of luminance over the 4pi of a sphere, and assuming an isotropic phase function of 1.0/(4*PI) 
+		Result.MultiScatAs1 += Throughput * Medium.Scattering * 1.0f * dt;
+
+		// See slide 28 at http://www.frostbite.com/2015/08/physically-based-unified-volumetric-rendering-in-frostbite/ 
+		float3 Sint = (S - S * SampleTransmittance) / Medium.Extinction;	// integrate along the current step segment 
+		L += Throughput * Sint;														// accumulate and also take into account the transmittance from previous steps
+		Throughput *= SampleTransmittance;
+
+		tPrev = t;
+	}
+
+	if (Ground && tMax == tBottom)
+	{
+		// Account for bounced light off the planet
+		float3 P = WorldPos + tBottom * WorldDir;
+		float PHeight = length(P);
+
+		const float3 UpVector = P / PHeight;
+		float Light0ZenithCosAngle = dot(Light0Dir, UpVector);
+		float3 TransmittanceToLight0 = GetTransmittance(Light0ZenithCosAngle, PHeight);
+
+		const float NdotL0 = saturate(dot(UpVector, Light0Dir));
+		L += Light0Illuminance * TransmittanceToLight0 * Throughput * NdotL0 * GroundAlbedo.rgb / PI;
+	}
+
+	Result.L = L;
+	Result.OpticalDepth = OpticalDepth;
+	Result.Transmittance = Throughput * PlanetOnOpaque;
+
+	return Result;
 }
 
-//----------------------------------------------------------------------------------
-float SearchForLargestAngle(float2 deltaUV,
-    float2 uv0,
-    float3 P,
-    float3 V,
-    float numSteps,
-    float randstep)
-{
-    // Randomize starting point within the first sample distance
-    //float2 uv = uv0 + snap_uv_offset(randstep * deltaUV);
-    float2 uv = uv0 +randstep * deltaUV;
+groupshared float3 GroupSkyLuminanceSamples[8 * 8];
 
-    float CosValue = -1;
-    for (float j = 1; j <= numSteps; ++j) {
-        uv += deltaUV;
-        float3 S = ScreenToViewPos(uv);
-
-        // Ignore any samples outside the radius of influence
-        float3 D = (S - P);
-        float D2 = dot(D, D);
-        if (D2 < Radius.y)
-        {
-            float Current = dot(normalize(D), V);
-
-            float Falloff = clamp((Radius.x - length(D)) / SSAO_FALLOFF, 0.f, 1.f);
-            if (Current > CosValue)
-                CosValue = Current;// lerp(CosValue, Current, Falloff);
-            //CosValue = lerp(CosValue, Current, SSAO_THICKNESSMIX * Falloff);
-        }
-    }
-
-    return CosValue;
-}
-
-float2 SearchAxisForAngles(float2 deltaUV,
-    float2 uv0,
-    float3 P,
-    float3 V,
-    float numSteps,
-    float randstep)
-{
-    float h1 = SearchForLargestAngle(deltaUV, uv0, P, V, numSteps, randstep);
-    float h2 = SearchForLargestAngle(-deltaUV, uv0, P, V, numSteps, randstep);
-
-    return float2(h1, h2);
-}
-
-float ComputeInnerIntegral(float2 Angles, float NoV, float n)
-{
-    float cosN = NoV;
-    float sinN = sqrt(1.f - NoV * NoV);
-    float a1 = -cos(Angles.x * 2.f - n);
-    float a2 = -cos(Angles.y * 2.f - n);
-
-    //return (a1 + cosN + Angles.x * 2.f * sinN + a2 + cosN + Angles.y * 2.f * sinN) * 0.25f;
-    return 2.f - cos(Angles.x) - cos(Angles.y);
-}
-
-float IntegrateArc(float h1, float h2, float n)
-{
-    float cosN = cos(n);
-    float sinN = sin(n);
-    return 0.25 * (-cos(2.0 * h1 - n) + cosN + 2.0 * h1 * sinN - cos(2.0 * h2 - n) + cosN + 2.0 * h2 * sinN);
-    //return 2.f - cos(h1) - cos(h2);
-}
-
-[RootSignature(GTAO_RootSig)]
+[RootSignature(SkyViewLut_RootSig)]
 [numthreads(8, 8, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    if (dispatchThreadId.x >= (uint)ScreenSize.x || dispatchThreadId.y >= (uint)ScreenSize.y)
-        return;
+	float2 PixPos = float2(dispatchThreadId.xy) + 0.5f;
+	float2 UV = PixPos * SkyViewLutSizeAndInv.zw;
 
-    float2 PixelCenter = dispatchThreadId.xy + float2(0.5, 0.5);
-    float2 UV = PixelCenter * ScreenSize.zw;
-    float3 P = ScreenToViewPos(UV);
-    float3 V = -normalize(P);
+	float3 WorldPos = GetCameraPlanetPos();
 
-    // Project radius from eye space to texture space
-    float2 StepSize = 0.5f * Radius.x * FocalLen.xy / P.z;
+	// For the sky view lut to work, and not be distorted, we need to transform the view and light directions 
+	// into a referential with UP being perpendicular to the ground. And with origin at the planet center.
 
-    // Early out if the projected radius is smaller than 1 pixel
-    float NumSteps = min(MAX_STEPS, min(StepSize.x * ScreenSize.x, StepSize.y * ScreenSize.y));
-    StepSize = StepSize / (float)(NumSteps + 1);
+	// This is the local referencial
+	float3x3 LocalReferencial = GetSkyViewLutReferential(WorldPos, ViewForward.xyz, ViewRight.xyz);
 
-    float3 L, R, T, B;
-    L = ScreenToViewPos(UV + float2(-ScreenSize.z, 0));
-    R = ScreenToViewPos(UV + float2(ScreenSize.z, 0));
-    T = ScreenToViewPos(UV + float2(0, ScreenSize.w));
-    B = ScreenToViewPos(UV + float2(0, -ScreenSize.w));
-    float3 N = normalize(cross(R - L, T - B));
+	// This is the LUT camera height and position in the local referential
+	float ViewHeight = length(WorldPos);
+	WorldPos = float3(0.f, 0.f, ViewHeight);
 
-    float Stride = 6;// min((1.0 / length(P)) * SSAO_LIMIT, SSAO_MAX_STRIDE);
-    float2 dirMult = ScreenSize.zw * Stride;
+	// Get the view direction in this local referential
+	float3 WorldDir;
+	UvToSkyViewLutParams(WorldDir, ViewHeight, UV);
+	// And also both light source direction
+	float3 AtmosphereLightDirection0 = View_AtmosphereLightDirection0.xyz;
+	AtmosphereLightDirection0 = mul(AtmosphereLightDirection0, LocalReferencial);
+	float3 AtmosphereLightDirection1 = View_AtmosphereLightDirection1.xyz;
+	AtmosphereLightDirection1 = mul(AtmosphereLightDirection1, LocalReferencial);
 
-    float3 dPdU = MinDiff(P, R, L);
-    float3 dPdV = MinDiff(P, T, B) * (ScreenSize.y * ScreenSize.z);
 
-    // load random (cos(alpha), sin(alpha), jitter)
-    float3 RandDir = RandomTex.Load(int3((int)(dispatchThreadId.x & RAND_TEX_SIZE), (int)(dispatchThreadId.y & RAND_TEX_SIZE), 0)).xyz;
-    RandDir = RandDir * 2.f - 1.f;
+	// Move to top atmospehre
+	if (!MoveToTopAtmosphere(WorldPos, WorldDir, RadiusRange.x))
+	{
+		// Ray is not intersecting the atmosphere
+		SkyViewLut[dispatchThreadId.xy] = float4(0.0f, 0.f, 0.f, 0.f);
+		return;
+	}
 
-    float3 debug = float3(2,2,2);
-    float AO = 0.f;
-    [unroll]
-    for (int d = 0; d < MAX_DIR; d++)
-    {
-        float2 Dir = float2(cos(d * ANGLE_STEP), sin(d * ANGLE_STEP));
-        float2 DeltaUV = float2(Dir.x * RandDir.x - Dir.y * RandDir.y, Dir.x * RandDir.y + Dir.y * RandDir.x) * StepSize.xy;
-    
-        // TODO , here do NOT need to sample depth in ScreenToViewPos
-        float3 toDir = ScreenToViewPos(UV + DeltaUV);
-        float3 planeNormal = normalize(cross(V, -toDir));
-        float3 projectedNormal = N - planeNormal * dot(N, planeNormal);
 
-        float3 projectedDir = normalize(normalize(toDir) + V);
-        float n = acosFast(dot(-projectedDir, normalize(projectedNormal))) - PI_HALF;
+	SamplingSetup Sampling;
+	{
+		Sampling.VariableSampleCount = true;
+		Sampling.MinSampleCount = FastSkySampleCountMin;
+		Sampling.MaxSampleCount = FastSkySampleCountMax;
+		Sampling.DistanceToSampleCountMaxInv = FastSkyDistanceToSampleCountMaxInv;
+	}
+	const bool Ground = false;
+	const float DeviceZ = FarDepthValue;
+	const bool MieRayPhase = true;
+	const float AerialPespectiveViewDistanceScale = 1.0f;
+	SingleScatteringResult ss = IntegrateSingleScatteredLuminance(
+		float4(PixPos, 0.0f, 1.0f), WorldPos, WorldDir,
+		Ground, Sampling, DeviceZ, MieRayPhase,
+		AtmosphereLightDirection0, AtmosphereLightDirection1, View_AtmosphereLightColor0.rgb, View_AtmosphereLightColor1.rgb,
+		AerialPespectiveViewDistanceScale);
 
-        float2 CosValues = SearchAxisForAngles(DeltaUV, UV, P, V, NumSteps, RandDir.z);
-
-        float h1a = -acosFast(CosValues.x);
-        float h2a = acosFast(CosValues.y);
-
-        float h1 = n + max(h1a - n, -PI_HALF);
-        float h2 = n + min(h2a - n, PI_HALF);
-
-        debug.x = h1a * 180.0f / PI;
-        debug.y = h2a * 180.0f / PI;
-        debug.z = n * 180.0f / PI;
-        AO += lerp(1.f, IntegrateArc(h1, h2, n), length(projectedNormal));
-    }
-
-    AO = AO / MAX_DIR;
-
-    AOResult[dispatchThreadId.xy] = float4(AO, AO, AO, 1);
+	SkyViewLut[dispatchThreadId.xy] = float4(ss.L, 1.f);
 }
