@@ -34,13 +34,6 @@ float acosFast4(float inX)
 	return inX >= 0.0f ? s : PI - s;
 }
 
-#define M_TO_SKY_UNIT 0.001f
-
-float3 GetCameraPlanetPos()
-{
-	return (SkyWorldCameraOrigin.xyz - SkyPlanetCenterAndViewHeight.xyz) * M_TO_SKY_UNIT;
-}
-
 float3x3 GetSkyViewLutReferential(in float3 WorldPos, in float3 ViewForward, in float3 ViewRight)
 {
 	float3 Up = normalize(WorldPos);
@@ -118,16 +111,6 @@ bool MoveToTopAtmosphere(inout float3 WorldPos, in float3 WorldDir, in float Atm
 		}
 	}
 	return true;
-}
-
-float4 GetScreenWorldPos(float4 SVPos, float DeviceZ)
-{
-
-	DeviceZ = max(0.000000000001, DeviceZ);
-
-	float4 Pos = mul(float4(SVPos.xyz, 1.f), SVPositionToTranslatedWorld);
-	float3 P = Pos.xyz / Pos.w;
-	return float4(P, 1.f);
 }
 
 float3 GetTransmittance(in float LightZenithCosAngle, in float PHeight)
@@ -392,9 +375,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	SamplingSetup Sampling;
 	{
 		Sampling.VariableSampleCount = true;
-		Sampling.MinSampleCount = FastSkySampleCountMin;
-		Sampling.MaxSampleCount = FastSkySampleCountMax;
-		Sampling.DistanceToSampleCountMaxInv = FastSkyDistanceToSampleCountMaxInv;
+		Sampling.MinSampleCount = SkySampleParam.x;// FastSkySampleCountMin;
+		Sampling.MaxSampleCount = SkySampleParam.y;// FastSkySampleCountMax;
+		Sampling.DistanceToSampleCountMaxInv = SkySampleParam.z;// FastSkyDistanceToSampleCountMaxInv;
 	}
 	const bool Ground = false;
 	const float DeviceZ = FarDepthValue;

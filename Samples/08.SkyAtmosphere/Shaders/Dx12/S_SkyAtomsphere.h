@@ -15,6 +15,17 @@ cbuffer FAtmosphereParam : register(b0)
     float4 TransmittanceLutSizeAndInv;  // xy = Size; zw = InvSize;
 	float4 MultiScatteredLuminanceLutSizeAndInv;
 	float4 SkyViewLutSizeAndInv;
+	float4 CameraAerialPerspectiveVolumeSizeAndInv;
+	float4 ViewSizeAndInv;
+
+	// x = CameraAerialPerspectiveVolumeDepthResolution; y = CameraAerialPerspectiveVolumeDepthResolutionInv
+	// z = CameraAerialPerspectiveVolumeDepthSliceLengthKm; w = CameraAerialPerspectiveVolumeDepthSliceLengthKmInv;
+	float4 CameraAerialPerspectiveVolumeDepthInfo;
+	float4 AerialPerspectiveInfo;	// x = AerialPerspectiveStartDepthKm; y = CameraAerialPerspectiveSampleCountPerSlice; z = AerialPespectiveViewDistanceScale;
+	//float AerialPerspectiveStartDepthKm;
+	//float CameraAerialPerspectiveSampleCountPerSlice;
+	//float AerialPespectiveViewDistanceScale;
+
     float4 RadiusRange;		// x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
 	float4 MieRayleigh;		// x = MiePhaseG; y = MieDensityExpScale; z = RayleighDensityExpScale; w = MultiScatteringFactor;
 	//float MiePhaseG;
@@ -43,9 +54,10 @@ cbuffer FAtmosphereParam : register(b0)
 
 	float4 ViewForward;
 	float4 ViewRight;
-	float FastSkySampleCountMin;
-	float FastSkySampleCountMax;
-	float FastSkyDistanceToSampleCountMaxInv;
+	float4 SkySampleParam;	// x = FastSkySampleCountMin; y = FastSkySampleCountMax; z = FastSkyDistanceToSampleCountMaxInv; w = 1
+	//float FastSkySampleCountMin;
+	//float FastSkySampleCountMax;
+	//float FastSkyDistanceToSampleCountMaxInv;
 	float4 SkyWorldCameraOrigin;	// perframe, should be isolated
 	float4 SkyPlanetCenterAndViewHeight;
 	float4 View_AtmosphereLightDirection0;
@@ -53,6 +65,7 @@ cbuffer FAtmosphereParam : register(b0)
 	float4 View_AtmosphereLightColor0;
 	float4 View_AtmosphereLightColor1;
 	float4x4 SVPositionToTranslatedWorld;
+	float4x4 ScreenToWorld;
 };
 
 static const float PI = 3.14159f;
@@ -268,3 +281,41 @@ MediumSampleRGB SampleMediumRGB(in float3 WorldPos)
 #define FarDepthValue 0.f
 #define DEFAULT_SAMPLE_OFFSET 0.3f
 
+#define M_TO_SKY_UNIT 0.001f
+
+float3 GetCameraPlanetPos()
+{
+	return (SkyWorldCameraOrigin.xyz - SkyPlanetCenterAndViewHeight.xyz) * M_TO_SKY_UNIT;
+}
+
+float4 GetScreenWorldPos(float4 SVPos, float DeviceZ)
+{
+
+	DeviceZ = max(0.000000000001, DeviceZ);
+
+	float4 Pos = mul(float4(SVPos.xyz, 1.f), SVPositionToTranslatedWorld);
+	float3 P = Pos.xyz / Pos.w;
+	return float4(P, 1.f);
+}
+
+float4 SvPositionToScreenPosition(float4 SvPosition)
+{
+	// todo: is already in .w or needs to be reconstructed like this:
+//	SvPosition.w = ConvertFromDeviceZ(SvPosition.z);
+
+	float2 PixelPos = SvPosition.xy;
+
+	// NDC (NormalizedDeviceCoordinates, after the perspective divide)
+	float3 NDCPos = float3((PixelPos * ViewSizeAndInv.zw - 0.5f) * float2(2, -2), SvPosition.z);
+
+	// SvPosition.w: so .w has the SceneDepth, some mobile code and the DepthFade material expression wants that
+	return float4(NDCPos.xyz, 1) * SvPosition.w;
+}
+
+float3 GetScreenWorldDir(in float4 SVPos)
+{
+	float2 ScreenPosition = SvPositionToScreenPosition(SVPos).xy;
+	const float Depth = 1000000.0f;
+	float4 WorldPos = mul(float4(ScreenPosition * Depth, Depth, 1), ScreenToWorld);
+	return normalize(WorldPos.xyz - SkyWorldCameraOrigin.xyz);
+}

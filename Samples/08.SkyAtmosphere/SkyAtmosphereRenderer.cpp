@@ -83,6 +83,22 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	AtmosphereParam->UniformBufferData[0].SkyViewLutSizeAndInv =
 		FFloat4(float(FSkyViewLutCS::LUT_W), float(FSkyViewLutCS::LUT_H),
 			1.f / float(FSkyViewLutCS::LUT_W), 1.f / float(FSkyViewLutCS::LUT_H));
+	AtmosphereParam->UniformBufferData[0].CameraAerialPerspectiveVolumeSizeAndInv =
+		FFloat4(float(FCameraVolumeLutCS::LUT_W), float(FCameraVolumeLutCS::LUT_H),
+			1.f / float(FCameraVolumeLutCS::LUT_W), 1.f / float(FCameraVolumeLutCS::LUT_H));
+	AtmosphereParam->UniformBufferData[0].ViewSizeAndInv =
+		FFloat4(float(RTWidth), float(RTHeight),
+			1.f / float(RTWidth), 1.f / float(RTHeight));
+
+	// x = CameraAerialPerspectiveVolumeDepthResolution; y = CameraAerialPerspectiveVolumeDepthResolutionInv
+	// z = CameraAerialPerspectiveVolumeDepthSliceLengthKm; w = CameraAerialPerspectiveVolumeDepthSliceLengthKmInv;
+	AtmosphereParam->UniformBufferData[0].CameraAerialPerspectiveVolumeDepthInfo = 
+		FFloat4(float(FCameraVolumeLutCS::LUT_D), 1.f / float(FCameraVolumeLutCS::LUT_D), 
+			6.f, 1.f / 6.f);
+	// x = AerialPerspectiveStartDepthKm; y = CameraAerialPerspectiveSampleCountPerSlice; z = AerialPespectiveViewDistanceScale;
+	AtmosphereParam->UniformBufferData[0].AerialPerspectiveInfo = 
+		FFloat4(0.1f, 1.f, 1.f, 1.f);
+
 	const float TopRadiusKm = 6420.f;
 	const float BottomRadiusKm = 6360.f;
 	AtmosphereParam->UniformBufferData[0].RadiusRange = FFloat4(TopRadiusKm, BottomRadiusKm, sqrt(TopRadiusKm * TopRadiusKm - BottomRadiusKm * BottomRadiusKm), BottomRadiusKm * BottomRadiusKm);
@@ -176,7 +192,16 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 	matrix4 MatVP = ViewProjection.MatProj * ViewProjection.MatView;
 	matrix4 InvVP;
 	MatVP.getInverse(InvVP);
-	AtmosphereParam->UniformBufferData[0].SVPositionToTranslatedWorld = mat * InvVP;
+	AtmosphereParam->UniformBufferData[0].SVPositionToTranslatedWorld = mat * InvVP;	
+	
+	matrix4 mat1(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, ViewProjection.MatProj[2 * 4 + 2], 1,
+		0, 0, ViewProjection.MatProj[3 * 4 + 2], 0);
+	matrix4 InvView;
+	ViewProjection.MatView.getInverse(InvView);
+	AtmosphereParam->UniformBufferData[0].ScreenToWorld = mat1 * InvView;
 	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 0.f);
 
 	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);

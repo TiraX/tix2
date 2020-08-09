@@ -8,11 +8,18 @@
 #include "MeanIllumLutCS.h"
 #include "DistantSkyLightLut.h"
 #include "SkyViewLut.h"
+#include "CameraVolumeLut.h"
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, TransmittanceLutSizeAndInv)	// xy = Size; zw = InvSize;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MultiScatteredLuminanceLutSizeAndInv)	// xy = Size; zw = InvSize;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, SkyViewLutSizeAndInv)	// xy = Size; zw = InvSize;
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CameraAerialPerspectiveVolumeSizeAndInv)	// xy = Size; zw = InvSize;
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, ViewSizeAndInv)	// xy = Size; zw = InvSize;
+	// x = CameraAerialPerspectiveVolumeDepthResolution; y = CameraAerialPerspectiveVolumeDepthResolutionInv
+	// z = CameraAerialPerspectiveVolumeDepthSliceLengthKm; w = CameraAerialPerspectiveVolumeDepthSliceLengthKmInv;
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CameraAerialPerspectiveVolumeDepthInfo)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, AerialPerspectiveInfo)	// x = AerialPerspectiveStartDepthKm; y = CameraAerialPerspectiveSampleCountPerSlice; z = AerialPespectiveViewDistanceScale;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, RadiusRange)	// x = TopRadiusKm; y = BottomRadiusKm; z = sqrt(x * x - y * y); w = y * y;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, MieRayleigh)		// x = MiePhaseG; y = MieDensityExpScale; z = RayleighDensityExpScale; w = MultiScatteringFactor;
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Params1)		// x = TransmittanceSampleCount; y = ViewPreExposure; z = AbsorptionDensity0LayerWidth; w = MultiScatteringSampleCount
@@ -39,6 +46,7 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightColor0)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, View_AtmosphereLightColor1)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, SVPositionToTranslatedWorld)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, ScreenToWorld)
 END_UNIFORM_BUFFER_STRUCT(FAtmosphereParam)
 
 class FSkyAtmosphereRenderer : public FDefaultRenderer

@@ -17,8 +17,24 @@ FCameraVolumeLutCS::~FCameraVolumeLutCS()
 
 void FCameraVolumeLutCS::PrepareResources(FRHI * RHI)
 {
-	int32 RTW = RHI->GetViewport().Width;
-	int32 RTH = RHI->GetViewport().Height;
+	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
+
+	TTextureDesc LutDesc;
+	LutDesc.Type = ETT_TEXTURE_2D;
+	TI_TODO("Use R11G11B10 Format for optimization");
+	LutDesc.Format = EPF_RGBA16F;
+	LutDesc.Width = LUT_W;
+	LutDesc.Height = LUT_H;
+	LutDesc.AddressMode = ETC_CLAMP_TO_EDGE;
+	LutDesc.SRGB = 0;
+	LutDesc.Mips = 1;
+
+	SkyViewLut = RHI->CreateTexture(LutDesc);
+	SkyViewLut->SetTextureFlag(ETF_UAV, true);
+	SkyViewLut->SetResourceName("SkyViewLut");
+	RHI->UpdateHardwareResourceTexture(SkyViewLut);
+
+	ResourceTable->PutRWTextureInTable(SkyViewLut, 0, UAV_LUT_RESULT);
 }
 
 void FCameraVolumeLutCS::UpdataComputeParams(
