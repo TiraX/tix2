@@ -70,6 +70,10 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	SkyViewLutCS->Finalize();
 	SkyViewLutCS->PrepareResources(RHI);
 
+	CameraVolumeLutCS = ti_new FCameraVolumeLutCS();
+	CameraVolumeLutCS->Finalize();
+	CameraVolumeLutCS->PrepareResources(RHI);
+
 	// Init Atmosphere uniform param
 	const FViewProjectionInfo& ViewProjection = FRenderThread::Get()->GetRenderScene()->GetViewProjection();
 
@@ -210,6 +214,7 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 	MeanIllumLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture());
 	DistantSkyLightLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
 	SkyViewLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
+	CameraVolumeLutCS->UpdataComputeParams(RHI, AtmosphereParam->UniformBuffer, TransmittanceCS->GetTransmittanceLutTexture(), MeanIllumLutCS->GetMultiScatteredLuminanceLut());
 
 	RHI->BeginComputeTask();
 	{
@@ -227,6 +232,10 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		RHI->BeginEvent("SkyViewLut");
 		SkyViewLutCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("CameraVolumeLutCS");
+		CameraVolumeLutCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();

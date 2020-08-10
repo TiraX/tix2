@@ -77,4 +77,5 @@ private:
 	FMeanIllumLutCSPtr MeanIllumLutCS;
 	FDistantSkyLightLutCSPtr DistantSkyLightLutCS;
 	FSkyViewLutCSPtr SkyViewLutCS;
+	FCameraVolumeLutCSPtr CameraVolumeLutCS;
 };

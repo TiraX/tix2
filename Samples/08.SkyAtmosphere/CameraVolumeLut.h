@@ -19,7 +19,10 @@ public:
 	virtual void Run(FRHI* RHI) override;
 
 	void UpdataComputeParams(
-		FRHI* RHI
+		FRHI* RHI,
+		FUniformBufferPtr InAtmosphereParam,
+		FTexturePtr InTransmittanceLut,
+		FTexturePtr InMultiScatteredLuminanceLut
 	);
 
 private:
