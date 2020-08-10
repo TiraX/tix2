@@ -17,6 +17,7 @@ namespace tix
 		ETT_TEXTURE_CUBE,
 
 		ETT_TEXTURE_UNKNOWN,
+		ETT_TEXTURE_TYPE_NUM
 	};
 
 	//! Texture filter types.
@@ -84,6 +85,7 @@ namespace tix
 		E_PIXEL_FORMAT Format;
 		int32 Width;
 		int32 Height;
+		int32 Depth;
 		E_TEXTURE_ADDRESS_MODE AddressMode;
 		uint32 SRGB;
 		uint32 Mips;
@@ -94,6 +96,7 @@ namespace tix
 			, Format(EPF_UNKNOWN)
 			, Width(0)
 			, Height(0)
+			, Depth(1)
 			, AddressMode(ETC_REPEAT)
 			, SRGB(0)
 			, Mips(1)

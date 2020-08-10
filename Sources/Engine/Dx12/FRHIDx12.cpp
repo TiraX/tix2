@@ -1292,8 +1292,7 @@ namespace tix
 		D3D12_CLEAR_VALUE ClearValue = {};
 		D3D12_RESOURCE_DESC TextureDx12Desc = {};
 		TextureDx12Desc.Alignment = 0;
-		TextureDx12Desc.DepthOrArraySize = 1;
-		TextureDx12Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		TextureDx12Desc.Dimension = GetTextureTypeFromTiX(Desc.Type);
 		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
 		{
@@ -1316,6 +1315,7 @@ namespace tix
 		TextureDx12Desc.Format = GetBaseFormat(DxgiFormat);
 		TextureDx12Desc.Width = Desc.Width;
 		TextureDx12Desc.Height = Desc.Height;
+		TextureDx12Desc.DepthOrArraySize = Desc.Depth;
 		TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		TextureDx12Desc.MipLevels = Desc.Mips;
 		TextureDx12Desc.SampleDesc.Count = 1;
@@ -2593,19 +2593,33 @@ namespace tix
 
 	void FRHIDx12::PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
-		FTextureDx12 * TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
+		FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
 
 		const TTextureDesc& Desc = InTexture->GetDesc();
 		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
 		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
-		TI_ASSERT(Desc.Type == ETT_TEXTURE_2D);
 
 		// Create unordered access view
 		D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
 		UAVDesc.Format = GetUAVFormat(DxgiFormat);
-		UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-		UAVDesc.Texture2D.MipSlice = InMipLevel;
-		UAVDesc.Texture2D.PlaneSlice = 0;
+		if (Desc.Type == ETT_TEXTURE_2D)
+		{
+			UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			UAVDesc.Texture2D.MipSlice = InMipLevel;
+			UAVDesc.Texture2D.PlaneSlice = 0;
+		}
+		else if (Desc.Type == ETT_TEXTURE_3D)
+		{
+			UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+			UAVDesc.Texture3D.MipSlice = InMipLevel;
+			UAVDesc.Texture3D.FirstWSlice = 0;
+			UAVDesc.Texture3D.WSize = Desc.Depth;
+			TI_ASSERT(Desc.Depth > 1);
+		}
+		else
+		{
+			TI_ASSERT(0);	// Not supported yet.
+		}
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 
