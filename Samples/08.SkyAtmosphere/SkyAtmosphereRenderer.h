@@ -65,6 +65,8 @@ private:
 	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 private:
+	FPipelinePtr SkyPipeline;
+	FArgumentBufferPtr AB_SkyAtmosphere;
 	FArgumentBufferPtr AB_Result;
 
 	FFullScreenRender FSRender;

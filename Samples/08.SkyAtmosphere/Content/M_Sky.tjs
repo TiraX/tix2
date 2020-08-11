@@ -1,0 +1,31 @@
+{
+	"name": "M_Sky",
+	"type": "material",
+	"version": 1,
+	"desc": "Material encoded manually.",
+	"shaders": [
+		"S_SkyAtmosphereVS",
+		"S_SkyAtmospherePS",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_TEXCOORD0"
+	],
+	"ins_format": [
+		"EINSSEG_TRANSITION",
+		"EINSSEG_ROT_SCALE_MAT0",
+		"EINSSEG_ROT_SCALE_MAT1",
+		"EINSSEG_ROT_SCALE_MAT2"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": false,
+	"depth_test": true,
+	"two_sides": true
+}

@@ -89,6 +89,12 @@
     <FxCompile Include="Shaders\Dx12\S_TransmittanceLutCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyAtmospherePS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SkyAtmosphereVS.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Dx12\Common.hlsli">
@@ -101,6 +107,9 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Shaders\Dx12\VS_Instanced.hlsli">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_SkyAtmosphereRS.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

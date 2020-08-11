@@ -25,6 +25,11 @@ public:
 		FTexturePtr InMultiScatteredLuminanceLut
 	);
 
+	FTexturePtr GetCameraAerialPerspectiveVolumeLut()
+	{
+		return CameraAerialPerspectiveVolumeLut;
+	}
+
 private:
 	enum
 	{

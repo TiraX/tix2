@@ -2562,7 +2562,6 @@ namespace tix
 
 		const TTextureDesc& Desc = InTexture->GetDesc();
 		DXGI_FORMAT DxgiFormat = GetDxPixelFormat(Desc.Format);
-		const bool IsCubeMap = Desc.Type == ETT_TEXTURE_CUBE;
 		TI_ASSERT(DxgiFormat != DXGI_FORMAT_UNKNOWN);
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
@@ -2578,14 +2577,25 @@ namespace tix
 			// This is not a depth related buffer, treat as a normal texture.
 			SRVDesc.Format = DxgiFormat;
 		}
-		SRVDesc.ViewDimension = IsCubeMap ? D3D12_SRV_DIMENSION_TEXTURECUBE : D3D12_SRV_DIMENSION_TEXTURE2D;
-		if (IsCubeMap)
+
+		switch (Desc.Type)
 		{
-			SRVDesc.TextureCube.MipLevels = Desc.Mips;
-		}
-		else
-		{
+		case ETT_TEXTURE_2D:
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			SRVDesc.Texture2D.MipLevels = Desc.Mips;
+			break;
+		case ETT_TEXTURE_3D:
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+			SRVDesc.Texture3D.MipLevels = Desc.Mips;
+			break;
+		case ETT_TEXTURE_CUBE:
+			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			SRVDesc.TextureCube.MipLevels = Desc.Mips;
+			break;
+		default:
+			// Not supported yet
+			TI_ASSERT(0);
+			break;
 		}
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource().Get(), &SRVDesc, Descriptor);

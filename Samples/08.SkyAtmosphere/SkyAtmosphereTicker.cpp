@@ -31,6 +31,10 @@ void TSkyAtmosphereTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
+	// PreLoad sky material
+	const TString SkyMaterial = "M_Sky.tasset";
+	TAssetLibrary::Get()->LoadAsset(SkyMaterial);
+
 	// Load scene
 	const TString TargetSceneAsset = "SkyAtmosphereMap.tasset";
 	//const TString TargetSceneAsset = "Slum01.tasset";

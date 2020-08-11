@@ -23,6 +23,11 @@ public:
 		FTexturePtr InMultiScatteredLuminanceLut
 	);
 
+	FTexturePtr GetSkyViewLut()
+	{
+		return SkyViewLut;
+	}
+
 private:
 	enum
 	{
