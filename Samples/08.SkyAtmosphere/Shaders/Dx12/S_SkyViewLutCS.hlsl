@@ -13,41 +13,6 @@ Texture2D<float4> MultiScatteredLuminanceLut : register(t1);
 RWTexture2D<float4> SkyViewLut : register(u0);
 SamplerState LinearSampler : register(s0);
 
-// 4th order polynomial approximation
-// 4 VGRP, 16 ALU Full Rate
-// 7 * 10^-5 radians precision
-// Reference : Handbook of Mathematical Functions (chapter : Elementary Transcendental Functions), M. Abramowitz and I.A. Stegun, Ed.
-float acosFast4(float inX)
-{
-	float x1 = abs(inX);
-	float x2 = x1 * x1;
-	float x3 = x2 * x1;
-	float s;
-
-	s = -0.2121144f * x1 + 1.5707288f;
-	s = 0.0742610f * x2 + s;
-	s = -0.0187293f * x3 + s;
-	s = sqrt(1.0f - x1) * s;
-
-	// acos function mirroring
-	// check per platform if compiles to a selector - no branch neeeded
-	return inX >= 0.0f ? s : PI - s;
-}
-
-float3x3 GetSkyViewLutReferential(in float3 WorldPos, in float3 ViewForward, in float3 ViewRight)
-{
-	float3 Up = normalize(WorldPos);
-	float3 Forward = ViewForward;
-	float3 Left = normalize(cross(Forward, Up));
-	if (abs(dot(Forward, Up)) > 0.99f)
-	{
-		Left = -ViewRight;
-	}
-	Forward = normalize(cross(Up, Left));
-	float3x3 LocalReferencial = transpose(float3x3(Forward, Left, Up));
-	return LocalReferencial;
-}
-
 // SkyViewLut is a new texture used for fast sky rendering.
 // It is low resolution of the sky rendering around the camera,
 // basically a lat/long parameterisation with more texel close to the horizon for more accuracy during sun set.

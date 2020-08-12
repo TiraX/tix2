@@ -111,13 +111,15 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	AtmosphereParam->UniformBufferData[0].ViewForward = FFloat4(-0.99351f, 0.07306f, -0.08719f, 0.f);
 	AtmosphereParam->UniformBufferData[0].ViewRight = FFloat4(-0.07334f, -0.99731f, -2.31944e-8f, 0.f);
 	AtmosphereParam->UniformBufferData[0].SkySampleParam = FFloat4(4.f, 32.f, 0.00667f, 1.f);// x = FastSkySampleCountMin; y = FastSkySampleCountMax; z = FastSkyDistanceToSampleCountMaxInv; w = 1
-	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 0.f);
+	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 1.f);
 	AtmosphereParam->UniformBufferData[0].SkyPlanetCenterAndViewHeight = FFloat4(0.f, 0.f, -6.36e6f, 6.36e6f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDirection0 = FFloat4(-0.96126f, 0.f, 0.27564f, 1.f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDirection1 = FFloat4(0.f, 0.f, 1.f, 1.f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor0 = FFloat4(10.f, 10.f, 10.f, 1.f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor1 = FFloat4(0.f, 0.f, 0.f, 0.f);
-
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDiscLuminance0 = FFloat4(157601.32813f, 172847.79688f, 202683.09375f, 145911.29688f);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDiscCosHalfApexAngle0 = FFloat4(0.99999, 0.00, 0.00, 1.00);
+	
 	const float InvRTW = 1.f / RTWidth;
 	const float InvRTH = 1.f / RTHeight;
 	float Mx = 2.f * InvRTW;
@@ -222,7 +224,26 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 	matrix4 InvView;
 	ViewProjection.MatView.getInverse(InvView);
 	AtmosphereParam->UniformBufferData[0].ScreenToWorld = mat1 * InvView;
-	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, 0.f);
+
+	float StartDepthZ = 0.1f;
+	//if (bFastAerialPerspectiveDepthTest)
+	{
+		const matrix4& ProjectionMat = ViewProjection.MatProj;
+		//const FMatrix ProjectionMatrix = View.ViewMatrices.GetProjectionMatrix();
+		float HalfHorizontalFOV = atan(1.f / ProjectionMat[0]);
+		//float HalfHorizontalFOV = FMath::Atan(1.0f / ProjectionMatrix.M[0][0]);
+		float HalfVerticalFOV = atan(1.f / ProjectionMat[5]);
+		//float HalfVerticalFOV = FMath::Atan(1.0f / ProjectionMatrix.M[1][1]);
+		float StartDepthViewCm = cos(ti_max(HalfHorizontalFOV, HalfVerticalFOV)) * 0.1 * 1000 * 100;
+		StartDepthViewCm = ti_max(StartDepthViewCm, 0.1f); // In any case, we need to limit the distance to frustum near plane to not be clipped away.
+		FFloat4 Projected;
+		ProjectionMat.transformVect(&Projected.X, vector3df(0.f, 0.f, StartDepthViewCm));
+		//const FVector4 Projected = ProjectionMatrix.TransformFVector4(FVector4(0.0f, 0.0f, StartDepthViewCm, 1.0f));
+		StartDepthZ = Projected.Z / Projected.W;
+	}
+
+	AtmosphereParam->UniformBufferData[0].SkyWorldCameraOrigin = FFloat4(ViewProjection.CamPos.X, ViewProjection.CamPos.Y, ViewProjection.CamPos.Z, StartDepthZ);
+
 
 	AtmosphereParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
@@ -261,7 +282,8 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		// Draw sky full screen quad
 		RHI->SetGraphicsPipeline(SkyPipeline);
-		RHI->SetArgumentBuffer(0, AB_SkyAtmosphere);
+		RHI->SetUniformBuffer(ESS_PIXEL_SHADER, 0, AtmosphereParam->UniformBuffer);
+		RHI->SetArgumentBuffer(1, AB_SkyAtmosphere);
 		FSRender.DrawFullScreenQuad(RHI);
 	}
 
