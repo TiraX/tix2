@@ -38,7 +38,8 @@ namespace tix
 			return 12;
 		case EPF_RGBA32F:
 			return 16;
-
+		case EPF_R11G11B10F:
+			return 4;
 				// Depth formats
 		case EPF_DEPTH16:
 			return 2;
@@ -48,6 +49,7 @@ namespace tix
 		case EPF_STENCIL8:
 			return 1;
 		default:
+			TI_ASSERT(0);
 			return 0;
 		}
 	}

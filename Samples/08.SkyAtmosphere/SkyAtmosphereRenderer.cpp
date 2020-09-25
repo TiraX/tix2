@@ -118,7 +118,7 @@ void FSkyAtmosphereRenderer::InitInRenderThread()
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor0 = FFloat4(10.f, 10.f, 10.f, 1.f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightColor1 = FFloat4(0.f, 0.f, 0.f, 0.f);
 	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDiscLuminance0 = FFloat4(157601.32813f, 172847.79688f, 202683.09375f, 145911.29688f);
-	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDiscCosHalfApexAngle0 = FFloat4(0.99999, 0.00, 0.00, 1.00);
+	AtmosphereParam->UniformBufferData[0].View_AtmosphereLightDiscCosHalfApexAngle0 = FFloat4(0.99999f, 0.00f, 0.00f, 1.00f);
 	
 	const float InvRTW = 1.f / RTWidth;
 	const float InvRTH = 1.f / RTHeight;

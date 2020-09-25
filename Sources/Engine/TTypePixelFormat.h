@@ -25,6 +25,8 @@ namespace tix
 		EPF_RG32F,
 		EPF_RGB32F,
 		EPF_RGBA32F,
+		EPF_R11G11B10F,
+		EPF_R10G10B10A2F_RESERVED,
 
 		// Depth formats
 		EPF_DEPTH16,

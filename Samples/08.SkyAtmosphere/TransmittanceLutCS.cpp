@@ -21,8 +21,7 @@ void FTransmittanceLutCS::PrepareResources(FRHI* RHI)
 
 	TTextureDesc LutDesc;
 	LutDesc.Type = ETT_TEXTURE_2D;
-	TI_TODO("Use R11G11B10 Format for optimization");
-	LutDesc.Format = EPF_RGBA32F;
+	LutDesc.Format = EPF_R11G11B10F;
 	LutDesc.Width = LUT_W;
 	LutDesc.Height = LUT_H;
 	LutDesc.AddressMode = ETC_CLAMP_TO_EDGE;
