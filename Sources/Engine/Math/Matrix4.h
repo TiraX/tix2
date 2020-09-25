@@ -1695,6 +1695,38 @@ namespace tix
 		return m;
 	}
 
+	//! Builds a reversed right-handed perspective projection matrix based on a field of view
+	template<typename T>
+	CMatrix4<T> buildReversedProjectionMatrixPerspectiveFov(T fieldOfViewRadians, T aspectRatio, T zNear, T zFar)
+	{
+		const float64 h = 1.0 / tan(fieldOfViewRadians / 2.0);
+		const T w = (T)(h / aspectRatio);
+
+		CMatrix4<T> m(CMatrix4<T>::EM4CONST_NOTHING);
+
+		m(0, 0) = w;
+		m(0, 1) = 0;
+		m(0, 2) = 0;
+		m(0, 3) = 0;
+
+		m(1, 0) = 0;
+		m(1, 1) = (T)h;
+		m(1, 2) = 0;
+		m(1, 3) = 0;
+
+		m(2, 0) = 0;
+		m(2, 1) = 0;
+		m(2, 2) = (T)(zNear / (zNear - zFar));
+		m(2, 3) = 1;
+
+		m(3, 0) = 0;
+		m(3, 1) = 0;
+		m(3, 2) = (T)(-zFar * zNear / (zNear - zFar));
+		m(3, 3) = 0;
+
+		return m;
+	}
+
 	//! Builds a left-handed perspective projection matrix.
 	template<typename T>
 	CMatrix4<T> buildProjectionMatrixPerspectiveFovInfinity(T fieldOfViewRadians, T aspectRatio, T zNear)
