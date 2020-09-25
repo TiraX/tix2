@@ -68,12 +68,13 @@ namespace tix
 
 	FRenderThread::FRenderThread()
 		: TThread("RenderThread")
-		, RHI(nullptr)
-		, RenderScene(nullptr)
-		, VTSystem(nullptr)
 		, TriggerNum(0)
 		, PreFrameIndex(0)
 		, RenderFrameIndex(0)
+		, RHI(nullptr)
+		, Renderer(nullptr)
+		, RenderScene(nullptr)
+		, VTSystem(nullptr)
 	{
 		FRHI::CreateRHI();
 	}
@@ -134,10 +135,12 @@ namespace tix
 		// Do render thread tasks
 		DoRenderTasks();
 
-		// Go through each renderer
-		Renderer->InitRenderFrame(RenderScene);
-		Renderer->Render(RHI, RenderScene);
-		Renderer->EndRenderFrame(RenderScene);
+		if (Renderer != nullptr)
+		{
+			Renderer->InitRenderFrame(RenderScene);
+			Renderer->Render(RHI, RenderScene);
+			Renderer->EndRenderFrame(RenderScene);
+		}
 		RHI->EndFrame();
         
 		++FrameNum;
