@@ -99,6 +99,7 @@ namespace tix
 
 		const TVector<FPrimitivePtr>& GetStaticDrawList(E_DRAWLIST_TYPE List) const
 		{
+			TI_TODO("Remove draw list , use new gpu driven pipeline.");
 			TI_ASSERT(0);
 			return StaticDrawLists[List];
 		}

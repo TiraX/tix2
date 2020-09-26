@@ -33,18 +33,19 @@ namespace tix
 		// Prepare frame view uniform buffer
 		Scene->InitRenderFrame();
 
+		TI_TODO("Remove draw list , use new gpu driven pipeline.");
 		// Prepare frame primitive uniform buffers
-		for (int32 List = 0; List < LIST_COUNT; ++List)
-		{
-			const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList((E_DRAWLIST_TYPE)List);
-			for (auto& Primitive : Primitives)
-			{
-				if (Primitive->IsPrimitiveBufferDirty())
-				{
-					Primitive->UpdatePrimitiveBuffer_RenderThread();
-				}
-			}
-		}
+		//for (int32 List = 0; List < LIST_COUNT; ++List)
+		//{
+		//	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList((E_DRAWLIST_TYPE)List);
+		//	for (auto& Primitive : Primitives)
+		//	{
+		//		if (Primitive->IsPrimitiveBufferDirty())
+		//		{
+		//			Primitive->UpdatePrimitiveBuffer_RenderThread();
+		//		}
+		//	}
+		//}
 	}
 
 	void FDefaultRenderer::EndRenderFrame(FScene* Scene)
