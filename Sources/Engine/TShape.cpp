@@ -493,4 +493,42 @@ namespace tix
 			OutIndices.push_back(Index);
 		}
 	}
+
+	void TShape::RecalcNormal(
+		const TVector<vector3df>& Positions,
+		const TVector<uint32>& Indices,
+		TVector<vector3df>& OutNormals)
+	{
+		OutNormals.clear();
+		OutNormals.resize(Positions.size());
+
+		const uint32 TotalIndices = (uint32)Indices.size();
+		for (uint32 i = 0 ; i < TotalIndices ; i += 3)
+		{
+			uint32 i0 = Indices[i];
+			uint32 i1 = Indices[i + 1];
+			uint32 i2 = Indices[i + 2];
+
+			const vector3df& P0 = Positions[i0];
+			const vector3df& P1 = Positions[i1];
+			const vector3df& P2 = Positions[i2];
+
+			vector3df& N0 = OutNormals[i0];
+			vector3df& N1 = OutNormals[i1];
+			vector3df& N2 = OutNormals[i2];
+
+			vector3df N;
+			N = (P1 - P0).crossProduct(P2 - P0);
+			N0 += N.normalize();
+			N = (P2 - P1).crossProduct(P0 - P1);
+			N1 += N.normalize();
+			N = (P0 - P2).crossProduct(P1 - P2);
+			N2 += N.normalize();
+		}
+
+		for (auto& N : OutNormals)
+		{
+			N.normalize();
+		}
+	}
 }

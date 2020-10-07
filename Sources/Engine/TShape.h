@@ -33,5 +33,10 @@ namespace tix
 			const quaternion& Rotation, 
 			TVector<vector3df>& OutPositions, 
 			TVector<uint32>& OutIndices);
+
+		static void RecalcNormal(
+			const TVector<vector3df>& Positions,
+			const TVector<uint32>& Indices,
+			TVector<vector3df>& OutNormals);
 	};
 }
