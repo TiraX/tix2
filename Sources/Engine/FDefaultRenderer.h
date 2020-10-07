@@ -35,6 +35,8 @@ namespace tix
 		void BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
 		void BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer);
 
+		void DrawSceneTiles(FRHI* RHI, FScene* Scene);
+
 	protected:
 		// Common Resources
 		FUniformBufferPtr CounterResetUniformBuffer;
