@@ -544,7 +544,14 @@ namespace tix
 
 	FTexturePtr FRHIDx12::CreateTexture(const TTextureDesc& Desc)
 	{
-		return ti_new FTextureDx12(Desc);
+		if ((Desc.Flags & ETF_READBACK) != 0)
+		{
+			return ti_new FTextureReadableDx12(Desc);
+		}
+		else
+		{
+			return ti_new FTextureDx12(Desc);
+		}
 	}
 
 	FUniformBufferPtr FRHIDx12::CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag)
@@ -658,7 +665,6 @@ namespace tix
 		{
 			VALIDATE_HRESULT(FrameFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
 			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
-			FRHI::GPUFrameDone();
 		}
 
 		// Set the fence value for the next frame.
@@ -666,6 +672,8 @@ namespace tix
 
 		// Release resources references for next drawing
 		FrameResources[CurrentFrame]->RemoveAllReferences();
+
+		FRHI::GPUFrameDone();
 	}
 
 	void FRHIDx12::HoldResourceReference(FRenderResourcePtr InResource)
@@ -1819,6 +1827,58 @@ namespace tix
 		HoldResourceReference(UniformBuffer);
 
 		return true;
+	}
+
+	void FRHIDx12::PrepareDataForCPU(FTexturePtr Texture)
+	{
+		if (Texture->HasTextureFlag(ETF_READBACK))
+		{
+			const TTextureDesc& Desc = Texture->GetDesc();
+			FTextureReadableDx12* TextureDx12 = static_cast<FTextureReadableDx12*>(Texture.get());
+			if (TextureDx12->ReadbackResource.GetResource() == nullptr)
+			{
+				const int32 TextureDataSize = TImage::GetDataSize(Desc.Format, Texture->GetWidth(), Texture->GetHeight());
+				TI_ASSERT(Desc.Depth == 1 && Desc.Type == ETT_TEXTURE_2D);
+
+				D3D12_HEAP_PROPERTIES ReadbackHeapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK) };
+				D3D12_RESOURCE_DESC ReadbackTextureDesc{ CD3DX12_RESOURCE_DESC::Buffer(TextureDataSize) };
+
+				TextureDx12->ReadbackResource.CreateResource(
+					D3dDevice.Get(),
+					&ReadbackHeapProperties,
+					D3D12_HEAP_FLAG_NONE,
+					&ReadbackTextureDesc,
+					D3D12_RESOURCE_STATE_COPY_DEST);
+			}
+
+			{
+				// Transition the status of texture from D3D12_RESOURCE_STATE_COPY_DEST to D3D12_RESOURCE_STATE_COPY_SOURCE
+				//TI_ASSERT(UniformBufferDx12->BufferResource.GetCurrentState() == D3D12_RESOURCE_STATE_COPY_DEST);
+				Transition(&TextureDx12->TextureResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+			}
+
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint;
+			Footprint.Offset = 0;
+			Footprint.Footprint.Format = GetDxPixelFormat(Desc.Format);
+			Footprint.Footprint.Width = Desc.Width;
+			Footprint.Footprint.Height = Desc.Height;
+			Footprint.Footprint.Depth = Desc.Depth;
+			Footprint.Footprint.RowPitch = TImage::GetRowPitch(Desc.Format, Desc.Width);
+			TI_ASSERT(Footprint.Footprint.RowPitch % D3D12_TEXTURE_DATA_PITCH_ALIGNMENT == 0);
+			CD3DX12_TEXTURE_COPY_LOCATION Dst(TextureDx12->ReadbackResource.GetResource().Get(), Footprint);
+			CD3DX12_TEXTURE_COPY_LOCATION Src(TextureDx12->TextureResource.GetResource().Get(), 0);
+			CurrentWorkingCommandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+
+			HoldResourceReference(Texture);
+
+			// Code goes here to close, execute (and optionally reset) the command list, and also
+			// to use a fence to wait for the command queue.
+		}
+		else
+		{
+			_LOG(Error, "Can not read texture without flag ETF_READBACK.\n");
+		}
 	}
 
 	void FRHIDx12::PrepareDataForCPU(FUniformBufferPtr UniformBuffer)

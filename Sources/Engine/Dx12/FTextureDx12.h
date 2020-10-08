@@ -23,6 +23,20 @@ namespace tix
 		FGPUResourceDx12 TextureResource;
 		friend class FRHIDx12;
 	};
+
+	/////////////////////////////////////////////////////////
+	class FTextureReadableDx12 : public FTextureDx12
+	{
+	public:
+		FTextureReadableDx12();
+		FTextureReadableDx12(const TTextureDesc& Desc);
+		virtual ~FTextureReadableDx12();
+
+		virtual TImagePtr ReadTextureData() override;
+	protected:
+		FGPUResourceDx12 ReadbackResource;
+		friend class FRHIDx12;
+	};
 }
 
 #endif	// COMPILE_WITH_RHI_DX12

@@ -77,6 +77,8 @@ namespace tix
         
         // Used for iOS Metal
         ETF_MEMORY_LESS = 1 << 4,
+
+		ETF_READBACK = 1 << 5,	// Read Texture Data from GPU back to CPU
 	};
 
 	struct TTextureDesc

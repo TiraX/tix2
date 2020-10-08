@@ -132,6 +132,7 @@ namespace tix
 		virtual bool UpdateHardwareResourceAB(FArgumentBufferPtr ArgumentBuffer, FShaderPtr InShader, int32 SpecifiedBindingIndex = -1) = 0;
 		virtual bool UpdateHardwareResourceGPUCommandSig(FGPUCommandSignaturePtr GPUCommandSignature) = 0;
 		virtual bool UpdateHardwareResourceGPUCommandBuffer(FGPUCommandBufferPtr GPUCommandBuffer) = 0;
+		virtual void PrepareDataForCPU(FTexturePtr Texture) = 0;
 		virtual void PrepareDataForCPU(FUniformBufferPtr UniformBuffer) = 0;
 		virtual bool CopyTextureRegion(FTexturePtr DstTexture, const recti& InDstRegion, uint32 DstMipLevel, FTexturePtr SrcTexture, uint32 SrcMipLevel) = 0;
 		virtual bool CopyBufferRegion(FUniformBufferPtr DstBuffer, uint32 DstOffset, FUniformBufferPtr SrcBuffer, uint32 Length) = 0;
@@ -234,7 +235,7 @@ namespace tix
 			++NumGPUFrames;
 		}
 		// Frames count that GPU done
-		static uint32 NumGPUFrames;
+		static TI_API uint32 NumGPUFrames;
 	protected:
 		E_RHI_TYPE RHIType;
 		FViewport Viewport;

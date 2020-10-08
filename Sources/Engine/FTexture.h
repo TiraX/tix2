@@ -21,7 +21,7 @@ namespace tix
 			return TextureDesc;
 		}
 
-		bool HasTextureFlag(E_TEXTURE_FLAG Flag)
+		bool HasTextureFlag(E_TEXTURE_FLAG Flag) const
 		{
 			return (TextureDesc.Flags & Flag) != 0;
 		}
@@ -46,6 +46,8 @@ namespace tix
 		{
 			return TextureDesc.Height;
 		}
+
+		virtual TImagePtr ReadTextureData() { return nullptr; }
 
 	protected:
 		TTextureDesc TextureDesc;
