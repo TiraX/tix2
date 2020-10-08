@@ -96,9 +96,11 @@ namespace tix
 	}
 
 	TEngine::TEngine()
-		: Device(nullptr)
+		: IsRunning(false)
+		, Device(nullptr)
 		, Scene(nullptr)
 		, ResourceLibrary(nullptr)
+		, LastFrameTime(0)
 		, MainThreadTasks(1024)
 	{
 	}
@@ -160,9 +162,10 @@ namespace tix
 		TI_ASSERT(Device);
 
 		LastFrameTime = TTimer::GetCurrentTimeMillis();
+		IsRunning = true;
 
 #if defined (TI_PLATFORM_WIN32)
-		while (Device->Run())
+		while (IsRunning && Device->Run())
 		{
 			Tick();
 		}
@@ -171,7 +174,16 @@ namespace tix
 #elif defined (TI_PLATFORM_IOS)
         [[TDirectorCaller sharedDirectorCaller] startMainLoopWithInterval: 1.0f / 60.f];
 #else
-#error("Not supported platfor")
+#error("Not supported platform")
+#endif
+	}
+
+	void TEngine::Shutdown()
+	{
+#if defined (TI_PLATFORM_WIN32)
+		IsRunning = false;
+#else
+#error("Not supported platform")
 #endif
 	}
 

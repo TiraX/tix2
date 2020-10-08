@@ -47,6 +47,7 @@ namespace tix
 		}
 
 		TI_API void Start();
+		TI_API void Shutdown();
 		TI_API TDevice*	GetDevice();
 
 		TScene* GetScene()
@@ -84,7 +85,7 @@ namespace tix
 
 	private:
 		static E_Platform CurrentPlatform;
-
+		bool IsRunning;
 		TDevice * Device;
 
 		TScene * Scene;
