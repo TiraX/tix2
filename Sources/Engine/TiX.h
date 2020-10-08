@@ -5,6 +5,12 @@
 
 #pragma once
 
+// including external libs
+extern "C" {
+#include "zlib.h"
+#include "png.h"
+}
+
 // Include std symbols
 #include <stdlib.h>
 #include <string>

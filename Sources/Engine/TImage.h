@@ -20,9 +20,12 @@ namespace tix
 		static bool IsCompressedFormat(E_PIXEL_FORMAT Format);
 		static int32 CalcMipCount(int32 Width, int32 Height);
 
-		static TImage* LoadImageTGA(TFile& FileInput, int32* PixelDepth = nullptr);
+		static TImagePtr LoadImageTGA(TFile& FileInput, int32* PixelDepth = nullptr);
 		static vector2di LoadImageTGADimension(const TString& TgaName);
-		bool SaveToTga(const char* filename, int32 MipIndex = 0);
+		bool SaveToTGA(const char* filename, int32 MipIndex = 0);
+
+		static TImagePtr LoadImagePNG(TFile& FileInput);
+		bool SaveToPNG(const char* filename, int32 MipIndex = 0);
 
 		void FlipY();
 		void ClearMipmaps();

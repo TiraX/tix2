@@ -190,7 +190,7 @@ namespace tix
 		}
 	}
 
-	TImage* TImage::LoadImageTGA(TFile& FileInput, int32* PixelDepth)
+	TImagePtr TImage::LoadImageTGA(TFile& FileInput, int32* PixelDepth)
 	{
 		STGAHeader header;
 
@@ -248,36 +248,33 @@ namespace tix
 			return NULL;
 		}
 
-		TImage* Image = ti_new TImage(dstFmt, header.ImageWidth, header.ImageHeight);
-		if (Image)
+		TImagePtr Image = ti_new TImage(dstFmt, header.ImageWidth, header.ImageHeight);
+		// read image
+		if (header.ImageType == TGA_IMAGETYPE_TRUECOLOR)
 		{
-			// read image
-			if (header.ImageType == TGA_IMAGETYPE_TRUECOLOR)
-			{
-				const int ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
-				char* SrcBuffer = ti_new char[ImageSize];
-				FileInput.Read(SrcBuffer, ImageSize, ImageSize);
-				ConvertPixelFormat((unsigned char*)Image->Lock(0), (unsigned char*)SrcBuffer,
-					dstFmt, srcFmt,
-					header.ImageWidth, header.ImageHeight);
-				ti_delete[] SrcBuffer;
-			}
-			else if (header.ImageType == TGA_IMAGETYPE_GREYSCALE)
-			{
-				const int32 ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
-				char* SrcBuffer = ti_new char[ImageSize];
-				FileInput.Read(SrcBuffer, ImageSize, ImageSize);
-				Image->GetMipmap(0).Data.Put(SrcBuffer, ImageSize);
-				ti_delete[] SrcBuffer;
-			}
-			else //if (header.ImageType == 10)
-			{
-				TI_ASSERT(0);
-				_LOG(Error, "Compressed TGA format is not supported yet.");
-			}
-
-			Image->Unlock();
+			const int ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
+			char* SrcBuffer = ti_new char[ImageSize];
+			FileInput.Read(SrcBuffer, ImageSize, ImageSize);
+			ConvertPixelFormat((unsigned char*)Image->Lock(0), (unsigned char*)SrcBuffer,
+				dstFmt, srcFmt,
+				header.ImageWidth, header.ImageHeight);
+			ti_delete[] SrcBuffer;
 		}
+		else if (header.ImageType == TGA_IMAGETYPE_GREYSCALE)
+		{
+			const int32 ImageSize = header.ImageHeight * header.ImageWidth * header.PixelDepth / 8;
+			char* SrcBuffer = ti_new char[ImageSize];
+			FileInput.Read(SrcBuffer, ImageSize, ImageSize);
+			Image->GetMipmap(0).Data.Put(SrcBuffer, ImageSize);
+			ti_delete[] SrcBuffer;
+		}
+		else //if (header.ImageType == 10)
+		{
+			TI_ASSERT(0);
+			_LOG(Error, "Compressed TGA format is not supported yet.");
+		}
+
+		Image->Unlock();
 
 		if ((header.ImageDescriptor & 0x20) == 0)
 		{
@@ -300,7 +297,7 @@ namespace tix
 		return vector2di();
 	}
 
-	bool TImage::SaveToTga(const char* filename, int32 MipIndex)
+	bool TImage::SaveToTGA(const char* filename, int32 MipIndex)
 	{
 		int32 Width = Mipmaps[MipIndex].W;
 		int32 Height = Mipmaps[MipIndex].H;
