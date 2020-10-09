@@ -102,7 +102,7 @@ void FGTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 
 void FGTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
 	if (AO_METHOD == USE_GTAO)

@@ -277,7 +277,7 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 	RHI->EndComputeTask();
 
-	RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 	{
 		// Draw sky full screen quad
