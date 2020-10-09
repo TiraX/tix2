@@ -155,7 +155,7 @@ namespace tix
 		virtual void ExecuteGPUComputeCommands(FGPUCommandBufferPtr GPUCommandBuffer) override;
 
 		virtual void SetViewport(const FViewport& InViewport) override;
-		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel = 0, const int8* PassName = "UnnamedPass") override;
+		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass", uint32 MipLevel = 0, const SColor& ClearColor = SColor(0, 0, 0, 0)) override;
 
 		ComPtr<ID3D12Device> GetD3dDevice()
 		{
@@ -213,7 +213,7 @@ namespace tix
 		void FlushGraphicsBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
 
-		void SetRenderTarget(FRenderTargetPtr RT, uint32 MipLevel);
+		void SetRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const SColor& ClearColor);
 
 		void InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);

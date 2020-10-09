@@ -5,14 +5,23 @@
 
 #include "stdafx.h"
 #include "TImage.h"
+//extern "C" {
+#include "png.h"
 #include "pngpriv.h"
+//}
 
 #ifdef TI_PLATFORM_WIN32
-#pragma comment (lib, "libpng16.lib")
-#pragma comment (lib, "zlib.lib")
+#	ifdef TIX_DEBUG
+#pragma comment (lib, "libpng16_debug.lib")
+#pragma comment (lib, "zlib_debug.lib")
+#	else
+#pragma comment (lib, "libpng16")
+#pragma comment (lib, "zlib")
+#	endif
 #else
 #error("Unknown platform for libpng library.")
 #endif
+
 namespace tix
 {
 	// PNG function for file reading

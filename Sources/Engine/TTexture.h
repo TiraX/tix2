@@ -92,6 +92,7 @@ namespace tix
 		uint32 SRGB;
 		uint32 Mips;
 		uint32 Flags;
+		SColor ClearColor;
 
 		TTextureDesc()
 			: Type(ETT_TEXTURE_2D)
@@ -103,6 +104,7 @@ namespace tix
 			, SRGB(0)
 			, Mips(1)
 			, Flags(0)
+			, ClearColor(0, 0, 0, 0)
 		{}
 	};
 

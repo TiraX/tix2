@@ -1304,11 +1304,12 @@ namespace tix
 		TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		if ((Desc.Flags & ETF_RT_COLORBUFFER) != 0)
 		{
+			SColorf ClearColor(Desc.ClearColor);
 			TextureDx12Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-			ClearValue.Color[0] = 0.0;
-			ClearValue.Color[1] = 0.0;
-			ClearValue.Color[2] = 0.0;
-			ClearValue.Color[3] = 0.0;
+			ClearValue.Color[0] = ClearColor.R;
+			ClearValue.Color[1] = ClearColor.G;
+			ClearValue.Color[2] = ClearColor.B;
+			ClearValue.Color[3] = ClearColor.A;
 		}
 		if ((Desc.Flags & ETF_RT_DSBUFFER) != 0)
 		{
@@ -3189,7 +3190,7 @@ namespace tix
 		CurrentWorkingCommandList->RSSetViewports(1, &ViewportDx);
 	}
 
-	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT, uint32 MipLevel)
+	void FRHIDx12::SetRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const SColor& ClearColor)
 	{
 		// Transition Color buffer to D3D12_RESOURCE_STATE_RENDER_TARGET
 		FRenderTargetDx12 * RTDx12 = static_cast<FRenderTargetDx12*>(RT.get());
@@ -3247,9 +3248,10 @@ namespace tix
 		// Clear render target
 		if (CBCount > 0)
 		{
+			SColorf ClearColorFloat(ClearColor);
 			for (int32 cb = 0; cb < CBCount; ++cb)
 			{
-				CurrentWorkingCommandList->ClearRenderTargetView(RTVDescriptors[cb], DirectX::Colors::Transparent, 0, nullptr);
+				CurrentWorkingCommandList->ClearRenderTargetView(RTVDescriptors[cb], ClearColorFloat.GetDataPtr(), 0, nullptr);
 			}
 		}
 		if (Dsv != nullptr)
@@ -3258,11 +3260,11 @@ namespace tix
 		}
 	}
 
-	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const int8* PassName)
+	void FRHIDx12::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName, uint32 MipLevel, const SColor& ClearColor)
 	{
-		FRHI::BeginRenderToRenderTarget(RT, MipLevel, PassName);
+		FRHI::BeginRenderToRenderTarget(RT, PassName, MipLevel, ClearColor);
 		BEGIN_EVENT(CurrentWorkingCommandList.Get(), PassName);
-		SetRenderTarget(RT, MipLevel);
+		SetRenderTarget(RT, MipLevel, ClearColor);
 	}
 
 	void FRHIDx12::InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset)

@@ -84,7 +84,7 @@ namespace tix
 		return Table;
 	}
 
-    void FRHI::BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel, const int8* PassName)
+	void FRHI::BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName, uint32 MipLevel, const SColor& ClearColor)
 	{
 		CurrentRenderTarget = RT;
         

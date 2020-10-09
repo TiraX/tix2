@@ -289,8 +289,10 @@ namespace tix
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
 		switch (PixelFormat)
 		{
-		case EPF_RGBA8_SRGB:
 		case EPF_RGBA8:
+		case EPF_RGBA8_SRGB:
+		case EPF_BGRA8:
+		case EPF_BGRA8_SRGB:
 			{
 				color.R = Data[offset + 0];
 				color.G = Data[offset + 1];

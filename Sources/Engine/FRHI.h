@@ -207,7 +207,7 @@ namespace tix
 		virtual void ExecuteGPUComputeCommands(FGPUCommandBufferPtr GPUCommandBuffer) = 0;
 
 		virtual void SetViewport(const FViewport& InViewport);
-		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, uint32 MipLevel = 0, const int8* PassName = "UnnamedPass");
+		virtual void BeginRenderToRenderTarget(FRenderTargetPtr RT, const int8* PassName = "UnnamedPass", uint32 MipLevel = 0, const SColor& ClearColor = SColor(0, 0, 0, 0));
 
 		E_RHI_TYPE GetRHIType() const
 		{

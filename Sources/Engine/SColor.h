@@ -116,20 +116,20 @@ namespace tix
 	{
 	public:
 		SColorf()
-			: A(1.0f)
-			, R(0.0f)
+			: R(0.0f)
 			, G(0.0f)
 			, B(0.0f)
+			, A(1.0f)
 		{}
 		SColorf(const SColor& c)
-			: A(c.A * k_color_inv)
-			, R(c.R * k_color_inv)
+			: R(c.R * k_color_inv)
 			, G(c.G * k_color_inv)
 			, B(c.B * k_color_inv)
+			, A(c.A* k_color_inv)
 		{}
 
 		SColorf(float a, float r, float g, float b)
-			: A(a), R(r), G(g), B(b)
+			: R(r), G(g), B(b), A(a)
 		{}
 
 		void ToSColor(SColor& OutColor) const
