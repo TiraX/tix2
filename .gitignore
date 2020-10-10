@@ -8,7 +8,6 @@ Projects/Windows/x64/
 Binary/Windows/02.ResConverter.exe
 Binary/Windows/04.VTTextureBaker.exe
 Binary/Windows/TiX.dll
-Sources/Externals/libpng1.6.37/pnglibconf.h
 Sources/Externals/libpng1.6.37/projects/vstudio/.vs/
 Sources/Externals/libpng1.6.37/projects/vstudio/libpng/Release Library/
 Sources/Externals/libpng1.6.37/projects/vstudio/pnglibconf/Release/
