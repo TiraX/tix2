@@ -14,6 +14,9 @@
 
 namespace tix
 {
+	int32 SilenceLog = 0;
+	TCVar CVarSilenceLog("SilenceLog", SilenceLog, 0);
+
 	TLog::TLog()
 	{
 		LogFilename = "txengine.log";
@@ -24,6 +27,9 @@ namespace tix
 
 	void TLog::DoLog(E_LOG_LEVEL LogLevel, const char* Format, ...)
 	{
+		if (SilenceLog > 0)
+			return;
+
 #ifndef TI_PLATFORM_ANDROID
 #	ifdef TI_PLATFORM_WIN32
 		char *tmp	= ti_new char[65536];

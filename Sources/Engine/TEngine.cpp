@@ -31,6 +31,9 @@ namespace tix
 	{
 		if (s_engine == nullptr)
 		{
+			// Init CVar system very first and load ini configuration
+			TConsoleVariables::Init();
+
 			_LOG(Log, "TiX Engine v2.0.0\n");
 			s_engine = ti_new TEngine;
 			s_engine->Init(Config);
@@ -54,10 +57,6 @@ namespace tix
 		_LOG(Error, "Unknown platform.");
 		TI_ASSERT(0);
 #endif
-
-		// Init CVar system and load ini configuration
-		TConsoleVariables::Init();
-
 		// Create device
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);

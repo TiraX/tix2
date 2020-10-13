@@ -14,6 +14,7 @@ namespace tix
 		, ValueFloat(nullptr)
 		, ValueString(nullptr)
 		, ValueType(VAR_INT)
+		, Flag(InFlag)
 	{
 		TConsoleVariables::AddCVar(VarName, this);
 	}
@@ -23,6 +24,7 @@ namespace tix
 		, ValueFloat(&VarFloat)
 		, ValueString(nullptr)
 		, ValueType(VAR_FLOAT)
+		, Flag(InFlag)
 	{
 		TConsoleVariables::AddCVar(VarName, this);
 	}
@@ -32,6 +34,7 @@ namespace tix
 		, ValueFloat(nullptr)
 		, ValueString(&VarString)
 		, ValueType(VAR_STRING)
+		, Flag(InFlag)
 	{
 		TConsoleVariables::AddCVar(VarName, this);
 	}
@@ -55,6 +58,7 @@ namespace tix
 
 	void TCVar::ValueUpdated(const TVarValue& Value)
 	{
+		TI_TODO("Add cvar set from xxx.");
 		if (ValueType == Value.VType)
 		{
 			switch (ValueType)
@@ -136,18 +140,12 @@ namespace tix
 		TINIData Data;
 		Parser.Parse(Data);
 
-		THMap<int32, TString> PlatformName =
+		for (const auto& V : Data)
 		{
-			{ EP_Windows , TString("Platform.Windows") },
-			{ EP_IOS , TString("Platform.IOS") },
-		};
-
-		const TString& CurrentPlatformName = PlatformName[TEngine::GetPlatform()];
-		const THMap<TString, TVarValue>& PlatformConfig = Data[CurrentPlatformName];
-
-		for (const auto& V : PlatformConfig)
-		{
-			UpdateVariable(V.first, V.second);
+			size_t Sep = V.first.rfind('.');
+			TString Section = V.first.substr(0, Sep);
+			TString Name = V.first.substr(Sep + 1);
+			UpdateVariable(Name, V.second);
 		}
 	}
 

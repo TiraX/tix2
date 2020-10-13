@@ -38,7 +38,7 @@ namespace tix
 	};
 
 	// THMap< Group, THMap<Key, Value> >
-	typedef THMap<TString, THMap<TString, TVarValue> > TINIData;
+	typedef THMap<TString, TVarValue> TINIData;
 
 	class TI_API TINIParser
 	{
@@ -47,12 +47,13 @@ namespace tix
 		~TINIParser();
 
 		bool Parse(TINIData& OutData);
+
+		static TString MakeKey(const TString& section, const TString& name);
 	private:
 		enum {
 			LINE_GROUP,
 			LINE_KEYVALUE,
 		};
-		int32 ParseLine(const TString& Line, TString& Group, TString& Key, TString& Value);
 		TString FileName;
 	};
 }

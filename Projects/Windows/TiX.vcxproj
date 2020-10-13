@@ -105,6 +105,14 @@
     <ClCompile Include="..\..\Sources\Engine\TThreadLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TVTTextureLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Externals\inih\cpp\INIReader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Externals\inih\ini.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h" />
@@ -239,6 +247,8 @@
     <ClInclude Include="..\..\Sources\Engine\TVersion.h" />
     <ClInclude Include="..\..\Sources\Engine\TiX.h" />
     <ClInclude Include="..\..\Sources\Engine\TVTTextureLoader.h" />
+    <ClInclude Include="..\..\Sources\Externals\inih\cpp\INIReader.h" />
+    <ClInclude Include="..\..\Sources\Externals\inih\ini.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">
@@ -304,7 +314,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -324,7 +334,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

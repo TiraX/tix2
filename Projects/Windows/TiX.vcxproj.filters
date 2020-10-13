@@ -26,6 +26,12 @@
     <Filter Include="Sources\Render\Shaders\dx12">
       <UniqueIdentifier>{960fae7b-e010-4614-9a14-f47eb954c176}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{94feab68-8caf-4eab-b27e-799c2b770157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\inih">
+      <UniqueIdentifier>{94ad5c6f-7896-498c-8d66-124d63c77343}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Engine\stdafx.cpp">
@@ -300,6 +306,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderPNG.cpp">
       <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Externals\inih\cpp\INIReader.cpp">
+      <Filter>ThirdParty\inih</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Externals\inih\ini.c">
+      <Filter>ThirdParty\inih</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -698,6 +710,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TStaticMesh.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Externals\inih\cpp\INIReader.h">
+      <Filter>ThirdParty\inih</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Externals\inih\ini.h">
+      <Filter>ThirdParty\inih</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

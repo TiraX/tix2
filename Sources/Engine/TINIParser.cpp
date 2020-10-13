@@ -5,19 +5,10 @@
 
 #include "stdafx.h"
 #include "TINIParser.h"
+#include "ini.h"
 
 namespace tix
 {
-	TINIParser::TINIParser(const TString& IniFilename)
-		: FileName(IniFilename)
-	{
-		TI_TODO("Use a third party INI parser.");
-	}
-
-	TINIParser::~TINIParser()
-	{
-	}
-
 	inline bool IsNum(int8 C)
 	{
 		return C >= '0' && C <= '9';
@@ -57,96 +48,38 @@ namespace tix
 		}
 		return V;
 	}
+	
+	TString TINIParser::MakeKey(const TString& section, const TString& name)
+	{
+		TString key = section + "." + name;
+		// Convert to lower case to make section/name lookups case-insensitive
+		//std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+		return key;
+	}
+
+	static int32 ValueHandler(void* user, const int8* section, const int8* name, const int8* value)
+	{
+		if (!name)  // Happens when INI_CALL_HANDLER_ON_NEW_SECTION enabled
+			return 1;
+		TINIData* Data = static_cast<TINIData*>(user);
+		TString key = TINIParser::MakeKey(section, name);
+		(*Data)[key] = ParseValue(value ? value : "");
+		return 1;
+	}
+
+	TINIParser::TINIParser(const TString& IniFilename)
+		: FileName(IniFilename)
+	{
+	}
+
+	TINIParser::~TINIParser()
+	{
+	}
+
 
 	bool TINIParser::Parse(TINIData& OutData)
 	{
-		TFile IniFile;
-		if (IniFile.Open(FileName, EFA_READ))
-		{
-			// Read file
-			int8* FileBuffer = ti_new int8[IniFile.GetSize() + 1];
-			IniFile.Read(FileBuffer, IniFile.GetSize(), IniFile.GetSize());
-			FileBuffer[IniFile.GetSize()] = 0;
-
-			TString CurrentGroup = "DefaultGroup";
-
-			int8* Start = FileBuffer;
-			int8* Cursor = FileBuffer;
-			// Read line
-			while (*Cursor ++)
-			{
-				if (*Cursor != '\n')
-					continue;
-
-				*Cursor = '\0';
-				TString Line = Start;
-				TStringTrim(Line);
-
-				if (!Line.empty())
-				{
-					TString Key, Value;
-					int32 LineResult = ParseLine(Line, CurrentGroup, Key, Value);
-					if (LineResult == LINE_KEYVALUE)
-					{
-						THMap<TString, TVarValue>& Values = OutData[CurrentGroup];
-						Values[Key] = ParseValue(Value);
-					}
-				}
-
-				++Cursor;
-				Start = Cursor;
-			}
-
-			// Parse Left things
-			TString Line = Start;
-			TStringTrim(Line);
-
-			if (!Line.empty())
-			{
-				TString Key, Value;
-				int32 LineResult = ParseLine(Line, CurrentGroup, Key, Value);
-				if (LineResult == LINE_KEYVALUE)
-				{
-					THMap<TString, TVarValue>& Values = OutData[CurrentGroup];
-					Values[Key] = ParseValue(Value);
-				}
-			}
-
-			ti_delete[] FileBuffer;
-
-			return true;
-		}
-		return false;
-	}
-
-	int32 TINIParser::ParseLine(const TString& Line, TString& Group, TString& Key, TString& Value)
-	{
-		// Find key and value
-		if (Line[0] == '[')
-		{
-			Group = Line.substr(1, Line.size() - 2);
-			return LINE_GROUP;
-		}
-		else
-		{
-			uint64 Pos = Line.find('=');
-
-			if (Pos == TString::npos)
-				Pos = Line.find(' ');
-
-			if (Pos != TString::npos)
-			{
-				Key = Line.substr(0, Pos);
-				Value = Line.substr(Pos + 1);
-				TStringTrim(Key);
-				TStringTrim(Value);
-			}
-			else
-			{
-				Key = Line;
-				TStringTrim(Key);
-			}
-			return LINE_KEYVALUE;
-		}
+		int _error = ini_parse(FileName.c_str(), ValueHandler, &OutData);
+		return _error == 0;
 	}
 }
