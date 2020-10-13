@@ -94,6 +94,8 @@ namespace tix
 #if defined (TI_PLATFORM_WIN32)
 		struct tm t;
 		localtime_s(&t, &_time);
+
+		TI_ASSERT(0); // Not continus
         
         return t.tm_year * 366 + t.tm_mon * 31 + t.tm_mday;
 #else

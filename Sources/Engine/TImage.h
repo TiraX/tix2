@@ -29,7 +29,7 @@ namespace tix
 
 		void FlipY();
 		void ClearMipmaps();
-		bool CopyRegionTo(TImage* DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip);
+		bool CopyRegionTo(TImagePtr DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip);
 
 		void ConvertToLinearSpace();
 		void ConvertToSrgbSpace();

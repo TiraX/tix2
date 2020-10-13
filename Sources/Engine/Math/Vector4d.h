@@ -29,6 +29,14 @@ namespace tix
 		vector4d(const vector4d<T>& other) : X(other.X), Y(other.Y), Z(other.Z), W(other.W) {}
 
 		// operators
+		bool operator==(const vector4d<T>& other) const
+		{
+			return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
+		}
+		bool operator!=(const vector4d<T>& other) const
+		{
+			return X != other.X || Y != other.Y || Z != other.Z || W != other.W;
+		}
 
 		vector4d<T> operator+(const vector4d<T>& other) const { return vector4d<T>(X + other.X, Y + other.Y, Z + other.Z, W + other.W); }
 		vector4d<T>& operator+=(const vector4d<T>& other) { X += other.X; Y += other.Y; Z += other.Z; W += other.W;  return *this; }

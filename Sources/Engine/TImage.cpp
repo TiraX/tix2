@@ -689,7 +689,7 @@ namespace tix
 		}
 	}
 
-	bool TImage::CopyRegionTo(TImage* DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip)
+	bool TImage::CopyRegionTo(TImagePtr DstImage, const recti& DstRegion, int32 DstMip, const recti& SrcRegion, int32 SrcMip)
 	{
 		if (DstImage->GetFormat() != PixelFormat)
 		{
