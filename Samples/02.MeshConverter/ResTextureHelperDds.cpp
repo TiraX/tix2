@@ -9,7 +9,6 @@
 #include "ResTextureHelper.h"
 #include "dds.h"
 #include "TImage.h"
-#include "PlatformUtils.h"
 #include <sstream>
 #include "ispc_texcomp.h"
 

@@ -12,7 +12,6 @@
 #include "ResMaterialInstanceHelper.h"
 #include "ResSceneHelper.h"
 #include "ResSceneTileHelper.h"
-#include "PlatformUtils.h"
 #include "ResMultiThreadTask.h"
 
 TString FilenameSrc;
@@ -314,7 +313,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 	if (SlashPos != TString::npos)
 	{
 		DstPath = FilenameDst.substr(0, SlashPos);
-		CreateDirectoryIfNotExist(DstPath);
+		TPlatformUtils::CreateDirectoryIfNotExist(DstPath);
 	}
 
 	if (!Resfile.SaveFile(FilenameDst))

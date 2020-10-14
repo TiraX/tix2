@@ -5,7 +5,6 @@
 
 #include "stdafx.h"
 #include "ResMultiThreadTask.h"
-#include "PlatformUtils.h"
 
 namespace tix
 {
@@ -88,7 +87,7 @@ namespace tix
 		, ExecuteState(STATE_NONE)
 		, RunningThreads(0)
 	{
-		MaxThreadCount = GetProcessorCount();
+		MaxThreadCount = TPlatformUtils::GetProcessorCount();
 		InitThreads();
 	}
 

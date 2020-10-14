@@ -313,6 +313,9 @@
     <ClCompile Include="..\..\Sources\Externals\inih\ini.c">
       <Filter>ThirdParty\inih</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -716,6 +719,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Externals\inih\ini.h">
       <Filter>ThirdParty\inih</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

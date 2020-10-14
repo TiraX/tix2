@@ -57,6 +57,9 @@ namespace tix
 		_LOG(Error, "Unknown platform.");
 		TI_ASSERT(0);
 #endif
+		// Create log system
+		LogSystem = ti_new TLog;
+
 		// Create device
 		TI_ASSERT(Device == nullptr);
 		Device = TDevice::CreateDevice(Config.Name, Config.Width, Config.Height);
@@ -96,6 +99,7 @@ namespace tix
 
 	TEngine::TEngine()
 		: IsRunning(false)
+		, LogSystem(nullptr)
 		, Device(nullptr)
 		, Scene(nullptr)
 		, ResourceLibrary(nullptr)
@@ -127,6 +131,8 @@ namespace tix
 
 		// delete device
 		TDevice::DestoryDevice(Device);
+
+		SAFE_DELETE(LogSystem);
 	}
 
 	TDevice* TEngine::GetDevice()

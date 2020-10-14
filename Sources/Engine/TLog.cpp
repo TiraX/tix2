@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include "TLog.h"
+#include "TTimer.h"
 
 #ifdef TI_PLATFORM_ANDROID
 #include <android/log.h>
@@ -14,28 +15,41 @@
 
 namespace tix
 {
-	int32 SilenceLog = 0;
-	TCVar CVarSilenceLog("SilenceLog", SilenceLog, 0);
+	int32 TLog::SilenceLog = 0;
+	TFile* LogFile = nullptr;
 
 	TLog::TLog()
 	{
-		LogFilename = "txengine.log";
+		if (LogFile == nullptr)
+		{
+			int32 h, m, s;
+			TTimer::GetCurrentTimeSeconds(h, m, s);
+			int8 LogName[128];
+			sprintf(LogName, "tixlog_%02d-%02d-%02d.log", h, m, s);
+			LogFilename = LogName;
+
+			TString LogPath = "Saved/Logs/";
+			TPlatformUtils::CreateDirectoryIfNotExist(LogPath);
+
+			LogFile = ti_new TFile;
+			if (!LogFile->Open(LogPath + LogFilename, EFA_CREATEWRITE))
+			{
+				ti_delete LogFile;
+				LogFile = nullptr;
+			}
+		}
 	}
 
 	TLog::~TLog()
-	{}
+	{
+		SAFE_DELETE(LogFile);
+	}
 
 	void TLog::DoLog(E_LOG_LEVEL LogLevel, const char* Format, ...)
 	{
-		if (SilenceLog > 0)
-			return;
-
 #ifndef TI_PLATFORM_ANDROID
-#	ifdef TI_PLATFORM_WIN32
 		char *tmp	= ti_new char[65536];
-#	else
-		char tmp[1024];
-#	endif
+
 		va_list marker;
 		va_start(marker, Format);
 #	ifdef TI_PLATFORM_WIN32
@@ -63,15 +77,20 @@ namespace tix
 		}
 #	endif
 
-		printf("%s", tmp);
+		if (SilenceLog == 0)
+			printf("%s", tmp);
+		if (LogFile != nullptr)
+		{
+			LogFile->Write(tmp, (int32)strlen(tmp));
+		}
 
 #	ifdef TI_PLATFORM_WIN32
 		{
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
 				FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
-		ti_delete[] tmp;
 #	endif
+		ti_delete[] tmp;
 #else
 		char buf[1024];
 

@@ -57,10 +57,6 @@ namespace tix
 		TI_API void SetViewProjection(const FViewProjectionInfo& Info);
 		TI_API void SetEnvironmentInfo(const FEnvironmentInfo& Info);
 
-		// Add / Remove primitives from the same static mesh
-		void AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
-		void RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& Primitives);
-
 		void AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 		void RemoveSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 
@@ -97,13 +93,6 @@ namespace tix
 			return EnvInfo;
 		}
 
-		const TVector<FPrimitivePtr>& GetStaticDrawList(E_DRAWLIST_TYPE List) const
-		{
-			TI_TODO("Remove draw list , use new gpu driven pipeline.");
-			TI_ASSERT(0);
-			return StaticDrawLists[List];
-		}
-
 		const THMap<vector2di, FSceneTileResourcePtr>& GetSceneTiles() const
 		{
 			return SceneTiles;
@@ -138,7 +127,5 @@ namespace tix
 
 		// Scene tiles
 		THMap<vector2di, FSceneTileResourcePtr> SceneTiles;
-
-		TVector<FPrimitivePtr> StaticDrawLists[LIST_COUNT];
 	};
 } // end namespace tix

@@ -20,12 +20,12 @@ namespace tix
 		// Remove Primitive from scene
 		if (LinkedPrimitives.size() > 0)
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveStaticMeshPrimitiveFromScene,
-				TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
-				{
-					FRenderThread::Get()->GetRenderScene()->RemoveStaticMeshPrimitives(Primitives);
-				});
-			LinkedPrimitives.clear();
+			//ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveStaticMeshPrimitiveFromScene,
+			//	TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+			//	{
+			//		FRenderThread::Get()->GetRenderScene()->RemoveStaticMeshPrimitives(Primitives);
+			//	});
+			//LinkedPrimitives.clear();
 		}
 	}
 
@@ -88,11 +88,11 @@ namespace tix
 		}
 
 		// Add primitive to scene
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddStaticMeshPrimitivesToScene,
-			TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
-			{
-				FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
-			});
+		//ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddStaticMeshPrimitivesToScene,
+		//	TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+		//	{
+		//		FRenderThread::Get()->GetRenderScene()->AddStaticMeshPrimitives(Primitives);
+		//	});
 	}
 
 	void TNodeStaticMesh::LinkMeshAsset(

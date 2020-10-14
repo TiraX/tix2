@@ -4,7 +4,7 @@
 */
 
 #include "stdafx.h"
-#include "PlatformUtils.h"
+#include "TPlatformUtils.h"
 #if defined (TI_PLATFORM_IOS)
 #include <mach-o/dyld.h>
 #include <unistd.h>
@@ -13,7 +13,7 @@
 
 namespace tix
 {
-	TString GetExecutablePath()
+	TString TPlatformUtils::GetExecutablePath()
 	{
 		TString Ret;
 		int8 Path[512];
@@ -50,7 +50,7 @@ namespace tix
 		return Ret;
 	}
 
-	int32 DeleteTempFile(TString FileName)
+	int32 TPlatformUtils::DeleteTempFile(TString FileName)
 	{
 		TString CommandLine;
 #if defined (TI_PLATFORM_WIN32)
@@ -60,6 +60,20 @@ namespace tix
 		CommandLine = "rm ";
 #endif
 		CommandLine += FileName;
+		return system(CommandLine.c_str());
+	}
+
+	int32 TPlatformUtils::OverwriteFile(TString SrcName, TString DstName)
+	{
+		TString CommandLine;
+#if defined (TI_PLATFORM_WIN32)
+		CommandLine = "copy /Y ";
+		TStringReplace(SrcName, "/", "\\");
+		TStringReplace(DstName, "/", "\\");
+#elif defined (TI_PLATFORM_IOS)
+		CommandLine = "cp ";
+#endif
+		CommandLine += SrcName + " " + DstName;
 		return system(CommandLine.c_str());
 	}
 	
@@ -130,7 +144,7 @@ namespace tix
 		}
 	}
 
-	bool CreateDirectoryIfNotExist(const TString& Path)
+	bool TPlatformUtils::CreateDirectoryIfNotExist(const TString& Path)
 	{
 		// Directory Exists? 
 		if (!IsDirectoryExists(Path))
@@ -145,7 +159,7 @@ namespace tix
 		return true;
 	}
 
-	int32 GetProcessorCount()
+	int32 TPlatformUtils::GetProcessorCount()
 	{
 #if defined (TI_PLATFORM_WIN32)
 		// Figure out how many cores there are on this machine

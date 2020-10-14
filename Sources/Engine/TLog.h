@@ -22,6 +22,10 @@ namespace tix
 		virtual ~TLog();
 
 		TI_API static void DoLog(E_LOG_LEVEL LogLevel, const char* Format, ...);
+
+	public:
+		static int32 SilenceLog;
+
 	private:
 		TString	LogFilename;
 	};

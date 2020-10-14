@@ -87,6 +87,7 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPath.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TRegion.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPath.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
+    <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h" />
     <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
     <ClInclude Include="..\..\Sources\Engine\TRegion.h" />

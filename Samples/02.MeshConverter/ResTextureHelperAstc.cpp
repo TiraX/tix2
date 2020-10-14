@@ -8,7 +8,6 @@
 #include "ResHelper.h"
 #include "ResTextureHelper.h"
 #include "TImage.h"
-#include "PlatformUtils.h"
 #include "ispc_texcomp.h"
 
 namespace tix
@@ -182,7 +181,7 @@ namespace tix
 			return nullptr;
 		}
 		// Find ASTC converter and do convert for LDR image
-		TString ExePath = GetExecutablePath();
+		TString ExePath = TPlatformUtils::GetExecutablePath();
 		TString ASTCConverter = ExePath + "/astcenc -c ";
 		const TString& TempTGAName = "Temp.tga";
 		const TString& TempASTCName = "Temp.astc";
@@ -202,7 +201,7 @@ namespace tix
 
 			for (uint32 mip = 0; mip < DDSTexture->Desc.Mips; ++mip)
 			{
-				DecodeResult->SaveToTga(TempTGAName.c_str(), mip);
+				DecodeResult->SaveToTGA(TempTGAName.c_str(), mip);
 
 				// Convert to astc
 				int ret = system(ASTCConverter.c_str());
@@ -245,8 +244,8 @@ namespace tix
 		Texture->Name = Name;
 		Texture->Path = Path;
 
-		DeleteTempFile(TempTGAName);
-		DeleteTempFile(TempASTCName);
+		TPlatformUtils::DeleteTempFile(TempTGAName);
+		TPlatformUtils::DeleteTempFile(TempASTCName);
 
 		return Texture;
 	}

@@ -56,24 +56,8 @@ namespace tix
 
 	void FDefaultRenderer::Render(FRHI* RHI, FScene* Scene)
 	{
-		RenderDrawList(RHI, Scene, LIST_OPAQUE);
-	}
-
-	void FDefaultRenderer::RenderDrawList(FRHI* RHI, FScene* Scene, E_DRAWLIST_TYPE ListType)
-	{
-		const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(ListType);
-		for (const auto& Primitive : Primitives)
-		{
-			FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
-			RHI->SetGraphicsPipeline(Primitive->GetPipeline());
-			RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
-			ApplyShaderParameter(RHI, Scene, Primitive);
-
-			RHI->DrawPrimitiveIndexedInstanced(
-				Primitive->GetMeshBuffer(),
-				InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
-				Primitive->GetInstanceOffset());
-		}
+		RHI->BeginRenderToFrameBuffer();
+		DrawSceneTiles(RHI, Scene);
 	}
 
 	void FDefaultRenderer::DrawSceneTiles(FRHI* RHI, FScene* Scene)

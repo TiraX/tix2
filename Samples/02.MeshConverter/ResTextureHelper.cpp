@@ -232,7 +232,7 @@ namespace tix
 		}
 		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
 		int32 TgaPixelDepth;
-		TImage * TgaImage = TImage::LoadImageTGA(f, &TgaPixelDepth);
+		TImagePtr TgaImage = TImage::LoadImageTGA(f, &TgaPixelDepth);
 		if (SrcInfo.HasMips)
 		{
 			// Generate mipmaps 
@@ -246,7 +246,7 @@ namespace tix
 				int32 H = TgaImage->GetMipmap(Mip).H;
 				for (int32 y = 0 ; y < H ; ++ y)
 				{
-					TGenerateMipmapTask * Task = ti_new TGenerateMipmapTask(TgaImage, Mip, y, y + 1);
+					TGenerateMipmapTask * Task = ti_new TGenerateMipmapTask(TgaImage.get(), Mip, y, y + 1);
 					TResMTTaskExecuter::Get()->AddTask(Task);
 					Tasks.push_back(Task);
 				}
@@ -261,7 +261,7 @@ namespace tix
 				{
 					char Name[256];
 					sprintf(Name, "%s_%d.tga", SrcInfo.TextureSource.c_str(), Mip);
-					TgaImage->SaveToTga(Name, Mip);
+					TgaImage->SaveToTGA(Name, Mip);
 				}
 			}
 
@@ -273,7 +273,7 @@ namespace tix
 			Tasks.clear();
 		}
 
-		TImage * TgaImageWithBias = TgaImage;
+		TImage * TgaImageWithBias = TgaImage.get();
 		if (SrcInfo.LodBias > 0)
 		{
 			TgaImageWithBias = ti_new TImage(TgaImage->GetFormat(), TgaImage->GetWidth() >> SrcInfo.LodBias, TgaImage->GetHeight() >> SrcInfo.LodBias);
@@ -286,7 +286,7 @@ namespace tix
 				TI_ASSERT(DestMipData.Data.GetBufferSize() == SrcMipData.Data.GetLength());
 				memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());
 			}
-			ti_delete TgaImage;
+			TgaImage = nullptr;
 		}
 
 		// Create the texture

@@ -17,10 +17,6 @@ namespace tix
 
 		// Reserve memory for containers
 		SceneTiles.reserve(128);
-		for (int32 l = 0 ; l < LIST_COUNT ; ++ l)
-		{
-			StaticDrawLists[l].reserve(128);
-		}
 	}
 
 	FScene::~FScene()
@@ -40,49 +36,6 @@ namespace tix
 		TI_ASSERT(IsRenderThread());
 		EnvInfo = Info;
 		SetSceneFlag(EnvironmentDirty);
-	}
-
-	void FScene::AddStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
-	{
-		// Send different primitives to different draw list
-		TI_ASSERT(IsRenderThread());
-		// Combine all mesh buffers into a big buffer collection
-		for (auto& P : InPrimitives)
-		{
-			// Allocate virtual texture position for this primitive
-			FVTSystem::Get()->AllocatePositionForPrimitive(P);
-
-			// Add to draw list
-			StaticDrawLists[P->GetDrawList()].push_back(P);
-
-			// Mark flag primitives dirty
-			SetSceneFlag(ScenePrimitivesDirty);
-		}
-	}
-
-	void FScene::RemoveStaticMeshPrimitives(const TVector<FPrimitivePtr>& InPrimitives)
-	{
-		TI_ASSERT(IsRenderThread());
-		TI_TODO("Find a fast way to locate Primitive in draw list.");
-
-		for (auto& P : InPrimitives)
-		{
-			// Remove from draw list
-			TVector<FPrimitivePtr>& DrawList = StaticDrawLists[P->GetDrawList()];
-			TVector<FPrimitivePtr>::iterator it = tix_find(DrawList.begin(), DrawList.end(), P);
-			if (it != DrawList.end())
-			{
-				DrawList.erase(it);
-			}
-
-			// Remove from virtual texture
-			FVTSystem::Get()->RemovePositionForPrimitive(P);
-
-			TI_TODO("Unregister primitive from scene meta infos");
-
-			// Mark flag primitives dirty
-			SetSceneFlag(ScenePrimitivesDirty);
-		}
 	}
 
 	void FScene::InitRenderFrame()

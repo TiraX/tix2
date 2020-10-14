@@ -100,9 +100,10 @@
     <ClInclude Include="..\..\Sources\Engine\TImage.h" />
     <ClInclude Include="..\..\Sources\Engine\TJSON.h" />
     <ClInclude Include="..\..\Sources\Engine\TLog.h" />
+    <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h" />
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
+    <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
     <ClInclude Include="dds.h" />
-    <ClInclude Include="PlatformUtils.h" />
     <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
@@ -126,9 +127,10 @@
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
     <ClCompile Include="MainWin32.cpp" />
-    <ClCompile Include="PlatformUtils.cpp" />
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />

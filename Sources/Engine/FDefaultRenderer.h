@@ -31,7 +31,6 @@ namespace tix
 		}
 
 	protected:
-		void RenderDrawList(FRHI* RHI, FScene* Scene, E_DRAWLIST_TYPE ListType);
 		void BindEngineBuffer(FRHI * RHI, E_SHADER_STAGE ShaderStage, const FShaderBinding::FShaderArgument& Argument, FScene * Scene, FPrimitivePtr Primitive);
 		void BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer);
 

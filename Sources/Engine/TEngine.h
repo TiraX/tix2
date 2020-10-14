@@ -86,6 +86,7 @@ namespace tix
 	private:
 		static E_Platform CurrentPlatform;
 		bool IsRunning;
+		TLog* LogSystem;
 		TDevice * Device;
 
 		TScene * Scene;

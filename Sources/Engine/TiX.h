@@ -74,6 +74,7 @@ using namespace std;
 #include "TNodeLight.h"
 #include "TNodeSceneTile.h"
 #include "TScene.h"
+#include "TPlatformUtils.h"
 
 // RHI things
 #include "FRenderResource.h"

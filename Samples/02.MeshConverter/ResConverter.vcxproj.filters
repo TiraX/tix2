@@ -49,9 +49,6 @@
     <ClInclude Include="ResSceneHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="PlatformUtils.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ResSettings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -80,6 +77,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TCrc.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h">
+      <Filter>Source Files\TiX2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TTimer.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
   </ItemGroup>
@@ -126,9 +129,6 @@
     <ClCompile Include="ResSceneHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PlatformUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResTextureHelperTga.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,6 +155,12 @@
     </ClCompile>
     <ClCompile Include="ResMeshCluster.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp">
+      <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TTimer.cpp">
+      <Filter>Source Files\TiX2</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
