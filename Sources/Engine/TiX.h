@@ -26,8 +26,8 @@ using namespace std;
 
 // Include tix symbols
 // Basic define and types
-#include "TConfig.h"
 #include "TDefines.h"
+#include "TPlatformHeader.h"
 #include "IInstrusivePtr.hpp"
 #include "IReferenceCounted.h"
 #include "TTypes.h"

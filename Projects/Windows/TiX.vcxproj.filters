@@ -330,9 +330,6 @@
     <ClInclude Include="..\..\Sources\Engine\TVersion.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Engine\TConfig.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TDefines.h">
       <Filter>Sources</Filter>
     </ClInclude>
@@ -722,6 +719,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TPlatformHeader.h">
+      <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

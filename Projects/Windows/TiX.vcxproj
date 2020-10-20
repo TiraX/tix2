@@ -188,7 +188,6 @@
     <ClInclude Include="..\..\Sources\Engine\TAssetFileDef.h" />
     <ClInclude Include="..\..\Sources\Engine\TAssetLibrary.h" />
     <ClInclude Include="..\..\Sources\Engine\TCollisionSet.h" />
-    <ClInclude Include="..\..\Sources\Engine\TConfig.h" />
     <ClInclude Include="..\..\Sources\Engine\TConsoleVariable.h" />
     <ClInclude Include="..\..\Sources\Engine\TCrc.h" />
     <ClInclude Include="..\..\Sources\Engine\TDefines.h" />
@@ -214,6 +213,7 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPath.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />
+    <ClInclude Include="..\..\Sources\Engine\TPlatformHeader.h" />
     <ClInclude Include="..\..\Sources\Engine\TPlatformUtils.h" />
     <ClInclude Include="..\..\Sources\Engine\TPtrTypes.h" />
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />

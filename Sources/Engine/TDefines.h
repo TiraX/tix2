@@ -71,22 +71,42 @@ void * operator new (std::size_t count);
 
 #define TI_CIRCLE_POINTS	(21)
 
-#if defined (TI_PLATFORM_WIN32)
-#	if defined (TI_LINK_STATIC_LIBRARY)
-#		define TI_API 
-#	else
-#		ifdef TIX_EXPORTS
-#			define TI_API __declspec(dllexport)
-#		else
-#			define TI_API __declspec(dllimport)
-#		endif
-#	endif
+// Platform
+#if defined (_WINDOWS)
+#	define TI_PLATFORM_WIN32
+#elif defined (IPHONEOS)
+#	define TI_PLATFORM_IOS
+#elif defined (TI_ANDROID)
+#	define TI_PLATFORM_ANDROID
 #else
-#	define TI_API
+#error("do not support other platforms yet.")
 #endif
 
+// Renderers
+#ifdef TI_PLATFORM_WIN32
+#	define COMPILE_WITH_RHI_DX12 1
+#elif defined (TI_PLATFORM_IOS)
+#	define COMPILE_WITH_RHI_METAL 1
+#endif
 
-// FOR DEBUGS
+#if (COMPILE_WITH_RHI_DX12)
+#	define USE_HALF_FOR_INSTANCE_ROTATION 0
+#else
+#	define USE_HALF_FOR_INSTANCE_ROTATION 1
+#endif
 
-#define VT_PRELOADED_REGIONS (1)
-#define GPU_DRIVEN_TEST (1)
+// We use right hand coordinate
+#define TI_USE_RH 1
+
+// Define DEBUG System
+#ifdef TIX_DEBUG
+#	define TIX_DEBUG_RENDER_TASK_NAME 1
+#	define TIX_DEBUG_AYNC_LOADING 1
+#	define VT_PRELOADED_REGIONS 1
+#	define GPU_DRIVEN_TEST 1
+#else
+#	define TIX_DEBUG_RENDER_TASK_NAME 0
+#	define TIX_DEBUG_AYNC_LOADING 0
+#	define VT_PRELOADED_REGIONS 0
+#	define GPU_DRIVEN_TEST 0
+#endif

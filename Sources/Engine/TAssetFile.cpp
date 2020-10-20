@@ -46,6 +46,7 @@ namespace tix
 	{
 		if (!ReadFile(InFilename))
 		{
+			_LOG(Error, "Failed to read file %s.\n", InFilename.c_str());
 			return false;
 		}
 		return ParseFile();
