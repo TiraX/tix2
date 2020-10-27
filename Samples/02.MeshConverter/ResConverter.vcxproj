@@ -125,6 +125,7 @@
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderHDR.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TLog.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="ResTextureHelper.cpp" />
     <ClCompile Include="ResTextureHelperAstc.cpp" />
     <ClCompile Include="ResTextureHelperDds.cpp" />
+    <ClCompile Include="ResTextureHelperHdr.cpp" />
     <ClCompile Include="ResTextureHelperTga.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

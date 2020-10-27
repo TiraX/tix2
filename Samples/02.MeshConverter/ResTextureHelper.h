@@ -47,6 +47,7 @@ namespace tix
 		static bool LoadTextureFile(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings);
 		static TResTextureDefine* LoadDdsFile(const TResTextureSourceInfo& SrcInfo);
 		static TResTextureDefine* LoadTgaFile(const TResTextureSourceInfo& SrcInfo);
+		static TResTextureDefine* LoadHdrFile(const TResTextureSourceInfo& SrcInfo);
 
 		static TResTextureDefine* ConvertToDds(TResTextureDefine* SrcImage);
 		static TResTextureDefine* ConvertToAstc(TResTextureDefine* SrcImage);

@@ -22,6 +22,10 @@ typedef unsigned long long uint64;
 typedef long long int64;
 #endif
 
+#include "Math/half.hpp"
+using namespace half_float;
+typedef half float16;
+
 typedef float float32;
 typedef double float64;
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <math.h>	// system math lib
+#include <cmath>
 
 #define F32_AS_int32(f)		(*((int32 *) &(f)))
 #define F32_AS_uint32(f)		(*((uint32 *) &(f)))
@@ -245,10 +246,6 @@ inline int32 ti_align16(int32 n)
 {
 	return ti_align(n, 16);
 }
-
-#include "Math/half.hpp"
-using namespace half_float;
-typedef half float16;
 
 #include "Math/Vector2d.h"
 #include "Math/Vector3d.h"
