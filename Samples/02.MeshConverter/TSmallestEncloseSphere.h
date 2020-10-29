@@ -15,7 +15,7 @@ inline void Givens(T& c, T& s, const T a, const T b)
 		c = 1;
 		s = 0;
 	}
-	else if (ti_abs(b) > ti_abs(a)) {
+	else if (TMath::Abs(b) > TMath::Abs(a)) {
 		const T t = a / b;
 		s = 1 / sqrt(1 + t * t);
 		c = s * t;
@@ -258,16 +258,16 @@ public:
 				FindAffineCoefficients(Points[GlobalIndex(j)], Lambdas);
 
 				// compare coefficient of point #j to 1.0
-				error = ti_abs(Lambdas[j] - 1.f);
+				error = TMath::Abs(Lambdas[j] - 1.f);
 				if (error > max) max = error;
 
 				// compare the other coefficients against 0.0
 				for (uint32 i = 0; i < j; ++i) {
-					error = ti_abs(Lambdas[i] - 0.f);
+					error = TMath::Abs(Lambdas[i] - 0.f);
 					if (error > max) max = error;
 				}
 				for (uint32 i = j + 1; i < Size(); ++i) {
-					error = ti_abs(Lambdas[i] - 0.f);
+					error = TMath::Abs(Lambdas[i] - 0.f);
 					if (error > max) max = error;
 				}
 			}

@@ -15,7 +15,7 @@ namespace tix
 		// Reserve space for containers
 		static const uint32 PointsByFrequency[] = { 12, 42, 92, 162, 252, 362, 492, 642, 812, 1002};
 		static const uint32 FacesByFrequency[] = { 20, 80, 180, 320, 500, 720, 980, 1280, 1620, 2000};
-		uint32 FreqIndex = ti_min(Frequency - 1, 9);
+		uint32 FreqIndex = TMath::Min(Frequency - 1, 9);
 		OutPositions.reserve(PointsByFrequency[FreqIndex]);
 		OutIndices.reserve(FacesByFrequency[FreqIndex] * 3);
 
@@ -76,9 +76,9 @@ namespace tix
 		auto MakeKey = [](const vector3df& Pos, float Tolerance)
 		{
 			vector3di Key;
-			Key.X = ti_round(Pos.X / Tolerance);
-			Key.Y = ti_round(Pos.Y / Tolerance);
-			Key.Z = ti_round(Pos.Z / Tolerance);
+			Key.X = TMath::Round(Pos.X / Tolerance);
+			Key.Y = TMath::Round(Pos.Y / Tolerance);
+			Key.Z = TMath::Round(Pos.Z / Tolerance);
 			return Key;
 		};
 		auto AddSharedPoint = [](const vector3di& Key, const vector3df& Pos, THMap<vector3di, uint32>& PointsMap, TVector<vector3df>& OutPositions)

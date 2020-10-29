@@ -206,7 +206,7 @@ namespace tix
 
 		void ReallocBuffer(uint32 size)
 		{
-			size = ti_align4(size);
+			size = TMath::Align4(size);
 			if (size < BufferSize)
 				return;
 

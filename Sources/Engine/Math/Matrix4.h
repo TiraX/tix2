@@ -1167,9 +1167,9 @@ namespace tix
 	inline vector3d<T> ti_vec_abs(const vector3d<T>& vec)
 	{
 		vector3d<T> new_vec;
-		new_vec.X = ti_abs(vec.X);
-		new_vec.Y = ti_abs(vec.Y);
-		new_vec.Z = ti_abs(vec.Z);
+		new_vec.X = TMath::Abs(vec.X);
+		new_vec.Y = TMath::Abs(vec.Y);
+		new_vec.Z = TMath::Abs(vec.Z);
 		return new_vec;
 	}
 
@@ -1327,7 +1327,7 @@ namespace tix
 		T t11 = M[0] * M[5] - M[1] * M[4];
 
 		T det = t0 * t11 - t1 * t10 + t2 * t9 + t3 * t8 - t4 * t7 + t5 * t6;
-		if (iszero( det ))
+		if (TMath::IsZero( det ))
 		{
 			return false;
 		}

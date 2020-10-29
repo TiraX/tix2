@@ -168,7 +168,7 @@ namespace tix
 			T l = X*X + Y*Y + Z*Z;
 			if (l == 0)
 				return *this;
-			l = (T) reciprocal_squareroot ( (float32)l );
+			l = (T) TMath::ReciprocalSquareroot ( (float32)l );
 			X *= l;
 			Y *= l;
 			Z *= l;

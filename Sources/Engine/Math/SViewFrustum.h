@@ -357,7 +357,7 @@ namespace tix
 		uint32 i;
 		for ( i=0; i != VF_PLANE_COUNT; ++i)
 		{
-			const float32 len = -reciprocal_squareroot(
+			const float32 len = -TMath::ReciprocalSquareroot(
 				Planes[i].Normal.getLengthSQ());
 			Planes[i].Normal *= len;
 			Planes[i].D *= len;

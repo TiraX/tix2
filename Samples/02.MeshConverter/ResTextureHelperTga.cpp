@@ -53,10 +53,10 @@ namespace tix
 
 					// Calc average
 					SColor Target;
-					Target.R = ti_round(Rf * 0.25f);
-					Target.G = ti_round(Gf * 0.25f);
-					Target.B = ti_round(Bf * 0.25f);
-					Target.A = ti_round(Af * 0.25f);
+					Target.R = TMath::Round(Rf * 0.25f);
+					Target.G = TMath::Round(Gf * 0.25f);
+					Target.B = TMath::Round(Bf * 0.25f);
+					Target.A = TMath::Round(Af * 0.25f);
 
 					SrcImage->SetPixel(x / 2, y / 2, Target, Miplevel);
 				}

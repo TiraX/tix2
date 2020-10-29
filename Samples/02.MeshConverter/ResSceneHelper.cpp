@@ -104,7 +104,7 @@ namespace tix
 				TJSONNode JTile = JTileList[i];
 				vector2di TilePos = vector2di(JTile[0].GetInt(), JTile[1].GetInt());
 				Helper.AssetSceneTiles.push_back(TilePos);
-				TI_ASSERT(ti_abs(TilePos.X) <= 32760 && ti_abs(TilePos.Y) <= 32760);
+				TI_ASSERT(TMath::Abs(TilePos.X) <= 32760 && TMath::Abs(TilePos.Y) <= 32760);
 			}
 		}
 

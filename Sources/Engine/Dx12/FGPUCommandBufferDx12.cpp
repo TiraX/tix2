@@ -49,7 +49,7 @@ namespace tix
 		uint32 CommandPos = CommandIndex * CommandStride;
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->FillWithZero(CommandStride);
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetVertexBuffer(
@@ -74,7 +74,7 @@ namespace tix
 		CommandBufferData->Set(&MBDx12->VertexBufferView, sizeof(D3D12_VERTEX_BUFFER_VIEW));
 
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetInstanceBuffer(
@@ -96,7 +96,7 @@ namespace tix
 		CommandBufferData->Set(&IBDx12->InstanceBufferView, sizeof(D3D12_VERTEX_BUFFER_VIEW));
 		
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetIndexBuffer(
@@ -123,7 +123,7 @@ namespace tix
 		CommandBufferData->Set(&MBDx12->IndexBufferView, sizeof(D3D12_INDEX_BUFFER_VIEW));
 		
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetDrawIndexed(
@@ -154,7 +154,7 @@ namespace tix
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->Set(&DrawIndexed, sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetDispatch(
@@ -181,7 +181,7 @@ namespace tix
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->Set(&DispatchArg, sizeof(D3D12_DISPATCH_ARGUMENTS));
 		// Remember commands encoded
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 
 	void FGPUCommandBufferDx12::EncodeSetShaderResrouce(
@@ -210,7 +210,7 @@ namespace tix
 		CommandBufferData->Seek(CommandPos);
 		CommandBufferData->Set(InData, InDataSize);
 
-		CommandsEncoded = ti_max(CommandsEncoded, CommandIndex + 1);
+		CommandsEncoded = TMath::Max(CommandsEncoded, CommandIndex + 1);
 	}
 }
 #endif

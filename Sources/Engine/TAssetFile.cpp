@@ -84,7 +84,7 @@ namespace tix
 			_LOG(Error, "Wrong file version. [%s]\n", Filename.c_str());
 			return false;
 		}
-		pos += ti_align4((int32)sizeof(TResfileHeader));
+		pos += TMath::Align4((int32)sizeof(TResfileHeader));
 
 		LoadStringList();
 
@@ -193,14 +193,14 @@ namespace tix
 		OutResources.reserve(MeshCount + 1);
 
 		// Load meshes
-		const int8* MeshDataStart = (const int8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const int8* SectionDataStart = (const int8*)(MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)));
+		const int8* MeshDataStart = (const int8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const int8* SectionDataStart = (const int8*)(MeshDataStart + TMath::Align4((int32)sizeof(THeaderMesh)));
 
 		const THeaderMesh* Header = (const THeaderMesh*)(MeshDataStart);
 		const THeaderMeshSection * HeaderSections = (const THeaderMeshSection*)(SectionDataStart);
 
 		TI_ASSERT(Header->Sections > 0);
-		const int8* VertexDataStart = MeshDataStart + ti_align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections + sizeof(THeaderCollisionSet);
+		const int8* VertexDataStart = MeshDataStart + TMath::Align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections + sizeof(THeaderCollisionSet);
 
 		// Create mesh buffer resource
 		TMeshBufferPtr MeshBuffer = ti_new TMeshBuffer();
@@ -211,8 +211,8 @@ namespace tix
 		const int32 IndexStride = (Header->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
 		const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(Header->VertexFormat);
 		const int8* VertexData = VertexDataStart;
-		const int8* IndexData = VertexDataStart + ti_align4(Header->VertexCount * VertexStride);
-		const int8* ClusterData = IndexData + ti_align4(Header->PrimitiveCount * 3 * IndexStride);
+		const int8* IndexData = VertexDataStart + TMath::Align4(Header->VertexCount * VertexStride);
+		const int8* ClusterData = IndexData + TMath::Align4(Header->PrimitiveCount * 3 * IndexStride);
 		MeshBuffer->SetVertexStreamData(Header->VertexFormat, VertexData, Header->VertexCount, (E_INDEX_TYPE)Header->IndexType, IndexData, Header->PrimitiveCount * 3);
 		if (Header->Clusters > 0)
 		{
@@ -222,7 +222,7 @@ namespace tix
 		TI_ASSERT(Header->ClusterSize == 0 || (Header->PrimitiveCount == Header->Clusters * Header->ClusterSize));
 
 		FStats::Stats.VertexDataInBytes += Header->VertexCount * VertexStride;
-		FStats::Stats.IndexDataInBytes += ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3));
+		FStats::Stats.IndexDataInBytes += TMath::Align4((int32)(IndexStride * Header->PrimitiveCount * 3));
 
 		// Load sections
 		for (int32 s = 0 ; s < Header->Sections ; ++ s)
@@ -250,9 +250,9 @@ namespace tix
 		{
 			const int8* CollisionHeaderStart = MeshDataStart + sizeof(THeaderMesh) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections;
 			const int8* CollisionDataStart = VertexDataStart + 
-				ti_align4(Header->VertexCount * VertexStride)	// Vertex data size
-				+ ti_align4((int32)(IndexStride * Header->PrimitiveCount * 3))		// Index data size
-				+ ti_align4((int32)(Header->Clusters * sizeof(TMeshClusterDef)));	// Cluster data size
+				TMath::Align4(Header->VertexCount * VertexStride)	// Vertex data size
+				+ TMath::Align4((int32)(IndexStride * Header->PrimitiveCount * 3))		// Index data size
+				+ TMath::Align4((int32)(Header->Clusters * sizeof(TMeshClusterDef)));	// Cluster data size
 			THeaderCollisionSet * HeaderCollision = (THeaderCollisionSet*)CollisionHeaderStart;
 
 			const int8* CollisionSphereData = CollisionDataStart;
@@ -300,7 +300,7 @@ namespace tix
 				memcpy(CollisionSet->Convexes[i].VertexData.data(), CollisionConvexData + ConvexDataOffset, VertexCount * sizeof(vector3df));
 				ConvexDataOffset += VertexCount * sizeof(vector3df);
 				memcpy(CollisionSet->Convexes[i].IndexData.data(), CollisionConvexData + ConvexDataOffset, IndexCount * sizeof(uint16));
-				ConvexDataOffset += ti_align4(uint32(IndexCount * sizeof(uint16)));
+				ConvexDataOffset += TMath::Align4(uint32(IndexCount * sizeof(uint16)));
 			}
 			StaticMesh->SetCollision(CollisionSet);
 		}
@@ -323,14 +323,14 @@ namespace tix
 			return;
 		}
 
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* TextureDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * TextureCount;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* TextureDataStart = HeaderStart + TMath::Align4((int32)sizeof(THeaderTexture)) * TextureCount;
 
 		// each ResFile should have only 1 resource
 		OutResources.reserve(TextureCount);
 		for (int32 i = 0; i < TextureCount; ++i)
 		{
-			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + ti_align4((int32)sizeof(THeaderTexture)) * i);
+			const THeaderTexture* Header = (const THeaderTexture*)(HeaderStart + TMath::Align4((int32)sizeof(THeaderTexture)) * i);
 
 			TTextureDesc Desc;
 			Desc.Type = (E_TEXTURE_TYPE)Header->Type;
@@ -367,7 +367,7 @@ namespace tix
 					int32 Size = *(const int32*)(Data + sizeof(int32) * 3);
 					Texture->AddSurface(Width, Height, Data + sizeof(uint32) * 4, RowPitch, Size);
 					DataOffset += Size + sizeof(uint32) * 4;
-					DataOffset = ti_align4(DataOffset);
+					DataOffset = TMath::Align4(DataOffset);
 				}
 			}
 
@@ -387,13 +387,13 @@ namespace tix
 			return;
 		}
 
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		//const uint8* CodeDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		//const uint8* CodeDataStart = HeaderStart + TMath::Align4((int32)sizeof(THeaderMaterial)) * MaterialCount;
 		
 		OutResources.reserve(MaterialCount);
 		for (int32 i = 0; i < MaterialCount; ++i)
 		{
-			const THeaderMaterial* Header = (const THeaderMaterial*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterial)) * i);
+			const THeaderMaterial* Header = (const THeaderMaterial*)(HeaderStart + TMath::Align4((int32)sizeof(THeaderMaterial)) * i);
 			TMaterialPtr Material = ti_new TMaterial;
 
 			// Load material
@@ -469,14 +469,14 @@ namespace tix
 			return;
 		}
 
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* MIDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * MICount;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* MIDataStart = HeaderStart + TMath::Align4((int32)sizeof(THeaderMaterialInstance)) * MICount;
 
 		OutResources.reserve(MICount);
 		// each ResFile should have only 1 resource
 		for (int32 i = 0; i < MICount; ++i)
 		{
-			const THeaderMaterialInstance* Header = (const THeaderMaterialInstance*)(HeaderStart + ti_align4((int32)sizeof(THeaderMaterialInstance)) * i);
+			const THeaderMaterialInstance* Header = (const THeaderMaterialInstance*)(HeaderStart + TMath::Align4((int32)sizeof(THeaderMaterialInstance)) * i);
 			TMaterialInstancePtr MInstance = ti_new TMaterialInstance;
 
 			const int32 TotalParamCount = Header->ParamDataCount + Header->ParamTextureCount;
@@ -485,7 +485,7 @@ namespace tix
 
 			const int32* ParamNameOffset = (const int32*)(MIDataStart + 0);
 			const uint8* ParamTypeOffset = (const uint8*)(MIDataStart + sizeof(int32) * TotalParamCount);
-			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * TotalParamCount + ti_align4(TotalParamCount));
+			const uint8* ParamValueOffset = (const uint8*)(MIDataStart + sizeof(int32) * TotalParamCount + TMath::Align4(TotalParamCount));
 
 			int32 TotalValueBufferLength = 0;
 			for (int32 p = 0; p < TotalParamCount; ++p)
@@ -564,8 +564,8 @@ namespace tix
 		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_SCENE];
 		TI_ASSERT(ChunkHeader[ECL_SCENE]->ElementCount == 1);
 
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* SceneDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderScene)) * 1;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* SceneDataStart = HeaderStart + TMath::Align4((int32)sizeof(THeaderScene)) * 1;
 
 		{
 			const THeaderScene* Header = (const THeaderScene*)(HeaderStart);
@@ -670,8 +670,8 @@ namespace tix
 		const uint8* ChunkStart = (const uint8*)ChunkHeader[ECL_SCENETILE];
 		TI_ASSERT(ChunkHeader[ECL_SCENETILE]->ElementCount == 1);
 
-		const uint8* HeaderStart = (const uint8*)(ChunkStart + ti_align4((int32)sizeof(TResfileChunkHeader)));
-		const uint8* SceneTileDataStart = HeaderStart + ti_align4((int32)sizeof(THeaderSceneTile)) * 1;
+		const uint8* HeaderStart = (const uint8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const uint8* SceneTileDataStart = HeaderStart + TMath::Align4((int32)sizeof(THeaderSceneTile)) * 1;
 
 		{
 			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);

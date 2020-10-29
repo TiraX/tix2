@@ -68,6 +68,7 @@ namespace tix
 			return false;
 		}
 
+		// Convert to target FORMAT
 		TResTextureDefine* TextureOutput = nullptr;
 #if defined (TI_PLATFORM_WIN32)
 		// Win32 Platform need DDS texture
@@ -157,7 +158,7 @@ namespace tix
 				for (uint32 Mip = 0; Mip < Define->Desc.Mips; ++Mip)
 				{
 					const TImage::TSurfaceData& Surface = Surfaces[Face]->GetMipmap(Mip);
-					int32 DataLength = ti_align4(Surface.Data.GetLength());
+					int32 DataLength = TMath::Align4(Surface.Data.GetLength());
 					DataStream.Put(&Surface.W, sizeof(int32));
 					DataStream.Put(&Surface.H, sizeof(int32));
 					DataStream.Put(&Surface.RowPitch, sizeof(int32));

@@ -127,7 +127,7 @@ void TResMeshCluster::CalcPrimNormals()
 		const vector3df& PN1 = N[Prim.Y];
 		const vector3df& PN2 = N[Prim.Z];
 
-		const float AngleLimit = cos(DEG_TO_RAD(45));
+		const float AngleLimit = cos(TMath::DegToRad(45.f));
 		TI_ASSERT(PN0.dotProduct(PrimN) > AngleLimit && PN1.dotProduct(PrimN) > AngleLimit && PN2.dotProduct(PrimN) > AngleLimit);
 	}
 }
@@ -162,7 +162,7 @@ inline vector3di GetVolumeCellCount(const aabbox3df& VolumeBox)
 	for (int32 i = 0; i < 3; ++i)
 	{
 		VolumeCellCount[i] = (int32)ceil(VolumeSize[i] / VolumeCellSize);
-		VolumeCellCount[i] = ti_max(1, VolumeCellCount[i]);
+		VolumeCellCount[i] = TMath::Max(1, VolumeCellCount[i]);
 	}
 	return VolumeCellCount;
 }
@@ -172,7 +172,7 @@ inline vector3di GetVolumeCellOffsetFrom(const vector3df& Start, const vector3df
 	vector3di VolumeCellOffset;
 	for (int32 i = 0; i < 3; ++i)
 	{
-		VolumeCellOffset[i] = ti_round(Offset[i] / VolumeCellSize);
+		VolumeCellOffset[i] = TMath::Round(Offset[i] / VolumeCellSize);
 	}
 	return VolumeCellOffset;
 }
@@ -260,7 +260,7 @@ void TResMeshCluster::ScatterToVolume()
 inline bool IsNormalValid(const vector3df& InN, const vector3df& ClusterN)
 {
 	// angle between InN and ClusterN should NOT bigger than 60 degree
-	static const float V = cos(DEG_TO_RAD(60));
+	static const float V = cos(TMath::DegToRad(60.f));
 	return InN.dotProduct(ClusterN) > V;
 }
 

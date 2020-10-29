@@ -152,8 +152,8 @@ namespace tix
 					uint32 Offset = (y * BlockW + x) * BlockSize;
 					DecompressDXT1Block(InputData + Offset, BlockColor, true);
 
-					uint32 DecompWidth = ti_min(4, Width - x * 4);
-					uint32 DecompHeight = ti_min(4, Height - y * 4);
+					uint32 DecompWidth = TMath::Min(4u, Width - x * 4);
+					uint32 DecompHeight = TMath::Min(4u, Height - y * 4);
 
 					for (uint32 dy = 0; dy < DecompHeight; dy++)
 					{
@@ -222,8 +222,8 @@ namespace tix
 					DecompressDXT5Block(InputData + Offset, BlockColor);
 					DecompressDXT1Block(InputData + Offset + BlockSize / 2, BlockColor, false);
 
-					uint32 decompWidth = ti_min(4, Width - x * 4);
-					uint32 decompHeight = ti_min(4, Height - y * 4);
+					uint32 decompWidth = TMath::Min(4u, Width - x * 4);
+					uint32 decompHeight = TMath::Min(4u, Height - y * 4);
 
 					for (uint32 dy = 0; dy < decompHeight; dy++)
 					{

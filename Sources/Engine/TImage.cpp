@@ -372,7 +372,7 @@ namespace tix
 		//const float C = 1.f;
 		
 		
-		float f = ti_abs(x);
+		float f = TMath::Abs(x);
 
 		if (f >= 0.f &&  f <= 1.f)
 		{
@@ -410,20 +410,20 @@ namespace tix
 			}
 		}
 
-		Result.X = ti_max(0.f, Result.X);
-		Result.Y = ti_max(0.f, Result.Y);
-		Result.Z = ti_max(0.f, Result.Z);
-		Result.W = ti_max(0.f, Result.W);
-		Result.X = ti_min(255.f, Result.X);
-		Result.Y = ti_min(255.f, Result.Y);
-		Result.Z = ti_min(255.f, Result.Z);
-		Result.W = ti_min(255.f, Result.W);
+		Result.X = TMath::Max(0.f, Result.X);
+		Result.Y = TMath::Max(0.f, Result.Y);
+		Result.Z = TMath::Max(0.f, Result.Z);
+		Result.W = TMath::Max(0.f, Result.W);
+		Result.X = TMath::Min(255.f, Result.X);
+		Result.Y = TMath::Min(255.f, Result.Y);
+		Result.Z = TMath::Min(255.f, Result.Z);
+		Result.W = TMath::Min(255.f, Result.W);
 
 		SColor Color;
-		Color.R = (uint8)ti_round(Result.X);
-		Color.G = (uint8)ti_round(Result.Y);
-		Color.B = (uint8)ti_round(Result.Z);
-		Color.A = (uint8)ti_round(Result.W);
+		Color.R = (uint8)TMath::Round(Result.X);
+		Color.G = (uint8)TMath::Round(Result.Y);
+		Color.B = (uint8)TMath::Round(Result.Z);
+		Color.A = (uint8)TMath::Round(Result.W);
 
 		return Color;
 	}
@@ -632,10 +632,10 @@ namespace tix
 
 					// Calc average
 					SColor Target;
-					Target.R = ti_round(Rf * 0.25f);
-					Target.G = ti_round(Gf * 0.25f);
-					Target.B = ti_round(Bf * 0.25f);
-					Target.A = ti_round(Af * 0.25f);
+					Target.R = TMath::Round(Rf * 0.25f);
+					Target.G = TMath::Round(Gf * 0.25f);
+					Target.B = TMath::Round(Bf * 0.25f);
+					Target.A = TMath::Round(Af * 0.25f);
 
 					// Set to next mip
 					SetPixel(x / 2, y / 2, Target, Mip + 1);
@@ -775,10 +775,10 @@ namespace tix
 				R.Y = pow(R.Y, Gamma);
 				R.Z = pow(R.Z, Gamma);
 
-				C.R = (uint8)ti_round(R.X * S);
-				C.G = (uint8)ti_round(R.Y * S);
-				C.B = (uint8)ti_round(R.Z * S);
-				C.A = (uint8)ti_round(R.W * S);
+				C.R = (uint8)TMath::Round(R.X * S);
+				C.G = (uint8)TMath::Round(R.Y * S);
+				C.B = (uint8)TMath::Round(R.Z * S);
+				C.A = (uint8)TMath::Round(R.W * S);
 				SetPixel(x, y, C);
 			}
 		}
@@ -805,12 +805,25 @@ namespace tix
 				R.Y = pow(R.Y, GammaInv);
 				R.Z = pow(R.Z, GammaInv);
 
-				C.R = (uint8)ti_round(R.X * S);
-				C.G = (uint8)ti_round(R.Y * S);
-				C.B = (uint8)ti_round(R.Z * S);
-				C.A = (uint8)ti_round(R.W * S);
+				C.R = (uint8)TMath::Round(R.X * S);
+				C.G = (uint8)TMath::Round(R.Y * S);
+				C.B = (uint8)TMath::Round(R.Z * S);
+				C.A = (uint8)TMath::Round(R.W * S);
 				SetPixel(x, y, C);
 			}
 		}
+	}
+
+	// From UE4 TextureCompressorModule.cpp
+	static int32 ComputeLongLatCubemapExtents(const TImagePtr SrcImage)
+	{
+		int32 Extents = 1 << TMath::FloorLog2(SrcImage->GetWidth() / 2);
+		return TMath::Max(Extents, 32);
+	}
+	TVector<TImagePtr> TImage::LatlongToCube()
+	{
+		TVector<TImagePtr> Surfaces;
+
+		return Surfaces;
 	}
 }

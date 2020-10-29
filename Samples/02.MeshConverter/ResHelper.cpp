@@ -38,7 +38,7 @@ namespace tix
 			}
 		}
 		HeaderResfile.ChunkCount = Chunks;
-		HeaderResfile.FileSize = ti_align4((int32)sizeof(TResfileHeader));
+		HeaderResfile.FileSize = TMath::Align4((int32)sizeof(TResfileHeader));
 		for (int32 c = 0; c < ECL_COUNT ; ++ c)
 		{
 			if (ChunkStreams[c].GetLength() > 0)

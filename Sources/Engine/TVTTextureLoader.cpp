@@ -103,7 +103,7 @@ namespace tix
 			{
 				int32 DataSize = TImage::GetDataSize(PageDesc.Format, W, H);
 				DataOffset += sizeof(uint32) * 4 + DataSize;
-				DataOffset = ti_align4(DataOffset);
+				DataOffset = TMath::Align4(DataOffset);
 			}
 			W /= 2;
 			H /= 2;

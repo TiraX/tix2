@@ -79,173 +79,201 @@ const float64 DEGTORAD64 = PI64 / 180.0;
 //! 64bit constant for converting from radians to degrees
 const float64 RADTODEG64 = 180.0 / PI64;
 
-#define	RAD_TO_DEG(x)					((x)*RADTODEG)
-#define	DEG_TO_RAD(x)					((x)*DEGTORAD)
 
-#define TI_INTERPOLATE(src, dest, t)	((dest - src) * (t) + src)
-#define ti_max(a, b) ((a) > (b) ? (a) : (b))
-#define ti_min(a, b) ((a) < (b) ? (a) : (b))
-
-inline int ti_round(float n)
+namespace tix
 {
-	if (n >= 0.f)
+	class TMath
 	{
-		return (int)(n + 0.5f);
-	}
-	else
-	{
-		return (int)(n - 0.5f);
-	}
+	public:
+		static inline int32 Round(float n)
+		{
+			if (n >= 0.f)
+			{
+				return (int)(n + 0.5f);
+			}
+			else
+			{
+				return (int)(n - 0.5f);
+			}
+		}
+
+		template< class T >
+		static inline T DegToRad(const T Degree)
+		{
+			return Degree * DEGTORAD;
+		}
+
+		template< class T >
+		static inline T RadToDeg(const T Radian)
+		{
+			return Radian * RADTODEG;
+		}
+
+		template< class T >
+		static inline T Interporlate(const T src, const T dest, const T t)
+		{
+			return (dest - src) * (t)+src;
+		}
+
+		template< class T >
+		static inline T Max(const T a, const T b)
+		{
+			return a > b ? a : b;
+		}
+
+		template< class T >
+		static inline T Min(const T a, const T b)
+		{
+			return a < b ? a : b;
+		}
+
+		template< class T >
+		static inline T Abs(const T x)
+		{
+			if (x > 0)
+				return x;
+
+			return -x;
+		}
+
+		static inline int32 Floor(float x)
+		{
+			if (x >= 0.f)
+				return (int32)x;
+			else
+			{
+				int32 r = (int32)x;
+				if (x == (float)r)
+					return r;
+				else
+					return r - 1;
+			}
+		}
+
+		static inline int32 CountBitNum(uint32 value)
+		{
+			int32 num = 0;
+			while (value)
+			{
+				value &= (value - 1);
+				++num;
+			}
+			return num;
+		}
+
+		static inline int32 Log(uint32 value)
+		{
+			int num = 0;
+			while (value)
+			{
+				value >>= 1;
+				++num;
+			}
+			return num;
+		}
+
+		//! returns a float value between 0.0 ~ 1.0
+		static inline float RandomUnit()
+		{
+			const float k_inv = 1.0f / RAND_MAX;
+			return (rand() & 0x7fff) * k_inv;
+		}
+
+		//! returns if a equals b, taking possible rounding errors into account
+		static inline bool Equals(const float a, const float b, const float tolerance = ROUNDING_ERROR_32)
+		{
+			return (a + tolerance >= b) && (a - tolerance <= b);
+		}
+
+		//! returns if a equals zero, taking rounding errors into account
+		static inline bool IsZero(const float32 a, const float32 tolerance = ROUNDING_ERROR_32)
+		{
+			return Equals(a, 0.0f, tolerance);
+		}
+
+		static inline float ReciprocalSquareroot(const float32 x)
+		{
+			// comes from Nvidia
+			uint32 tmp = ((unsigned int)(IEEE_1_0 << 1) + IEEE_1_0 - *(uint32*)&x) >> 1;
+			float y = *(float*)&tmp;
+			return y * (1.47f - 0.47f * x * y * y);
+		}
+
+		// from Quake3
+		static inline float Q_rsqrt(float number)
+		{
+			long i;
+			float x2, y;
+			const float threehalfs = 1.5F;
+
+			x2 = number * 0.5F;
+			y = number;
+			i = *(long*)&y;   // evil floating point bit level hacking
+			i = 0x5f3759df - (i >> 1); // what the fuck?
+			y = *(float*)&i;
+			y = y * (threehalfs - (x2 * y * y)); // 1st iteration
+			// y   = y * ( threehalfs - ( x2 * y * y ) ); // 2nd iteration, this can be removed
+
+			return y;
+		}
+
+		template<class T>
+		static inline T Align(T n, uint32 align_num)
+		{
+			return (n + align_num - 1) & (~(align_num - 1));
+		}
+
+		template<class T>
+		static inline T Align4(T n)
+		{
+			return Align<T>(n, 4);
+		}
+
+		template<class T>
+		static inline T Align16(T n)
+		{
+			return Align<T>(n, 16);
+		}
+
+		// From UE4 
+		/**
+		 * Computes the base 2 logarithm for an integer value that is greater than 0.
+		 * The result is rounded down to the nearest integer.
+		 *
+		 * @param Value		The value to compute the log of
+		 * @return			Log2 of Value. 0 if Value is 0.
+		 */
+#if defined (TI_PLATFORM_WIN32)
+#pragma intrinsic( _BitScanReverse )
+#endif
+		static inline uint32 FloorLog2(uint32 Value)
+		{
+#if defined (TI_PLATFORM_WIN32)
+			// Use BSR to return the log2 of the integer
+			unsigned long Log2;
+			if (_BitScanReverse(&Log2, Value) != 0)
+			{
+				return Log2;
+			}
+
+			return 0;
+#else
+			// see http://codinggorilla.domemtech.com/?p=81 or http://en.wikipedia.org/wiki/Binary_logarithm but modified to return 0 for a input value of 0
+			// 686ms on test data
+			uint32 pos = 0;
+			if (Value >= 1 << 16) { Value >>= 16; pos += 16; }
+			if (Value >= 1 << 8) { Value >>= 8; pos += 8; }
+			if (Value >= 1 << 4) { Value >>= 4; pos += 4; }
+			if (Value >= 1 << 2) { Value >>= 2; pos += 2; }
+			if (Value >= 1 << 1) { pos += 1; }
+			return (Value == 0) ? 0 : pos;
+#endif
+
+		}
+	};
 }
 
-inline int ti_abs(int x)
-{
-	if (x > 0)
-		return x;
 
-	return -x;
-}
-
-inline float ti_abs(float x)
-{
-	if (x > 0)
-		return x;
-
-	return -x;
-}
-
-inline double ti_abs(double x)
-{
-	if (x > 0)
-		return x;
-
-	return -x;
-}
-
-inline long ti_abs(long x)
-{
-	if (x > 0)
-		return x;
-
-	return -x;
-}
-
-inline int ti_floor(float x)
-{
-	if (x >= 0.f)
-		return (int)x;
-	else
-	{
-		int r	= (int)x;
-		if (x == (float)r)
-			return r;
-		else
-			return r - 1;
-	}
-}
-
-inline int CountBitNum(unsigned int value)
-{
-	int num = 0;
-	while(value)
-	{
-		value &= (value - 1);
-		++ num;
-	}
-	return num;
-}
-
-inline int ti_log(unsigned int value)
-{
-	int num = 0;
-	while (value)
-	{
-		value >>= 1;
-		++ num;
-	}
-	return num;
-}
-
-//! returns a float value between 0.0 ~ 1.0
-inline float randomUnit()
-{
-	const float k_inv	= 1.0f / RAND_MAX;
-	return (rand() & 0x7fff) * k_inv;
-}
-
-//! returns if a equals b, taking possible rounding errors into account
-inline bool equals(const float a, const float b, const float tolerance = ROUNDING_ERROR_32)
-{
-	return (a + tolerance >= b) && (a - tolerance <= b);
-}
-
-//! returns if a equals zero, taking rounding errors into account
-inline bool iszero(const float32 a, const float32 tolerance = ROUNDING_ERROR_32)
-{
-	return equals(a, 0.0f, tolerance);
-}
-
-//! returns if a equals zero, taking rounding errors into account
-inline bool iszero(const int a, const int tolerance = 0)
-{
-	return ( a & 0x7ffffff ) <= tolerance;
-}
-
-inline float reciprocal_squareroot(const float32 x)
-{
-	// comes from Nvidia
-	unsigned int tmp = ((unsigned int)(IEEE_1_0 << 1) + IEEE_1_0 - *(uint32*)&x) >> 1;
-	float y = *(float*)&tmp;
-	return y * (1.47f - 0.47f * x * y * y);
-}
-
-// from Quake3
-inline float Q_rsqrt( float number )
-{
-	long i;
-	float x2, y;
-	const float threehalfs = 1.5F;
-
-	x2 = number * 0.5F;
-	y   = number;
-	i   = * ( long * ) &y;   // evil floating point bit level hacking
-	i   = 0x5f3759df - ( i >> 1 ); // what the fuck?
-	y   = * ( float * ) &i;
-	y   = y * ( threehalfs - ( x2 * y * y ) ); // 1st iteration
-	// y   = y * ( threehalfs - ( x2 * y * y ) ); // 2nd iteration, this can be removed
-
-	return y;
-} 
-
-inline uint32 ti_align(uint32 n, uint32 align_num)
-{
-	return (n + align_num - 1) & (~(align_num - 1));
-}
-
-inline int32 ti_align(int32 n, uint32 align_num)
-{
-	return (n + align_num - 1) & (~(align_num - 1));
-}
-
-inline uint32 ti_align4(uint32 n)
-{
-	return ti_align(n, 4);
-}
-
-inline uint32 ti_align16(uint32 n)
-{
-	return ti_align(n, 16);
-}
-
-inline int32 ti_align4(int32 n)
-{
-	return ti_align(n, 4);
-}
-
-inline int32 ti_align16(int32 n)
-{
-	return ti_align(n, 16);
-}
 
 #include "Math/Vector2d.h"
 #include "Math/Vector3d.h"

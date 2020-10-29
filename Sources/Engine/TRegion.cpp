@@ -139,11 +139,11 @@ namespace tix
 		// multiple of CellSize
 		int32 XCount = Width / CellSize;
 		Width = (Width % CellSize > 0) ? (XCount + 1) * CellSize : XCount * CellSize;
-		Width = ti_max(Width, CellSize);
+		Width = TMath::Max(Width, CellSize);
 
 		int32 YCount = Height / CellSize;
 		Height = (Height % CellSize > 0) ? (YCount + 1) * CellSize : YCount * CellSize;
-		Height = ti_max(Height, CellSize);
+		Height = TMath::Max(Height, CellSize);
 	}
 
 	void TRegion::Reset(int32 InRegionSize, int32 InCellSize)

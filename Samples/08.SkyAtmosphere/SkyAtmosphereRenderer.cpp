@@ -234,8 +234,8 @@ void FSkyAtmosphereRenderer::Render(FRHI* RHI, FScene* Scene)
 		//float HalfHorizontalFOV = FMath::Atan(1.0f / ProjectionMatrix.M[0][0]);
 		float HalfVerticalFOV = atan(1.f / ProjectionMat[5]);
 		//float HalfVerticalFOV = FMath::Atan(1.0f / ProjectionMatrix.M[1][1]);
-		float StartDepthViewCm = cos(ti_max(HalfHorizontalFOV, HalfVerticalFOV)) * 0.1 * 1000 * 100;
-		StartDepthViewCm = ti_max(StartDepthViewCm, 0.1f); // In any case, we need to limit the distance to frustum near plane to not be clipped away.
+		float StartDepthViewCm = cos(TMath::Max(HalfHorizontalFOV, HalfVerticalFOV)) * 0.1 * 1000 * 100;
+		StartDepthViewCm = TMath::Max(StartDepthViewCm, 0.1f); // In any case, we need to limit the distance to frustum near plane to not be clipped away.
 		FFloat4 Projected;
 		ProjectionMat.transformVect(&Projected.X, vector3df(0.f, 0.f, StartDepthViewCm));
 		//const FVector4 Projected = ProjectionMatrix.TransformFVector4(FVector4(0.0f, 0.0f, StartDepthViewCm, 1.0f));

@@ -524,7 +524,7 @@ namespace tix
 			return *this;
 
 		//n = 1.0f / sqrtf(n);
-		return (*this *= reciprocal_squareroot ( n ));
+		return (*this *= TMath::ReciprocalSquareroot ( n ));
 	}
 
 
@@ -597,7 +597,7 @@ namespace tix
 	{
 		const float32 scale = sqrtf(X*X + Y*Y + Z*Z);
 
-		if (iszero(scale) || W > 1.0f || W < -1.0f)
+		if (TMath::IsZero(scale) || W > 1.0f || W < -1.0f)
 		{
 			angle = 0.0f;
 			axis.setX(0.0f);

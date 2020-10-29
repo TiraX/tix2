@@ -192,14 +192,14 @@ namespace tix
 	{
 		if (y1 == y2 && m1 == m2)
 		{
-			return ti_abs(d1 - d2);
+			return TMath::Abs(d1 - d2);
 		}
 		else if (y1 == y2)
 		{
 			int _d1, _d2;
 			_d1		= DayInYear(y1, m1, d1);
 			_d2		= DayInYear(y2, m2, d2);
-			return ti_abs(_d1 - _d2);
+			return TMath::Abs(_d1 - _d2);
 		}
 		else
 		{
