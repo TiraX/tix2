@@ -27,7 +27,8 @@ namespace tix
 		static TImagePtr LoadImagePNG(TFile& FileInput);
 		bool SaveToPNG(const char* filename, int32 MipIndex = 0);
 
-		static TImagePtr LoadImageHDR(TFile& FileInput);
+		static TImagePtr LoadImageHDR(TFile& FileInput, bool UseHalf = true);
+		bool SaveToHDR(const char* filename, int32 MipIndex = 0);
 
 		void FlipY();
 		void ClearMipmaps();
@@ -54,12 +55,13 @@ namespace tix
 		void SetPixel(int32 x, int32 y, const SColor& c, int32 MipIndex = 0);
 		void SetPixel(int32 x, int32 y, uint8 c, int32 MipIndex = 0);
 		void SetPixel(int32 x, int32 y, const SColorf& c, int32 MipIndex = 0);
-		SColor GetPixel(int32 x, int32 y, int32 MipIndex = 0);
-		SColor GetPixel(float x, float y, int32 MipIndex = 0);
-		SColor GetPixelBicubic(float x, float y, int32 MipIndex = 0);
-		SColorf GetPixelFloat(int32 x, int32 y, int32 MipIndex = 0);
-		SColorf GetPixelFloat(float x, float y, int32 MipIndex = 0);
-		SColorf GetPixelFloatBicubic(float x, float y, int32 MipIndex = 0);
+		SColor GetPixel(int32 x, int32 y, int32 MipIndex = 0) const;
+		SColor GetPixel(float x, float y, int32 MipIndex = 0) const;
+		SColor GetPixelBicubic(float x, float y, int32 MipIndex = 0) const;
+		SColorf GetPixelFloat(int32 x, int32 y, int32 MipIndex = 0) const;
+		SColorf GetPixelFloat(float x, float y, int32 MipIndex = 0) const;
+		SColorf GetPixelFloatBicubic(float x, float y, int32 MipIndex = 0) const;
+		SColorf GetPixelFloatWithXWrap(float x, float y) const;
 
 		virtual uint8* Lock(int32 MipIndex = 0);
 		virtual void Unlock();

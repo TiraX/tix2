@@ -273,7 +273,7 @@ namespace tix
 		}
 	}
 
-	SColor TImage::GetPixel(int32 x, int32 y, int32 MipIndex)
+	SColor TImage::GetPixel(int32 x, int32 y, int32 MipIndex) const
 	{
 		int32 Width = Mipmaps[MipIndex].W;
 		int32 Height = Mipmaps[MipIndex].H;
@@ -322,7 +322,7 @@ namespace tix
 		return color;
 	}
 
-	SColor TImage::GetPixel(float x, float y, int32 MipIndex)
+	SColor TImage::GetPixel(float x, float y, int32 MipIndex) const
 	{
 		int32 xi=(int32)(x); if (x<0) xi--;   //these replace (incredibly slow) floor (Visual c++ 2003, AMD Athlon)
 		int32 yi=(int32)(y); if (y<0) yi--;
@@ -385,7 +385,7 @@ namespace tix
 		return 0.f;
 	}
 
-	SColor TImage::GetPixelBicubic(float x, float y, int32 MipIndex)
+	SColor TImage::GetPixelBicubic(float x, float y, int32 MipIndex) const
 	{
 		int32 xi = (int32)(x);
 		int32 yi = (int32)(y);
@@ -428,7 +428,7 @@ namespace tix
 		return Color;
 	}
 
-	SColorf TImage::GetPixelFloat(int32 x, int32 y, int32 MipIndex)
+	SColorf TImage::GetPixelFloat(int32 x, int32 y, int32 MipIndex) const
 	{
 		int32 Width = Mipmaps[MipIndex].W;
 		int32 Height = Mipmaps[MipIndex].H;
@@ -470,7 +470,7 @@ namespace tix
 		return c;
 	}
 
-	SColorf TImage::GetPixelFloat(float x, float y, int32 MipIndex)
+	SColorf TImage::GetPixelFloat(float x, float y, int32 MipIndex) const
 	{
 		int32 xi=(int32)(x); if (x<0) xi--;   //these replace (incredibly slow) floor (Visual c++ 2003, AMD Athlon)
 		int32 yi=(int32)(y); if (y<0) yi--;
@@ -496,7 +496,7 @@ namespace tix
 		return color;
 	}
 
-	SColorf TImage::GetPixelFloatBicubic(float x, float y, int32 MipIndex)
+	SColorf TImage::GetPixelFloatBicubic(float x, float y, int32 MipIndex) const
 	{
 		int32 xi = (int32)(x);
 		int32 yi = (int32)(y);
@@ -814,23 +814,161 @@ namespace tix
 		}
 	}
 
+	// Longlat image to cubemap
 	// From UE4 TextureCompressorModule.cpp
+	// transform world space vector to a space relative to the face
+	static vector3df TransformSideToWorldSpace(uint32 CubemapFace, const vector3df& InDirection)
+	{
+		float x = InDirection.X, y = InDirection.Y, z = InDirection.Z;
+
+		vector3df Ret;
+
+		// see http://msdn.microsoft.com/en-us/library/bb204881(v=vs.85).aspx
+		switch (CubemapFace)
+		{
+		case 0: Ret = vector3df(+z, -y, -x); break;
+		case 1: Ret = vector3df(-z, -y, +x); break;
+		case 2: Ret = vector3df(+x, +z, +y); break;
+		case 3: Ret = vector3df(+x, -z, -y); break;
+		case 4: Ret = vector3df(+x, -y, +z); break;
+		case 5: Ret = vector3df(-x, -y, -z); break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+
+		// this makes it with the Unreal way (z and y are flipped)
+		return vector3df(Ret.X, Ret.Z, Ret.Y);
+	}
+
+	// transform vector relative to the face to world space
+	static vector3df TransformWorldToSideSpace(uint32 CubemapFace, const vector3df& InDirection)
+	{
+		// undo Unreal way (z and y are flipped)
+		float x = InDirection.X, y = InDirection.Z, z = InDirection.Y;
+
+		vector3df Ret;
+
+		// see http://msdn.microsoft.com/en-us/library/bb204881(v=vs.85).aspx
+		switch (CubemapFace)
+		{
+		case 0: Ret = vector3df(-z, -y, +x); break;
+		case 1: Ret = vector3df(+z, -y, -x); break;
+		case 2: Ret = vector3df(+x, +z, +y); break;
+		case 3: Ret = vector3df(+x, -z, -y); break;
+		case 4: Ret = vector3df(+x, -y, +z); break;
+		case 5: Ret = vector3df(-x, -y, -z); break;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+
+		return Ret;
+	}
+
+	vector3df ComputeSSCubeDirectionAtTexelCenter(uint32 x, uint32 y, float InvSideExtent)
+	{
+		// center of the texels
+		vector3df DirectionSS((x + 0.5f) * InvSideExtent * 2 - 1, (y + 0.5f) * InvSideExtent * 2 - 1, 1);
+		DirectionSS.normalize();
+		return DirectionSS;
+	}
+
+	static vector3df ComputeWSCubeDirectionAtTexelCenter(uint32 CubemapFace, uint32 x, uint32 y, float InvSideExtent)
+	{
+		vector3df DirectionSS = ComputeSSCubeDirectionAtTexelCenter(x, y, InvSideExtent);
+		vector3df DirectionWS = TransformSideToWorldSpace(CubemapFace, DirectionSS);
+		return DirectionWS;
+	}
 	static int32 ComputeLongLatCubemapExtents(int32 ImageWidth)
 	{
 		int32 Extents = 1 << TMath::FloorLog2(ImageWidth / 2);
 		return TMath::Max(Extents, 32);
 	}
+
+	static vector2df DirectionToLongLat(const vector3df& NormalizedDirection, int32 LongLatWidth, int32 LongLatHeight)
+	{
+		// see http://gl.ict.usc.edu/Data/HighResProbes
+		// latitude-longitude panoramic format = equirectangular mapping
+
+		vector2df Result;
+
+		Result.X = (1 + atan2(NormalizedDirection.X, -NormalizedDirection.Z) / PI) / 2 * LongLatWidth;
+		Result.Y = acos(NormalizedDirection.Y) / PI * LongLatHeight;
+
+		return Result;
+	}
+
+	/** Wraps X around W. */
+	static inline void WrapTo(int32& X, int32 W)
+	{
+		X = X % W;
+
+		if (X < 0)
+		{
+			X += W;
+		}
+	}
+
+	SColorf TImage::GetPixelFloatWithXWrap(float x, float y) const
+	{
+		const int32 W = GetWidth();
+		const int32 H = GetHeight();
+
+		int32 X0 = (int32)floor(x);
+		int32 Y0 = (int32)floor(y);
+
+		float FracX = x - X0;
+		float FracY = y - Y0;
+
+		int32 X1 = X0 + 1;
+		int32 Y1 = Y0 + 1;
+
+		WrapTo(X0, W);
+		WrapTo(X1, W);
+		Y0 = TMath::Max(0, Y0); Y0 = TMath::Min(Y0, H - 1);
+		Y1 = TMath::Max(0, Y1); Y1 = TMath::Min(Y1, H - 1);
+
+		SColorf CornerRGB00 = GetPixelFloat(X0, Y0);
+		SColorf CornerRGB10 = GetPixelFloat(X1, Y0);
+		SColorf CornerRGB01 = GetPixelFloat(X0, Y1);
+		SColorf CornerRGB11 = GetPixelFloat(X1, Y1);
+
+		SColorf CornerRGB0 = TMath::Lerp(CornerRGB00, CornerRGB10, FracX);
+		SColorf CornerRGB1 = TMath::Lerp(CornerRGB01, CornerRGB11, FracX);
+
+		return TMath::Lerp(CornerRGB0, CornerRGB1, FracY);
+	}
+
 	TVector<TImagePtr> TImage::LatlongToCube()
 	{
 		TVector<TImagePtr> Surfaces;
 		Surfaces.resize(6);
 
-		int32 Extent = ComputeLongLatCubemapExtents(GetWidth());
+		const int32 Extent = ComputeLongLatCubemapExtents(GetWidth());
+		const float InvExtent = 1.0f / Extent;
+		const int32 W = GetWidth();
+		const int32 H = GetHeight();
 
-		for (int32 i = 0; i < 6; ++i)
+		for (int32 Face = 0; Face < 6; ++Face)
 		{
-			Surfaces[i] = ti_new TImage(GetFormat(), Extent, Extent);
-			Compile error.
+			Surfaces[Face] = ti_new TImage(GetFormat(), Extent, Extent);
+		}
+		
+		for (int32 Face = 0; Face < 6; ++Face)
+		{
+			TImagePtr FaceImage = Surfaces[Face];
+
+			for (int32 y = 0; y < Extent; ++y)
+			{
+				for (int32 x = 0; x < Extent; ++x)
+				{
+					vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
+					vector2df Coord = DirectionToLongLat(DirectionWS, W, H);
+
+					FaceImage->SetPixel(x, y, GetPixelFloatWithXWrap(Coord.X, Coord.Y));
+				}
+			}
 		}
 
 		return Surfaces;

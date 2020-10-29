@@ -40,6 +40,7 @@ namespace tix
 
 		SrcInfo.LodBias = Doc["lod_bias"].GetInt();
 		SrcInfo.IsNormalmap = Doc["is_normalmap"].GetInt();
+		SrcInfo.IsIBL = Doc["ibl"].GetInt();
 		SrcInfo.HasMips = Doc["has_mips"].GetInt();
 		SrcInfo.TextureSource = Doc["source"].GetString();
 
@@ -68,32 +69,52 @@ namespace tix
 			return false;
 		}
 
+		if (SrcInfo.IsIBL)
+		{
+			TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_CUBE);
+			TI_ASSERT(SrcImage->Desc.Format == EPF_RGBA32F || SrcImage->Desc.Format == EPF_RGBA16F);
+
+			// Do pbr ibl filter
+			TI_TODO("IBL pbr filter.");
+		}
+
 		// Convert to target FORMAT
 		TResTextureDefine* TextureOutput = nullptr;
+		if (SrcImageType == "DDS")
+		{
 #if defined (TI_PLATFORM_WIN32)
-		// Win32 Platform need DDS texture
-		if (SrcImageType == "DDS")
-		{
+			// Win32 Platform need DDS texture
 			TextureOutput = SrcImage;
-		}
-		else
-		{
-			TextureOutput = TResTextureHelper::ConvertToDds(SrcImage);
-			ti_delete SrcImage;
-		}
 #elif defined (TI_PLATFORM_IOS)
-		// iOS Platform need ASTC texture
-		if (SrcImageType == "DDS")
-		{
+			// iOS Platform need ASTC texture
 			_LOG(Error, "DDS to ASTC not implemented yet.\n");
 			return false;
+#endif
+		}
+		else if (SrcImageType == "HDR")
+		{
+			if (SrcImage->Desc.Format == EPF_RGBA32F)
+			{
+				// Convert to RGBA16F
+				TextureOutput = TResTextureHelper::Convert32FTo16F(SrcImage);
+			}
+			else
+			{
+				TI_ASSERT(SrcImage->Desc.Format == EPF_RGBA16F);
+				TextureOutput = SrcImage;
+			}
 		}
 		else
 		{
+#if defined (TI_PLATFORM_WIN32)
+			// Win32 Platform need DDS texture
+			TextureOutput = TResTextureHelper::ConvertToDds(SrcImage);
+#elif defined (TI_PLATFORM_IOS)
+			// iOS Platform need ASTC texture
 			TextureOutput = TResTextureHelper::ConvertToAstc(SrcImage);
+#endif
 			ti_delete SrcImage;
 		}
-#endif
 
 		if (TextureOutput != nullptr)
 		{

@@ -34,7 +34,18 @@ namespace tix
 		E_TEXTURE_ADDRESS_MODE AddressMode;
 		int32 SRGB;
 		int32 IsNormalmap;
+		int32 IsIBL;
 		int32 HasMips;
+
+		TResTextureSourceInfo()
+			: LodBias(0)
+			, TargetFormat(EPF_RGBA8)
+			, AddressMode(ETC_REPEAT)
+			, SRGB(0)
+			, IsNormalmap(0)
+			, IsIBL(0)
+			, HasMips(0)
+		{}
 	};
 
 	class TImage;
@@ -51,6 +62,7 @@ namespace tix
 
 		static TResTextureDefine* ConvertToDds(TResTextureDefine* SrcImage);
 		static TResTextureDefine* ConvertToAstc(TResTextureDefine* SrcImage);
+		static TResTextureDefine* Convert32FTo16F(TResTextureDefine* SrcImage);
 
 		//static TResTextureDefine* ConvertDdsToAstc(TResTextureDefine* DdsTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat);
 

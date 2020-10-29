@@ -115,21 +115,17 @@ namespace tix
 			Tasks.clear();
 		}
 
-		TImage* TgaImageWithBias = TgaImage.get();
-		if (SrcInfo.LodBias > 0)
+		TImage* TgaImageWithBias = ti_new TImage(TgaImage->GetFormat(), TgaImage->GetWidth() >> SrcInfo.LodBias, TgaImage->GetHeight() >> SrcInfo.LodBias);
+		TgaImageWithBias->AllocEmptyMipmaps();
+		for (int32 Mip = SrcInfo.LodBias; Mip < TgaImage->GetMipmapCount(); ++Mip)
 		{
-			TgaImageWithBias = ti_new TImage(TgaImage->GetFormat(), TgaImage->GetWidth() >> SrcInfo.LodBias, TgaImage->GetHeight() >> SrcInfo.LodBias);
-			TgaImageWithBias->AllocEmptyMipmaps();
-			for (int32 Mip = SrcInfo.LodBias; Mip < TgaImage->GetMipmapCount(); ++Mip)
-			{
-				const TImage::TSurfaceData& SrcMipData = TgaImage->GetMipmap(Mip);
-				TImage::TSurfaceData& DestMipData = TgaImageWithBias->GetMipmap(Mip - SrcInfo.LodBias);
+			const TImage::TSurfaceData& SrcMipData = TgaImage->GetMipmap(Mip);
+			TImage::TSurfaceData& DestMipData = TgaImageWithBias->GetMipmap(Mip - SrcInfo.LodBias);
 
-				TI_ASSERT(DestMipData.Data.GetBufferSize() == SrcMipData.Data.GetLength());
-				memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());
-			}
-			TgaImage = nullptr;
+			TI_ASSERT(DestMipData.Data.GetBufferSize() == SrcMipData.Data.GetLength());
+			memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());
 		}
+		TgaImage = nullptr;
 
 		// Create the texture
 		TResTextureDefine* Texture = ti_new TResTextureDefine();

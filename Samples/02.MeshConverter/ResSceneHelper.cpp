@@ -44,7 +44,7 @@ namespace tix
 		// Load cameras. 
 		{
 			TJSONNode JCameras = Doc["cameras"];
-			Helper.Cameras.empty();
+			Helper.Cameras.clear();
 			Helper.Cameras.reserve(JCameras.Size());
 			for (int32 c = 0; c < JCameras.Size(); ++c)
 			{

@@ -110,9 +110,9 @@ namespace tix
 		}
 
 		template< class T >
-		static inline T Interporlate(const T src, const T dest, const T t)
+		static inline T Lerp(const T src, const T dest, const float t)
 		{
-			return (dest - src) * (t)+src;
+			return (T)((dest - src) * t + src);
 		}
 
 		template< class T >
@@ -125,6 +125,24 @@ namespace tix
 		static inline T Min(const T a, const T b)
 		{
 			return a < b ? a : b;
+		}
+
+		template< class T >
+		static inline T Max3(const T a, const T b, const T c)
+		{
+			return Max(Max(a, b), c);
+		}
+
+		template< class T >
+		static inline T Min3(const T a, const T b, const T c)
+		{
+			return Min(Min(a, b), c);
+		}
+
+		template< class T >
+		static inline T Clamp(const T X, const T Min, const T Max)
+		{
+			return X < Min ? Min : X < Max ? X : Max;
 		}
 
 		template< class T >
@@ -170,6 +188,11 @@ namespace tix
 				++num;
 			}
 			return num;
+		}
+
+		static inline void RandSeed(uint32 Seed)
+		{
+			srand(Seed);
 		}
 
 		//! returns a float value between 0.0 ~ 1.0

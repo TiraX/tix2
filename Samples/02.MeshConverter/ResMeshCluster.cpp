@@ -274,7 +274,7 @@ void TResMeshCluster::MakeClusters(uint32 ClusterSize)
 	PrimsClusterId.resize(PrimCount);
 	memset(PrimsClusterId.data(), 0, PrimCount * sizeof(uint32));
 
-	Clusters.empty();
+	Clusters.clear();
 	Clusters.reserve(PrimCount / ClusterSize + 2);
 
 	uint32 ClusterId = 0;
