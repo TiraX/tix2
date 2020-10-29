@@ -815,14 +815,23 @@ namespace tix
 	}
 
 	// From UE4 TextureCompressorModule.cpp
-	static int32 ComputeLongLatCubemapExtents(const TImagePtr SrcImage)
+	static int32 ComputeLongLatCubemapExtents(int32 ImageWidth)
 	{
-		int32 Extents = 1 << TMath::FloorLog2(SrcImage->GetWidth() / 2);
+		int32 Extents = 1 << TMath::FloorLog2(ImageWidth / 2);
 		return TMath::Max(Extents, 32);
 	}
 	TVector<TImagePtr> TImage::LatlongToCube()
 	{
 		TVector<TImagePtr> Surfaces;
+		Surfaces.resize(6);
+
+		int32 Extent = ComputeLongLatCubemapExtents(GetWidth());
+
+		for (int32 i = 0; i < 6; ++i)
+		{
+			Surfaces[i] = ti_new TImage(GetFormat(), Extent, Extent);
+			Compile error.
+		}
 
 		return Surfaces;
 	}
