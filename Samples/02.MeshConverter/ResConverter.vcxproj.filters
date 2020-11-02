@@ -85,6 +85,9 @@
     <ClInclude Include="..\..\Sources\Engine\TTimer.h">
       <Filter>Source Files\TiX2</Filter>
     </ClInclude>
+    <ClInclude Include="ResTextureTaskHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

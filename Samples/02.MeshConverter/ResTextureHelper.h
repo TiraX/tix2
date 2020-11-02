@@ -64,6 +64,8 @@ namespace tix
 		static TResTextureDefine* ConvertToAstc(TResTextureDefine* SrcImage);
 		static TResTextureDefine* Convert32FTo16F(TResTextureDefine* SrcImage);
 
+		static TResTextureDefine* LongLatToCubeAndFilter(TResTextureDefine* SrcImage);
+
 		//static TResTextureDefine* ConvertDdsToAstc(TResTextureDefine* DdsTexture, const TString& Filename, int32 LodBias, E_PIXEL_FORMAT TargetFormat);
 
 		//static TResTextureDefine* LoadTgaToDds(const TResTextureSourceInfo& SrcInfo);

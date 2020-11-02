@@ -93,14 +93,17 @@ namespace tix
 		}
 		else if (SrcImageType == "HDR")
 		{
-			if (SrcImage->Desc.Format == EPF_RGBA32F)
+			// Convert Latlong Image to cube faces and filter
+			TResTextureDefine * Filtered = LongLatToCubeAndFilter(SrcImage);
+
+			if (Filtered->Desc.Format == EPF_RGBA32F)
 			{
 				// Convert to RGBA16F
-				TextureOutput = TResTextureHelper::Convert32FTo16F(SrcImage);
+				TextureOutput = TResTextureHelper::Convert32FTo16F(Filtered);
 			}
 			else
 			{
-				TI_ASSERT(SrcImage->Desc.Format == EPF_RGBA16F);
+				TI_ASSERT(Filtered->Desc.Format == EPF_RGBA16F);
 				TextureOutput = SrcImage;
 			}
 		}

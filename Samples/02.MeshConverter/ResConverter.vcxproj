@@ -116,6 +116,7 @@
     <ClInclude Include="ResSettings.h" />
     <ClInclude Include="ResShaderBindingHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />
+    <ClInclude Include="ResTextureTaskHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TSmallestEncloseSphere.h" />

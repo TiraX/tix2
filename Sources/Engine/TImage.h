@@ -69,8 +69,6 @@ namespace tix
 		void AllocEmptyMipmaps();
 		void GenerateMipmaps(int32 TargetMips = 0);
 
-		TVector<TImagePtr> LatlongToCube();
-
 		virtual int32 GetPitch() const
 		{
 			return Mipmaps[0].RowPitch;

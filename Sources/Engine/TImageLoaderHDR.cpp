@@ -180,11 +180,11 @@ namespace tix
 	}
 
 	// From UE4, ImageUtils.cpp
-	void WriteHDRHeader(TFile& File, TImage* Image)
+	void WriteHDRHeader(TFile& File, TImage* Image, int32 MipIndex)
 	{
 		const int32 MaxHeaderSize = 256;
 		char Header[MaxHeaderSize];
-		sprintf(Header, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y %d +X %d\n", Image->GetHeight(), Image->GetWidth());
+		sprintf(Header, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y %d +X %d\n", Image->GetMipmap(MipIndex).H, Image->GetMipmap(MipIndex).W);
 		Header[MaxHeaderSize - 1] = 0;
 		int32 Len = TMath::Min((int32)strlen(Header), MaxHeaderSize);
 		File.Write(Header, Len);
@@ -240,12 +240,12 @@ namespace tix
 		File.Write(Output.data(), (int32)Output.size());
 	}
 
-	void WriteHDRBits(TFile& File, TImage* HdrImage)
+	void WriteHDRBits(TFile& File, TImage* HdrImage, int32 MipIndex)
 	{
 		//const FRandomStream RandomStream(0xA1A1);
 		const int32 NumChannels = 4;
-		const int32 SizeX = HdrImage->GetWidth();
-		const int32 SizeY = HdrImage->GetHeight();
+		const int32 SizeX = HdrImage->GetMipmap(MipIndex).W;
+		const int32 SizeY = HdrImage->GetMipmap(MipIndex).H;
 		TVector<uint8> ScanLine[NumChannels];
 		for (int32 Channel = 0; Channel < NumChannels; Channel++)
 		{
@@ -269,7 +269,7 @@ namespace tix
 
 			for (int32 x = 0; x < SizeX; x++)
 			{
-				SColorf HdrColor = HdrImage->GetPixelFloat(x, y);
+				SColorf HdrColor = HdrImage->GetPixelFloat(x, y, MipIndex);
 				SColor RGBEColor = ToRGBEDithered(HdrColor);
 
 				ScanLine[0].push_back(RGBEColor.R);
@@ -293,8 +293,8 @@ namespace tix
 			return false;
 		}
 
-		WriteHDRHeader(HdrFile, this);
-		WriteHDRBits(HdrFile, this);
+		WriteHDRHeader(HdrFile, this, MipIndex);
+		WriteHDRBits(HdrFile, this, MipIndex);
 		HdrFile.Close();
 
 		return true;
