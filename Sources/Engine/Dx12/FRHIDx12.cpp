@@ -2609,7 +2609,7 @@ namespace tix
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 
-		const int32 AlignedDataSize = ti_align(InUniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
+		const int32 AlignedDataSize = TMath::Align(InUniformBuffer->GetTotalBufferSize(), UniformBufferAlignSize);
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		cbvDesc.BufferLocation = UniformBufferDx12->BufferResource.GetResource()->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = AlignedDataSize;

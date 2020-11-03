@@ -15,7 +15,7 @@ namespace tix
 		// Reserve space for containers
 		static const uint32 PointsByFrequency[] = { 12, 42, 92, 162, 252, 362, 492, 642, 812, 1002};
 		static const uint32 FacesByFrequency[] = { 20, 80, 180, 320, 500, 720, 980, 1280, 1620, 2000};
-		uint32 FreqIndex = TMath::Min(Frequency - 1, 9);
+		uint32 FreqIndex = TMath::Min(Frequency - 1, 9u);
 		OutPositions.reserve(PointsByFrequency[FreqIndex]);
 		OutIndices.reserve(FacesByFrequency[FreqIndex] * 3);
 

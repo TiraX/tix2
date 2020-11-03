@@ -106,13 +106,13 @@ namespace tix
 		Stride = GetStrideFromFormat(VsFormat);
 
 		const uint32 VsSize = InVertexCount * Stride;
-		const uint32 VsBufferSize = ti_align(VsSize, 16);
+		const uint32 VsBufferSize = TMath::Align(VsSize, 16);
 		TI_ASSERT(VsData == nullptr);
 		VsData = ti_new uint8[VsBufferSize];
 		memcpy(VsData, InVertexData, VsSize);
 
 		const uint32 PsSize = InIndexCount * (InIndexType == EIT_16BIT ? sizeof(uint16) : sizeof(uint32));
-		const uint32 PsBufferSize = ti_align(PsSize, 16);
+		const uint32 PsBufferSize = TMath::Align(PsSize, 16);
 		TI_ASSERT(PsData == nullptr);
 		PsData = ti_new uint8[PsBufferSize];
 		memcpy(PsData, InIndexData, PsSize);

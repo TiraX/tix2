@@ -197,7 +197,7 @@ namespace tix
 
 		float32 dp = CamDir.dotProduct(up);
 
-		if (equals(fabs(dp), 1.f))
+		if (TMath::Equals(fabs(dp), 1.f))
 		{
 			up.setX(up.getX() + 0.5f);
 		}
