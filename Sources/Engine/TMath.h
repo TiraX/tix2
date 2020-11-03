@@ -97,14 +97,12 @@ namespace tix
 			}
 		}
 
-		template< class T >
-		static inline T DegToRad(const T Degree)
+		static inline float DegToRad(const float Degree)
 		{
 			return Degree * DEGTORAD;
 		}
 
-		template< class T >
-		static inline T RadToDeg(const T Radian)
+		static inline float RadToDeg(const float Radian)
 		{
 			return Radian * RADTODEG;
 		}

@@ -145,8 +145,8 @@ namespace tix
 			vector3df tar_offset = OldPosition - OldTarget;
 			vector3df axis = UpVector.crossProduct(tar_offset);
 			axis.normalize();
-			rotX.fromAngleAxis(-TMath::DegToRad(mouseCurrent.X - mouseStart.X) * rot_speed, UpVector);
-			rotY.fromAngleAxis(TMath::DegToRad(mouseCurrent.Y - mouseStart.Y) * rot_speed, axis);
+			rotX.fromAngleAxis(-TMath::DegToRad(float(mouseCurrent.X - mouseStart.X)) * rot_speed, UpVector);
+			rotY.fromAngleAxis(TMath::DegToRad(float(mouseCurrent.Y - mouseStart.Y)) * rot_speed, axis);
 			rot = rotX * rotY;
 			rot.getMatrix(mat);
 
