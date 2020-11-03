@@ -24,6 +24,15 @@ namespace tix
 			: LodBias(0)
 			, TGASourcePixelDepth(0)
 		{}
+
+		~TResTextureDefine()
+		{
+			for (auto I : ImageSurfaces)
+			{
+				ti_delete I;
+			}
+			ImageSurfaces.clear();
+		}
 	};
 
 	struct TResTextureSourceInfo

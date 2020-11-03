@@ -14,22 +14,22 @@ namespace tix
 {
 	//! 3x2 matrix. Mostly used as transformation matrix for 2d ui calculations.
 	template <class T>
-	class CMatrix3
+	class CMatrix3x2
 	{
 	public:
-		CMatrix3();
+		CMatrix3x2();
 		void	set_identity();
-		void	concatenate(const CMatrix3<T>& m);
+		void	concatenate(const CMatrix3x2<T>& m);
 		void	concatenate_translation(T tx, T ty);
 		void	concatenate_scale(T x, T y);
-		void	set_lerp(const CMatrix3<T>& m1, const CMatrix3<T>& m2, float t);
+		void	set_lerp(const CMatrix3x2<T>& m1, const CMatrix3x2<T>& m2, float t);
 		void	set_scale_rotation(T x_scale, T y_scale, T rotation);
 		void	transform(vector2d<T>& result, const vector2d<T>& p) const;
 		void	transform(rect<T>& bound) const;
 		void	transform_vector(vector2d<T>& result, const vector2d<T>& p) const;
 		void	transform_by_inverse(vector2d<T>& result, const vector2d<T>& p) const;
 		void	transform_by_inverse(rect<T>& bound) const;
-		void	set_inverse(const CMatrix3<T>& m);
+		void	set_inverse(const CMatrix3x2<T>& m);
 		bool	does_flip() const;	// return true if we flip handedness
 		T		get_determinant() const;	// determinant of the 2x2 rotation/scale part only
 		T		get_max_scale() const;	// return the maximum scale factor that this transform applies
@@ -37,7 +37,7 @@ namespace tix
 		T		get_y_scale() const;	// return the magnitude scale of our y coord output
 		T		get_rotation() const;	// return our rotation component (in radians)
 
-		bool operator==(const CMatrix3<T>& m) const
+		bool operator==(const CMatrix3x2<T>& m) const
 		{
 			return 
 				m_[0][0] == m.m_[0][0] &&
@@ -48,7 +48,7 @@ namespace tix
 				m_[1][2] == m.m_[1][2];
 		}
 
-		bool operator!=(const CMatrix3<T>& m) const
+		bool operator!=(const CMatrix3x2<T>& m) const
 		{
 			return ! (*this == m);
 		}
@@ -58,10 +58,10 @@ namespace tix
 	};
 
 	//! Typedef for float32 matrix
-	typedef CMatrix3<float32> matrix3;
+	typedef CMatrix3x2<float32> matrix3x2;
 
 	template <class T>
-	inline CMatrix3<T>::CMatrix3()
+	inline CMatrix3x2<T>::CMatrix3x2()
 	{
 		// Default to identity.
 		set_identity();
@@ -69,7 +69,7 @@ namespace tix
 
 
 	template <class T>
-	inline void CMatrix3<T>::set_identity()
+	inline void CMatrix3x2<T>::set_identity()
 		// Set the matrix to identity.
 	{
 		memset(&m_[0], 0, sizeof(m_));
@@ -78,12 +78,12 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::concatenate(const CMatrix3<T>& m)
+	inline void CMatrix3x2<T>::concatenate(const CMatrix3x2<T>& m)
 		// Concatenate m's transform onto ours.  When
 		// transforming points, m happens first, then our
 		// original xform.
 	{
-		CMatrix3<T>	t;
+		CMatrix3x2<T>	t;
 		t.m_[0][0] = m_[0][0] * m.m_[0][0] + m_[0][1] * m.m_[1][0];
 		t.m_[1][0] = m_[1][0] * m.m_[0][0] + m_[1][1] * m.m_[1][0];
 		t.m_[0][1] = m_[0][0] * m.m_[0][1] + m_[0][1] * m.m_[1][1];
@@ -95,7 +95,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::concatenate_translation(T tx, T ty)
+	inline void CMatrix3x2<T>::concatenate_translation(T tx, T ty)
 		// Concatenate a translation onto the front of our
 		// matrix.  When transforming points, the translation
 		// happens first, then our original xform.
@@ -105,7 +105,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::concatenate_scale(T x, T y)
+	inline void CMatrix3x2<T>::concatenate_scale(T x, T y)
 		// Concatenate a uniform scale onto the front of our
 		// matrix.  When transforming points, the scale
 		// happens first, then our original xform.
@@ -121,7 +121,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::set_lerp(const CMatrix3<T>& m1, const CMatrix3<T>& m2, float t)
+	inline void CMatrix3x2<T>::set_lerp(const CMatrix3x2<T>& m1, const CMatrix3x2<T>& m2, float t)
 		// Set this matrix to a blend of m1 and m2, parameterized by t.
 	{
 		m_[0][0] = TI_INTERPOLATE(m1.m_[0][0], m2.m_[0][0], t);
@@ -133,7 +133,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::set_scale_rotation(T x_scale, T y_scale, T angle)
+	inline void CMatrix3x2<T>::set_scale_rotation(T x_scale, T y_scale, T angle)
 		// Set the scale & rotation part of the matrix.
 		// angle in radians.
 	{
@@ -146,7 +146,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::transform(vector2d<T>& result, const vector2d<T>& p) const
+	inline void CMatrix3x2<T>::transform(vector2d<T>& result, const vector2d<T>& p) const
 		// Transform point 'p' by our matrix.  Put the result in
 		// *result.
 	{
@@ -158,7 +158,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::transform(rect<T>& bound) const
+	inline void CMatrix3x2<T>::transform(rect<T>& bound) const
 		// Transform bound our matrix.
 	{
 		// get corners of transformed bound
@@ -176,7 +176,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::transform_vector(vector2d<T>& result, const vector2d<T>& v) const
+	inline void CMatrix3x2<T>::transform_vector(vector2d<T>& result, const vector2d<T>& v) const
 		// Transform vector 'v' by our matrix. Doesn't apply translation.
 		// Put the result in *result.
 	{
@@ -188,27 +188,27 @@ namespace tix
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::transform_by_inverse(vector2d<T>& result, const vector2d<T>& p) const
+	inline void CMatrix3x2<T>::transform_by_inverse(vector2d<T>& result, const vector2d<T>& p) const
 		// Transform point 'p' by the inverse of our matrix.  Put result in *result.
 	{
 		// @@ TODO optimize this!
-		CMatrix3<T>	m;
+		CMatrix3x2<T>	m;
 		m.set_inverse(*this);
 		m.transform(result, p);
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::transform_by_inverse(rect<T>& bound) const
+	inline void CMatrix3x2<T>::transform_by_inverse(rect<T>& bound) const
 		// Transform point 'p' by the inverse of our matrix.  Put result in *result.
 	{
 		// @@ TODO optimize this!
-		CMatrix3<T>	m;
+		CMatrix3x2<T>	m;
 		m.set_inverse(*this);
 		m.transform(bound);
 	}
 
 	template <class T>
-	inline void CMatrix3<T>::set_inverse(const CMatrix3<T>& m)
+	inline void CMatrix3x2<T>::set_inverse(const CMatrix3x2<T>& m)
 		// Set this matrix to the inverse of the given matrix.
 	{
 		assert(this != &m);
@@ -239,7 +239,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline bool CMatrix3<T>::does_flip() const
+	inline bool CMatrix3x2<T>::does_flip() const
 		// Return true if this matrix reverses handedness.
 	{
 		T	det = m_[0][0] * m_[1][1] - m_[0][1] * m_[1][0];
@@ -248,14 +248,14 @@ namespace tix
 	}
 
 	template <class T>
-	inline T CMatrix3<T>::get_determinant() const
+	inline T CMatrix3x2<T>::get_determinant() const
 		// Return the determinant of the 2x2 rotation/scale part only.
 	{
 		return m_[0][0] * m_[1][1] - m_[1][0] * m_[0][1];
 	}
 
 	template <class T>
-	inline T CMatrix3<T>::get_max_scale() const
+	inline T CMatrix3x2<T>::get_max_scale() const
 		// Return the maximum scale factor that this transform
 		// applies.  For assessing scale, when determining acceptable
 		// errors in tesselation.
@@ -270,7 +270,7 @@ namespace tix
 	}
 
 	template <class T>
-	inline T CMatrix3<T>::get_x_scale() const
+	inline T CMatrix3x2<T>::get_x_scale() const
 	{
 		float scale = sqrtf(m_[0][0] * m_[0][0] + m_[1][0] * m_[1][0]);
 
@@ -284,13 +284,13 @@ namespace tix
 	}
 
 	template <class T>
-	inline T CMatrix3<T>::get_y_scale() const
+	inline T CMatrix3x2<T>::get_y_scale() const
 	{
 		return sqrtf(m_[1][1] * m_[1][1] + m_[0][1] * m_[0][1]);
 	}
 
 	template <class T>
-	inline T CMatrix3<T>::get_rotation() const
+	inline T CMatrix3x2<T>::get_rotation() const
 	{
 		if (get_determinant() < 0.f)
 		{

@@ -304,7 +304,7 @@ namespace tix
 #include "Math/Rect.h"
 #include "Math/Aabbox3d.h"
 #include "Math/Plane3d.h"
-#include "Math/Matrix3.h"
+#include "Math/Matrix3x2.h"
 #include "Math/Matrix4.h"
 #include "Math/Quaternion.h"
 #include "Math/SViewFrustum.h"

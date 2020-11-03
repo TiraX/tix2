@@ -172,7 +172,7 @@
     <ClInclude Include="..\..\Sources\Engine\math\half.hpp" />
     <ClInclude Include="..\..\Sources\Engine\math\Line2d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Line3d.h" />
-    <ClInclude Include="..\..\Sources\Engine\math\Matrix3.h" />
+    <ClInclude Include="..\..\Sources\Engine\Math\Matrix3x2.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Matrix4.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Plane3d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Quaternion.h" />

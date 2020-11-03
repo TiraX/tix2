@@ -22,8 +22,9 @@ namespace tix
 		vector4d() : X(0), Y(0), Z(0), W(0) {}
 		//! Constructor with three different values
 		vector4d(T nx, T ny, T nz, T nw) : X(nx), Y(ny), Z(nz), W(nw) {}
-		//! Constructor with SColor
+		//! Constructor with SColor & SColorf
 		vector4d(const SColor& C) : X(C.R), Y(C.G), Z(C.B), W(C.A) {}
+		vector4d(const SColorf& C) : X(C.R), Y(C.G), Z(C.B), W(C.A) {}
 
 		//! Copy constructor
 		vector4d(const vector4d<T>& other) : X(other.X), Y(other.Y), Z(other.Z), W(other.W) {}

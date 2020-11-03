@@ -171,5 +171,8 @@
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderHDR.cpp">
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
+    <ClCompile Include="ResTextureHelperEnvCubeFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

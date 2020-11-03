@@ -147,6 +147,7 @@
     <ClCompile Include="ResTextureHelper.cpp" />
     <ClCompile Include="ResTextureHelperAstc.cpp" />
     <ClCompile Include="ResTextureHelperDds.cpp" />
+    <ClCompile Include="ResTextureHelperEnvCubeFilter.cpp" />
     <ClCompile Include="ResTextureHelperHdr.cpp" />
     <ClCompile Include="ResTextureHelperTga.cpp" />
     <ClCompile Include="stdafx.cpp">

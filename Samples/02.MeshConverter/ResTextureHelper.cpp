@@ -71,11 +71,13 @@ namespace tix
 
 		if (SrcInfo.IsIBL)
 		{
-			TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_CUBE);
+			TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_2D);
 			TI_ASSERT(SrcImage->Desc.Format == EPF_RGBA32F || SrcImage->Desc.Format == EPF_RGBA16F);
 
-			// Do pbr ibl filter
-			TI_TODO("IBL pbr filter.");
+			// Convert Latlong Image to cube faces and do pbr filter
+			TResTextureDefine* Filtered = LongLatToCubeAndFilter(SrcImage);
+			ti_delete SrcImage;
+			SrcImage = Filtered;
 		}
 
 		// Convert to target FORMAT
@@ -93,17 +95,15 @@ namespace tix
 		}
 		else if (SrcImageType == "HDR")
 		{
-			// Convert Latlong Image to cube faces and filter
-			TResTextureDefine * Filtered = LongLatToCubeAndFilter(SrcImage);
-
-			if (Filtered->Desc.Format == EPF_RGBA32F)
+			TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_CUBE);
+			if (SrcImage->Desc.Format == EPF_RGBA32F)
 			{
 				// Convert to RGBA16F
-				TextureOutput = TResTextureHelper::Convert32FTo16F(Filtered);
+				TextureOutput = TResTextureHelper::Convert32FTo16F(SrcImage);
 			}
 			else
 			{
-				TI_ASSERT(Filtered->Desc.Format == EPF_RGBA16F);
+				TI_ASSERT(SrcImage->Desc.Format == EPF_RGBA16F);
 				TextureOutput = SrcImage;
 			}
 		}
