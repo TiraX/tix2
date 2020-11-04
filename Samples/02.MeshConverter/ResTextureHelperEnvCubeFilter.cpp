@@ -315,6 +315,142 @@ namespace tix
 		return a2 / (PI * d * d);					// 4 mul, 1 rcp
 	}
 
+	class TEnvFilterTask : public TResMTTask
+	{
+	public:
+		TEnvFilterTask(
+			TImage* InSrcLongLat, 
+			TImage* InOutFaceImage, 
+			int32 InTargetMip, 
+			int32 InFaceIndex, 
+			int32 InExtent,
+			int32 InTotalMips,
+			float InRoughness, 
+			float InSolidAngleTexel, 
+			int32 InYStart, 
+			int32 InYEnd
+		)
+			: SrcLongLat(InSrcLongLat)
+			, OutFaceImage(InOutFaceImage)
+			, TargetMip(InTargetMip)
+			, FaceIndex(InFaceIndex)
+			, Extent(InExtent)
+			, TotalMips(InTotalMips)
+			, Roughness(InRoughness)
+			, SolidAngleTexel(InSolidAngleTexel)
+			, YStart(InYStart)
+			, YEnd(InYEnd)
+		{}
+		TImage* SrcLongLat;
+		TImage* OutFaceImage;
+		int32 TargetMip;
+		int32 FaceIndex;
+		int32 Extent;
+		int32 TotalMips;
+		float Roughness;
+		float SolidAngleTexel;
+		int32 YStart, YEnd;
+
+		virtual void Exec() override
+		{
+			const float InvExtent = 1.f / Extent;
+			const uint32 NumSamples = Roughness < 0.1f ? 32 : 64;
+
+			for (int32 y = YStart; y < YEnd; ++y)
+			{
+				for (int32 x = 0; x < Extent; ++x)
+				{
+					vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(FaceIndex, x, y, InvExtent);
+
+					matrix4 TangentToWorld = GetTangentBasis(DirectionWS);
+
+					SColorf OutColor;
+
+					if (Roughness < 0.01f)
+					{
+						OutColor = SampleLongLat(SrcLongLat, DirectionWS, TargetMip);
+					}
+					else
+					{
+						vector4df FilteredColor;
+						if (Roughness > 0.99f)
+						{
+							// Roughness=1, GGX is constant. Use cosine distribution instead
+
+							for (uint32 i = 0; i < NumSamples; i++)
+							{
+								vector2df E = Hammersley(i, NumSamples, vector2du());
+
+								vector4df CosSample = CosineSampleHemisphere(E);
+								vector3df L = vector3df(CosSample.X, CosSample.Y, CosSample.Z);
+
+								float NoL = L.Z;
+
+								float PDF = NoL / PI;
+								float SolidAngleSample = 1.f / (NumSamples * PDF);
+								float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
+								Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
+
+								//L = mul(L, TangentToWorld);
+								TangentToWorld.transformVect(L);
+								vector4df Sample = SampleLongLatLinearMip(SrcLongLat, DirectionWS, Mip);
+								FilteredColor += Sample;
+							}
+
+							FilteredColor /= float(NumSamples);
+						}
+						else
+						{
+							float Weight = 0;
+
+							for (uint32 i = 0; i < NumSamples; i++)
+							{
+								vector2df E = Hammersley(i, NumSamples, vector2du());
+
+								// 6x6 Offset rows. Forms uniform star pattern
+								//uint2 Index = uint2( i % 6, i / 6 );
+								//float2 E = ( Index + 0.5 ) / 5.8;
+								//E.x = frac( E.x + (Index.y & 1) * (0.5 / 6.0) );
+
+								E.Y *= 0.995f;
+
+								vector4df ImportanceSample = ImportanceSampleGGX(E, Pow4(Roughness));
+								vector3df HalfVector = vector3df(ImportanceSample.X, ImportanceSample.Y, ImportanceSample.Z);
+								vector3df L = 2 * HalfVector.Z * HalfVector - vector3df(0, 0, 1);
+
+								float NoL = L.Z;
+								float NoH = HalfVector.Z;
+
+								if (NoL > 0.f)
+								{
+									float PDF = D_GGX(Pow4(Roughness), NoH) * 0.25f;
+									float SolidAngleSample = 1.0f / (NumSamples * PDF);
+									float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
+									Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
+
+									float ConeAngle = acos(1 - SolidAngleSample / (2 * PI));
+
+									//L = mul(L, TangentToWorld);
+									TangentToWorld.transformVect(L);
+									vector4df Sample = SampleLongLatLinearMip(SrcLongLat, DirectionWS, Mip);
+									FilteredColor += Sample * NoL;
+									Weight += NoL;
+								}
+							}
+							FilteredColor /= Weight;
+						}
+						OutColor.R = FilteredColor.X;
+						OutColor.G = FilteredColor.Y;
+						OutColor.B = FilteredColor.Z;
+						OutColor.A = FilteredColor.W;
+					}
+
+					OutFaceImage->SetPixel(x, y, OutColor, TargetMip);
+				}
+			}
+		}
+	};
+
 	TResTextureDefine* TResTextureHelper::LongLatToCubeAndFilter(TResTextureDefine* SrcImage)
 	{
 		TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_2D);
@@ -336,114 +472,75 @@ namespace tix
 		uint32 CubeSize = 1 << (TotalMips - 1);
 		const float SolidAngleTexel = 4 * PI / (6 * CubeSize * CubeSize) * 2;
 
+		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
+		TVector<TEnvFilterTask*> Tasks;
+		Tasks.reserve(size_t(MaxThreads * 6));
+
 		for (int32 MipIndex = 0; MipIndex < TotalMips; ++MipIndex)
 		{
 			const int32 Extent = ComputeLongLatCubemapExtents(LongLatImage->GetWidth() >> MipIndex);
 			const float InvExtent = 1.0f / Extent;
-			const int32 W = LongLatImage->GetWidth() >> MipIndex;
-			const int32 H = LongLatImage->GetHeight() >> MipIndex;
 
 			float Roughness = ComputeReflectionCaptureRoughnessFromMip(MipIndex, TotalMips - 1);
-			const uint32 NumSamples = Roughness < 0.1f ? 32 : 64;
 
-			for (int32 Face = 0; Face < 6; ++Face)
+			//if (Extent >= MaxThreads)
+			//{
+			//	const int32 RowStep = Extent / MaxThreads;
+			//	for (int32 Face = 0; Face < 6; ++Face)
+			//	{
+			//		for (int32 y = 0; y < Extent; y += RowStep)
+			//		{
+			//			TEnvFilterTask* Task = ti_new TEnvFilterTask(
+			//				LongLatImage,
+			//				FaceImages[Face],
+			//				MipIndex,
+			//				Face,
+			//				Extent,
+			//				TotalMips,
+			//				Roughness,
+			//				SolidAngleTexel,
+			//				y,
+			//				y + RowStep
+			//			);
+			//			TResMTTaskExecuter::Get()->AddTask(Task);
+			//			Tasks.push_back(Task);
+			//		}
+			//	}
+			//	TResMTTaskExecuter::Get()->StartTasks();
+			//	TResMTTaskExecuter::Get()->WaitUntilFinished();
+			//}
+			//else
 			{
-				TImage* FaceImage = FaceImages[Face];
-
-				for (int32 y = 0; y < Extent; ++y)
+				const int32 RowStep = Extent / MaxThreads;
+				for (int32 Face = 0; Face < 6; ++Face)
 				{
-					for (int32 x = 0; x < Extent; ++x)
-					{
-						vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
-
-						matrix4 TangentToWorld = GetTangentBasis(DirectionWS);
-
-						SColorf OutColor;
-
-						if (Roughness < 0.01f)
-						{
-							OutColor = SampleLongLat(LongLatImage, DirectionWS, MipIndex);
-						}
-						else
-						{
-							vector4df FilteredColor;
-							if (Roughness > 0.99f)
-							{
-								// Roughness=1, GGX is constant. Use cosine distribution instead
-
-								for (uint32 i = 0; i < NumSamples; i++)
-								{
-									vector2df E = Hammersley(i, NumSamples, vector2du());
-
-									vector4df CosSample = CosineSampleHemisphere(E);
-									vector3df L = vector3df(CosSample.X, CosSample.Y, CosSample.Z);
-
-									float NoL = L.Z;
-
-									float PDF = NoL / PI;
-									float SolidAngleSample = 1.f / (NumSamples * PDF);
-									float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
-									Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
-
-									//L = mul(L, TangentToWorld);
-									TangentToWorld.transformVect(L);
-									vector4df Sample = SampleLongLatLinearMip(LongLatImage, DirectionWS, Mip);
-									FilteredColor += Sample;
-								}
-
-								FilteredColor /= float(NumSamples);
-							}
-							else
-							{
-								float Weight = 0;
-
-								for (uint32 i = 0; i < NumSamples; i++)
-								{
-									vector2df E = Hammersley(i, NumSamples, vector2du());
-
-									// 6x6 Offset rows. Forms uniform star pattern
-									//uint2 Index = uint2( i % 6, i / 6 );
-									//float2 E = ( Index + 0.5 ) / 5.8;
-									//E.x = frac( E.x + (Index.y & 1) * (0.5 / 6.0) );
-
-									E.Y *= 0.995f;
-
-									vector4df ImportanceSample = ImportanceSampleGGX(E, Pow4(Roughness));
-									vector3df HalfVector = vector3df(ImportanceSample.X, ImportanceSample.Y, ImportanceSample.Z);
-									vector3df L = 2 * HalfVector.Z * HalfVector - vector3df(0, 0, 1);
-
-									float NoL = L.Z;
-									float NoH = HalfVector.Z;
-
-									if (NoL > 0.f)
-									{
-										float PDF = D_GGX(Pow4(Roughness), NoH) * 0.25f;
-										float SolidAngleSample = 1.0f / (NumSamples * PDF);
-										float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
-										Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
-
-										float ConeAngle = acos(1 - SolidAngleSample / (2 * PI));
-
-										//L = mul(L, TangentToWorld);
-										TangentToWorld.transformVect(L);
-										vector4df Sample = SampleLongLatLinearMip(LongLatImage, DirectionWS, Mip);
-										FilteredColor += Sample * NoL;
-										Weight += NoL;
-									}
-								}
-								FilteredColor /= Weight;
-							}
-							OutColor.R = FilteredColor.X;
-							OutColor.G = FilteredColor.Y;
-							OutColor.B = FilteredColor.Z;
-							OutColor.A = FilteredColor.W;
-						}
-
-						FaceImage->SetPixel(x, y, OutColor, MipIndex);
-					}
+					TEnvFilterTask* Task = ti_new TEnvFilterTask(
+						LongLatImage,
+						FaceImages[Face],
+						MipIndex,
+						Face,
+						Extent,
+						TotalMips,
+						Roughness,
+						SolidAngleTexel,
+						0,
+						Extent
+					);
+					TResMTTaskExecuter::Get()->AddTask(Task);
+					//Task->Exec();
+					Tasks.push_back(Task);
 				}
 			}
 		}
+		TResMTTaskExecuter::Get()->StartTasks();
+		TResMTTaskExecuter::Get()->WaitUntilFinished();
+
+		// delete Tasks
+		for (auto& T : Tasks)
+		{
+			ti_delete T;
+		}
+		Tasks.clear();
 
 		if (false)
 		{
@@ -474,7 +571,7 @@ namespace tix
 			Texture->ImageSurfaces[i] = FaceImages[i];
 		}
 
-		Texture->Name = SrcImage->Name + "_FilteredCube";
+		Texture->Name = SrcImage->Name;
 		Texture->Path = SrcImage->Path;
 
 		return Texture;

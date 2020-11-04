@@ -126,11 +126,20 @@ namespace tix
 		{
 			TImage* Src = SrcImage->ImageSurfaces[i];
 			TImage* Dst = ti_new TImage(DstFormat, Src->GetWidth(), Src->GetHeight());
-			for (int32 y = 0; y < Src->GetHeight(); ++y)
+			if (Src->GetMipmapCount() > 1)
 			{
-				for (int32 x = 0; x < Src->GetWidth(); ++x)
+				Dst->AllocEmptyMipmaps();
+			}
+			for (int32 Mip = 0; Mip < Src->GetMipmapCount(); ++Mip)
+			{
+				int32 W = Src->GetMipmap(Mip).W;
+				int32 H = Src->GetMipmap(Mip).H;
+				for (int32 y = 0; y < H; ++y)
 				{
-					Dst->SetPixel(x, y, Src->GetPixelFloat(x, y));
+					for (int32 x = 0; x < W; ++x)
+					{
+						Dst->SetPixel(x, y, Src->GetPixelFloat(x, y, Mip), Mip);
+					}
 				}
 			}
 			DstImage->ImageSurfaces[i] = Dst;
