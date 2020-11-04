@@ -69,7 +69,6 @@ namespace tix
 	{
 		// center of the texels
 		vector3df DirectionSS((x + 0.5f) * InvSideExtent * 2 - 1, (y + 0.5f) * InvSideExtent * 2 - 1, 1);
-		DirectionSS.normalize();
 		return DirectionSS;
 	}
 
@@ -77,25 +76,14 @@ namespace tix
 	{
 		vector3df DirectionSS = ComputeSSCubeDirectionAtTexelCenter(x, y, InvSideExtent);
 		vector3df DirectionWS = TransformSideToWorldSpace(CubemapFace, DirectionSS);
+		DirectionWS.normalize();
 		return DirectionWS;
 	}
 	static int32 ComputeLongLatCubemapExtents(int32 ImageWidth)
 	{
 		int32 Extents = 1 << TMath::FloorLog2(ImageWidth / 2);
-		return TMath::Max(Extents, 32);
-	}
-
-	static vector2df DirectionToLongLat(const vector3df& NormalizedDirection, int32 LongLatWidth, int32 LongLatHeight)
-	{
-		// see http://gl.ict.usc.edu/Data/HighResProbes
-		// latitude-longitude panoramic format = equirectangular mapping
-
-		vector2df Result;
-
-		Result.X = (1 + atan2(NormalizedDirection.X, -NormalizedDirection.Z) / PI) / 2 * LongLatWidth;
-		Result.Y = acos(NormalizedDirection.Y) / PI * LongLatHeight;
-
-		return Result;
+		TI_ASSERT(Extents > 0);
+		return Extents;// TMath::Max(Extents, 32);
 	}
 
 	/** Wraps X around W. */
@@ -109,45 +97,68 @@ namespace tix
 		}
 	}
 
-	SColorf GetPixelFloatWithXWrap(TImage* Image, float x, float y, int32 MipIndex)
+	SColorf SampleLongLat(TImage* LongLat, const vector3df& Dir, int32 Mip)
 	{
-		const int32 W = Image->GetWidth() >> MipIndex;
-		const int32 H = Image->GetHeight() >> MipIndex;
+		int32 W = LongLat->GetMipmap(Mip).W;
+		int32 H = LongLat->GetMipmap(Mip).H;
 
-		int32 X0 = (int32)floor(x);
-		int32 Y0 = (int32)floor(y);
+		auto DirectionToLongLat = [](const vector3df& NormalizedDirection, int32 LongLatWidth, int32 LongLatHeight)
+		{
+			// see http://gl.ict.usc.edu/Data/HighResProbes
+			// latitude-longitude panoramic format = equirectangular mapping
 
-		float FracX = x - X0;
-		float FracY = y - Y0;
+			vector2df Result;
 
-		int32 X1 = X0 + 1;
-		int32 Y1 = Y0 + 1;
+			Result.X = (1 + atan2(NormalizedDirection.X, -NormalizedDirection.Z) / PI) / 2 * LongLatWidth;
+			Result.Y = acos(NormalizedDirection.Y) / PI * LongLatHeight;
 
-		WrapTo(X0, W);
-		WrapTo(X1, W);
-		Y0 = TMath::Max(0, Y0); Y0 = TMath::Min(Y0, H - 1);
-		Y1 = TMath::Max(0, Y1); Y1 = TMath::Min(Y1, H - 1);
+			return Result;
+		};
+		
+		auto GetPixelFloatWithXWrap = [](TImage* Image, float x, float y, int32 MipIndex)
+		{
+			const int32 W = Image->GetWidth() >> MipIndex;
+			const int32 H = Image->GetHeight() >> MipIndex;
 
-		SColorf CornerRGB00 = Image->GetPixelFloat(X0, Y0, MipIndex);
-		SColorf CornerRGB10 = Image->GetPixelFloat(X1, Y0, MipIndex);
-		SColorf CornerRGB01 = Image->GetPixelFloat(X0, Y1, MipIndex);
-		SColorf CornerRGB11 = Image->GetPixelFloat(X1, Y1, MipIndex);
+			int32 X0 = (int32)floor(x);
+			int32 Y0 = (int32)floor(y);
 
-		SColorf CornerRGB0 = TMath::Lerp(CornerRGB00, CornerRGB10, FracX);
-		SColorf CornerRGB1 = TMath::Lerp(CornerRGB01, CornerRGB11, FracX);
+			float FracX = x - X0;
+			float FracY = y - Y0;
 
-		return TMath::Lerp(CornerRGB0, CornerRGB1, FracY);
+			int32 X1 = X0 + 1;
+			int32 Y1 = Y0 + 1;
+
+			WrapTo(X0, W);
+			WrapTo(X1, W);
+			Y0 = TMath::Max(0, Y0); Y0 = TMath::Min(Y0, H - 1);
+			Y1 = TMath::Max(0, Y1); Y1 = TMath::Min(Y1, H - 1);
+
+			SColorf CornerRGB00 = Image->GetPixelFloat(X0, Y0, MipIndex);
+			SColorf CornerRGB10 = Image->GetPixelFloat(X1, Y0, MipIndex);
+			SColorf CornerRGB01 = Image->GetPixelFloat(X0, Y1, MipIndex);
+			SColorf CornerRGB11 = Image->GetPixelFloat(X1, Y1, MipIndex);
+
+			SColorf CornerRGB0 = TMath::Lerp(CornerRGB00, CornerRGB10, FracX);
+			SColorf CornerRGB1 = TMath::Lerp(CornerRGB01, CornerRGB11, FracX);
+
+			return TMath::Lerp(CornerRGB0, CornerRGB1, FracY);
+		};
+
+		vector2df Coord = DirectionToLongLat(Dir, W, H);
+
+		return GetPixelFloatWithXWrap(LongLat, Coord.X, Coord.Y, Mip);
 	}
 
-	SColorf GetPixelFloatWithXWrapLinearMip(TImage* Image, float x, float y, float MipIndex)
+	SColorf SampleLongLatLinearMip(TImage* LongLat, const vector3df& Dir, float Mip)
 	{
-		int32 Mip0 = (int32)MipIndex;
+		int32 Mip0 = (int32)Mip;
 		int32 Mip1 = Mip0 + 1;
-		
-		SColorf C0 = GetPixelFloatWithXWrap(Image, x, y, Mip0);
-		SColorf C1 = GetPixelFloatWithXWrap(Image, x, y, Mip1);
 
-		float Frac = MipIndex - Mip0;
+		SColorf C0 = SampleLongLat(LongLat, Dir, Mip0);
+		SColorf C1 = SampleLongLat(LongLat, Dir, Mip1);
+
+		float Frac = Mip - Mip0;
 
 		return TMath::Lerp(C0, C1, Frac);
 	}
@@ -176,9 +187,9 @@ namespace tix
 				for (int32 x = 0; x < Extent; ++x)
 				{
 					vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
-					vector2df Coord = DirectionToLongLat(DirectionWS, W, H);
+					SColorf Sample = SampleLongLat(LongLat, DirectionWS, 0);
 
-					FaceImage->SetPixel(x, y, GetPixelFloatWithXWrap(LongLat, Coord.X, Coord.Y, 0));
+					FaceImage->SetPixel(x, y, Sample);
 				}
 			}
 		}
@@ -322,7 +333,10 @@ namespace tix
 
 		// Create mips and filter
 		const int32 TotalMips = FaceImages[0]->GetMipmapCount();
-		for (int32 MipIndex = 1; MipIndex < TotalMips; ++MipIndex)
+		uint32 CubeSize = 1 << (TotalMips - 1);
+		const float SolidAngleTexel = 4 * PI / (6 * CubeSize * CubeSize) * 2;
+
+		for (int32 MipIndex = 0; MipIndex < TotalMips; ++MipIndex)
 		{
 			const int32 Extent = ComputeLongLatCubemapExtents(LongLatImage->GetWidth() >> MipIndex);
 			const float InvExtent = 1.0f / Extent;
@@ -341,7 +355,6 @@ namespace tix
 					for (int32 x = 0; x < Extent; ++x)
 					{
 						vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
-						vector2df Coord = DirectionToLongLat(DirectionWS, W, H);
 
 						matrix4 TangentToWorld = GetTangentBasis(DirectionWS);
 
@@ -349,13 +362,10 @@ namespace tix
 
 						if (Roughness < 0.01f)
 						{
-							OutColor = GetPixelFloatWithXWrap(LongLatImage, Coord.X, Coord.Y, MipIndex);
+							OutColor = SampleLongLat(LongLatImage, DirectionWS, MipIndex);
 						}
 						else
 						{
-							uint32 CubeSize = 1 << (TotalMips - 1);
-							const float SolidAngleTexel = 4 * PI / (6 * CubeSize * CubeSize) * 2;
-
 							vector4df FilteredColor;
 							if (Roughness > 0.99f)
 							{
@@ -373,11 +383,11 @@ namespace tix
 									float PDF = NoL / PI;
 									float SolidAngleSample = 1.f / (NumSamples * PDF);
 									float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
+									Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
 
 									//L = mul(L, TangentToWorld);
 									TangentToWorld.transformVect(L);
-									vector2df CoordL = DirectionToLongLat(L, W, H);
-									vector4df Sample = GetPixelFloatWithXWrapLinearMip(LongLatImage, CoordL.X, CoordL.Y, Mip);
+									vector4df Sample = SampleLongLatLinearMip(LongLatImage, DirectionWS, Mip);
 									FilteredColor += Sample;
 								}
 
@@ -410,13 +420,13 @@ namespace tix
 										float PDF = D_GGX(Pow4(Roughness), NoH) * 0.25f;
 										float SolidAngleSample = 1.0f / (NumSamples * PDF);
 										float Mip = 0.5f * log2(SolidAngleSample / SolidAngleTexel);
+										Mip = TMath::Clamp(Mip, 0.f, float(TotalMips - 1) - 0.01f);
 
 										float ConeAngle = acos(1 - SolidAngleSample / (2 * PI));
 
 										//L = mul(L, TangentToWorld);
 										TangentToWorld.transformVect(L);
-										vector2df CoordL = DirectionToLongLat(L, W, H);
-										vector4df Sample = GetPixelFloatWithXWrapLinearMip(LongLatImage, CoordL.X, CoordL.Y, Mip);
+										vector4df Sample = SampleLongLatLinearMip(LongLatImage, DirectionWS, Mip);
 										FilteredColor += Sample * NoL;
 										Weight += NoL;
 									}
@@ -431,6 +441,20 @@ namespace tix
 
 						FaceImage->SetPixel(x, y, OutColor, MipIndex);
 					}
+				}
+			}
+		}
+
+		if (false)
+		{
+			// output image to debug
+			for (int m = 0; m < 8; ++m)
+			{
+				for (int i = 0; i < 6; ++i)
+				{
+					char name[128];
+					sprintf(name, "face_%d_m%d.hdr", i, m);
+					FaceImages[i]->SaveToHDR(name, m);
 				}
 			}
 		}

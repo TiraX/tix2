@@ -88,9 +88,16 @@ namespace tix
 		Texture->Desc.Mips = HdrImage->GetMipmapCount();
 		Texture->ImageSurfaces.resize(1); 
 		Texture->ImageSurfaces[0] = ti_new TImage(HdrImage->GetFormat(), HdrImage->GetWidth(), HdrImage->GetHeight());
-		const TImage::TSurfaceData& SrcMipData = HdrImage->GetMipmap(0);
-		TImage::TSurfaceData& DestMipData = Texture->ImageSurfaces[0]->GetMipmap(0);
-		memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());
+		if (Texture->Desc.Mips > 1)
+		{
+			Texture->ImageSurfaces[0]->AllocEmptyMipmaps();
+		}
+		for (int32 Mip = 0; Mip < (int32)Texture->Desc.Mips; ++Mip)
+		{
+			const TImage::TSurfaceData& SrcMipData = HdrImage->GetMipmap(Mip);
+			TImage::TSurfaceData& DestMipData = Texture->ImageSurfaces[0]->GetMipmap(Mip);
+			memcpy(DestMipData.Data.GetBuffer(), SrcMipData.Data.GetBuffer(), SrcMipData.Data.GetLength());
+		}
 
 		TString Name, Path;
 		GetPathAndName(SrcPathName, Path, Name);
