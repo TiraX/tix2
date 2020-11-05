@@ -421,7 +421,8 @@ namespace tix
 
 								//L = mul(L, TangentToWorld);
 								TangentToWorld.transformVect(L);
-								vector4df Sample = SampleLongLatLinearMip(SrcLongLat, DirectionWS, Mip);
+								L.normalize();
+								vector4df Sample = SampleLongLatLinearMip(SrcLongLat, L, Mip);
 								FilteredColor += Sample;
 							}
 
@@ -445,6 +446,7 @@ namespace tix
 								vector4df ImportanceSample = ImportanceSampleGGX(E, Pow4(Roughness));
 								vector3df HalfVector = vector3df(ImportanceSample.X, ImportanceSample.Y, ImportanceSample.Z);
 								vector3df L = 2 * HalfVector.Z * HalfVector - vector3df(0, 0, 1);
+								//_LOG(Log, "%02d. E={%f, %f}; L={%f, %f, %f}\n", i, E.X, E.Y, L.X, L.Y, L.Z);
 
 								float NoL = L.Z;
 								float NoH = HalfVector.Z;
@@ -460,7 +462,8 @@ namespace tix
 
 									//L = mul(L, TangentToWorld);
 									TangentToWorld.transformVect(L);
-									vector4df Sample = SampleLongLatLinearMip(SrcLongLat, DirectionWS, Mip);
+									L.normalize();
+									vector4df Sample = SampleLongLatLinearMip(SrcLongLat, L, Mip);
 									FilteredColor += Sample * NoL;
 									Weight += NoL;
 								}
@@ -525,7 +528,7 @@ namespace tix
 		TImage* LongLatImage = SrcImage->ImageSurfaces[0];
 		// To cube map and saved for mipmap1
 		// Mip 0
-		bool debugNoFilter = true;
+		bool debugNoFilter = !true;
 		TVector<TImage*> FaceImages = LongLatToCube(LongLatImage, debugNoFilter);
 		if (debugNoFilter)
 		{
@@ -546,6 +549,15 @@ namespace tix
 		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
 		TVector<TEnvFilterTask*> Tasks;
 		Tasks.reserve(size_t(MaxThreads * 6));
+
+
+		for (int m = 0; m < TotalMips; ++m)
+		{
+			float Roughness = ComputeReflectionCaptureRoughnessFromMip(m, TotalMips - 1);
+			_LOG(Log, "m = %d, R = %f.\n", m, Roughness);
+		}
+
+#define MULTI_THREAD 1
 
 		for (int32 MipIndex = 0; MipIndex < TotalMips; ++MipIndex)
 		{
@@ -573,7 +585,11 @@ namespace tix
 							y,
 							y + RowStep
 						);
+#if MULTI_THREAD
 						TResMTTaskExecuter::Get()->AddTask(Task);
+#else
+						Task->Exec();
+#endif
 						Tasks.push_back(Task);
 					}
 				}
@@ -595,14 +611,19 @@ namespace tix
 						0,
 						Extent
 					);
+#if MULTI_THREAD
 					TResMTTaskExecuter::Get()->AddTask(Task);
-					//Task->Exec();
+#else
+					Task->Exec();
+#endif
 					Tasks.push_back(Task);
 				}
 			}
 		}
+#if MULTI_THREAD
 		TResMTTaskExecuter::Get()->StartTasks();
 		TResMTTaskExecuter::Get()->WaitUntilFinished();
+#endif
 
 		// delete Tasks
 		for (auto& T : Tasks)
@@ -611,7 +632,7 @@ namespace tix
 		}
 		Tasks.clear();
 
-		if (!false)
+		if (false)
 		{
 			ExportCubeMap(FaceImages, "Filtered");
 		}
