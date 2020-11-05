@@ -97,7 +97,7 @@ namespace tix
 		}
 	}
 
-	vector3df LongLatToPosition(const vector2df& Coord)
+	inline vector3df LongLatToPosition(const vector2df& Coord)
 	{
 		float Lat = - (Coord.Y - 0.5f) * PI;
 		float Long = Coord.X * PI * 2.f;
@@ -348,10 +348,8 @@ namespace tix
 	public:
 		TEnvFilterTask(
 			TImage* InSrcLongLat, 
-			TImage* InOutFaceImage, 
+			TImage* InFilteredLongLat,
 			int32 InTargetMip, 
-			int32 InFaceIndex, 
-			int32 InExtent,
 			int32 InTotalMips,
 			float InRoughness, 
 			float InSolidAngleTexel, 
@@ -359,10 +357,8 @@ namespace tix
 			int32 InYEnd
 		)
 			: SrcLongLat(InSrcLongLat)
-			, OutFaceImage(InOutFaceImage)
+			, FilteredLongLat(InFilteredLongLat)
 			, TargetMip(InTargetMip)
-			, FaceIndex(InFaceIndex)
-			, Extent(InExtent)
 			, TotalMips(InTotalMips)
 			, Roughness(InRoughness)
 			, SolidAngleTexel(InSolidAngleTexel)
@@ -370,10 +366,8 @@ namespace tix
 			, YEnd(InYEnd)
 		{}
 		TImage* SrcLongLat;
-		TImage* OutFaceImage;
+		TImage* FilteredLongLat;
 		int32 TargetMip;
-		int32 FaceIndex;
-		int32 Extent;
 		int32 TotalMips;
 		float Roughness;
 		float SolidAngleTexel;
@@ -381,22 +375,22 @@ namespace tix
 
 		virtual void Exec() override
 		{
-			const float InvExtent = 1.f / Extent;
 			const uint32 NumSamples = Roughness < 0.1f ? 32 : 64;
+			int32 W = SrcLongLat->GetWidth() >> TargetMip;
+			int32 H = SrcLongLat->GetHeight() >> TargetMip;
 
 			for (int32 y = YStart; y < YEnd; ++y)
 			{
-				for (int32 x = 0; x < Extent; ++x)
+				for (int32 x = 0; x < W; ++x)
 				{
-					vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(FaceIndex, x, y, InvExtent);
-
+					vector3df DirectionWS = LongLatToPosition(vector2df((x + 0.5f) / float(W), (y + 0.5f) / float(H)));
 					matrix4 TangentToWorld = GetTangentBasis(DirectionWS);
 
 					SColorf OutColor;
 
 					if (Roughness < 0.01f)
 					{
-						OutColor = SampleLongLat(SrcLongLat, DirectionWS, TargetMip);
+						OutColor = SrcLongLat->GetPixelFloat(x, y, TargetMip);
 					}
 					else
 					{
@@ -446,7 +440,6 @@ namespace tix
 								vector4df ImportanceSample = ImportanceSampleGGX(E, Pow4(Roughness));
 								vector3df HalfVector = vector3df(ImportanceSample.X, ImportanceSample.Y, ImportanceSample.Z);
 								vector3df L = 2 * HalfVector.Z * HalfVector - vector3df(0, 0, 1);
-								//_LOG(Log, "%02d. E={%f, %f}; L={%f, %f, %f}\n", i, E.X, E.Y, L.X, L.Y, L.Z);
 
 								float NoL = L.Z;
 								float NoH = HalfVector.Z;
@@ -476,7 +469,7 @@ namespace tix
 						OutColor.A = FilteredColor.W;
 					}
 
-					OutFaceImage->SetPixel(x, y, OutColor, TargetMip);
+					FilteredLongLat->SetPixel(x, y, OutColor, TargetMip);
 				}
 			}
 		}
@@ -522,34 +515,21 @@ namespace tix
 
 	TResTextureDefine* TResTextureHelper::LongLatToCubeAndFilter(TResTextureDefine* SrcImage)
 	{
+		TIMER_RECORDER_FUNC();
 		TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_2D);
 		TI_ASSERT(SrcImage->Desc.Width == SrcImage->Desc.Height * 2);
 
 		TImage* LongLatImage = SrcImage->ImageSurfaces[0];
-		// To cube map and saved for mipmap1
-		// Mip 0
-		bool debugNoFilter = !true;
-		TVector<TImage*> FaceImages = LongLatToCube(LongLatImage, debugNoFilter);
-		if (debugNoFilter)
-		{
-			ExportCubeMap(FaceImages, "NoFilter");
-		}
 
-		// Alloc mips
-		for (int32 Face = 0; Face < 6; Face++)
-		{
-			FaceImages[Face]->AllocEmptyMipmaps();
-		}
+		TImage* Filtered = ti_new TImage(LongLatImage->GetFormat(), LongLatImage->GetWidth(), LongLatImage->GetHeight());
+		Filtered->AllocEmptyMipmaps();
+
+
 
 		// Create mips and filter
-		const int32 TotalMips = FaceImages[0]->GetMipmapCount();
+		const int32 TotalMips = LongLatImage->GetMipmapCount();
 		uint32 CubeSize = 1 << (TotalMips - 1);
 		const float SolidAngleTexel = 4 * PI / (6 * CubeSize * CubeSize) * 2;
-
-		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
-		TVector<TEnvFilterTask*> Tasks;
-		Tasks.reserve(size_t(MaxThreads * 6));
-
 
 		for (int m = 0; m < TotalMips; ++m)
 		{
@@ -558,58 +538,32 @@ namespace tix
 		}
 
 #define MULTI_THREAD 1
+		const int32 MaxThreads = TResMTTaskExecuter::Get()->GetMaxThreadCount();
+		TVector<TEnvFilterTask*> Tasks;
+		Tasks.reserve(size_t(MaxThreads * TotalMips));
 
 		for (int32 MipIndex = 0; MipIndex < TotalMips; ++MipIndex)
 		{
-			const int32 Extent = ComputeLongLatCubemapExtents(LongLatImage->GetWidth() >> MipIndex);
+			int32 W = LongLatImage->GetWidth() >> MipIndex;
+			int32 H = LongLatImage->GetHeight() >> MipIndex;
+			const int32 Extent = ComputeLongLatCubemapExtents(W);
 			const float InvExtent = 1.0f / Extent;
 
 			float Roughness = ComputeReflectionCaptureRoughnessFromMip(MipIndex, TotalMips - 1);
-
-			if (Extent >= MaxThreads)
+			if (H >= MaxThreads)
 			{
-				const int32 RowStep = Extent / MaxThreads;
-				for (int32 Face = 0; Face < 6; ++Face)
-				{
-					for (int32 y = 0; y < Extent; y += RowStep)
-					{
-						TEnvFilterTask* Task = ti_new TEnvFilterTask(
-							LongLatImage,
-							FaceImages[Face],
-							MipIndex,
-							Face,
-							Extent,
-							TotalMips,
-							Roughness,
-							SolidAngleTexel,
-							y,
-							y + RowStep
-						);
-#if MULTI_THREAD
-						TResMTTaskExecuter::Get()->AddTask(Task);
-#else
-						Task->Exec();
-#endif
-						Tasks.push_back(Task);
-					}
-				}
-			}
-			else
-			{
-				const int32 RowStep = Extent / MaxThreads;
-				for (int32 Face = 0; Face < 6; ++Face)
+				const int32 RowStep = H / MaxThreads;
+				for (int32 y = 0; y < H; y += RowStep)
 				{
 					TEnvFilterTask* Task = ti_new TEnvFilterTask(
 						LongLatImage,
-						FaceImages[Face],
+						Filtered,
 						MipIndex,
-						Face,
-						Extent,
 						TotalMips,
 						Roughness,
 						SolidAngleTexel,
-						0,
-						Extent
+						y,
+						y + RowStep
 					);
 #if MULTI_THREAD
 					TResMTTaskExecuter::Get()->AddTask(Task);
@@ -619,12 +573,31 @@ namespace tix
 					Tasks.push_back(Task);
 				}
 			}
+			else
+			{
+				TEnvFilterTask* Task = ti_new TEnvFilterTask(
+					LongLatImage,
+					Filtered,
+					MipIndex,
+					TotalMips,
+					Roughness,
+					SolidAngleTexel,
+					0,
+					H
+				);
+#if MULTI_THREAD
+				TResMTTaskExecuter::Get()->AddTask(Task);
+#else
+				Task->Exec();
+#endif
+				Tasks.push_back(Task);
+			}
 		}
+
 #if MULTI_THREAD
 		TResMTTaskExecuter::Get()->StartTasks();
 		TResMTTaskExecuter::Get()->WaitUntilFinished();
 #endif
-
 		// delete Tasks
 		for (auto& T : Tasks)
 		{
@@ -632,10 +605,14 @@ namespace tix
 		}
 		Tasks.clear();
 
+		TVector<TImage*> FaceImages = LongLatToCube(Filtered, true);
+
+		// Debug
 		if (false)
 		{
-			ExportCubeMap(FaceImages, "Filtered");
+			ExportCubeMap(FaceImages, "Filtered1");
 		}
+		ti_delete Filtered;
 
 		// Create the texture
 		TResTextureDefine* Texture = ti_new TResTextureDefine();
