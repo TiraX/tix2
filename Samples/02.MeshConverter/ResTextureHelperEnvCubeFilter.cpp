@@ -97,6 +97,19 @@ namespace tix
 		}
 	}
 
+	vector3df LongLatToPosition(const vector2df& Coord)
+	{
+		float Lat = - (Coord.Y - 0.5f) * PI;
+		float Long = Coord.X * PI * 2.f;
+
+		vector3df Result;
+		Result.X = cos(Lat) * cos(Long);
+		Result.Y = cos(Lat) * sin(Long);
+		Result.Z = sin(Lat);
+
+		return Result;
+	}
+
 	SColorf SampleLongLat(TImage* LongLat, const vector3df& Dir, int32 Mip)
 	{
 		int32 W = LongLat->GetMipmap(Mip).W;
@@ -163,33 +176,48 @@ namespace tix
 		return TMath::Lerp(C0, C1, Frac);
 	}
 
-	TVector<TImage*> LongLatToCube(TImage* LongLat)
+	TVector<TImage*> LongLatToCube(TImage* LongLat, bool WithMips)
 	{
 		TVector<TImage*> Surfaces;
 		Surfaces.resize(6);
 
-		const int32 Extent = ComputeLongLatCubemapExtents(LongLat->GetWidth());
-		const float InvExtent = 1.0f / Extent;
-		const int32 W = LongLat->GetWidth();
-		const int32 H = LongLat->GetHeight();
+		int32 Extent = ComputeLongLatCubemapExtents(LongLat->GetWidth());
+		float InvExtent = 1.0f / Extent;
+		int32 W = LongLat->GetWidth();
+		int32 H = LongLat->GetHeight();
 
 		for (int32 Face = 0; Face < 6; ++Face)
 		{
 			Surfaces[Face] = ti_new TImage(LongLat->GetFormat(), Extent, Extent);
+
+			if (WithMips && LongLat->GetMipmapCount() > 1)
+			{
+				Surfaces[Face]->AllocEmptyMipmaps();
+			}
 		}
 
-		for (int32 Face = 0; Face < 6; ++Face)
+		int32 TotalMips = WithMips ? LongLat->GetMipmapCount() : 1;
+
+		for (int32 Mip = 0; Mip < TotalMips; Mip++)
 		{
-			TImage* FaceImage = Surfaces[Face];
+			W = LongLat->GetMipmap(Mip).W;
+			H = LongLat->GetMipmap(Mip).H;
+			Extent = ComputeLongLatCubemapExtents(W);
+			InvExtent = 1.0f / Extent;
 
-			for (int32 y = 0; y < Extent; ++y)
+			for (int32 Face = 0; Face < 6; ++Face)
 			{
-				for (int32 x = 0; x < Extent; ++x)
-				{
-					vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
-					SColorf Sample = SampleLongLat(LongLat, DirectionWS, 0);
+				TImage* FaceImage = Surfaces[Face];
 
-					FaceImage->SetPixel(x, y, Sample);
+				for (int32 y = 0; y < Extent; ++y)
+				{
+					for (int32 x = 0; x < Extent; ++x)
+					{
+						vector3df DirectionWS = ComputeWSCubeDirectionAtTexelCenter(Face, x, y, InvExtent);
+						SColorf Sample = SampleLongLat(LongLat, DirectionWS, Mip);
+
+						FaceImage->SetPixel(x, y, Sample, Mip);
+					}
 				}
 			}
 		}
@@ -451,6 +479,44 @@ namespace tix
 		}
 	};
 
+	void ExportCubeMap(const TVector<TImage*>& FaceImages, const int8* NamePrefix)
+	{
+		TImage* Face0 = FaceImages[0];
+		int32 W = Face0->GetWidth();
+		int32 H = Face0->GetHeight();
+		int32 PixelSize = TImage::GetPixelSizeInBytes(FaceImages[0]->GetFormat());
+
+		TImage* Combined = ti_new TImage(FaceImages[0]->GetFormat(), W * 6, H);
+		if (Face0->GetMipmapCount() > 1)
+		{
+			Combined->AllocEmptyMipmaps();
+		}
+
+		for (int32 Mip = 0; Mip < Face0->GetMipmapCount(); Mip++)
+		{
+			W = Face0->GetWidth() >> Mip;
+			H = Face0->GetWidth() >> Mip;
+			for (int32 i = 0; i < 6; i++)
+			{
+				int32 LineOffset = W * i;
+
+				const TImage::TSurfaceData& SrcMipData = FaceImages[i]->GetMipmap(Mip);
+				TImage::TSurfaceData& DestMipData = Combined->GetMipmap(Mip);
+				int32 SrcPitch = SrcMipData.RowPitch;
+				int32 DstPitch = DestMipData.RowPitch;
+				for (int32 y = 0; y < H; y++)
+				{
+					memcpy(DestMipData.Data.GetBuffer() + y * DstPitch + LineOffset * PixelSize, SrcMipData.Data.GetBuffer() + y * SrcPitch, SrcPitch);
+				}
+			}
+
+			char name[128];
+			sprintf(name, "%s_mip%d.hdr", NamePrefix, Mip);
+			Combined->SaveToHDR(name, Mip);
+		}
+		ti_delete Combined;
+	}
+
 	TResTextureDefine* TResTextureHelper::LongLatToCubeAndFilter(TResTextureDefine* SrcImage)
 	{
 		TI_ASSERT(SrcImage->Desc.Type == ETT_TEXTURE_2D);
@@ -459,7 +525,12 @@ namespace tix
 		TImage* LongLatImage = SrcImage->ImageSurfaces[0];
 		// To cube map and saved for mipmap1
 		// Mip 0
-		TVector<TImage*> FaceImages = LongLatToCube(LongLatImage);
+		bool debugNoFilter = true;
+		TVector<TImage*> FaceImages = LongLatToCube(LongLatImage, debugNoFilter);
+		if (debugNoFilter)
+		{
+			ExportCubeMap(FaceImages, "NoFilter");
+		}
 
 		// Alloc mips
 		for (int32 Face = 0; Face < 6; Face++)
@@ -483,33 +554,31 @@ namespace tix
 
 			float Roughness = ComputeReflectionCaptureRoughnessFromMip(MipIndex, TotalMips - 1);
 
-			//if (Extent >= MaxThreads)
-			//{
-			//	const int32 RowStep = Extent / MaxThreads;
-			//	for (int32 Face = 0; Face < 6; ++Face)
-			//	{
-			//		for (int32 y = 0; y < Extent; y += RowStep)
-			//		{
-			//			TEnvFilterTask* Task = ti_new TEnvFilterTask(
-			//				LongLatImage,
-			//				FaceImages[Face],
-			//				MipIndex,
-			//				Face,
-			//				Extent,
-			//				TotalMips,
-			//				Roughness,
-			//				SolidAngleTexel,
-			//				y,
-			//				y + RowStep
-			//			);
-			//			TResMTTaskExecuter::Get()->AddTask(Task);
-			//			Tasks.push_back(Task);
-			//		}
-			//	}
-			//	TResMTTaskExecuter::Get()->StartTasks();
-			//	TResMTTaskExecuter::Get()->WaitUntilFinished();
-			//}
-			//else
+			if (Extent >= MaxThreads)
+			{
+				const int32 RowStep = Extent / MaxThreads;
+				for (int32 Face = 0; Face < 6; ++Face)
+				{
+					for (int32 y = 0; y < Extent; y += RowStep)
+					{
+						TEnvFilterTask* Task = ti_new TEnvFilterTask(
+							LongLatImage,
+							FaceImages[Face],
+							MipIndex,
+							Face,
+							Extent,
+							TotalMips,
+							Roughness,
+							SolidAngleTexel,
+							y,
+							y + RowStep
+						);
+						TResMTTaskExecuter::Get()->AddTask(Task);
+						Tasks.push_back(Task);
+					}
+				}
+			}
+			else
 			{
 				const int32 RowStep = Extent / MaxThreads;
 				for (int32 Face = 0; Face < 6; ++Face)
@@ -542,18 +611,9 @@ namespace tix
 		}
 		Tasks.clear();
 
-		if (false)
+		if (!false)
 		{
-			// output image to debug
-			for (int m = 0; m < 8; ++m)
-			{
-				for (int i = 0; i < 6; ++i)
-				{
-					char name[128];
-					sprintf(name, "face_%d_m%d.hdr", i, m);
-					FaceImages[i]->SaveToHDR(name, m);
-				}
-			}
+			ExportCubeMap(FaceImages, "Filtered");
 		}
 
 		// Create the texture
