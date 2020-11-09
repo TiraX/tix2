@@ -13,6 +13,7 @@ namespace tix
 		: MeshesTotal(0)
 		, MeshSectionsTotal(0)
 		, InstancesTotal(0)
+		, ReflectionCaptures(0)
 	{
 	}
 
@@ -30,13 +31,33 @@ namespace tix
 		const int32 MeshCount = Doc["meshes_total"].GetInt();
 		const int32 InsTotalCount = Doc["instances_total"].GetInt();
 		const int32 MeshSectionsCount = Doc["mesh_sections_total"].GetInt();
+		const int32 ReflectionCaptures = Doc["reflection_captures_total"].GetInt();
 
 		Helper.MeshesTotal = MeshCount;
 		Helper.MeshSectionsTotal = MeshSectionsCount;
 		Helper.InstancesTotal = InsTotalCount;
+		Helper.ReflectionCapturesTotal = ReflectionCaptures;
 
 		Helper.Position = TJSONUtil::JsonArrayToVector2di(Doc["position"]);
 		Helper.BBox = TJSONUtil::JsonArrayToAABBox(Doc["bbox"]);
+
+		// reflection captures
+		{
+			TJSONNode JReflectionCaptures = Doc["reflection_captures"];
+			for (int32 i = 0; i < JReflectionCaptures.Size(); ++i)
+			{
+				TJSONNode JRC = JReflectionCaptures[i];
+				TResReflectionCapture RC;
+				RC.Name = JRC["name"].GetString();
+				RC.LinkedCubemap = JRC["linked_cubemap"].GetString();
+				RC.Size = JRC["cubemap_size"].GetInt();
+				RC.AvgBrightness = JRC["average_brightness"].GetFloat();
+				RC.Brightness = JRC["brightness"].GetFloat();
+				RC.Position = TJSONUtil::JsonArrayToVector3df(JRC["position"]);
+
+				Helper.ReflectionCaptures.push_back(RC);
+			}
+		}
 
 		// dependency
 		{        
@@ -139,6 +160,7 @@ namespace tix
 			SceneTileHeader.Position.Y = (int16)Position.Y;
 			SceneTileHeader.BBox = BBox;
 
+			SceneTileHeader.NumReflectionCaptures = (int32)ReflectionCaptures.size();
 			SceneTileHeader.NumTextures = (int32)AssetTextures.size();
 			SceneTileHeader.NumMaterials = (int32)AssetMaterials.size();
 			SceneTileHeader.NumMaterialInstances = (int32)AssetMaterialInstances.size();
@@ -146,6 +168,19 @@ namespace tix
 			SceneTileHeader.NumMeshSections = MeshSectionsTotal;
 			SceneTileHeader.NumInstances = (int32)Instances.size();
 
+			// reflections
+			TI_ASSERT(SceneTileHeader.NumReflectionCaptures == ReflectionCaptures.size());
+			for (const auto& RC : ReflectionCaptures)
+			{
+				THeaderSceneReflectionCapture RCHeader;
+				RCHeader.NameIndex = AddStringToList(OutStrings, RC.Name);
+				RCHeader.LinkedCubemapIndex = AddStringToList(OutStrings, RC.LinkedCubemap);
+				RCHeader.Position = RC.Position;
+
+				DataStream.Put(&RCHeader, sizeof(THeaderSceneReflectionCapture));
+			}
+
+			// dependencies
 			for (const auto& A : AssetTextures)
 			{
 				int32 Name = AddStringToList(OutStrings, A);

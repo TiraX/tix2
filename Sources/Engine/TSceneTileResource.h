@@ -26,6 +26,7 @@ namespace tix
 		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
+		uint32 TotalReflectionCaptures;
 		uint32 TotalMeshes;
 		uint32 TotalMeshSections;
 		uint32 TotalInstances;

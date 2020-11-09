@@ -15,7 +15,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_MATERIAL = 1,
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		TIRES_VERSION_CHUNK_SCENE = 1,
-		TIRES_VERSION_CHUNK_SCENETILE = 1,
+		TIRES_VERSION_CHUNK_SCENETILE = 2,	// v2, Add reflection capture support
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -313,12 +313,20 @@ namespace tix
 		aabbox3df BBox;
 
 		// Dependency num
+		int32 NumReflectionCaptures;
 		int32 NumTextures;
 		int32 NumMaterials;
 		int32 NumMaterialInstances;
 		int32 NumMeshes;
 		int32 NumMeshSections;
 		int32 NumInstances;
+	};
+
+	struct THeaderSceneReflectionCapture
+	{
+		int32 NameIndex;
+		int32 LinkedCubemapIndex;
+		vector3df Position;
 	};
 
 	struct THeaderSceneMeshInstance

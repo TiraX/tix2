@@ -13,6 +13,15 @@ namespace tix
 		quaternion Rotation;
 		vector3df Scale;
 	};
+	struct TResReflectionCapture
+	{
+		TString Name;
+		TString LinkedCubemap;
+		int32 Size;
+		float AvgBrightness;
+		float Brightness;
+		vector3df Position;
+	};
 	class TResSceneTileHelper
 	{
 	public:
@@ -29,6 +38,7 @@ namespace tix
 		uint32 MeshesTotal;
 		uint32 MeshSectionsTotal;
 		uint32 InstancesTotal;
+		uint32 ReflectionCapturesTotal;
 
 		
 		TVector<TString> AssetTextures;
@@ -37,6 +47,7 @@ namespace tix
 		TVector<TString> AssetMeshes;
 		TVector<int32> MeshInstanceCount;
 		TVector<int32> MeshSections;
+		TVector<TResReflectionCapture> ReflectionCaptures;
 		TVector<TResInstance> Instances;
 	};
 }

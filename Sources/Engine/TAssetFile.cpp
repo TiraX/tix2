@@ -677,6 +677,7 @@ namespace tix
 			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);
 			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
 			SceneTile->LevelName = GetString(Header->LevelNameIndex);
+			SceneTile->TotalReflectionCaptures = Header->NumReflectionCaptures;
 			SceneTile->TotalMeshes = Header->NumMeshes;
 			SceneTile->TotalMeshSections = Header->NumMeshSections;
 			SceneTile->TotalInstances = Header->NumInstances;
@@ -685,8 +686,25 @@ namespace tix
 			SceneTile->BBox = Header->BBox;
 			// Add mesh sections info to scene tile 
 
+			TAssetLibrary* AssetLib = TAssetLibrary::Get();
+			// Load reflection captures
+			const THeaderSceneReflectionCapture* RCData = (const THeaderSceneReflectionCapture*)SceneTileDataStart;
+			for (int32 rc = 0; rc < Header->NumReflectionCaptures; ++rc)
+			{
+				const THeaderSceneReflectionCapture& RC = RCData[rc];
+				// Load cubemap
+				TString Cubemap = GetString(RC.LinkedCubemapIndex);
+				AssetLib->LoadAssetAysc(Cubemap);
+
+				// Create actor
+				TString Name = GetString(RC.NameIndex);
+				vector3df Position = RC.Position;
+
+				TI_ASSERT(0);
+			}
+
 			// Load assets names
-			const int32* AssetsTextures = (const int32*)(SceneTileDataStart);
+			const int32* AssetsTextures = (const int32*)(SceneTileDataStart + sizeof(THeaderSceneReflectionCapture) * Header->NumReflectionCaptures);
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
@@ -695,8 +713,6 @@ namespace tix
 			const int32* AssetsInstances = MeshInstanceCount + Header->NumMeshes;
 
 			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(AssetsInstances);
-
-			TAssetLibrary * AssetLib = TAssetLibrary::Get();
 
 			// Textures
 			for (int32 t = 0; t < Header->NumTextures; ++t)
