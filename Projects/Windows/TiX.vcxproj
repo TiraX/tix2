@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\Sources\Engine\FArgumentBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FComputeTask.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FEnvLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFrameResources.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FFullScreenRender.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FGPUCommandBuffer.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="..\..\Sources\Engine\FArgumentBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FComputeTask.h" />
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h" />
+    <ClInclude Include="..\..\Sources\Engine\FEnvLight.h" />
     <ClInclude Include="..\..\Sources\Engine\FFrameResources.h" />
     <ClInclude Include="..\..\Sources\Engine\FFullScreenRender.h" />
     <ClInclude Include="..\..\Sources\Engine\FGPUCommandBuffer.h" />

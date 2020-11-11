@@ -689,18 +689,24 @@ namespace tix
 			TAssetLibrary* AssetLib = TAssetLibrary::Get();
 			// Load reflection captures
 			const THeaderSceneReflectionCapture* RCData = (const THeaderSceneReflectionCapture*)SceneTileDataStart;
+			SceneTile->EnvCubemaps.reserve(Header->NumReflectionCaptures);
+			SceneTile->EnvCubemapInfos.reserve(Header->NumReflectionCaptures);
+
 			for (int32 rc = 0; rc < Header->NumReflectionCaptures; ++rc)
 			{
 				const THeaderSceneReflectionCapture& RC = RCData[rc];
 				// Load cubemap
 				TString Cubemap = GetString(RC.LinkedCubemapIndex);
-				AssetLib->LoadAssetAysc(Cubemap);
+				TAssetPtr CubemapAsset = AssetLib->LoadAssetAysc(Cubemap);
+				SceneTile->EnvCubemaps.push_back(CubemapAsset);
 
 				// Create actor
 				TString Name = GetString(RC.NameIndex);
-				vector3df Position = RC.Position;
 
-				TI_ASSERT(0);
+				TSceneTileResource::TEnvCubes CubeInfo;
+				CubeInfo.Radius = 9999.f;
+				CubeInfo.Position = RC.Position;
+				SceneTile->EnvCubemapInfos.push_back(CubeInfo);
 			}
 
 			// Load assets names

@@ -316,6 +316,9 @@
     <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\FEnvLight.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -722,6 +725,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\Math\Matrix3x2.h">
       <Filter>Sources\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\FEnvLight.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

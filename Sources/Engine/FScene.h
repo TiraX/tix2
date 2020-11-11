@@ -63,6 +63,9 @@ namespace tix
 		void AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData);
 		void RemoveSceneMeshBuffer(FMeshBufferPtr InMesh);
 
+		void AddEnvLight(FEnvLightPtr InEnvLight);
+		void RemoveEnvLight(FEnvLightPtr InEnvLight);
+
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
 			return (SceneFlags & Flag) != 0;

@@ -22,6 +22,7 @@ namespace tix
 		RRT_GPU_COMMAND_SIGNATURE,
 		RRT_GPU_COMMAND_BUFFER,
 		RRT_SCENE_TILE,
+		RRT_ENV_LIGHT
 	};
 
 	template<typename T>

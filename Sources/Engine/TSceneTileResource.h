@@ -7,6 +7,7 @@
 
 namespace tix
 {
+	// Hold all resources in a tile, like meshes, instances, etc
 	class TSceneTileResource : public TResource
 	{
 	public:
@@ -26,7 +27,16 @@ namespace tix
 		TString LevelName;
 		vector2di Position;
 		aabbox3df BBox;
+
 		uint32 TotalReflectionCaptures;
+		TVector<TAssetPtr> EnvCubemaps;
+		struct TEnvCubes
+		{
+			vector3df Position;
+			float Radius;
+		};
+		TVector<TEnvCubes> EnvCubemapInfos;
+
 		uint32 TotalMeshes;
 		uint32 TotalMeshSections;
 		uint32 TotalInstances;

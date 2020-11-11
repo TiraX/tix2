@@ -103,4 +103,15 @@ namespace tix
 			SceneMeshes.erase(It);
 		}
 	}
+
+	void FScene::AddEnvLight(FEnvLightPtr InEnvLight)
+	{
+		TI_ASSERT(0);
+	}
+
+	void FScene::RemoveEnvLight(FEnvLightPtr InEnvLight)
+	{
+		TI_ASSERT(0);
+	}
+
 }

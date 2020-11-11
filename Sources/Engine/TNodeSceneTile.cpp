@@ -69,6 +69,7 @@ namespace tix
 
 	TNodeSceneTile::~TNodeSceneTile()
 	{
+		TI_TODO("Remove scene tile resources from FScene, like meshes and env lights");
 	}
 
 	void TNodeSceneTile::UpdateAllTransformation()
@@ -78,96 +79,151 @@ namespace tix
 		// check if Asset is loaded
 		if (SceneTileResource != nullptr)
 		{
-			const uint32 MeshCount = (uint32)SceneTileResource->Meshes.size();
-			if (MeshCount > 0)
+			LoadStaticMeshes();
+			LoadEnvCubemaps();
+		}
+	}
+
+	void TNodeSceneTile::LoadStaticMeshes()
+	{
+		const uint32 MeshCount = (uint32)SceneTileResource->Meshes.size();
+		if (MeshCount > 0)
+		{
+			uint32 LoadedMeshCount = 0;
+			uint32 MeshSectionOffset = 0;
+			for (uint32 m = 0; m < MeshCount; ++m)
 			{
-				uint32 LoadedMeshCount = 0;
-				uint32 MeshSectionOffset = 0;
-				for (uint32 m = 0; m < MeshCount; ++m)
+				TAssetPtr MeshAsset = SceneTileResource->Meshes[m];
+
+				if (MeshAsset != nullptr)
 				{
-					TAssetPtr MeshAsset = SceneTileResource->Meshes[m];
-
-					if (MeshAsset != nullptr)
+					if (MeshAsset->IsLoaded())
 					{
-						if (MeshAsset->IsLoaded())
+						// Gather loaded mesh resources
+						TVector<FPrimitivePtr> LinkedPrimitives;
+						TVector<uint32> PrimitiveIndices;
+
+						const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
+						TI_ASSERT(MeshResources[0]->GetType() == ERES_STATIC_MESH);
+						TStaticMeshPtr StaticMesh = static_cast<TStaticMesh*>(MeshResources[0].get());
+						// MeshResources Include mesh sections and 1 collision set
+						// Mesh sections
+						const uint32 TotalSections = StaticMesh->GetMeshSectionCount();
+						TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
+						LinkedPrimitives.reserve(TotalSections);
+						PrimitiveIndices.reserve(TotalSections);
+						for (uint32 Section = 0; Section < TotalSections; ++Section)
 						{
-							// Gather loaded mesh resources
-							TVector<FPrimitivePtr> LinkedPrimitives;
-							TVector<uint32> PrimitiveIndices;
+							TI_ASSERT(StaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
 
-							const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
-							TI_ASSERT(MeshResources[0]->GetType() == ERES_STATIC_MESH);
-							TStaticMeshPtr StaticMesh = static_cast<TStaticMesh*>(MeshResources[0].get());
-							// MeshResources Include mesh sections and 1 collision set
-							// Mesh sections
-							const uint32 TotalSections = StaticMesh->GetMeshSectionCount();
-							TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
-							LinkedPrimitives.reserve(TotalSections);
-							PrimitiveIndices.reserve(TotalSections);
-							for (uint32 Section = 0 ; Section < TotalSections ; ++ Section)
-							{
-								TI_ASSERT(StaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
+							const TMeshSection& MeshSection = StaticMesh->GetMeshSection(Section);
 
-								const TMeshSection& MeshSection = StaticMesh->GetMeshSection(Section);
-
-								FPrimitivePtr Primitive = ti_new FPrimitive;
-								Primitive->SetMesh(
-									StaticMesh->GetMeshBuffer()->MeshBufferResource,
-									MeshSection.IndexStart,
-									MeshSection.Triangles,
-									MeshSection.DefaultMaterial,
-									SceneTileResource->MeshInstanceBuffer->InstanceResource,
-									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
-									SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
-								);
-								Primitive->SetSceneTilePos(SceneTileResource->Position);
-								LinkedPrimitives.push_back(Primitive);
-								PrimitiveIndices.push_back(MeshSectionOffset + Section);
-							}
-
-							// Add static mesh to scene
-							FMeshBufferPtr OccludeMeshBufferResource = StaticMesh->GetOccludeMesh() == nullptr ? nullptr : StaticMesh->GetOccludeMesh()->MeshBufferResource;
-							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileStaticMeshToFScene,
-								FMeshBufferPtr, StaticMeshResource, StaticMesh->GetMeshBuffer()->MeshBufferResource,
-								FMeshBufferPtr, StaticOccludeMeshResource, OccludeMeshBufferResource,
-								FUniformBufferPtr, ClusterData, StaticMesh->GetMeshBuffer()->MeshClusterDataResource,
-								{
-									FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(StaticMeshResource, StaticOccludeMeshResource, ClusterData);
-								});
-
-
-							// Add primitive to scene
-							ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileMeshPrimitivesToFSceneTile,
-								FSceneTileResourcePtr, RenderThreadSceneTileResource, SceneTileResource->RenderThreadTileResource, 
-								TVector<uint32>, Indices, PrimitiveIndices,
-								TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
-								{
-									const uint32 TotalPrimitives = (uint32)Primitives.size();
-									for (uint32 p = 0 ; p < TotalPrimitives ; ++ p)
-									{
-										RenderThreadSceneTileResource->AddPrimitive(Indices[p], Primitives[p]);
-									}
-								});
-
-							// Remove the reference holder
-							TI_ASSERT(LoadedMeshAssets[m] == nullptr);
-							LoadedMeshAssets[m] = MeshAsset;
-							SceneTileResource->Meshes[m] = nullptr;
-
-							++LoadedMeshCount;
+							FPrimitivePtr Primitive = ti_new FPrimitive;
+							Primitive->SetMesh(
+								StaticMesh->GetMeshBuffer()->MeshBufferResource,
+								MeshSection.IndexStart,
+								MeshSection.Triangles,
+								MeshSection.DefaultMaterial,
+								SceneTileResource->MeshInstanceBuffer->InstanceResource,
+								SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
+								SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
+							);
+							Primitive->SetSceneTilePos(SceneTileResource->Position);
+							LinkedPrimitives.push_back(Primitive);
+							PrimitiveIndices.push_back(MeshSectionOffset + Section);
 						}
-					}
-					else
-					{
+
+						// Add static mesh to scene
+						FMeshBufferPtr OccludeMeshBufferResource = StaticMesh->GetOccludeMesh() == nullptr ? nullptr : StaticMesh->GetOccludeMesh()->MeshBufferResource;
+						ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileStaticMeshToFScene,
+							FMeshBufferPtr, StaticMeshResource, StaticMesh->GetMeshBuffer()->MeshBufferResource,
+							FMeshBufferPtr, StaticOccludeMeshResource, OccludeMeshBufferResource,
+							FUniformBufferPtr, ClusterData, StaticMesh->GetMeshBuffer()->MeshClusterDataResource,
+							{
+								FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(StaticMeshResource, StaticOccludeMeshResource, ClusterData);
+							});
+
+
+						// Add primitive to scene
+						ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileMeshPrimitivesToFSceneTile,
+							FSceneTileResourcePtr, RenderThreadSceneTileResource, SceneTileResource->RenderThreadTileResource,
+							TVector<uint32>, Indices, PrimitiveIndices,
+							TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+							{
+								const uint32 TotalPrimitives = (uint32)Primitives.size();
+								for (uint32 p = 0; p < TotalPrimitives; ++p)
+								{
+									RenderThreadSceneTileResource->AddPrimitive(Indices[p], Primitives[p]);
+								}
+							});
+
+						// Remove the reference holder
+						TI_ASSERT(LoadedMeshAssets[m] == nullptr);
+						LoadedMeshAssets[m] = MeshAsset;
+						SceneTileResource->Meshes[m] = nullptr;
+
 						++LoadedMeshCount;
 					}
-					MeshSectionOffset += SceneTileResource->MeshSectionsCount[m];
 				}
-				TI_ASSERT(LoadedMeshCount <= MeshCount);
-				if (LoadedMeshCount == MeshCount)
+				else
 				{
-					SceneTileResource->Meshes.clear();
+					++LoadedMeshCount;
 				}
+				MeshSectionOffset += SceneTileResource->MeshSectionsCount[m];
+			}
+			TI_ASSERT(LoadedMeshCount <= MeshCount);
+			if (LoadedMeshCount == MeshCount)
+			{
+				SceneTileResource->Meshes.clear();
+			}
+		}
+	}
+
+	void TNodeSceneTile::LoadEnvCubemaps()
+	{
+		const uint32 EnvCubemapCount = (uint32)SceneTileResource->EnvCubemapInfos.size();
+		if (EnvCubemapCount > 0)
+		{
+			uint32 LoadedCubemapCount = 0;
+			for (uint32 c = 0; c < EnvCubemapCount; ++c)
+			{
+				TAssetPtr CubemapAssest = SceneTileResource->EnvCubemaps[c];
+				const TSceneTileResource::TEnvCubes& CubeInfo = SceneTileResource->EnvCubemapInfos[c];
+				if (CubemapAssest != nullptr)
+				{
+					if (CubemapAssest->IsLoaded())
+					{
+						const TVector<TResourcePtr>& CubeResources = CubemapAssest->GetResources();
+						TI_ASSERT(CubeResources[0]->GetType() == ERES_TEXTURE);
+						TTexturePtr CubeTexture = static_cast<TTexture*>(CubeResources[0].get());
+						
+						// Create Env Light Resource
+						FEnvLightPtr EnvLight = ti_new FEnvLight(CubeTexture->TextureResource, CubeInfo.Position);
+
+						// Add Env Light to FScene
+						ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddEnvLightToFScene,
+							FEnvLightPtr, EnvLight, EnvLight,
+							{
+								FRenderThread::Get()->GetRenderScene()->AddEnvLight(EnvLight);
+							});
+
+						// Remove the reference holder
+						TI_ASSERT(EnvLightResources[c] == nullptr);
+						EnvLightResources[c] = EnvLight;
+						SceneTileResource->EnvCubemaps[c] = nullptr;
+
+						++LoadedCubemapCount;
+					}
+				}
+				else
+				{
+					++LoadedCubemapCount;
+				}
+			}
+			TI_ASSERT(LoadedCubemapCount <= EnvCubemapCount);
+			if (LoadedCubemapCount == EnvCubemapCount)
+			{
+				SceneTileResource->EnvCubemaps.clear();
 			}
 		}
 	}
