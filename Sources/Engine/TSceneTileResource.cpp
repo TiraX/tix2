@@ -10,7 +10,7 @@ namespace tix
 {
 	TSceneTileResource::TSceneTileResource()
 		: TResource(ERES_SCENE_TILE)
-		, TotalReflectionCaptures(0)
+		, TotalEnvLights(0)
 		, TotalMeshes(0)
 		, TotalMeshSections(0)
 		, TotalInstances(0)

@@ -28,14 +28,14 @@ namespace tix
 		vector2di Position;
 		aabbox3df BBox;
 
-		uint32 TotalReflectionCaptures;
-		TVector<TAssetPtr> EnvCubemaps;
-		struct TEnvCubes
+		uint32 TotalEnvLights;
+		TVector<TAssetPtr> EnvLights;
+		struct TEnvLightInfo
 		{
 			vector3df Position;
 			float Radius;
 		};
-		TVector<TEnvCubes> EnvCubemapInfos;
+		TVector<TEnvLightInfo> EnvLightInfos;
 
 		uint32 TotalMeshes;
 		uint32 TotalMeshSections;

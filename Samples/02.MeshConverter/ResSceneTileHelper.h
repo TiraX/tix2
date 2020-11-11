@@ -13,7 +13,7 @@ namespace tix
 		quaternion Rotation;
 		vector3df Scale;
 	};
-	struct TResReflectionCapture
+	struct TResEnvLight
 	{
 		TString Name;
 		TString LinkedCubemap;
@@ -47,7 +47,7 @@ namespace tix
 		TVector<TString> AssetMeshes;
 		TVector<int32> MeshInstanceCount;
 		TVector<int32> MeshSections;
-		TVector<TResReflectionCapture> ReflectionCaptures;
+		TVector<TResEnvLight> EnvLights;
 		TVector<TResInstance> Instances;
 	};
 }

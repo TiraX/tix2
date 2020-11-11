@@ -181,24 +181,24 @@ namespace tix
 
 	void TNodeSceneTile::LoadEnvCubemaps()
 	{
-		const uint32 EnvCubemapCount = (uint32)SceneTileResource->EnvCubemapInfos.size();
+		const uint32 EnvCubemapCount = (uint32)SceneTileResource->EnvLightInfos.size();
 		if (EnvCubemapCount > 0)
 		{
 			uint32 LoadedCubemapCount = 0;
 			for (uint32 c = 0; c < EnvCubemapCount; ++c)
 			{
-				TAssetPtr CubemapAssest = SceneTileResource->EnvCubemaps[c];
-				const TSceneTileResource::TEnvCubes& CubeInfo = SceneTileResource->EnvCubemapInfos[c];
-				if (CubemapAssest != nullptr)
+				TAssetPtr EnvLightAsset = SceneTileResource->EnvLights[c];
+				const TSceneTileResource::TEnvLightInfo& EnvLightInfo = SceneTileResource->EnvLightInfos[c];
+				if (EnvLightAsset != nullptr)
 				{
-					if (CubemapAssest->IsLoaded())
+					if (EnvLightAsset->IsLoaded())
 					{
-						const TVector<TResourcePtr>& CubeResources = CubemapAssest->GetResources();
+						const TVector<TResourcePtr>& CubeResources = EnvLightAsset->GetResources();
 						TI_ASSERT(CubeResources[0]->GetType() == ERES_TEXTURE);
 						TTexturePtr CubeTexture = static_cast<TTexture*>(CubeResources[0].get());
 						
 						// Create Env Light Resource
-						FEnvLightPtr EnvLight = ti_new FEnvLight(CubeTexture->TextureResource, CubeInfo.Position);
+						FEnvLightPtr EnvLight = ti_new FEnvLight(CubeTexture->TextureResource, EnvLightInfo.Position);
 
 						// Add Env Light to FScene
 						ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddEnvLightToFScene,
@@ -210,7 +210,7 @@ namespace tix
 						// Remove the reference holder
 						TI_ASSERT(EnvLightResources[c] == nullptr);
 						EnvLightResources[c] = EnvLight;
-						SceneTileResource->EnvCubemaps[c] = nullptr;
+						SceneTileResource->EnvLights[c] = nullptr;
 
 						++LoadedCubemapCount;
 					}
@@ -223,7 +223,7 @@ namespace tix
 			TI_ASSERT(LoadedCubemapCount <= EnvCubemapCount);
 			if (LoadedCubemapCount == EnvCubemapCount)
 			{
-				SceneTileResource->EnvCubemaps.clear();
+				SceneTileResource->EnvLights.clear();
 			}
 		}
 	}

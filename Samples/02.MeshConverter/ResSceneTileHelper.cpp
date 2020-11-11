@@ -13,7 +13,7 @@ namespace tix
 		: MeshesTotal(0)
 		, MeshSectionsTotal(0)
 		, InstancesTotal(0)
-		, ReflectionCaptures(0)
+		, EnvLights(0)
 	{
 	}
 
@@ -47,7 +47,7 @@ namespace tix
 			for (int32 i = 0; i < JReflectionCaptures.Size(); ++i)
 			{
 				TJSONNode JRC = JReflectionCaptures[i];
-				TResReflectionCapture RC;
+				TResEnvLight RC;
 				RC.Name = JRC["name"].GetString();
 				RC.LinkedCubemap = JRC["linked_cubemap"].GetString();
 				RC.Size = JRC["cubemap_size"].GetInt();
@@ -55,7 +55,7 @@ namespace tix
 				RC.Brightness = JRC["brightness"].GetFloat();
 				RC.Position = TJSONUtil::JsonArrayToVector3df(JRC["position"]);
 
-				Helper.ReflectionCaptures.push_back(RC);
+				Helper.EnvLights.push_back(RC);
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace tix
 			SceneTileHeader.Position.Y = (int16)Position.Y;
 			SceneTileHeader.BBox = BBox;
 
-			SceneTileHeader.NumReflectionCaptures = (int32)ReflectionCaptures.size();
+			SceneTileHeader.NumEnvLights = (int32)EnvLights.size();
 			SceneTileHeader.NumTextures = (int32)AssetTextures.size();
 			SceneTileHeader.NumMaterials = (int32)AssetMaterials.size();
 			SceneTileHeader.NumMaterialInstances = (int32)AssetMaterialInstances.size();
@@ -169,15 +169,15 @@ namespace tix
 			SceneTileHeader.NumInstances = (int32)Instances.size();
 
 			// reflections
-			TI_ASSERT(SceneTileHeader.NumReflectionCaptures == ReflectionCaptures.size());
-			for (const auto& RC : ReflectionCaptures)
+			TI_ASSERT(SceneTileHeader.NumEnvLights == EnvLights.size());
+			for (const auto& EnvLight : EnvLights)
 			{
-				THeaderSceneReflectionCapture RCHeader;
-				RCHeader.NameIndex = AddStringToList(OutStrings, RC.Name);
-				RCHeader.LinkedCubemapIndex = AddStringToList(OutStrings, RC.LinkedCubemap);
-				RCHeader.Position = RC.Position;
+				THeaderEnvLight EnvLightHeader;
+				EnvLightHeader.NameIndex = AddStringToList(OutStrings, EnvLight.Name);
+				EnvLightHeader.LinkedCubemapIndex = AddStringToList(OutStrings, EnvLight.LinkedCubemap);
+				EnvLightHeader.Position = EnvLight.Position;
 
-				DataStream.Put(&RCHeader, sizeof(THeaderSceneReflectionCapture));
+				DataStream.Put(&EnvLightHeader, sizeof(THeaderEnvLight));
 			}
 
 			// dependencies

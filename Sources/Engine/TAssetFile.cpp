@@ -677,7 +677,7 @@ namespace tix
 			const THeaderSceneTile* Header = (const THeaderSceneTile*)(HeaderStart);
 			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
 			SceneTile->LevelName = GetString(Header->LevelNameIndex);
-			SceneTile->TotalReflectionCaptures = Header->NumReflectionCaptures;
+			SceneTile->TotalEnvLights = Header->NumEnvLights;
 			SceneTile->TotalMeshes = Header->NumMeshes;
 			SceneTile->TotalMeshSections = Header->NumMeshSections;
 			SceneTile->TotalInstances = Header->NumInstances;
@@ -688,29 +688,29 @@ namespace tix
 
 			TAssetLibrary* AssetLib = TAssetLibrary::Get();
 			// Load reflection captures
-			const THeaderSceneReflectionCapture* RCData = (const THeaderSceneReflectionCapture*)SceneTileDataStart;
-			SceneTile->EnvCubemaps.reserve(Header->NumReflectionCaptures);
-			SceneTile->EnvCubemapInfos.reserve(Header->NumReflectionCaptures);
+			const THeaderEnvLight* EnvLightData = (const THeaderEnvLight*)SceneTileDataStart;
+			SceneTile->EnvLights.reserve(Header->NumEnvLights);
+			SceneTile->EnvLightInfos.reserve(Header->NumEnvLights);
 
-			for (int32 rc = 0; rc < Header->NumReflectionCaptures; ++rc)
+			for (int32 rc = 0; rc < Header->NumEnvLights; ++rc)
 			{
-				const THeaderSceneReflectionCapture& RC = RCData[rc];
+				const THeaderEnvLight& RC = EnvLightData[rc];
 				// Load cubemap
 				TString Cubemap = GetString(RC.LinkedCubemapIndex);
 				TAssetPtr CubemapAsset = AssetLib->LoadAssetAysc(Cubemap);
-				SceneTile->EnvCubemaps.push_back(CubemapAsset);
+				SceneTile->EnvLights.push_back(CubemapAsset);
 
 				// Create actor
 				TString Name = GetString(RC.NameIndex);
 
-				TSceneTileResource::TEnvCubes CubeInfo;
-				CubeInfo.Radius = 9999.f;
-				CubeInfo.Position = RC.Position;
-				SceneTile->EnvCubemapInfos.push_back(CubeInfo);
+				TSceneTileResource::TEnvLightInfo EnvLightInfo;
+				EnvLightInfo.Radius = 9999.f;
+				EnvLightInfo.Position = RC.Position;
+				SceneTile->EnvLightInfos.push_back(EnvLightInfo);
 			}
 
 			// Load assets names
-			const int32* AssetsTextures = (const int32*)(SceneTileDataStart + sizeof(THeaderSceneReflectionCapture) * Header->NumReflectionCaptures);
+			const int32* AssetsTextures = (const int32*)(SceneTileDataStart + sizeof(THeaderEnvLight) * Header->NumEnvLights);
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;

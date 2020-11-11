@@ -313,7 +313,7 @@ namespace tix
 		aabbox3df BBox;
 
 		// Dependency num
-		int32 NumReflectionCaptures;
+		int32 NumEnvLights;
 		int32 NumTextures;
 		int32 NumMaterials;
 		int32 NumMaterialInstances;
@@ -322,7 +322,7 @@ namespace tix
 		int32 NumInstances;
 	};
 
-	struct THeaderSceneReflectionCapture
+	struct THeaderEnvLight
 	{
 		int32 NameIndex;
 		int32 LinkedCubemapIndex;
