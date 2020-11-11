@@ -40,6 +40,8 @@ namespace tix
 			TI_ASSERT(NodeSceneTile->LoadedMeshAssets.empty());
 			// Init Loaded mesh asset array.
 			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
+			// Init Loaded env light array
+			NodeSceneTile->EnvLightResources.resize(NodeSceneTile->SceneTileResource->EnvLights.size());
 		}
 		else
 		{
@@ -181,7 +183,7 @@ namespace tix
 
 	void TNodeSceneTile::LoadEnvCubemaps()
 	{
-		const uint32 EnvCubemapCount = (uint32)SceneTileResource->EnvLightInfos.size();
+		const uint32 EnvCubemapCount = (uint32)SceneTileResource->EnvLights.size();
 		if (EnvCubemapCount > 0)
 		{
 			uint32 LoadedCubemapCount = 0;

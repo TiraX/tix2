@@ -106,7 +106,8 @@ namespace tix
 
 	void FScene::AddEnvLight(FEnvLightPtr InEnvLight)
 	{
-		TI_ASSERT(0);
+		TI_TODO("Create quad-tree to fast find nearest Env Light.");
+		EnvLight = InEnvLight;
 	}
 
 	void FScene::RemoveEnvLight(FEnvLightPtr InEnvLight)

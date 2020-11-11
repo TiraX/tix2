@@ -130,5 +130,8 @@ namespace tix
 
 		// Scene tiles
 		THMap<vector2di, FSceneTileResourcePtr> SceneTiles;
+
+		// Env Lights, leave ONE envlight temp, should support multi env light in futher
+		FEnvLightPtr EnvLight;
 	};
 } // end namespace tix
