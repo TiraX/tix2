@@ -2143,17 +2143,26 @@ namespace tix
 					{
 						if (BindDesc.Type == D3D_SIT_TEXTURE)
 						{
-							TI_ASSERT(BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
-								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors);
-							return (int32)i;
+							// If this param in the range of this descriptor table,
+							// If NOT, try next table
+							if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
+							{
+								return (int32)i;
+							}
 						}
 					}
 					else if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
 					{
 						if (BindDesc.Type == D3D_SIT_CBUFFER)
 						{
-							TI_ASSERT(BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
-								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors);
+							// If this param in the range of this descriptor table,
+							// If NOT, try next table
+							if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
+							{
+								return (int32)i;
+							}
 							return (int32)i;
 						}
 					}

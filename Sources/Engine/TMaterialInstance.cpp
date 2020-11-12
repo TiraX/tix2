@@ -30,7 +30,9 @@ namespace tix
 
 			if (ParamValueBuffer != nullptr)
 			{
-				FUniformBufferPtr UniformBuffer = FRHI::Get()->CreateUniformBuffer(ParamValueBuffer->GetLength(), 1);
+				uint32 UBFlag = ParamValueBuffer->GetLength() < 4096 ? UB_FLAG_INTERMEDIATE : 0;
+				FUniformBufferPtr UniformBuffer = FRHI::Get()->CreateUniformBuffer(ParamValueBuffer->GetLength(), 1, UBFlag);
+				UniformBuffer->SetResourceName(GetResourceName());
 
 				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIUniformBuffer,
 					FUniformBufferPtr, UniformBuffer, UniformBuffer,

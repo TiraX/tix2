@@ -92,16 +92,6 @@ namespace tix
 		{
 			return PixelArguments;
 		}
-        
-        int32 GetVertexComputeArgumentBufferBindingIndex() const
-        {
-            return VertexComputeArgumentBufferBindingIndex;
-        }
-        
-        int32 GetPixelArgumentBufferBindingIndex() const
-        {
-            return PixelArgumentBufferBindingIndex;
-        }
 
 	protected:
 		void SortArguments();
@@ -118,7 +108,5 @@ namespace tix
 #if DEBUG_SHADER_BINDING_TYPE
 		TVector<int32> BindingTypes;
 #endif
-        int32 VertexComputeArgumentBufferBindingIndex;
-		int32 PixelArgumentBufferBindingIndex;
 	};
 }

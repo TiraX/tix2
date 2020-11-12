@@ -116,19 +116,11 @@ namespace tix
 			break;
 #endif
 		case ARGUMENT_MI_ARGUMENTS:
+			RHI->SetArgumentBuffer(Argument.BindingIndex, Primitive->GetArgumentBuffer());
 			break;
 		default:
 			TI_ASSERT(0);
 			break;
-		}
-	}
-
-	void FDefaultRenderer::BindMaterialInstanceArgument(FRHI * RHI, FShaderBindingPtr InShaderBinding, FArgumentBufferPtr ArgumentBuffer)
-	{
-        int32 BindingIndex = InShaderBinding->GetPixelArgumentBufferBindingIndex();
-		if (BindingIndex >= 0)
-		{
-			RHI->SetArgumentBuffer(BindingIndex, ArgumentBuffer);
 		}
 	}
 
@@ -149,9 +141,6 @@ namespace tix
 		{
 			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, Primitive);
 		}
-
-		TI_TODO("Bind VS with different Argument from PS");
-		BindMaterialInstanceArgument(RHI, ShaderBinding, Primitive->GetArgumentBuffer());
 	}
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer)
@@ -171,8 +160,5 @@ namespace tix
 		{
 			BindEngineBuffer(RHI, ESS_PIXEL_SHADER, Arg, Scene, nullptr);
 		}
-
-		TI_TODO("Bind VS with different Argument from PS");
-		BindMaterialInstanceArgument(RHI, ShaderBinding, ArgumentBuffer);
 	}
 }
