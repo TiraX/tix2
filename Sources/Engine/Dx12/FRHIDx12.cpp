@@ -2141,28 +2141,23 @@ namespace tix
 					const D3D12_DESCRIPTOR_RANGE& DescriptorRange = DescriptorTable.pDescriptorRanges[range];
 					if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
 					{
-						if (BindDesc.Type == D3D_SIT_TEXTURE)
+						// If this param in the range of this descriptor table,
+						// If NOT, try next table
+						if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+							BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
 						{
-							// If this param in the range of this descriptor table,
-							// If NOT, try next table
-							if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
-								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
-							{
-								return (int32)i;
-							}
+							TI_ASSERT(BindDesc.Type == D3D_SIT_TEXTURE);
+							return (int32)i;
 						}
 					}
 					else if (DescriptorRange.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
 					{
-						if (BindDesc.Type == D3D_SIT_CBUFFER)
+						// If this param in the range of this descriptor table,
+						// If NOT, try next table
+						if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
+							BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
 						{
-							// If this param in the range of this descriptor table,
-							// If NOT, try next table
-							if (BindDesc.BindPoint >= DescriptorRange.BaseShaderRegister &&
-								BindDesc.BindPoint < DescriptorRange.BaseShaderRegister + DescriptorRange.NumDescriptors)
-							{
-								return (int32)i;
-							}
+							TI_ASSERT(BindDesc.Type == D3D_SIT_CBUFFER);
 							return (int32)i;
 						}
 					}
@@ -2426,7 +2421,7 @@ namespace tix
 			if (Arg->GetResourceType() == RRT_UNIFORM_BUFFER)
 			{
 				FUniformBufferPtr ArgUB = static_cast<FUniformBuffer*>(Arg.get());
-				ArgumentDx12->ResourceTable->PutUniformBufferInTable(ArgUB, i);
+				ArgumentDx12->ResourceTable->PutConstantBufferInTable(ArgUB, i);
 			}
 			else if (Arg->GetResourceType() == RRT_TEXTURE)
 			{
