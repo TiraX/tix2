@@ -15,8 +15,20 @@ namespace tix
 		FEnvLight(FTexturePtr InCubemap, const vector3df& InPosition);
 		virtual ~FEnvLight();
 
+		FTexturePtr GetEnvCubemap()
+		{
+			return EnvCubemap;
+		}
+
+		FRenderResourceTablePtr GetResourceTable()
+		{
+			return ResourceTable;
+		}
+
 	private:
 		FTexturePtr EnvCubemap;
 		vector3df Position;
+
+		FRenderResourceTablePtr ResourceTable;
 	};
 }

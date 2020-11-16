@@ -63,7 +63,7 @@ namespace tix
 		void AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData);
 		void RemoveSceneMeshBuffer(FMeshBufferPtr InMesh);
 
-		void AddEnvLight(FEnvLightPtr InEnvLight);
+		void AddEnvLight(FTexturePtr CubeTexture, const vector3df& Position);
 		void RemoveEnvLight(FEnvLightPtr InEnvLight);
 
 		bool HasSceneFlag(SceneFlag Flag) const
@@ -81,7 +81,7 @@ namespace tix
 			SceneFlags = 0;
 		}
 
-		FSceneLights * GetSceneLights()
+		FSceneLights* GetSceneLights()
 		{
 			return SceneLights;
 		}
@@ -109,6 +109,11 @@ namespace tix
 		const THMap<FMeshBufferPtr, FSceneMeshInfo>& GetSceneMeshes() const
 		{
 			return SceneMeshes;
+		}
+
+		FEnvLightPtr FindNearestEnvLight(const vector3df& Pos)
+		{
+			return EnvLight;
 		}
 	private:
 		void PrepareViewUniforms();

@@ -34,6 +34,10 @@ namespace tix
 		{
 			vector3df Position;
 			float Radius;
+
+			TEnvLightInfo()
+				: Radius(0.f)
+			{}
 		};
 		TVector<TEnvLightInfo> EnvLightInfos;
 

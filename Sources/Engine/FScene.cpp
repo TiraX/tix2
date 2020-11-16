@@ -104,10 +104,10 @@ namespace tix
 		}
 	}
 
-	void FScene::AddEnvLight(FEnvLightPtr InEnvLight)
+	void FScene::AddEnvLight(FTexturePtr CubeTexture, const vector3df& Position)
 	{
 		TI_TODO("Create quad-tree to fast find nearest Env Light.");
-		EnvLight = InEnvLight;
+		EnvLight = ti_new FEnvLight(CubeTexture, Position);
 	}
 
 	void FScene::RemoveEnvLight(FEnvLightPtr InEnvLight)

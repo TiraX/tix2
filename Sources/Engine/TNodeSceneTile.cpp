@@ -41,7 +41,7 @@ namespace tix
 			// Init Loaded mesh asset array.
 			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
 			// Init Loaded env light array
-			NodeSceneTile->EnvLightResources.resize(NodeSceneTile->SceneTileResource->EnvLights.size());
+			NodeSceneTile->LoadedEnvLightInfos.resize(NodeSceneTile->SceneTileResource->EnvLightInfos.size());
 		}
 		else
 		{
@@ -198,20 +198,18 @@ namespace tix
 						const TVector<TResourcePtr>& CubeResources = EnvLightAsset->GetResources();
 						TI_ASSERT(CubeResources[0]->GetType() == ERES_TEXTURE);
 						TTexturePtr CubeTexture = static_cast<TTexture*>(CubeResources[0].get());
-						
-						// Create Env Light Resource
-						FEnvLightPtr EnvLight = ti_new FEnvLight(CubeTexture->TextureResource, EnvLightInfo.Position);
 
 						// Add Env Light to FScene
-						ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddEnvLightToFScene,
-							FEnvLightPtr, EnvLight, EnvLight,
+						ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddEnvLightToFScene,
+							FTexturePtr, CubeTexture, CubeTexture->TextureResource,
+							vector3df, Position, EnvLightInfo.Position,
 							{
-								FRenderThread::Get()->GetRenderScene()->AddEnvLight(EnvLight);
+								FRenderThread::Get()->GetRenderScene()->AddEnvLight(CubeTexture, Position);
 							});
 
 						// Remove the reference holder
-						TI_ASSERT(EnvLightResources[c] == nullptr);
-						EnvLightResources[c] = EnvLight;
+						TI_ASSERT(LoadedEnvLightInfos[c].Radius == 0.f);
+						LoadedEnvLightInfos[c] = EnvLightInfo;
 						SceneTileResource->EnvLights[c] = nullptr;
 
 						++LoadedCubemapCount;

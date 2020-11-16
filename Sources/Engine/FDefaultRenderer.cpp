@@ -103,6 +103,13 @@ namespace tix
 		case ARGUMENT_EB_LIGHTS:
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);
 			break;
+		case ARGUMENT_EB_ENV_CUBE:
+		{
+			TI_TODO("Env Light should use the nearest with Primitive, associate with Primitive Buffer. Remove ARGUMENT_EB_ENV_CUBE in future");
+			FEnvLightPtr EnvLight = Scene->FindNearestEnvLight(vector3df());
+			RHI->SetRenderResourceTable(Argument.BindingIndex, EnvLight->GetResourceTable());
+		}
+			break;
 #if (COMPILE_WITH_RHI_METAL)
         case ARGUMENT_EB_VT_INDIRECT:
             RHI->SetShaderTexture(Argument.BindingIndex, FVTSystem::Get()->GetVTIndirectTexture());

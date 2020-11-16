@@ -13,7 +13,7 @@ namespace tix
 		DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, VTDebugInfo)
 	END_UNIFORM_BUFFER_STRUCT(FPrimitiveUniformBuffer)
 
-		class FPrimitive : public IReferenceCounted
+	class FPrimitive : public IReferenceCounted
 	{
 	public:
 		enum {
