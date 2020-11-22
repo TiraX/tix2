@@ -100,14 +100,18 @@ namespace tix
 	inline vector3df LongLatToPosition(const vector2df& Coord)
 	{
 		float Lat = - (Coord.Y - 0.5f) * PI;
-		float Long = Coord.X * PI * 2.f;
+		// Long coord offset PI/2 to match unreal way.
+		float Long = Coord.X * PI * 2.f + PI * 0.5f;
 
 		vector3df Result;
 		Result.X = cos(Lat) * cos(Long);
 		Result.Y = cos(Lat) * sin(Long);
 		Result.Z = sin(Lat);
 
-		return Result;
+
+		// fix this with unreal way.
+		// this makes it with the Unreal way (z and y are flipped)
+		return vector3df(Result.X, Result.Z, Result.Y);
 	}
 
 	SColorf SampleLongLat(TImage* LongLat, const vector3df& Dir, int32 Mip)
