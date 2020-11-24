@@ -2120,7 +2120,27 @@ namespace tix
 		return true;
 	}
 
-	inline int32 GetBindIndex(const D3D12_SHADER_INPUT_BIND_DESC& BindDesc, const D3D12_ROOT_SIGNATURE_DESC& RSDesc)
+	inline D3D12_SHADER_VISIBILITY GetVisibility(E_SHADER_STAGE Stage)
+	{
+		switch (Stage)
+		{
+		case ESS_VERTEX_SHADER:
+			return D3D12_SHADER_VISIBILITY_VERTEX;
+		case ESS_PIXEL_SHADER:
+			return D3D12_SHADER_VISIBILITY_PIXEL;
+		case ESS_DOMAIN_SHADER:
+			return D3D12_SHADER_VISIBILITY_DOMAIN;
+		case ESS_HULL_SHADER:
+			return D3D12_SHADER_VISIBILITY_HULL;
+		case ESS_GEOMETRY_SHADER:
+			return D3D12_SHADER_VISIBILITY_GEOMETRY;
+		default:
+			TI_ASSERT(0);
+			break;
+		}
+	}
+
+	inline int32 GetBindIndex(const D3D12_SHADER_INPUT_BIND_DESC& BindDesc, const D3D12_ROOT_SIGNATURE_DESC& RSDesc, E_SHADER_STAGE Stage)
 	{
 		if (BindDesc.Type == D3D_SIT_SAMPLER)
 		{
@@ -2131,6 +2151,11 @@ namespace tix
 		for (uint32 i = 0; i < RSDesc.NumParameters; ++i)
 		{
 			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
+			// check for shader stage visibility
+			if (Parameter.ShaderVisibility != GetVisibility(Stage))
+			{
+				continue;
+			}
 			switch (Parameter.ParameterType)
 			{
 			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
@@ -2319,7 +2344,7 @@ namespace tix
 						{
 							D3D12_SHADER_INPUT_BIND_DESC BindDescriptor;
 							VALIDATE_HRESULT(ShaderReflection->GetResourceBindingDesc(r, &BindDescriptor));
-							int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc);
+							int32 BindIndex = GetBindIndex(BindDescriptor, *RSDesc, (E_SHADER_STAGE)s);
 							if (BindIndex >= 0)
 							{
 								TString BindName = BindDescriptor.Name;

@@ -54,7 +54,7 @@ namespace tix
 			ViewUniformBuffer->UniformBufferData[0].ViewProjection = VPInfo.MatProj * VPInfo.MatView;
 			ViewUniformBuffer->UniformBufferData[0].ViewDir = VPInfo.CamDir;
 			ViewUniformBuffer->UniformBufferData[0].ViewPos = VPInfo.CamPos;
-			ViewUniformBuffer->UniformBufferData[0].MainLightDirection = EnvInfo.MainLightDir;
+			ViewUniformBuffer->UniformBufferData[0].MainLightDirection = -EnvInfo.MainLightDir;
 			ViewUniformBuffer->UniformBufferData[0].MainLightColor = EnvInfo.MainLightColor * EnvInfo.MainLightIntensity;
 
 			ViewUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
