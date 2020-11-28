@@ -729,6 +729,9 @@
     <ClInclude Include="..\..\Sources\Engine\FEnvLight.h">
       <Filter>Sources\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Math\FSHVector.h">
+      <Filter>Sources\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Sources\Engine\Shaders\dx12\FullScreenPS.hlsl">

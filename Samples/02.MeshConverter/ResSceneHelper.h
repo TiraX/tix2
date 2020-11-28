@@ -36,9 +36,19 @@ namespace tix
 		{}
 	};
 
+	struct TSkyIrradianceSH3
+	{
+		float SH3_Raw[FSHVectorRGB3::NumTotalFloats];
+		TSkyIrradianceSH3()
+		{
+			memset(SH3_Raw, 0, sizeof(SH3_Raw));
+		}
+	};
+
 	struct TSceneEnvironment
 	{
 		TSceneEnvSunLight SunLight;
+		TSkyIrradianceSH3 SkyLight;
 	};
 
 	class TResSceneHelper

@@ -14,7 +14,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
 		TIRES_VERSION_CHUNK_MATERIAL = 1,
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
-		TIRES_VERSION_CHUNK_SCENE = 1,
+		TIRES_VERSION_CHUNK_SCENE = 2,	// v2, Add sky light SH3 export
 		TIRES_VERSION_CHUNK_SCENETILE = 2,	// v2, Add reflection capture support
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
@@ -266,9 +266,12 @@ namespace tix
 		int32 NameIndex;
 
 		// Environment
+		//   Sun light
 		vector3df MainLightDirection;
 		SColorf MainLightColor;
 		float MainLightIntensity;
+		//   Sky light
+		float SkyLight_SH3[FSHVectorRGB3::NumTotalFloats];
 
 		// Camera Info
 		int32 NumCameras;

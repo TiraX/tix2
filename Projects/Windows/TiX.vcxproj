@@ -170,6 +170,7 @@
     <ClInclude Include="..\..\Sources\Engine\IReferenceCounted.h" />
     <ClInclude Include="..\..\Sources\Engine\math\Aabbox3d.h" />
     <ClInclude Include="..\..\Sources\Engine\math\FMatrix.h" />
+    <ClInclude Include="..\..\Sources\Engine\Math\FSHVector.h" />
     <ClInclude Include="..\..\Sources\Engine\math\FVector.h" />
     <ClInclude Include="..\..\Sources\Engine\math\half.hpp" />
     <ClInclude Include="..\..\Sources\Engine\math\Line2d.h" />

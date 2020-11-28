@@ -2136,7 +2136,7 @@ namespace tix
 			return D3D12_SHADER_VISIBILITY_GEOMETRY;
 		default:
 			TI_ASSERT(0);
-			break;
+			return D3D12_SHADER_VISIBILITY_ALL;
 		}
 	}
 

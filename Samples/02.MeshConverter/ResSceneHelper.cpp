@@ -39,6 +39,10 @@ namespace tix
 			Helper.Environment.SunLight.Direction = TJSONUtil::JsonArrayToVector3df(JSunLight["direction"]);
 			Helper.Environment.SunLight.Color = TJSONUtil::JsonArrayToSColorf(JSunLight["color"]);
 			Helper.Environment.SunLight.Intensity = JSunLight["intensity"].GetFloat();
+
+			// Sky light
+			TJSONNode JSkyLight = JEnv["sky_light"];
+			TJSONUtil::JsonArrayToFloatArray(JSkyLight["irradiance_sh3"], Helper.Environment.SkyLight.SH3_Raw, FSHVectorRGB3::NumTotalFloats);
 		}
 
 		// Load cameras. 
@@ -128,6 +132,7 @@ namespace tix
 			Define.MainLightDirection = Environment.SunLight.Direction;
 			Define.MainLightColor = Environment.SunLight.Color;
 			Define.MainLightIntensity = Environment.SunLight.Intensity;
+			memcpy(Define.SkyLight_SH3, Environment.SkyLight.SH3_Raw, sizeof(float) * FSHVectorRGB3::NumTotalFloats);
 
 			// Cameras
 			Define.NumCameras = (int32)Cameras.size();

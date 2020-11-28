@@ -97,6 +97,11 @@ namespace tix
 			}
 		}
 
+		static inline float Sqrt(float v)
+		{
+			return sqrtf(v);
+		}
+
 		static inline float DegToRad(const float Degree)
 		{
 			return Degree * DEGTORAD;
@@ -311,3 +316,4 @@ namespace tix
 #include "Math/Triangle3d.h"
 #include "Math/FMatrix.h"
 #include "Math/FVector.h"
+#include "Math/FSHVector.h"

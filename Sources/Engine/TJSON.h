@@ -236,6 +236,14 @@ namespace tix
 
 			return Result;
 		}
+		static void JsonArrayToFloatArray(TJSONNode ArrayNode, float* OutArray, int32 Count)
+		{
+			TI_ASSERT(ArrayNode.IsArray() && ArrayNode.Size() == Count);
+			for (int32 i = 0; i < Count; i++)
+			{
+				OutArray[i] = ArrayNode[i].GetFloat();
+			}
+		}
 
 	};
 }
