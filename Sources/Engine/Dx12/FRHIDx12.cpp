@@ -1338,9 +1338,10 @@ namespace tix
 			pOptimizedClearValue = &ClearValue;
 		}
 
+		CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		TexDx12->TextureResource.CreateResource(
 			D3dDevice.Get(),
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			&HeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&TextureDx12Desc,
 			D3D12_RESOURCE_STATE_COMMON,
@@ -1407,9 +1408,10 @@ namespace tix
 			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
+			CD3DX12_HEAP_PROPERTIES DefaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 			TexDx12->TextureResource.CreateResource(
 				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				&DefaultHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&TextureDx12Desc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
@@ -1423,10 +1425,12 @@ namespace tix
 		const uint64 uploadBufferSize = GetRequiredIntermediateSize(D3dDevice.Get(), TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
 
 		// Create the GPU upload buffer.
+		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC UploadBuffer = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			&UploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+			&UploadBuffer,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&TextureUploadHeap)));
@@ -1497,9 +1501,10 @@ namespace tix
 			TextureDx12Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 			TextureDx12Desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
+			CD3DX12_HEAP_PROPERTIES DefaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 			TexDx12->TextureResource.CreateResource(
 				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				&DefaultHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&TextureDx12Desc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
@@ -1515,10 +1520,12 @@ namespace tix
 		const uint64 uploadBufferSize = GetRequiredIntermediateSize(D3dDevice.Get(), TexDx12->TextureResource.GetResource().Get(), 0, SubResourceNum);
 
 		// Create the GPU upload buffer.
+		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC UploadBuffer = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
 		VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			&UploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+			&UploadBuffer,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&TextureUploadHeap)));
@@ -1723,9 +1730,10 @@ namespace tix
 			}
 			CD3DX12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
+			CD3DX12_HEAP_PROPERTIES DefaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 			UniformBufferDx12->BufferResource.CreateResource(
 				D3dDevice.Get(),
-				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				&DefaultHeapProperties,
 				D3D12_HEAP_FLAG_NONE,
 				&BufferDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
