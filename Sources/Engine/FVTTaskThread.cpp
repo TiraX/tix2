@@ -183,7 +183,7 @@ namespace tix
 			FVTSystem::FPageLoadInfo PageLoadInfo;
 			PageLoadInfo.AtlasLocation = Location;
 			PageLoadInfo.MipLevel = (uint32)MipLevel;
-			VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
+			//VTSystem->GetPageLoadInfoByPageIndex(PageIndex, PageLoadInfo);
 			VTTaskOrder->push_back(PageIndex);
 			(*VTLoadTasks)[PageIndex] = PageLoadInfo;
 #endif
@@ -372,12 +372,13 @@ namespace tix
 			TTexturePtr Texture = Loader.LoadTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
 
 			// Send to render thread to init render resource of this texture
-			ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(FVTAddLoadedPages,
+			ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(VTAddLoadedPages,
 				uint32, PageIndex, Task.PageIndex[i],
+				uint32, MipLevel, Task.MipLevel[i],
 				uint32, AtlasLocation, Task.AtlasLocation[i],
 				TTexturePtr, TextureData, Texture,
 				{
-					FVTSystem::Get()->AddVTPageData(PageIndex, AtlasLocation, TextureData);
+					FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, TextureData);
 				});
 		}
 #endif
