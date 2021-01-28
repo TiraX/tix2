@@ -14,7 +14,8 @@ namespace tix
 		virtual ~TThread();
 
 		static TThreadId GetThreadId();
-		static void	ThreadSleep(uint32 milliseconds);
+		static void ThreadSleep(uint32 milliseconds);
+		static void ThreadSleepAccurate(double milliseconds);
 
 		static void IndicateGameThread();
 		static void IndicateRenderThread();

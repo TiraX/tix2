@@ -160,7 +160,7 @@ namespace tix
 		Tickers.push_back(Ticker);
 	}
 
-	static const uint64 FrameInterval = 33;
+	static const uint64 FrameInterval = 16;
 
 	void TEngine::Start()
 	{
@@ -238,7 +238,7 @@ namespace tix
 		uint32 TimePast = (uint32)(TTimer::GetCurrentTimeMillis() - CurrentFrameTime);
 		if (TimePast < FrameInterval)
 		{
-			TThread::ThreadSleep(FrameInterval - TimePast);
+			TThread::ThreadSleepAccurate(double(FrameInterval - TimePast));
 		}
 	}
 
@@ -249,7 +249,7 @@ namespace tix
 		static const int32 GameThreadFramesAhead = 1;
 		while (RT->GetTriggerNum() >= GameThreadFramesAhead)
 		{
-			TThread::ThreadSleep(10);
+			TThread::ThreadSleep(1);
 		}
 
 		RT->TriggerRender();

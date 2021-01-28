@@ -31,7 +31,36 @@ namespace tix
 
 	void TThread::ThreadSleep(uint32 milliseconds)
 	{
-        std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+		std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+	}
+
+	void TThread::ThreadSleepAccurate(double milliseconds)
+	{
+		// from https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
+		static double Estimate = 5;
+		static double Mean = 5;
+		static double M2 = 0;
+		static uint64 Count = 1;
+		while (milliseconds > Estimate)
+		{
+			auto TimeStart = std::chrono::high_resolution_clock::now();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			auto TimeEnd = std::chrono::high_resolution_clock::now();
+
+			double TimeElapsed = (TimeEnd - TimeStart).count() / 1e6 ;
+			milliseconds -= TimeElapsed;
+
+			++Count;
+			double Delta = TimeElapsed - Mean;
+			Mean += Delta / Count;
+			M2 += Delta * (TimeElapsed - Mean);
+			double StdDev = sqrt(M2 / (Count - 1));
+			Estimate = Mean + StdDev;
+		}
+
+		// spin lock
+		auto TimeStart = std::chrono::high_resolution_clock::now();
+		while ((std::chrono::high_resolution_clock::now() - TimeStart).count() / 1e6 < milliseconds);
 	}
 
 	void TThread::IndicateGameThread()
