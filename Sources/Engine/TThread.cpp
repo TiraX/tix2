@@ -97,6 +97,7 @@ namespace tix
 	{
 		TThread* t = (TThread*)param;
 		t->SetThreadName();
+		t->SetThreadDescription();
 
 		t->OnThreadStart();
 
@@ -186,6 +187,35 @@ namespace tix
         [[NSThread currentThread] setName: NameStr];
 #else
 #error("TThread::SetThreadName() Not implement for other platform yet.")
+#endif
+	}
+
+	void TThread::SetThreadDescription()
+	{
+#ifdef TI_PLATFORM_WIN32
+		// From UE4
+		// SetThreadDescription is only available from Windows 10 version 1607 / Windows Server 2016
+		//
+		// So in order to be compatible with older Windows versions we probe for the API at runtime
+		// and call it only if available.
+
+		typedef HRESULT(WINAPI* SetThreadDescriptionFnPtr)(HANDLE hThread, PCWSTR lpThreadDescription);
+
+		// Use thread name as description
+		TWString ThreadDescription = FromString(ThreadName);
+#pragma warning( push )
+#pragma warning( disable: 4191 )	// unsafe conversion from 'type of expression' to 'type required'
+		static SetThreadDescriptionFnPtr RealSetThreadDescription = (SetThreadDescriptionFnPtr)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "SetThreadDescription");
+#pragma warning( pop )
+
+		if (RealSetThreadDescription)
+		{
+			RealSetThreadDescription(::GetCurrentThread(), ThreadDescription.c_str());
+		}
+#elif defined (TI_PLATFORM_IOS)
+
+#else
+#error("TThread::SetThreadDescription() Not implement for other platform yet.")
 #endif
 	}
 }

@@ -41,6 +41,7 @@ namespace tix
 	private:
 		static void* ThreadExecute(void* param);
 		void SetThreadName();
+		void SetThreadDescription();
 	protected:
 		bool IsRunning;
 		thread * Thread;
