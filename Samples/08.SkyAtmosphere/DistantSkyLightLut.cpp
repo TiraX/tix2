@@ -43,8 +43,8 @@ void FDistantSkyLightLutCS::PrepareResources(FRHI* RHI)
 	{
 		for (uint32 j = 0; j < GroupSize; ++j)
 		{
-			const float u0 = (float(i) + randomUnit()) * GroupSizeInv;
-			const float u1 = (float(j) + randomUnit()) * GroupSizeInv;
+			const float u0 = (float(i) + TMath::RandomUnit()) * GroupSizeInv;
+			const float u1 = (float(j) + TMath::RandomUnit()) * GroupSizeInv;
 
 			const float a = 1.0f - 2.0f * u0;
 			const float b = sqrt(1.0f - a * a);
