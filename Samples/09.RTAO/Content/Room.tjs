@@ -1,0 +1,34 @@
+{
+	"name": "Room",
+	"type": "scene",
+	"version": 1,
+	"desc": "Scene tiles information from TiX exporter.",
+	"mesh_total": 38,
+	"instances_total": 284,
+	"texture_total": "Unknown Yet",
+	"cameras": [
+		{
+			"location": [ -0.6520879864692688, 2.5008499622344971, 1.0617337226867676 ],
+			"target": [ 0.002087554894387722, 1.7555288076400757, 0.93308347463607788 ],
+			"rotator": [ -7.3916029930114746, -48.726245880126953, 0 ],
+			"fov": 90,
+			"aspect": 1.7777780294418335
+		}
+	],
+	"environment":
+	{
+		"sun_light":
+		{
+			"name": "DirectionalLightStationary_2",
+			"direction": [ 0.2225639820098877, 0.79907572269439697, -0.55851888656616211 ],
+			"color": [ 1, 0.94730651378631592, 0.78353780508041382, 1 ],
+			"intensity": 10
+		}
+	},
+	"tiles": [
+		[ 0, -1 ],
+		[ -1, -1 ],
+		[ -1, 0 ],
+		[ 0, 0 ]
+	]
+}

@@ -26,6 +26,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07.GTAO", "..\..\Samples\07
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08.SkyAtmosphere", "..\..\Samples\08.SkyAtmosphere\SkyAtmosphere.vcxproj", "{507BE423-3ACF-4A1B-8BB8-2B67D8887695}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09.RTAO", "..\..\Samples\09.RTAO\RTAO.vcxproj", "{CCCDE2C9-F20C-4B7E-B902-188326D95B7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -72,6 +74,10 @@ Global
 		{507BE423-3ACF-4A1B-8BB8-2B67D8887695}.Debug|x64.Build.0 = Debug|x64
 		{507BE423-3ACF-4A1B-8BB8-2B67D8887695}.Release|x64.ActiveCfg = Release|x64
 		{507BE423-3ACF-4A1B-8BB8-2B67D8887695}.Release|x64.Build.0 = Release|x64
+		{CCCDE2C9-F20C-4B7E-B902-188326D95B7E}.Debug|x64.ActiveCfg = Debug|x64
+		{CCCDE2C9-F20C-4B7E-B902-188326D95B7E}.Debug|x64.Build.0 = Debug|x64
+		{CCCDE2C9-F20C-4B7E-B902-188326D95B7E}.Release|x64.ActiveCfg = Release|x64
+		{CCCDE2C9-F20C-4B7E-B902-188326D95B7E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
