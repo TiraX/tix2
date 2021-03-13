@@ -7,6 +7,8 @@
 
 #if COMPILE_WITH_RHI_DX12
 
+#include <dxgi1_6.h>
+#include <d3d12.h>
 #include "d3dx12.h"
 #include "FRHIDescriptorHeapDx12.h"
 #include "FRootSignatureDx12.h"
@@ -165,6 +167,8 @@ namespace tix
 		static uint32 GetUBSizeWithCounter(uint32 InBufferSize);
 	protected: 
 		FRHIDx12();
+
+		virtual void FeatureCheck() override;
 
 	private:
 		void GetHardwareAdapter(IDXGIAdapter1** ppAdapter);

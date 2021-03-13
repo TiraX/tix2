@@ -40,6 +40,7 @@ namespace tix
 
 	FRHI::FRHI(E_RHI_TYPE InRHIType)
 		: RHIType(InRHIType)
+		, Features(0)
 	{
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{

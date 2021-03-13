@@ -77,44 +77,85 @@ namespace tix
 
 	void FRHIDx12::InitRHI()
 	{
+		HRESULT Hr;
 #if defined(TIX_DEBUG)
 		// If the project is in a debug build, enable debugging via SDK Layers.
 		{
-			ComPtr<ID3D12Debug> debugController;
-			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+			ComPtr<ID3D12Debug> DebugController;
+			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&DebugController))))
 			{
-				debugController->EnableDebugLayer();
+				DebugController->EnableDebugLayer();
+			}
+			else
+			{
+				_LOG(Warning, "Direct3D Debug Device is NOT avaible.\n");
+			}
+
+			// Try to create debug factory
+			ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiInfoQueue))))
+			{
+				VALIDATE_HRESULT(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&DxgiFactory)));
+
+				dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
+				dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
+			}
+			else
+			{
+				// Failed to create debug factory, create a normal one
+				VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
 			}
 		}
-#endif
+#else
 		// Create D3D12 Device
-		HRESULT hr;
 		VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
+#endif
 
-		ComPtr<IDXGIAdapter1> adapter;
-		GetHardwareAdapter(&adapter);
+		ComPtr<IDXGIAdapter1> Adapter;
+		GetHardwareAdapter(&Adapter);
 
 		// Create the Direct3D 12 API device object
-		hr = D3D12CreateDevice(
-			adapter.Get(),					// The hardware adapter.
+		Hr = D3D12CreateDevice(
+			Adapter.Get(),					// The hardware adapter.
 			D3D_FEATURE_LEVEL_11_0,			// Minimum feature level this app can support.
 			IID_PPV_ARGS(&D3dDevice)		// Returns the Direct3D device created.
 		);
 
 #if defined(TIX_DEBUG)
-		if (FAILED(hr))
+		// Do NOT create WARP device
+		// WARP is a high speed, fully conformant software rasterizer.
+		//if (FAILED(Hr))
+		//{
+		//	// If the initialization fails, fall back to the WARP device.
+		//	// For more information on WARP, see: 
+		//	// https://go.microsoft.com/fwlink/?LinkId=286690
+
+		//	ComPtr<IDXGIAdapter> warpAdapter;
+		//	DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter));
+
+		//	Hr = D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&D3dDevice));
+		//}
+#endif
+		VALIDATE_HRESULT(Hr);
+#if defined(TIX_DEBUG)
+		// Configure debug device (if active).
+		ComPtr<ID3D12InfoQueue> D3dInfoQueue;
+		if (SUCCEEDED(D3dDevice.As(&D3dInfoQueue)))
 		{
-			// If the initialization fails, fall back to the WARP device.
-			// For more information on WARP, see: 
-			// https://go.microsoft.com/fwlink/?LinkId=286690
-
-			ComPtr<IDXGIAdapter> warpAdapter;
-			DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter));
-
-			hr = D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&D3dDevice));
+			D3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+			D3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+			D3D12_MESSAGE_ID hide[] =
+			{
+				D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,
+				D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE
+			};
+			D3D12_INFO_QUEUE_FILTER filter = {};
+			filter.DenyList.NumIDs = _countof(hide);
+			filter.DenyList.pIDList = hide;
+			D3dInfoQueue->AddStorageFilterEntries(&filter);
 		}
 #endif
-		VALIDATE_HRESULT(hr);
+		FeatureCheck();
 
 		// Prevent the GPU from over-clocking or under-clocking to get consistent timings
 		//if (DeveloperModeEnabled)
@@ -144,7 +185,7 @@ namespace tix
 		FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		if (FenceEvent == nullptr)
 		{
-			hr = HRESULT_FROM_WIN32(GetLastError());
+			Hr = HRESULT_FROM_WIN32(GetLastError());
 			TI_ASSERT(0);
 		}
 
@@ -164,37 +205,84 @@ namespace tix
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 	}
 
+	void FRHIDx12::FeatureCheck()
+	{
+		Features = 0;
+
+		// Check for DXR
+		D3D12_FEATURE_DATA_D3D12_OPTIONS5 FeatureSupportData = {};
+		if (SUCCEEDED(D3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &FeatureSupportData, sizeof(FeatureSupportData)))
+			&& FeatureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
+		{
+			Features |= RHI_REATURE_RAYTRACING;
+		}
+	}
+
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
 	// If no such adapter can be found, *ppAdapter will be set to nullptr.
 	void FRHIDx12::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
 	{
-		ComPtr<IDXGIAdapter1> adapter;
 		*ppAdapter = nullptr;
 
-		for (uint32 adapterIndex = 0; DXGI_ERROR_NOT_FOUND != DxgiFactory->EnumAdapters1(adapterIndex, &adapter); adapterIndex++)
+		ComPtr<IDXGIAdapter1> Adapter;
+		ComPtr<IDXGIFactory6> Factory6;
+
+		HRESULT Hr = DxgiFactory.As(&Factory6);
+		if (FAILED(Hr))
 		{
-			DXGI_ADAPTER_DESC1 desc;
-			adapter->GetDesc1(&desc);
-
-			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			// Get Adapter use a safe way
+			for (uint32 AdapterIndex = 0; DXGI_ERROR_NOT_FOUND != DxgiFactory->EnumAdapters1(AdapterIndex, &Adapter); AdapterIndex++)
 			{
-				// Don't select the Basic Render Driver adapter.
-				continue;
-			}
+				DXGI_ADAPTER_DESC1 desc;
+				Adapter->GetDesc1(&desc);
 
-			// Check to see if the adapter supports Direct3D 12, but don't create the
-			// actual device yet.
-			if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
-			{
-				char AdapterName[128];
-				size_t Converted;
-				wcstombs_s(&Converted, AdapterName, 128, desc.Description, 128);
-				_LOG(Log, "D3D12-capable hardware found:  %s (%u MB)\n", AdapterName, desc.DedicatedVideoMemory >> 20);
-				break;
+				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+				{
+					// Don't select the Basic Render Driver adapter.
+					continue;
+				}
+
+				// Check to see if the adapter supports Direct3D 12, but don't create the
+				// actual device yet.
+				if (SUCCEEDED(D3D12CreateDevice(Adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+				{
+					char AdapterName[128];
+					size_t Converted;
+					wcstombs_s(&Converted, AdapterName, 128, desc.Description, 128);
+					_LOG(Log, "D3D12-capable hardware found:  %s (%u MB)\n", AdapterName, desc.DedicatedVideoMemory >> 20);
+					break;
+				}
 			}
 		}
+		else
+		{
+			for (uint32 AdapterIndex = 0; DXGI_ERROR_NOT_FOUND != Factory6->EnumAdapterByGpuPreference(AdapterIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&Adapter)); AdapterIndex++)
+			{
+				DXGI_ADAPTER_DESC1 Desc;
+				Adapter->GetDesc1(&Desc);
 
-		*ppAdapter = adapter.Detach();
+				if (Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+				{
+					// Don't select the Basic Render Driver adapter.
+					continue;
+				}
+
+				// Check to see if the adapter supports Direct3D 12, but don't create the
+				// actual device yet.
+				if (SUCCEEDED(D3D12CreateDevice(Adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+				{
+					char AdapterName[128];
+					size_t Converted;
+					wcstombs_s(&Converted, AdapterName, 128, Desc.Description, 128);
+					_LOG(Log, "D3D12-capable hardware found:  %s (%u MB)\n", AdapterName, Desc.DedicatedVideoMemory >> 20);
+					break;
+				}
+			}
+
+		}
+
+		*ppAdapter = Adapter.Detach();
+		TI_ASSERT(*ppAdapter != nullptr);
 	}
 
 	void FRHIDx12::CreateWindowsSizeDependentResources()

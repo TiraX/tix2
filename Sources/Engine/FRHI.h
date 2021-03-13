@@ -29,6 +29,11 @@ namespace tix
 		EPL_NUM,
 	};
 
+	enum E_RHI_FEATURE
+	{
+		RHI_REATURE_RAYTRACING = 1 << 0,
+	};
+
 	enum E_RESOURCE_STATE
 	{
 		RESOURCE_STATE_COMMON,
@@ -225,10 +230,17 @@ namespace tix
 			return RenderResourceHeap[Index];
 		}
 
+		bool IsFeatureSupported(E_RHI_FEATURE InFeature) const
+		{
+			return (Features & InFeature) != 0;
+		}
+
 	protected:
 		static FRHI* RHI;
 		FRHI(E_RHI_TYPE InRHIType);
 		virtual ~FRHI();
+
+		virtual void FeatureCheck() = 0;
 		
 		static void GPUFrameDone()
 		{
@@ -238,6 +250,7 @@ namespace tix
 		static TI_API uint32 NumGPUFrames;
 	protected:
 		E_RHI_TYPE RHIType;
+		uint32 Features;
 		FViewport Viewport;
 		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
 
