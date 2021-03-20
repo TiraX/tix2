@@ -319,6 +319,9 @@
     <ClCompile Include="..\..\Sources\Engine\FEnvLight.cpp">
       <Filter>Sources\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDXR.cpp">
+      <Filter>Sources\Render\dx12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -731,6 +734,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\Math\FSHVector.h">
       <Filter>Sources\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDXR.h">
+      <Filter>Sources\Render\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRenderTargetDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDXR.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDescriptorHeapDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12Conversion.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDXR.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h" />

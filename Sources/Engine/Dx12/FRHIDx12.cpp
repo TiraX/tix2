@@ -54,6 +54,7 @@ namespace tix
 		, CurrentFrame(0)
 		, GraphicsNumBarriersToFlush(0)
 		, ComputeNumBarriersToFlush(0)
+		, DXR(nullptr)
 	{
 		// Create frame resource holders
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
@@ -73,6 +74,8 @@ namespace tix
 			ResHolders[i] = nullptr;
 			FrameResources[i] = nullptr;
 		}
+
+		ti_delete DXR;
 	}
 
 	void FRHIDx12::InitRHI()
@@ -203,6 +206,19 @@ namespace tix
 		GraphicsCommandLists[0] = DefaultGraphicsCommandList;
 		
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
+
+		// Init raytracing
+		if (IsFeatureSupported(RHI_REATURE_RAYTRACING))
+		{
+			if (InitRaytracing())
+			{
+				_LOG(Log, "    DXR inited.\n");
+			}
+			else
+			{
+				_LOG(Error, "    Can not init DXR.\n");
+			}
+		}
 	}
 
 	void FRHIDx12::FeatureCheck()
@@ -216,6 +232,13 @@ namespace tix
 		{
 			Features |= RHI_REATURE_RAYTRACING;
 		}
+	}
+
+	bool FRHIDx12::InitRaytracing()
+	{
+		DXR = ti_new FRHIDXR();
+
+		return DXR->Init(D3dDevice);
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
@@ -3144,7 +3167,7 @@ namespace tix
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
 		CurrentWorkingCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
-		HoldResourceReference(RenderResourceTable);
+		HoldResourceReference(RenderResourceTable);;
 	}
 
 	void FRHIDx12::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)

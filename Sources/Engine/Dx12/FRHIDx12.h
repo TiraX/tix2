@@ -12,6 +12,7 @@
 #include "d3dx12.h"
 #include "FRHIDescriptorHeapDx12.h"
 #include "FRootSignatureDx12.h"
+#include "FRHIDXR.h"
 
 using namespace Microsoft::WRL;
 
@@ -222,6 +223,8 @@ namespace tix
 		void InitRHIRenderResourceHeap(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 HeapSize, uint32 HeapOffset);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuDescriptorHandle(E_RENDER_RESOURCE_HEAP_TYPE Heap, uint32 SlotIndex);
+
+		bool InitRaytracing();
 	private:
 		ComPtr<ID3D12Device> D3dDevice;
 		ComPtr<IDXGIFactory4> DxgiFactory;
@@ -330,6 +333,9 @@ namespace tix
 
 		// Root Descriptor cache
 		THMap<uint32, FShaderBindingPtr> ShaderBindingCache;
+
+		// Raytracing component
+		FRHIDXR* DXR;
 
 		friend class FRHI;
 		friend class FDescriptorHeapDx12;
