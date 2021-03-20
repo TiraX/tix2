@@ -98,6 +98,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GaussRandomCS.cpp" />
+    <ClCompile Include="HZeroCS.cpp" />
     <ClCompile Include="OceanFFTSample.cpp" />
     <ClCompile Include="OceanRenderer.cpp" />
     <ClCompile Include="OceanTicker.cpp" />
@@ -107,6 +109,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GaussRandomCS.h" />
+    <ClInclude Include="HZeroCS.h" />
     <ClInclude Include="OceanRenderer.h" />
     <ClInclude Include="OceanTicker.h" />
     <ClInclude Include="stdafx.h" />

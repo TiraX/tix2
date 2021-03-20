@@ -223,8 +223,8 @@ namespace tix
 		uint8* Data = (uint8*)Mipmaps[MipIndex].Data.GetBuffer();
 
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
-		float* fdata = (float*)(Data + offset);
-		half* hdata = (half*)(Data + offset);
+		float32* fdata = (float32*)(Data + offset);
+		float16* hdata = (float16*)(Data + offset);
 		switch (PixelFormat)
 		{
 		case EPF_RG32F:
@@ -238,17 +238,17 @@ namespace tix
 			fdata[3] = c.A;
 			break;
 		case EPF_R16F:
-			hdata[0] = half(c.R);
+			hdata[0] = float16(c.R);
 			break;
 		case EPF_RG16F:
-			hdata[0] = half(c.R);
-			hdata[1] = half(c.G);
+			hdata[0] = float16(c.R);
+			hdata[1] = float16(c.G);
 			break;
 		case EPF_RGBA16F:
-			hdata[0] = half(c.R);
-			hdata[1] = half(c.G);
-			hdata[2] = half(c.B);
-			hdata[3] = half(c.A);
+			hdata[0] = float16(c.R);
+			hdata[1] = float16(c.G);
+			hdata[2] = float16(c.B);
+			hdata[3] = float16(c.A);
 			break;
 		default:
 			TI_ASSERT(0);
@@ -443,7 +443,8 @@ namespace tix
 			y = Height - 1;
 		SColorf c;
 		int32 offset = y * Pitch + x * GetPixelSizeInBytes(PixelFormat);
-		float *fdata = (float*)(Data + offset);
+		float32* fdata = (float32*)(Data + offset);
+		float16* hdata = (float16*)(Data + offset);
 		switch (PixelFormat)
 		{
 		case EPF_DEPTH32:
@@ -463,6 +464,12 @@ namespace tix
 			c.G = fdata[1];
 			c.B = fdata[2];
 			c.A = fdata[3];
+			break;
+		case EPF_RGBA16F:
+			c.R = hdata[0];
+			c.G = hdata[1];
+			c.B = hdata[2];
+			c.A = hdata[3];
 			break;
 		default:
 			TI_ASSERT(0);

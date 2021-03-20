@@ -198,11 +198,17 @@ namespace tix
 			srand(Seed);
 		}
 
+		//! returns a random integer
+		static inline int32 Rand()
+		{
+			return rand();
+		}
+
 		//! returns a float value between 0.0 ~ 1.0
 		static inline float RandomUnit()
 		{
 			const float k_inv = 1.0f / RAND_MAX;
-			return (rand() & 0x7fff) * k_inv;
+			return rand() * k_inv;
 		}
 
 		//! returns if a equals b, taking possible rounding errors into account

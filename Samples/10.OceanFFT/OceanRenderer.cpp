@@ -52,49 +52,62 @@ void FOceanRenderer::InitInRenderThread()
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
-	//HBAOCompute = ti_new FHBAOCS();
-	//HBAOCompute->Finalize();
-	//HBAOCompute->PrepareResources(RHI);
+	//GaussRandomCS = ti_new FGaussRandomCS();
+	//GaussRandomCS->Finalize();
+	//GaussRandomCS->PrepareResources(RHI);
 
-	//GTAOCompute = ti_new FGTAOCS();
-	//GTAOCompute->Finalize();
-	//GTAOCompute->PrepareResources(RHI);
+	//HZeroCS = ti_new FHZeroCS();
+	//HZeroCS->Finalize();
+	//HZeroCS->PrepareResources(RHI);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
+
+	// Create resources
+	CreateGaussRandomTexture();
 }
 
-void FOceanRenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
+void FOceanRenderer::CreateGaussRandomTexture()
 {
-	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
-	for (auto& TileIter : SceneTileResources)
+	TI_ASSERT(GaussRandomTexture == nullptr);
+	TImagePtr GaussRandomImage = ti_new TImage(EPF_RGBA16F, FFT_Size, FFT_Size);
+
+	// Fill data
+	TMath::RandSeed(FFT_Size  / 4);
+	for (int32 y = 0; y < FFT_Size; ++y)
 	{
-		const vector2di& TilePos = TileIter.first;
-		FSceneTileResourcePtr TileRes = TileIter.second;
-
-		const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
-		for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
+		for (int32 x = 0; x < FFT_Size; ++x)
 		{
-			FPrimitivePtr Primitive = TilePrimitives[PIndex];
+			SColorf Result;
 
-			if (Primitive != nullptr)
-			{
-				FInstanceBufferPtr InstanceBuffer = Primitive->GetInstanceBuffer();
-				RHI->SetGraphicsPipeline(Primitive->GetPipeline());
-				RHI->SetMeshBuffer(Primitive->GetMeshBuffer(), InstanceBuffer);
-				ApplyShaderParameter(RHI, Scene, Primitive);
+			float u0 = 2.f * PI * TMath::RandomUnit();
+			float v0 = TMath::Sqrt(-2.f * log(TMath::RandomUnit()));
+			float u1 = 2.f * PI * TMath::RandomUnit();
+			float v1 = TMath::Sqrt(-2.f * log(TMath::RandomUnit()));
 
-				RHI->DrawPrimitiveIndexedInstanced(
-					Primitive->GetMeshBuffer(),
-					InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
-					Primitive->GetInstanceOffset());
-			}
+			Result.R = v0 * cos(u0);
+			Result.G = v0 * sin(u0);
+			Result.B = v1 * cos(u1);
+			Result.A = v1 * sin(u1);
+
+			GaussRandomImage->SetPixel(x, y, Result);
 		}
 	}
-}
+
+	// Create Texture
+	TTextureDesc Desc;
+	Desc.Format = EPF_RGBA16F;
+	Desc.Width = FFT_Size;
+	Desc.Height = FFT_Size;
+	GaussRandomTexture = FRHI::Get()->CreateTexture(Desc);
+	FRHI::Get()->UpdateHardwareResourceTexture(GaussRandomTexture, GaussRandomImage);
+
+	// Debug
+	//GaussRandomImage->SaveToHDR("GaussRandom.hdr");
+;}
 
 void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 {

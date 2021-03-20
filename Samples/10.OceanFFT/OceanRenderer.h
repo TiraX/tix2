@@ -4,10 +4,14 @@
 */
 
 #pragma once
+#include "GaussRandomCS.h"
+#include "HZeroCS.h"
 
 class FOceanRenderer : public FDefaultRenderer
 {
 public:
+	static const int32 FFT_Size = 512;
+
 	FOceanRenderer();
 	virtual ~FOceanRenderer();
 
@@ -18,11 +22,16 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
-	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
+	void CreateGaussRandomTexture();
 
 private:
 	FArgumentBufferPtr AB_Result;
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	FTexturePtr GaussRandomTexture;
+	// Ocean Compute Shader
+	//FGaussRandomCSPtr GaussRandomCS;	// Create this GaussRandom on CPU
+	FHZeroCSPtr HZeroCS;;
 };

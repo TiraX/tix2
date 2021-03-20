@@ -322,6 +322,9 @@
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDXR.cpp">
       <Filter>Sources\Render\dx12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderHDR.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">

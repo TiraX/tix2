@@ -8,6 +8,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{863f17d7-af54-40f0-90f3-f94d128c6588}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Compute">
+      <UniqueIdentifier>{57740afa-e610-40eb-8c85-35fdd65cccfa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -22,6 +25,12 @@
     <ClCompile Include="OceanTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GaussRandomCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="HZeroCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -32,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="OceanTicker.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GaussRandomCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="HZeroCS.h">
+      <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -74,6 +74,7 @@
     <ClCompile Include="..\..\Sources\Engine\TFile.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImage.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TImageLoaderHDR.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderPNG.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderTGA.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TINIParser.cpp" />
