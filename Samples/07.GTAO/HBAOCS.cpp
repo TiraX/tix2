@@ -67,11 +67,11 @@ void FHBAOCS::PrepareResources(FRHI * RHI)
 	{
 		for (int32 x = 0; x < RandTexSize; ++x)
 		{
-			float Angle = 2.f * PI * randomUnit() / (float)MAX_DIR;
+			float Angle = 2.f * PI * TMath::RandomUnit() / (float)MAX_DIR;
 			SColor R;
 			R.R = (uint8)(cos(Angle) * 127.5f + 127.5f);
 			R.G = (uint8)(sin(Angle) * 127.5f + 127.5f);
-			R.B = (uint8)(randomUnit() * 127.5f + 127.5f);
+			R.B = (uint8)(TMath::RandomUnit() * 127.5f + 127.5f);
 			//R.B = (uint8)(randomUnit() * 255.f);
 			RandomImage->SetPixel(x, y, R);
 		}
