@@ -56,9 +56,9 @@ void FOceanRenderer::InitInRenderThread()
 	//GaussRandomCS->Finalize();
 	//GaussRandomCS->PrepareResources(RHI);
 
-	//HZeroCS = ti_new FHZeroCS();
-	//HZeroCS->Finalize();
-	//HZeroCS->PrepareResources(RHI);
+	HZeroCS = ti_new FHZeroCS();
+	HZeroCS->Finalize();
+	HZeroCS->PrepareResources(RHI);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
