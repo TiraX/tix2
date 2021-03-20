@@ -76,7 +76,7 @@ void FHZeroCS::UpdataComputeParams(
 
 	if (GaussTexture != InGaussTexture)
 	{
-		ResourceTable->PutTextureInTable(GaussTexture, SRV_GAUSS_RANDOM);
+		ResourceTable->PutTextureInTable(InGaussTexture, SRV_GAUSS_RANDOM);
 		GaussTexture = InGaussTexture;
 	}
 }

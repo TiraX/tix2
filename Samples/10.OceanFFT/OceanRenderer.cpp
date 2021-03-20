@@ -111,6 +111,25 @@ void FOceanRenderer::CreateGaussRandomTexture()
 
 void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	const float w = TMath::DegToRad(45);
+	HZeroCS->UpdataComputeParams(
+		RHI,
+		GaussRandomTexture,
+		40.f,
+		30.f,
+		vector2df(cos(w), sin(-w)),
+		0.001f,
+		0.5f
+		);
+
+	RHI->BeginComputeTask();
+	{
+		RHI->BeginEvent("HZero");
+		HZeroCS->Run(RHI);
+		RHI->EndEvent();
+	}
+	RHI->EndComputeTask();
+
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
