@@ -8,6 +8,7 @@
 #include "HZeroCS.h"
 #include "HKtCS.h"
 #include "IFFTCS.h"
+#include "DisplacementCS.h"
 
 class FOceanRenderer : public FDefaultRenderer
 {
@@ -40,4 +41,5 @@ private:
 	FHZeroCSPtr HZeroCS;
 	FHKtCSPtr HKtCS;
 	FIFFTCSPtr IFFTCS[3];
+	FDisplacementCSPtr DisplacementCS;
 };

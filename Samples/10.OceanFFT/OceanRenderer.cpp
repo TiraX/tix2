@@ -52,6 +52,7 @@ void FOceanRenderer::InitInRenderThread()
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
+	// Compute shaders
 	HZeroCS = ti_new FHZeroCS();
 	HZeroCS->Finalize();
 	HZeroCS->PrepareResources(RHI);
@@ -66,6 +67,10 @@ void FOceanRenderer::InitInRenderThread()
 		IFFTCS[i]->Finalize();
 		IFFTCS[i]->PrepareResources(RHI);
 	}
+
+	DisplacementCS = ti_new FDisplacementCS();
+	DisplacementCS->Finalize();
+	DisplacementCS->PrepareResources(RHI);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -256,6 +261,12 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 			ButterFlyTexture
 		);
 	}
+	DisplacementCS->UpdataComputeParams(
+		RHI,
+		IFFTCS[0]->GetFinalResult(),
+		IFFTCS[1]->GetFinalResult(),
+		IFFTCS[2]->GetFinalResult()
+	);
 
 	RHI->BeginComputeTask();
 	{
@@ -270,17 +281,21 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->BeginEvent("IFFT");
 
 			RHI->BeginEvent("X");
-			IFFTCS[0]->Run(RHI);
+			//IFFTCS[0]->Run(RHI);
 			RHI->EndEvent();
 
 			RHI->BeginEvent("Y");
-			IFFTCS[1]->Run(RHI);
+			//IFFTCS[1]->Run(RHI);
 			RHI->EndEvent();
 
 			RHI->BeginEvent("Z");
 			IFFTCS[2]->Run(RHI);
 			RHI->EndEvent();
 
+		RHI->EndEvent();
+
+		RHI->BeginEvent("Displacement");
+		DisplacementCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();

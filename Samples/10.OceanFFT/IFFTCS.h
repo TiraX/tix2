@@ -25,6 +25,11 @@ public:
 		FTexturePtr InButterFlyTexture
 	);
 
+	FTexturePtr GetFinalResult()
+	{
+		return HKtTexture;
+	}
+
 private:
 	enum
 	{
@@ -49,6 +54,6 @@ private:
 
 	FTexturePtr HKtTexture;
 	FTexturePtr ButterFlyTexture;
-	FTexturePtr OutputTexture;
+	FTexturePtr PingPongTempTexture;
 };
 typedef TI_INTRUSIVE_PTR(FIFFTCS) FIFFTCSPtr;

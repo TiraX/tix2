@@ -44,16 +44,16 @@ void FIFFTCS::PrepareResources(FRHI* RHI)
 	OutputTextureDesc.Height = FOceanRenderer::FFT_Size;
 	OutputTextureDesc.AddressMode = ETC_CLAMP_TO_EDGE;
 
-	OutputTexture = RHI->CreateTexture(OutputTextureDesc);
-	OutputTexture->SetTextureFlag(ETF_UAV, true);
-	OutputTexture->SetResourceName("IFFT-Pingpong");
-	RHI->UpdateHardwareResourceTexture(OutputTexture);
+	PingPongTempTexture = RHI->CreateTexture(OutputTextureDesc);
+	PingPongTempTexture->SetTextureFlag(ETF_UAV, true);
+	PingPongTempTexture->SetResourceName("IFFT-Pingpong");
+	RHI->UpdateHardwareResourceTexture(PingPongTempTexture);
 
 	ResourceTables[PING] = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 	ResourceTables[PONG] = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
-	ResourceTables[PING]->PutRWTextureInTable(OutputTexture, 0, UAV_RESULT_TEXTURE);
-	ResourceTables[PONG]->PutTextureInTable(OutputTexture, SRV_SORUCE_TEXTURE);
+	ResourceTables[PING]->PutRWTextureInTable(PingPongTempTexture, 0, UAV_RESULT_TEXTURE);
+	ResourceTables[PONG]->PutTextureInTable(PingPongTempTexture, SRV_SORUCE_TEXTURE);
 }
 
 void FIFFTCS::UpdataComputeParams(
