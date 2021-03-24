@@ -6,6 +6,7 @@
 #pragma once
 #include "GaussRandomCS.h"
 #include "HZeroCS.h"
+#include "HKtCS.h"
 
 class FOceanRenderer : public FDefaultRenderer
 {
@@ -36,5 +37,6 @@ private:
 
 	// Ocean Compute Shader
 	//FGaussRandomCSPtr GaussRandomCS;	// Create this GaussRandom on CPU
-	FHZeroCSPtr HZeroCS;;
+	FHZeroCSPtr HZeroCS;
+	FHKtCSPtr HKtCS;
 };

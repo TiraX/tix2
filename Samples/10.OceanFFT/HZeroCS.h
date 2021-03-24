@@ -29,6 +29,10 @@ public:
 		float InSpressWaveLength,
 		float InDamp
 	);
+	FTexturePtr GetH0Texture()
+	{
+		return H0Texture;
+	}
 
 private:
 	enum

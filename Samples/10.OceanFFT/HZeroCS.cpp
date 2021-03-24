@@ -7,8 +7,6 @@
 #include "HZeroCS.h"
 #include "OceanRenderer.h"
 
-static const int RandTexSize = 64;
-
 FHZeroCS::FHZeroCS()
 	: FComputeTask("S_HZeroCS")
 {

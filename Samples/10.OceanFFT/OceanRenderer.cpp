@@ -60,6 +60,10 @@ void FOceanRenderer::InitInRenderThread()
 	HZeroCS->Finalize();
 	HZeroCS->PrepareResources(RHI);
 
+	HKtCS = ti_new FHKtCS();
+	HKtCS->Finalize();
+	HKtCS->PrepareResources(RHI);
+
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
@@ -217,21 +221,39 @@ void FOceanRenderer::CreateButterFlyTexture()
 
 void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	const float w = TMath::DegToRad(45);
+	const float WaveHeight = 40.f;
+	const float WindSpeed = 30.f;
+	const float WindDir = TMath::DegToRad(45);
+	const float SpressWaveLength = 0.001f;
+	const float Damp = 0.5f;
+	const float Depth = 200.f;
+	const float Choppy = 1.78f;
+
 	HZeroCS->UpdataComputeParams(
 		RHI,
 		GaussRandomTexture,
-		40.f,
-		30.f,
-		vector2df(cos(w), sin(-w)),
-		0.001f,
-		0.5f
+		WaveHeight,
+		WindSpeed,
+		vector2df(cos(WindDir), sin(-WindDir)),
+		SpressWaveLength,
+		Damp
 		);
+	HKtCS->UpdataComputeParams(
+		RHI,
+		HZeroCS->GetH0Texture(),
+		Depth,
+		0.f,
+		Choppy
+	);
 
 	RHI->BeginComputeTask();
 	{
 		RHI->BeginEvent("HZero");
 		HZeroCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("HKt");
+		HKtCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();
