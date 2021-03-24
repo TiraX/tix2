@@ -11,7 +11,7 @@
 
 #define CalcDisp_RS \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))" 
+    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=2))" 
 
 cbuffer FInfoUniform : register(b0)
 {
@@ -23,6 +23,7 @@ Texture2D<float2> IFFT_Y : register(t1);
 Texture2D<float2> IFFT_Z : register(t2);
 
 RWTexture2D<float4> DisplacementTexture : register(u0);
+RWTexture2D<float4> DebugTexture : register(u1);
 
 [RootSignature(CalcDisp_RS)]
 [numthreads(32, 32, 1)]
@@ -39,5 +40,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     D.y = IFFT_Y.Load(int3(dispatchThreadId.xy, 0)).x;
     D.z = IFFT_Z.Load(int3(dispatchThreadId.xy, 0)).x;
 
-    DisplacementTexture[dispatchThreadId.xy] = float4(D * perm * SizeSQ_Inv, 1.f);
+    D *= perm * SizeSQ_Inv;
+    DisplacementTexture[dispatchThreadId.xy] = float4(D.xyz, 1.f);
+    DebugTexture[dispatchThreadId.xy] = float4(saturate(D.zyx), 1.f);
 }

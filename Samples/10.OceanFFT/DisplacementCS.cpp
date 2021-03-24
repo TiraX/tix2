@@ -35,9 +35,17 @@ void FDisplacementCS::PrepareResources(FRHI* RHI)
 	DisplacementTexture->SetResourceName("DisplacementTexture");
 	RHI->UpdateHardwareResourceTexture(DisplacementTexture);
 
+	TTextureDesc DebugTextureDesc = DisplacementTextureDesc;
+	DebugTextureDesc.Format = EPF_BGRA8;
+	DebugTexture = RHI->CreateTexture(DebugTextureDesc);
+	DebugTexture->SetTextureFlag(ETF_UAV, true);
+	DebugTexture->SetResourceName("DebugTexture");
+	RHI->UpdateHardwareResourceTexture(DebugTexture);
+
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
 	ResourceTable->PutRWTextureInTable(DisplacementTexture, 0, UAV_DISPLACEMENT_TEXTURE);
+	ResourceTable->PutRWTextureInTable(DebugTexture, 0, UAV_DEBUG_TEXTURE);
 }
 
 void FDisplacementCS::UpdataComputeParams(

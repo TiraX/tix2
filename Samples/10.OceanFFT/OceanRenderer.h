@@ -30,6 +30,7 @@ private:
 
 private:
 	FArgumentBufferPtr AB_Result;
+	FArgumentBufferPtr AB_DebugDisplacement;
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;

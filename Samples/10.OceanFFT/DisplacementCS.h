@@ -26,6 +26,15 @@ public:
 		FTexturePtr InIFFT_Z
 	);
 
+	FTexturePtr GetDisplacementTexture()
+	{
+		return DisplacementTexture;
+	}
+	FTexturePtr GetDebugTexture()
+	{
+		return DebugTexture;
+	}
+
 private:
 	enum
 	{
@@ -33,6 +42,7 @@ private:
 		SRV_IFFT_Y,
 		SRV_IFFT_Z,
 		UAV_DISPLACEMENT_TEXTURE,
+		UAV_DEBUG_TEXTURE,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -44,5 +54,6 @@ private:
 
 	FTexturePtr IFFTTextures[3];
 	FTexturePtr DisplacementTexture;
+	FTexturePtr DebugTexture;
 };
 typedef TI_INTRUSIVE_PTR(FDisplacementCS) FDisplacementCSPtr;

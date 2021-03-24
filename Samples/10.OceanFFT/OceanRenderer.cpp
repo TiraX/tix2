@@ -78,6 +78,12 @@ void FOceanRenderer::InitInRenderThread()
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
 
+	AB_DebugDisplacement = RHI->CreateArgumentBuffer(1);
+	{
+		AB_DebugDisplacement->SetTexture(0, DisplacementCS->GetDebugTexture());
+		RHI->UpdateHardwareResourceAB(AB_DebugDisplacement, FSRender.GetFullScreenShader(), 0);
+	}
+
 	// Create resources
 	CreateGaussRandomTexture();
 	CreateButterFlyTexture();
@@ -303,7 +309,9 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
-
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+
+	// Debug
+	FSRender.DrawFullScreenTexture(RHI, AB_DebugDisplacement);
 }
