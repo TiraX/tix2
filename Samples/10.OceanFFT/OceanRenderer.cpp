@@ -92,9 +92,9 @@ void FOceanRenderer::CreateGaussRandomTexture()
 			SColorf Result;
 
 			float u0 = 2.f * PI * TMath::RandomUnit();
-			float v0 = TMath::Sqrt(-2.f * log(TMath::RandomUnit()));
+			float v0 = TMath::Sqrt(-2.f * log(TMath::Max(0.0001f, TMath::RandomUnit())));	// use max（0.0001f, rand) to avoid INF
 			float u1 = 2.f * PI * TMath::RandomUnit();
-			float v1 = TMath::Sqrt(-2.f * log(TMath::RandomUnit()));
+			float v1 = TMath::Sqrt(-2.f * log(TMath::Max(0.0001f, TMath::RandomUnit())));
 
 			Result.R = v0 * cos(u0);
 			Result.G = v0 * sin(u0);
