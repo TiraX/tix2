@@ -281,11 +281,11 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI->BeginEvent("IFFT");
 
 			RHI->BeginEvent("X");
-			//IFFTCS[0]->Run(RHI);
+			IFFTCS[0]->Run(RHI);
 			RHI->EndEvent();
 
 			RHI->BeginEvent("Y");
-			//IFFTCS[1]->Run(RHI);
+			IFFTCS[1]->Run(RHI);
 			RHI->EndEvent();
 
 			RHI->BeginEvent("Z");

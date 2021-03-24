@@ -30,6 +30,8 @@ private:
 	enum
 	{
 		SRV_IFFT_X,
+		SRV_IFFT_Y,
+		SRV_IFFT_Z,
 		UAV_DISPLACEMENT_TEXTURE,
 
 		PARAM_TOTAL_COUNT,

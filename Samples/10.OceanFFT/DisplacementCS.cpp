@@ -51,7 +51,9 @@ void FDisplacementCS::UpdataComputeParams(
 		InIFFT_Y != IFFTTextures[1] ||
 		InIFFT_Z != IFFTTextures[2])
 	{
-		ResourceTable->PutTextureInTable(InIFFT_Z, SRV_IFFT_X);
+		ResourceTable->PutTextureInTable(InIFFT_X, SRV_IFFT_X);
+		ResourceTable->PutTextureInTable(InIFFT_Y, SRV_IFFT_Y);
+		ResourceTable->PutTextureInTable(InIFFT_Z, SRV_IFFT_Z);
 		IFFTTextures[0] = InIFFT_X;
 		IFFTTextures[1] = InIFFT_Y;
 		IFFTTextures[2] = InIFFT_Z;
