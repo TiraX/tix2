@@ -249,6 +249,11 @@ namespace tix
 			return y;
 		}
 
+		static inline float FMod(float x, float y)
+		{
+			return fmod(x, y);
+		}
+
 		template<class T>
 		static inline T Align(T n, uint32 align_num)
 		{

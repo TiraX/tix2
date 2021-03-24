@@ -23,6 +23,7 @@ public:
 
 private:
 	void CreateGaussRandomTexture();
+	void CreateButterFlyTexture();
 
 private:
 	FArgumentBufferPtr AB_Result;
@@ -31,6 +32,8 @@ private:
 	FRenderTargetPtr RT_BasePass;
 
 	FTexturePtr GaussRandomTexture;
+	FTexturePtr ButterFlyTexture;
+
 	// Ocean Compute Shader
 	//FGaussRandomCSPtr GaussRandomCS;	// Create this GaussRandom on CPU
 	FHZeroCSPtr HZeroCS;;

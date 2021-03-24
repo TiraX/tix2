@@ -68,6 +68,7 @@ void FOceanRenderer::InitInRenderThread()
 
 	// Create resources
 	CreateGaussRandomTexture();
+	CreateButterFlyTexture();
 }
 
 void FOceanRenderer::CreateGaussRandomTexture()
@@ -99,7 +100,7 @@ void FOceanRenderer::CreateGaussRandomTexture()
 
 	// Create Texture
 	TTextureDesc Desc;
-	Desc.Format = EPF_RGBA16F;
+	Desc.Format = GaussRandomImage->GetFormat();
 	Desc.Width = FFT_Size;
 	Desc.Height = FFT_Size;
 	GaussRandomTexture = FRHI::Get()->CreateTexture(Desc);
@@ -108,6 +109,111 @@ void FOceanRenderer::CreateGaussRandomTexture()
 	// Debug
 	//GaussRandomImage->SaveToHDR("GaussRandom.hdr");
 ;}
+
+void FOceanRenderer::CreateButterFlyTexture()
+{
+	TI_ASSERT(ButterFlyTexture == nullptr);
+	const int H = FFT_Size;
+	const int W = TMath::FloorLog2(H);
+	TImagePtr ButterFlyImage = ti_new TImage(EPF_RGBA32F, W, H);
+
+	TVector<int32> BitReversed;
+	BitReversed.resize(H);
+	memset(BitReversed.data(), 0, H * sizeof(int32));
+	for (int32 i = 0; i < W; ++i)
+	{
+		int32 Stride = 1 << i;
+		int32 Add = 1 << (W - 1 - i);
+		for (int32 j = 0; j < H; ++j)
+		{
+			if ((j / Stride) % 2 != 0)
+				BitReversed[j] += Add;
+		}
+	}
+
+	for (int32 y = 0; y < H; ++y)
+	{
+		for (int32 x = 0; x < W; ++x)
+		{
+			float k = (float)(y * H / (int32)pow(2, (x + 1)) % H);
+			//float k = (float)(TMath::FMod(y * H / pow(2.f, x + 1), H));
+
+			vector2df Twiddle;
+			float val = 2.f * PI * k / H;
+			Twiddle.X = cos(val);
+			Twiddle.Y = sin(val);
+
+			int32 ButterFlySpan = (int32)pow(2, x);
+
+			int32 ButterFlyWing = 0;
+			if (y % ((int32)pow(2, (x + 1))) < (int32)pow(2, x))
+				ButterFlyWing = 1;
+
+			if (x == 0)
+			{
+				if (ButterFlyWing == 1)
+				{
+					int32 Next = (y + 1) % H;
+					ButterFlyImage->SetPixel(x, y, SColorf(Twiddle.X, Twiddle.Y, (float)BitReversed[y], (float)BitReversed[Next]));
+				}
+				else
+				{
+					int32 Prev = (y - 1) < 0 ? y : y - 1;
+					ButterFlyImage->SetPixel(x, y, SColorf(Twiddle.X, Twiddle.Y, (float)BitReversed[Prev], (float)BitReversed[y]));
+				}
+			}
+			else
+			{
+				if (ButterFlyWing == 1)
+				{
+					int32 Next = (y + ButterFlySpan) % H;
+					ButterFlyImage->SetPixel(x, y, SColorf(Twiddle.X, Twiddle.Y, float(y), (float)(y + ButterFlySpan)));
+				}
+				else
+				{
+					int32 Prev = (y - ButterFlySpan) < 0 ? (y - ButterFlySpan + H) : (y - ButterFlySpan);
+					ButterFlyImage->SetPixel(x, y, SColorf(Twiddle.X, Twiddle.Y, float(Prev), float(y)));
+				}
+			}
+		}
+	}
+	// Create Texture
+	TTextureDesc Desc;
+	Desc.Format = ButterFlyImage->GetFormat();
+	Desc.Width = W;
+	Desc.Height = H;
+	ButterFlyTexture = FRHI::Get()->CreateTexture(Desc);
+	FRHI::Get()->UpdateHardwareResourceTexture(ButterFlyTexture, ButterFlyImage);
+
+	//// Debug
+	//SColorf* Data = (SColorf*)ButterFlyImage->Lock();
+	//for (int y = 0; y < H; ++y)
+	//{
+	//	for (int x = 0; x < W; ++x)
+	//	{
+	//		_LOG(Log, "%0.2f %0.2f %0.2f %0.2f; ", Data->R, Data->G, Data->B, Data->A);
+	//		++Data;
+	//	}
+	//	_LOG(Log, "\n");
+	//}
+	//TImagePtr ButterFlyTGA = ti_new TImage(EPF_RGBA8, W, H);
+	//for (int y = 0; y < H; ++y)
+	//{
+	//	for (int x = 0; x < W; ++x)
+	//	{
+	//		SColorf c = ButterFlyImage->GetPixelFloat(x, y);
+	//		if (c.B > 1.f) c.B = 1.f;
+	//		if (c.A > 1.f) c.A = 1.f;
+	//		if (c.R < 0.f) c.R = 0.f;
+	//		if (c.G < 0.f) c.G = 0.f;
+	//		SColor cc;
+	//		c.ToSColor(cc);
+	//		ButterFlyTGA->SetPixel(x, y, cc);
+	//	}
+	//}
+
+	//ButterFlyTGA->SaveToTGA("ButterFlyImage.tga");
+}
 
 void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 {

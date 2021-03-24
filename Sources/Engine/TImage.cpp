@@ -655,14 +655,14 @@ namespace tix
 	}
 
 	static const SColor k_mipmap_color[]	= {
-		SColor(255, 255, 0, 0),	//level1 : red
-		SColor(255, 0, 255, 0),	//level2 : green
-		SColor(255, 0, 0, 255),	//level3 : blue
-		SColor(255, 255, 255, 0),
+		SColor(255, 0, 0, 255),	//level1 : red
+		SColor(0, 255, 0, 255),	//level2 : green
+		SColor(0, 0, 255, 255),	//level3 : blue
 		SColor(255, 255, 0, 255),
 		SColor(255, 0, 255, 255),
-		SColor(255, 128, 128, 128),
-		SColor(255, 0, 128, 0),
+		SColor(0, 255, 255, 255),
+		SColor(128, 128, 128, 255),
+		SColor(0, 128, 0, 255),
 		SColor(255, 255, 255, 255),
 		SColor(255, 255, 255, 255),
 		SColor(255, 255, 255, 255),

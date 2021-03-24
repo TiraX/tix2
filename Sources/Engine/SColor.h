@@ -24,7 +24,7 @@ namespace tix
 
 		//! Constructs the color from 4 values representing the alpha, red, green and blue component.
 		/** Must be values between 0 and 255. */
-		SColor (uint8 a, uint8 r, uint8 g, uint8 b)
+		SColor (uint8 r, uint8 g, uint8 b, uint8 a)
 			: R(r)
 			, G(g)
 			, B(b)
@@ -128,7 +128,7 @@ namespace tix
 			, A(c.A* k_color_inv)
 		{}
 
-		SColorf(float a, float r, float g, float b)
+		SColorf(float r, float g, float b, float a)
 			: R(r), G(g), B(b), A(a)
 		{}
 
