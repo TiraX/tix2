@@ -7,6 +7,7 @@
 #include "GaussRandomCS.h"
 #include "HZeroCS.h"
 #include "HKtCS.h"
+#include "IFFTCS.h"
 
 class FOceanRenderer : public FDefaultRenderer
 {
@@ -36,7 +37,7 @@ private:
 	FTexturePtr ButterFlyTexture;
 
 	// Ocean Compute Shader
-	//FGaussRandomCSPtr GaussRandomCS;	// Create this GaussRandom on CPU
 	FHZeroCSPtr HZeroCS;
 	FHKtCSPtr HKtCS;
+	FIFFTCSPtr IFFTCS[3];
 };

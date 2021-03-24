@@ -3167,7 +3167,7 @@ namespace tix
 		D3D12_GPU_DESCRIPTOR_HANDLE Descriptor = GetGpuDescriptorHandle(RenderResourceTable->GetHeapType(), RenderResourceTable->GetStartIndex());
 		CurrentWorkingCommandList->SetGraphicsRootDescriptorTable(BindIndex, Descriptor);
 
-		HoldResourceReference(RenderResourceTable);;
+		HoldResourceReference(RenderResourceTable);
 	}
 
 	void FRHIDx12::SetComputeResourceTable(int32 BindIndex, FRenderResourceTablePtr RenderResourceTable)

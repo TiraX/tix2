@@ -101,6 +101,7 @@
     <ClCompile Include="GaussRandomCS.cpp" />
     <ClCompile Include="HKtCS.cpp" />
     <ClCompile Include="HZeroCS.cpp" />
+    <ClCompile Include="IFFTCS.cpp" />
     <ClCompile Include="OceanFFTSample.cpp" />
     <ClCompile Include="OceanRenderer.cpp" />
     <ClCompile Include="OceanTicker.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="GaussRandomCS.h" />
     <ClInclude Include="HKtCS.h" />
     <ClInclude Include="HZeroCS.h" />
+    <ClInclude Include="IFFTCS.h" />
     <ClInclude Include="OceanRenderer.h" />
     <ClInclude Include="OceanTicker.h" />
     <ClInclude Include="stdafx.h" />
@@ -137,6 +139,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_HZeroCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_IFFTCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>

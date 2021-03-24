@@ -52,10 +52,6 @@ void FOceanRenderer::InitInRenderThread()
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
-	//GaussRandomCS = ti_new FGaussRandomCS();
-	//GaussRandomCS->Finalize();
-	//GaussRandomCS->PrepareResources(RHI);
-
 	HZeroCS = ti_new FHZeroCS();
 	HZeroCS->Finalize();
 	HZeroCS->PrepareResources(RHI);
@@ -63,6 +59,13 @@ void FOceanRenderer::InitInRenderThread()
 	HKtCS = ti_new FHKtCS();
 	HKtCS->Finalize();
 	HKtCS->PrepareResources(RHI);
+
+	for (int32 i = 0; i < 3; ++i)
+	{
+		IFFTCS[i] = ti_new FIFFTCS();
+		IFFTCS[i]->Finalize();
+		IFFTCS[i]->PrepareResources(RHI);
+	}
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -245,6 +248,14 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		0.f,
 		Choppy
 	);
+	for (int32 i = 0; i < 3; ++i)
+	{
+		IFFTCS[i]->UpdataComputeParams(
+			RHI,
+			HKtCS->GetHKtResult(i),
+			ButterFlyTexture
+		);
+	}
 
 	RHI->BeginComputeTask();
 	{
@@ -254,6 +265,22 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		RHI->BeginEvent("HKt");
 		HKtCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("IFFT");
+
+			RHI->BeginEvent("X");
+			IFFTCS[0]->Run(RHI);
+			RHI->EndEvent();
+
+			RHI->BeginEvent("Y");
+			IFFTCS[1]->Run(RHI);
+			RHI->EndEvent();
+
+			RHI->BeginEvent("Z");
+			IFFTCS[2]->Run(RHI);
+			RHI->EndEvent();
+
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();

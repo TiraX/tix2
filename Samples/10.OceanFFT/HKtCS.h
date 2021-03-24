@@ -28,6 +28,12 @@ public:
 		float InChoppyScale
 	);
 
+	FTexturePtr GetHKtResult(int32 Index)
+	{
+		TI_ASSERT(Index >= 0 && Index < 3);
+		return HKtResults[Index];
+	}
+
 private:
 	enum
 	{
