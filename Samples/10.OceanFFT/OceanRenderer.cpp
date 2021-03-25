@@ -239,13 +239,25 @@ void FOceanRenderer::CreateButterFlyTexture()
 
 void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	const float WaveHeight = 40.f;
-	const float WindSpeed = 30.f;
-	const float WindDir = TMath::DegToRad(45);
-	const float SpressWaveLength = 0.001f;
-	const float Damp = 0.5f;
-	const float Depth = 200.f;
-	const float Choppy = 1.78f;
+	static float WaveHeight = 0.f;
+	static float WindSpeed = 20.f;
+	static float WindDir = TMath::DegToRad(45);
+	static float SpressWaveLength = 0.001f;
+	static float Damp = 0.5f;
+	static float Depth = 200.f;
+	static float Choppy = 1.78f;
+
+	static float SpeedWaveHeight = 5.f;
+	static float SpeedWindSpeed = 10.f;
+	static float SpeedWindDir = TMath::DegToRad(0);
+	static float SpeedSpressWaveLength = 0.f;
+	static float SpeedDamp = 0.f;
+	static float SpeedDepth = 0.f;
+	static float SpeedChoppy = 0.f;
+
+	const float Dt = FRenderThread::Get()->GetRenderThreadFrameTime();
+	WaveHeight += SpeedWaveHeight * Dt;
+	WindSpeed += SpeedWindSpeed * Dt;
 
 	HZeroCS->UpdataComputeParams(
 		RHI,

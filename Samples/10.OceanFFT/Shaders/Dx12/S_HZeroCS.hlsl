@@ -46,7 +46,8 @@ float PhillipsSpectrum(in float2 k)
         result = A
              * exp(-1.f / (k2 * _L * _L)) 
              * exp(-k2 * l * l)
-             * (KoW * KoW)
+             //* (KoW * KoW)
+             * pow(KoW, 8.f)
              * k4_inv;
     }
     return result;

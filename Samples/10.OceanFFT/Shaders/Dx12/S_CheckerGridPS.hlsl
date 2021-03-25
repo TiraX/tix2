@@ -9,13 +9,17 @@ struct VSOutputWithColor
 	float3 normal : Normal;
 	float3 tangent : Tangent;
 	float3 view : TexCoord1;
-	float4 color : TexCoord2;
+	float4 world_position : TexCoord2;
 };
 
 [RootSignature(BasePass_RootSig)]
 float4 main(VSOutputWithColor input) : SV_Target0
 {
-	float Light = saturate(dot(MainLightDirection, input.normal));
+	// calc normal
+	float3 nx = normalize(ddx(input.world_position.xyz));
+	float3 ny = normalize(ddy(input.world_position.xyz));
+	float3 n = cross(nx, ny);
+	float Light = saturate(dot(MainLightDirection, n));
 	//return float4(Light, Light, Light,1);
-	return input.color;
+	return float4(n * 0.5f + 0.5f, 1.f);
 }

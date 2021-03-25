@@ -7,7 +7,7 @@ struct VSOutput
 	float3 view : TexCoord1;
 }; 
 
-cbuffer EB_View : register(b2)
+cbuffer EB_View : register(b0)
 {
 	float4x4 ViewProjection;
 	float3 ViewDir;

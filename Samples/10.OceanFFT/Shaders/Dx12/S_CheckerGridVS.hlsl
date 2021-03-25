@@ -21,7 +21,7 @@ struct VSOutputWithColor
 	float3 normal : Normal;
 	float3 tangent : Tangent;
 	float3 view : TexCoord1;
-	float4 color : TexCoord2;
+	float4 world_position : TexCoord2;
 };
 
 
@@ -71,7 +71,7 @@ VSOutputWithColor main(VSInputWithColor vsInput)
     vsOutput.normal = TransformNormal(vsInput.normal * 2.0 - 1.0, RotMat);
     vsOutput.tangent = TransformNormal(vsInput.tangent * 2.0 - 1.0, RotMat);
 	vsOutput.view = ViewPos - vsInput.position;
-	vsOutput.color = vsInput.color;
+	vsOutput.world_position = float4(WorldPosition, 1.f);
 
     return vsOutput;
 }
