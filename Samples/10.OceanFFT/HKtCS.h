@@ -6,8 +6,7 @@
 #pragma once 
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FHKtUniform)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)		// x = Size; y = L; z = Depth; w = Time;
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info1)	// x = ChopScale;
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)		// x = Size; y = L; z = Depth; w = ChopScale;
 END_UNIFORM_BUFFER_STRUCT(FHKtUniform)
 
 
@@ -24,7 +23,6 @@ public:
 		FRHI* RHI,
 		FTexturePtr InH0Texture,
 		float InDepth,
-		float InTime,
 		float InChoppyScale
 	);
 

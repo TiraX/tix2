@@ -256,7 +256,6 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		RHI,
 		HZeroCS->GetH0Texture(),
 		Depth,
-		0.f,
 		Choppy
 	);
 	for (int32 i = 0; i < 3; ++i)

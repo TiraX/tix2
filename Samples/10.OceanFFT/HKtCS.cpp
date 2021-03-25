@@ -45,22 +45,19 @@ void FHKtCS::UpdataComputeParams(
 	FRHI* RHI,
 	FTexturePtr InH0Texture,
 	float InDepth,
-	float InTime,
 	float InChoppyScale
 )
 {
 	FHKtUniform::FUniformBufferStruct& UniformData = InfoUniform->UniformBufferData[0];
 	if (UniformData.Info.X == 0.f ||
 		UniformData.Info.Z != InDepth ||
-		UniformData.Info.W != InTime ||
-		UniformData.Info1.X != InChoppyScale
+		UniformData.Info.W != InChoppyScale
 		)
 	{
 		UniformData.Info.X = FOceanRenderer::FFT_Size;
 		UniformData.Info.Y = FOceanRenderer::FFT_Size;
 		UniformData.Info.Z = InDepth;
-		UniformData.Info.W = InTime;
-		UniformData.Info1.X = InChoppyScale;
+		UniformData.Info.W = InChoppyScale;
 
 		InfoUniform->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 	}
@@ -81,8 +78,9 @@ void FHKtCS::Run(FRHI* RHI)
 	DispatchSize.Y = (FOceanRenderer::FFT_Size + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeConstantBuffer(0, InfoUniform->UniformBuffer);
-	RHI->SetComputeResourceTable(1, ResourceTable);
+	RHI->SetComputeConstant(0, FFloat4(FRenderThread::Get()->GetRenderThreadLiveTime(), 0.f, 0.f, 0.f));
+	RHI->SetComputeConstantBuffer(1, InfoUniform->UniformBuffer);
+	RHI->SetComputeResourceTable(2, ResourceTable);
 
 	RHI->DispatchCompute(vector3di(BlockSize, BlockSize, 1), DispatchSize);
 }

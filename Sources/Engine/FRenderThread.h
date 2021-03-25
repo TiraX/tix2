@@ -170,6 +170,16 @@ namespace tix
 			return VTSystem;
 		}
 
+		float GetRenderThreadLiveTime() const
+		{
+			return RTLiveTime;
+		}
+
+		float GetRenderThreadFrameTime() const
+		{
+			return RTFrameTime;
+		}
+
 	private:
 		static FRenderThread* RenderThread;
 		FRenderThread();
@@ -191,6 +201,11 @@ namespace tix
 		int32 TriggerNum;
 		TMutex RenderMutex;
 		TCond RenderCond;
+
+		// Time and Frame Time 
+		uint64 LastRTFrameTime;
+		float RTLiveTime;
+		float RTFrameTime;
 
 		// Frame Index that is filling by game thread, operate in game thread
 		int32 PreFrameIndex;

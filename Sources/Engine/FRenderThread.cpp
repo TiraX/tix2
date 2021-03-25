@@ -69,6 +69,9 @@ namespace tix
 	FRenderThread::FRenderThread()
 		: TThread("RenderThread")
 		, TriggerNum(0)
+		, LastRTFrameTime(0)
+		, RTLiveTime(0.f)
+		, RTFrameTime(0.f)
 		, PreFrameIndex(0)
 		, RenderFrameIndex(0)
 		, RHI(nullptr)
@@ -128,6 +131,17 @@ namespace tix
 	{
 		// Waiting for Game thread tick
 		WaitForRenderSignal();
+
+		// Update Render Thread live time
+		{
+			if (LastRTFrameTime == 0)
+				LastRTFrameTime = TTimer::GetCurrentTimeMillis();
+			uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
+			uint32 Delta = (uint32)(CurrentFrameTime - LastRTFrameTime);
+			RTFrameTime = Delta * 0.001f;
+			RTLiveTime += RTFrameTime;
+			LastRTFrameTime = CurrentFrameTime;
+		}
         
 		AUTORELEASE_POOL_START
         

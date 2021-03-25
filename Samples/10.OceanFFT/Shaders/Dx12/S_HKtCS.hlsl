@@ -10,16 +10,18 @@
 //*********************************************************
 
 #define HKt_RootSig \
-	"CBV(b0) ," \
+    "RootConstants(num32BitConstants=4, b0), " \
+	"CBV(b1) ," \
     "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=3))" 
 
 static const float PI = 3.14159f;
 static const float GRAVITY = 9.8f;
 
-cbuffer FInfoUniform : register(b0)
+float4 GameTime : register(b0);
+
+cbuffer FInfoUniform : register(b1)
 {
-    float4 Info;    // x = Size; y = L; z = Depth; w = Time;
-    float4 Info2;   // x = ChopScale;
+    float4 Info;    // x = Size; y = L; z = Depth; w = ChopScale;
 };
 
 Texture2D<float4> H0Texture : register(t0);
@@ -42,8 +44,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     const float GridSize = Info.x;
     const float L = Info.y;
     const float Depth = Info.z;
-    const float Time = Info.w;
-    const float ChopScale = Info2.x;
+    const float ChopScale = Info.w;
+    const float Time = GameTime.x;
 
     float2 k = (float2(dispatchThreadId.xy) - GridSize * 0.5f) * PI * 2.f / L;
 
