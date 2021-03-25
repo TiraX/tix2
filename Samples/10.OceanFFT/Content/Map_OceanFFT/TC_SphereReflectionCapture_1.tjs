@@ -1,0 +1,16 @@
+{
+	"name": "TC_SphereReflectionCapture_1",
+	"type": "texture",
+	"version": 1,
+	"desc": "Texture from TiX exporter.",
+	"source": "TC_SphereReflectionCapture_1.hdr",
+	"texture_type": "ETT_TEXTURE_CUBE",
+	"srgb": 0,
+	"is_normalmap": 0,
+	"has_mips": 1,
+	"ibl": 1,
+	"width": 128,
+	"height": 128,
+	"mips": 8,
+	"lod_bias": 0
+}

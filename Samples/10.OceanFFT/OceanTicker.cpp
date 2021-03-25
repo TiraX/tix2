@@ -32,7 +32,7 @@ void TOceanTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
 	// Load scene
-	const TString TargetSceneAsset = "Room.tasset";
+	const TString TargetSceneAsset = "Map_OceanFFT.tasset";
 	//const TString TargetSceneAsset = "Slum01.tasset";
 	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }

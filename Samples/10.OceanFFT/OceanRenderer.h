@@ -28,6 +28,8 @@ private:
 	void CreateGaussRandomTexture();
 	void CreateButterFlyTexture();
 
+	void DrawOceanGrid(FRHI* RHI, FScene* Scene);
+
 private:
 	FArgumentBufferPtr AB_Result;
 	FArgumentBufferPtr AB_DebugDisplacement;
@@ -43,4 +45,8 @@ private:
 	FHKtCSPtr HKtCS;
 	FIFFTCSPtr IFFTCS[3];
 	FDisplacementCSPtr DisplacementCS;
+
+	// Ocean grid mesh
+	FPrimitivePtr OceanPrimitive;
+	FRenderResourceTablePtr OceanDisplacementResource;
 };

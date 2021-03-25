@@ -78,7 +78,7 @@ void FHKtCS::Run(FRHI* RHI)
 	DispatchSize.Y = (FOceanRenderer::FFT_Size + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
-	RHI->SetComputeConstant(0, FFloat4(FRenderThread::Get()->GetRenderThreadLiveTime(), 0.f, 0.f, 0.f));
+	RHI->SetComputeConstant(0, FFloat4(FRenderThread::Get()->GetRenderThreadLiveTime() * 2.f, 0.f, 0.f, 0.f));
 	RHI->SetComputeConstantBuffer(1, InfoUniform->UniformBuffer);
 	RHI->SetComputeResourceTable(2, ResourceTable);
 

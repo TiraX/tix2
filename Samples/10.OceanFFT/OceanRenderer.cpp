@@ -72,6 +72,10 @@ void FOceanRenderer::InitInRenderThread()
 	DisplacementCS->Finalize();
 	DisplacementCS->PrepareResources(RHI);
 
+	// Create displacement resource table for checker grid
+	OceanDisplacementResource = RHI->CreateRenderResourceTable(1, EHT_SHADER_RESOURCE);
+	OceanDisplacementResource->PutTextureInTable(DisplacementCS->GetDisplacementTexture(), 0);
+
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
@@ -306,11 +310,43 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->EndComputeTask();
 
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	DrawSceneTiles(RHI, Scene);
+	//DrawSceneTiles(RHI, Scene);
+	DrawOceanGrid(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
 
 	// Debug
-	FSRender.DrawFullScreenTexture(RHI, AB_DebugDisplacement);
+	//FSRender.DrawFullScreenTexture(RHI, AB_DebugDisplacement);
+}
+
+void FOceanRenderer::DrawOceanGrid(FRHI* RHI, FScene* Scene)
+{
+	const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
+	if (OceanPrimitive == nullptr)
+	{
+		for (auto& TileIter : SceneTileResources)
+		{
+			FSceneTileResourcePtr TileRes = TileIter.second;
+
+			const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
+			for (uint32 PIndex = 0; PIndex < (uint32)TilePrimitives.size(); ++PIndex)
+			{
+				OceanPrimitive = TilePrimitives[PIndex];
+			}
+		}
+	}
+	if (OceanPrimitive != nullptr)
+	{
+		FInstanceBufferPtr InstanceBuffer = OceanPrimitive->GetInstanceBuffer();
+		RHI->SetGraphicsPipeline(OceanPrimitive->GetPipeline());
+		RHI->SetMeshBuffer(OceanPrimitive->GetMeshBuffer(), InstanceBuffer);
+		ApplyShaderParameter(RHI, Scene, OceanPrimitive);
+		RHI->SetRenderResourceTable(2, OceanDisplacementResource);
+
+		RHI->DrawPrimitiveIndexedInstanced(
+			OceanPrimitive->GetMeshBuffer(),
+			InstanceBuffer == nullptr ? 1 : OceanPrimitive->GetInstanceCount(),
+			OceanPrimitive->GetInstanceOffset());
+	}
 }

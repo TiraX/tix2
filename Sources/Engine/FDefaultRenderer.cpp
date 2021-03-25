@@ -93,6 +93,9 @@ namespace tix
 	{
 		switch (Argument.ArgumentType)
 		{
+		case ARGUMENT_UNKNOWN:
+			// A custom argument, do nothing here.
+			break;
 		case ARGUMENT_EB_VIEW:
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetViewUniformBuffer()->UniformBuffer);
 			break;

@@ -1,0 +1,10 @@
+{
+	"name": "MI_CheckerGrid",
+	"type": "material_instance",
+	"version": 1,
+	"desc": "Material instance from TiX exporter.",
+	"linked_material": "_OceanFFT/M_CheckerGrid.tasset",
+	"parameters":
+	{
+	}
+}

@@ -1,0 +1,50 @@
+{
+	"name": "Map_OceanFFT_t0_-1",
+	"level": "Map_OceanFFT",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ 0, -1 ],
+	"bbox": [ -5, -5, -3.0616167344162256e-16, 5, 5, 3.0616167344162256e-16 ],
+	"meshes_total": 1,
+	"mesh_sections_total": 1,
+	"instances_total": 1,
+	"texture_total": 0,
+	"reflection_captures_total": 1,
+	"reflection_captures": [
+		{
+			"name": "SphereReflectionCapture_1",
+			"linked_cubemap": "Map_OceanFFT/TC_SphereReflectionCapture_1.tasset",
+			"cubemap_size": 128,
+			"average_brightness": 0.50537109375,
+			"brightness": 1,
+			"position": [ 0, 0, 266.861328125 ]
+		}
+	],
+	"dependency":
+	{
+		"textures": [],
+		"materials": [
+			"_OceanFFT/M_CheckerGrid.tasset"
+		],
+		"material_instances": [
+			"_OceanFFT/MI_CheckerGrid.tasset"
+		],
+		"meshes": [
+			"_OceanFFT/SM_CheckerGrid.tasset"
+		]
+	},
+	"instances": [
+		{
+			"linked_mesh": "_OceanFFT/SM_CheckerGrid.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0, 0, 0 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		}
+	]
+}

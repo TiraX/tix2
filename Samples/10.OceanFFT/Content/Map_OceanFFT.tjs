@@ -1,0 +1,36 @@
+{
+	"name": "Map_OceanFFT",
+	"type": "scene",
+	"version": 1,
+	"desc": "Scene tiles information from TiX exporter.",
+	"mesh_total": 1,
+	"instances_total": 1,
+	"texture_total": "Unknown Yet",
+	"cameras": [
+		{
+			"location": [ -8.4224309921264648, 6.8053150177001953, 5.7593646049499512 ],
+			"target": [ -7.7687149047851562, 6.3025321960449219, 5.1937980651855469 ],
+			"rotator": [ -34.441642761230469, -37.564403533935547, 0 ],
+			"fov": 90,
+			"aspect": 1.7777780294418335
+		}
+	],
+	"environment":
+	{
+		"sun_light":
+		{
+			"name": "LightSource",
+			"direction": [ 0.68733429908752441, 0.50697910785675049, -0.52013814449310303 ],
+			"color": [ 1, 1, 1, 1 ],
+			"intensity": 3.1415927410125732
+		},
+		"sky_light":
+		{
+			"name": "SkyLight_1",
+			"irradiance_sh3": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+		}
+	},
+	"tiles": [
+		[ 0, -1 ]
+	]
+}
