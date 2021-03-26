@@ -22,5 +22,6 @@ float4 main(VSOutputWithColor input) : SV_Target0
 	float3 n = cross(nx, ny);
 	float Light = saturate(dot(MainLightDirection, n));
 	//return float4(Light, Light, Light,1);
-	return input.color;// *float4(n * 0.5f + 0.5f, 1.f);
+	//return float4(n * 0.5f + 0.5f, 1.f);
+	return input.color * float4(n * 0.5f + 0.5f, 1.f);
 }

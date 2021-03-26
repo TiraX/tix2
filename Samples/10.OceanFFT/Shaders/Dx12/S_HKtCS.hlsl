@@ -83,9 +83,9 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     {
         HKt_X = complex_mul(HKt_Z * ChopScale * k.x / kl, float2(0, -1));
         HKt_Y = complex_mul(HKt_Z * ChopScale * k.y / kl, float2(0, -1));
-        Jxx = HKt_Z * ChopScale * k.x * k.x / kl;
-        Jyy = HKt_Z * ChopScale * k.y * k.y / kl;
-        Jxy = HKt_Z * ChopScale * k.x * k.y / kl;
+        Jxx = HKt_Z * ChopScale * k.x * k.x / kl * (-1);
+        Jyy = HKt_Z * ChopScale * k.y * k.y / kl * (-1);
+        Jxy = HKt_Z * ChopScale * k.x * k.y / kl * (-1);
     }
 
     // Output

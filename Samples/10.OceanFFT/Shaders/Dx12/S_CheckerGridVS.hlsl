@@ -81,8 +81,8 @@ VSOutputWithColor main(VSInputWithColor vsInput)
 	vsOutput.view = ViewPos - vsInput.position;
 	vsOutput.world_position = float4(WorldPosition, 1.f);
 	float mask = OceanDisplacement.w;// +(5.5f);
-	float c = saturate(-mask / 1.5 - 1.6);
-	vsOutput.color = float4(c, 0, 0.1, 1.f);
+	float c = saturate(-mask / 1.5 - 5.5f);
+	vsOutput.color = float4(c, c, 0.4, 1.f);
 
     return vsOutput;
 }
