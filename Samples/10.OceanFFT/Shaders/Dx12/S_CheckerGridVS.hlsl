@@ -22,6 +22,7 @@ struct VSOutputWithColor
 	float3 tangent : Tangent;
 	float3 view : TexCoord1;
 	float4 world_position : TexCoord2;
+	float4 color : TexCoord3;
 };
 
 
@@ -53,6 +54,13 @@ float3x3 GetWorldRotationMat(in VSInputWithColor vsInput)
 Texture2D OceanDisplacementTex : register(t0);
 SamplerState sampler0 : register(s0);
 
+float remapto01(float value, float bot, float top)
+{
+	value = clamp(value , bot, top);
+	value /= (top - bot);
+	return value;
+}
+
 [RootSignature(CheckerGrid_RootSig)]
 VSOutputWithColor main(VSInputWithColor vsInput)
 {
@@ -72,6 +80,9 @@ VSOutputWithColor main(VSInputWithColor vsInput)
     vsOutput.tangent = TransformNormal(vsInput.tangent * 2.0 - 1.0, RotMat);
 	vsOutput.view = ViewPos - vsInput.position;
 	vsOutput.world_position = float4(WorldPosition, 1.f);
+	float mask = OceanDisplacement.w;// +(5.5f);
+	float c = saturate(-mask / 1.5 - 1.6);
+	vsOutput.color = float4(c, 0, 0.1, 1.f);
 
     return vsOutput;
 }

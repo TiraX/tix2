@@ -32,6 +32,12 @@ public:
 		return HKtResults[Index];
 	}
 
+	FTexturePtr GetJacobResult(int32 Index)
+	{
+		TI_ASSERT(Index >= 0 && Index < 3);
+		return Jacobian[Index];
+	}
+
 private:
 	enum
 	{
@@ -39,6 +45,9 @@ private:
 		UAV_HKT_X,
 		UAV_HKT_Y,
 		UAV_HKT_Z,
+		UAV_JXX,
+		UAV_JYY,
+		UAV_JXY,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -50,5 +59,6 @@ private:
 
 	FTexturePtr H0Texture;
 	FTexturePtr HKtResults[3];
+	FTexturePtr Jacobian[3];
 };
 typedef TI_INTRUSIVE_PTR(FHKtCS) FHKtCSPtr;

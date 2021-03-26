@@ -35,24 +35,19 @@ void FDisplacementCS::PrepareResources(FRHI* RHI)
 	DisplacementTexture->SetResourceName("DisplacementTexture");
 	RHI->UpdateHardwareResourceTexture(DisplacementTexture);
 
-	TTextureDesc DebugTextureDesc = DisplacementTextureDesc;
-	DebugTextureDesc.Format = EPF_BGRA8;
-	DebugTexture = RHI->CreateTexture(DebugTextureDesc);
-	DebugTexture->SetTextureFlag(ETF_UAV, true);
-	DebugTexture->SetResourceName("DebugTexture");
-	RHI->UpdateHardwareResourceTexture(DebugTexture);
-
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 
 	ResourceTable->PutRWTextureInTable(DisplacementTexture, 0, UAV_DISPLACEMENT_TEXTURE);
-	ResourceTable->PutRWTextureInTable(DebugTexture, 0, UAV_DEBUG_TEXTURE);
 }
 
 void FDisplacementCS::UpdataComputeParams(
 	FRHI* RHI,
 	FTexturePtr InIFFT_X,
 	FTexturePtr InIFFT_Y,
-	FTexturePtr InIFFT_Z
+	FTexturePtr InIFFT_Z,
+	FTexturePtr InJACOB_X,
+	FTexturePtr InJACOB_Y,
+	FTexturePtr InJACOB_Z
 )
 {
 	if (InIFFT_X != IFFTTextures[0] ||
@@ -65,6 +60,17 @@ void FDisplacementCS::UpdataComputeParams(
 		IFFTTextures[0] = InIFFT_X;
 		IFFTTextures[1] = InIFFT_Y;
 		IFFTTextures[2] = InIFFT_Z;
+	}
+	if (InJACOB_X != JacobTextures[0] ||
+		InJACOB_Y != JacobTextures[1] ||
+		InJACOB_Z != JacobTextures[2])
+	{
+		ResourceTable->PutTextureInTable(InJACOB_X, SRV_JACOB_X);
+		ResourceTable->PutTextureInTable(InJACOB_Y, SRV_JACOB_Y);
+		ResourceTable->PutTextureInTable(InJACOB_Z, SRV_JACOB_Z);
+		JacobTextures[0] = InJACOB_X;
+		JacobTextures[1] = InJACOB_Y;
+		JacobTextures[2] = InJACOB_Z;
 	}
 }
 

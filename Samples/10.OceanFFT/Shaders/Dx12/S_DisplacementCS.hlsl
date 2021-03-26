@@ -11,7 +11,7 @@
 
 #define CalcDisp_RS \
 	"CBV(b0) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=2))" 
+    "DescriptorTable(SRV(t0, numDescriptors=6), UAV(u0, numDescriptors=2))" 
 
 cbuffer FInfoUniform : register(b0)
 {
@@ -21,9 +21,11 @@ cbuffer FInfoUniform : register(b0)
 Texture2D<float2> IFFT_X : register(t0);
 Texture2D<float2> IFFT_Y : register(t1);
 Texture2D<float2> IFFT_Z : register(t2);
+Texture2D<float2> JacobX : register(t3);
+Texture2D<float2> JacobY : register(t4);
+Texture2D<float2> JacobZ : register(t5);
 
 RWTexture2D<float4> DisplacementTexture : register(u0);
-RWTexture2D<float4> DebugTexture : register(u1);
 
 [RootSignature(CalcDisp_RS)]
 [numthreads(32, 32, 1)]
@@ -41,6 +43,30 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     D.z = IFFT_Z.Load(int3(dispatchThreadId.xy, 0)).x;
 
     D *= perm * SizeSQ_Inv;
-    DisplacementTexture[dispatchThreadId.xy] = float4(D.xyz, 1.f);
-    DebugTexture[dispatchThreadId.xy] = float4(saturate(D.zyx), 1.f);
+
+
+    float3 J;
+    J.x = JacobX.Load(int3(dispatchThreadId.xy, 0)).x;
+    J.y = JacobY.Load(int3(dispatchThreadId.xy, 0)).x;
+    J.z = JacobZ.Load(int3(dispatchThreadId.xy, 0)).x;
+
+    J *= perm / Size;
+    J.xy += 1.f;
+
+    // eigenvalue & eigenvector
+    float a, b;
+    a = J.x + J.y;
+    b = sqrt((J.x - J.y) * (J.x - J.y) + 4.f * J.z * J.z);
+    float jminus, jplus;
+    jminus = (a - b) * 0.5f;
+    jplus = (a + b) * 0.5f;
+    float qplus = (jplus - J.x) / J.z;
+    float qminus = (jminus - J.x) / J.z;
+
+    a = sqrt(1.f + qplus * qplus);
+    b = sqrt(1.f + qminus * qminus);
+
+    float3 EMinus = float3(1.f / b, 0.f, qminus / b);
+
+    DisplacementTexture[dispatchThreadId.xy] = float4(D.xyz, jminus);
 }

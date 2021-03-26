@@ -47,7 +47,7 @@ float PhillipsSpectrum(in float2 k)
              * exp(-1.f / (k2 * _L * _L)) 
              * exp(-k2 * l * l)
              //* (KoW * KoW)
-             * pow(KoW, 8.f)
+             * pow(KoW, 8.f)    // more wind aligment
              * k4_inv;
     }
     return result;

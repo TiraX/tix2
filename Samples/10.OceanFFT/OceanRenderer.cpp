@@ -63,9 +63,13 @@ void FOceanRenderer::InitInRenderThread()
 
 	for (int32 i = 0; i < 3; ++i)
 	{
-		IFFTCS[i] = ti_new FIFFTCS();
-		IFFTCS[i]->Finalize();
-		IFFTCS[i]->PrepareResources(RHI);
+		IFFTHeightCS[i] = ti_new FIFFTCS();
+		IFFTHeightCS[i]->Finalize();
+		IFFTHeightCS[i]->PrepareResources(RHI);
+
+		IFFTJacobCS[i] = ti_new FIFFTCS();
+		IFFTJacobCS[i]->Finalize();
+		IFFTJacobCS[i]->PrepareResources(RHI);
 	}
 
 	DisplacementCS = ti_new FDisplacementCS();
@@ -80,12 +84,6 @@ void FOceanRenderer::InitInRenderThread()
 	{
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
-	}
-
-	AB_DebugDisplacement = RHI->CreateArgumentBuffer(1);
-	{
-		AB_DebugDisplacement->SetTexture(0, DisplacementCS->GetDebugTexture());
-		RHI->UpdateHardwareResourceAB(AB_DebugDisplacement, FSRender.GetFullScreenShader(), 0);
 	}
 
 	// Create resources
@@ -258,6 +256,7 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 	const float Dt = FRenderThread::Get()->GetRenderThreadFrameTime();
 	WaveHeight += SpeedWaveHeight * Dt;
 	WindSpeed += SpeedWindSpeed * Dt;
+	Choppy += SpeedChoppy * Dt;
 
 	HZeroCS->UpdataComputeParams(
 		RHI,
@@ -276,17 +275,25 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 	);
 	for (int32 i = 0; i < 3; ++i)
 	{
-		IFFTCS[i]->UpdataComputeParams(
+		IFFTHeightCS[i]->UpdataComputeParams(
 			RHI,
 			HKtCS->GetHKtResult(i),
+			ButterFlyTexture
+		);
+		IFFTJacobCS[i]->UpdataComputeParams(
+			RHI,
+			HKtCS->GetJacobResult(i),
 			ButterFlyTexture
 		);
 	}
 	DisplacementCS->UpdataComputeParams(
 		RHI,
-		IFFTCS[0]->GetFinalResult(),
-		IFFTCS[1]->GetFinalResult(),
-		IFFTCS[2]->GetFinalResult()
+		IFFTHeightCS[0]->GetFinalResult(),
+		IFFTHeightCS[1]->GetFinalResult(),
+		IFFTHeightCS[2]->GetFinalResult(),
+		IFFTJacobCS[0]->GetFinalResult(),
+		IFFTJacobCS[1]->GetFinalResult(),
+		IFFTJacobCS[2]->GetFinalResult()
 	);
 
 	RHI->BeginComputeTask();
@@ -299,20 +306,22 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		HKtCS->Run(RHI);
 		RHI->EndEvent();
 
-		RHI->BeginEvent("IFFT");
-
-			RHI->BeginEvent("X");
-			IFFTCS[0]->Run(RHI);
+		static const int8* PassName[] = { "X", "Y", "Z" };
+		RHI->BeginEvent("IFFT-Height");
+		for (int32 i = 0; i < 3; i++)
+		{
+			RHI->BeginEvent(PassName[i]);
+			IFFTHeightCS[i]->Run(RHI);
 			RHI->EndEvent();
-
-			RHI->BeginEvent("Y");
-			IFFTCS[1]->Run(RHI);
+		}
+		RHI->EndEvent();
+		RHI->BeginEvent("IFFT-Jacob");
+		for (int32 i = 0; i < 3; i++)
+		{
+			RHI->BeginEvent(PassName[i]);
+			IFFTJacobCS[i]->Run(RHI);
 			RHI->EndEvent();
-
-			RHI->BeginEvent("Z");
-			IFFTCS[2]->Run(RHI);
-			RHI->EndEvent();
-
+		}
 		RHI->EndEvent();
 
 		RHI->BeginEvent("Displacement");

@@ -32,7 +32,6 @@ private:
 
 private:
 	FArgumentBufferPtr AB_Result;
-	FArgumentBufferPtr AB_DebugDisplacement;
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
@@ -43,7 +42,8 @@ private:
 	// Ocean Compute Shader
 	FHZeroCSPtr HZeroCS;
 	FHKtCSPtr HKtCS;
-	FIFFTCSPtr IFFTCS[3];
+	FIFFTCSPtr IFFTHeightCS[3];
+	FIFFTCSPtr IFFTJacobCS[3];
 	FDisplacementCSPtr DisplacementCS;
 
 	// Ocean grid mesh

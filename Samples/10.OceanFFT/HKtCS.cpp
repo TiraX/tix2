@@ -38,6 +38,13 @@ void FHKtCS::PrepareResources(FRHI* RHI)
 		RHI->UpdateHardwareResourceTexture(HKtResults[i]);
 
 		ResourceTable->PutRWTextureInTable(HKtResults[i], 0, UAV_HKT_X + i);
+
+		Jacobian[i] = RHI->CreateTexture(HKtTextureDesc);
+		Jacobian[i]->SetTextureFlag(ETF_UAV, true);
+		Jacobian[i]->SetResourceName("Jacobian");
+		RHI->UpdateHardwareResourceTexture(Jacobian[i]);
+
+		ResourceTable->PutRWTextureInTable(Jacobian[i], 0, UAV_JXX + i);
 	}
 }
 

@@ -23,16 +23,15 @@ public:
 		FRHI* RHI,
 		FTexturePtr InIFFT_X,
 		FTexturePtr InIFFT_Y,
-		FTexturePtr InIFFT_Z
+		FTexturePtr InIFFT_Z,
+		FTexturePtr InJACOB_X,
+		FTexturePtr InJACOB_Y,
+		FTexturePtr InJACOB_Z
 	);
 
 	FTexturePtr GetDisplacementTexture()
 	{
 		return DisplacementTexture;
-	}
-	FTexturePtr GetDebugTexture()
-	{
-		return DebugTexture;
 	}
 
 private:
@@ -41,8 +40,10 @@ private:
 		SRV_IFFT_X,
 		SRV_IFFT_Y,
 		SRV_IFFT_Z,
+		SRV_JACOB_X,
+		SRV_JACOB_Y,
+		SRV_JACOB_Z,
 		UAV_DISPLACEMENT_TEXTURE,
-		UAV_DEBUG_TEXTURE,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -53,7 +54,7 @@ private:
 	FRenderResourceTablePtr ResourceTable;
 
 	FTexturePtr IFFTTextures[3];
+	FTexturePtr JacobTextures[3];
 	FTexturePtr DisplacementTexture;
-	FTexturePtr DebugTexture;
 };
 typedef TI_INTRUSIVE_PTR(FDisplacementCS) FDisplacementCSPtr;
