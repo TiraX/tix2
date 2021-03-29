@@ -19,7 +19,7 @@ int main()
 
 		// before tick and render
 		TEngine::Get()->AddTicker(ti_new TVirtualTextureTicker());
-		TEngine::Get()->AddRenderer(ti_new FVirtualTextureRenderer());
+		TEngine::Get()->AssignRenderer(ti_new FVirtualTextureRenderer());
 
 		// Setup scenes
 		TVirtualTextureTicker::SetupScene();

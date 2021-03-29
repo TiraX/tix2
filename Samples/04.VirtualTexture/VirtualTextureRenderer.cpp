@@ -138,7 +138,7 @@ void FVirtualTextureRenderer::InitInRenderThread()
 #if defined (TIX_DEBUG)
 	RT_BasePass->SetResourceName("BasePass");
 #endif
-	RT_BasePass->AddColorBuffer(ColorAttachmentFormat, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddColorBuffer(ColorAttachmentFormat, 0, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 
 	if (FVTSystem::IsEnabled())
 	{
@@ -157,7 +157,7 @@ void FVirtualTextureRenderer::InitInRenderThread()
         
 		RT_BasePass->AddColorBuffer(Texture, ERTC_COLOR1, ERT_LOAD_CLEAR, UV_ATT_STORE);
 	}
-	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
+	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 0, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 #if (USE_TILE_SHADER)
     RT_BasePass->SetTileSize(vector2di(16, 16));
     // tileW * tileH * (sizeof(RGBA16F) + sizeof(RGBA16F))

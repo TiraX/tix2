@@ -270,7 +270,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 	// Render preZ depth
 	if (bGPUCull)
 	{
-		RHI->BeginRenderToRenderTarget(RT_DepthOnly, 0, "PreZ");
+		RHI->BeginRenderToRenderTarget(RT_DepthOnly, "PreZ");
 		TestDrawSceneIndirectCommandBuffer(RHI,
 			Scene,
 			SceneMetaInfo->GetMergedOccludeMeshBuffer(),
@@ -322,7 +322,7 @@ void FGPUDrivenRenderer::Render(FRHI* RHI, FScene* Scene)
 
 	{
 		// Do test
-		RHI->BeginRenderToRenderTarget(RT_BasePass, 0, "BasePass");
+		RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 		//TestDrawSceneIndirectCommandBuffer(RHI,
 		//	Scene,
 		//	SceneMetaInfo->GetMergedSceneMeshBuffer(),
