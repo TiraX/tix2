@@ -31,11 +31,12 @@ namespace tix
 		}
 		PipelineResource = FRHI::Get()->CreatePipeline(Desc.Shader->ShaderResource);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TPipelineUpdateResource,
-			FPipelinePtr, Pipeline_RT, PipelineResource,
-			TPipelinePtr, PipeDesc, this,
+		FPipelinePtr _PipelineResource = PipelineResource;
+		TPipelinePtr PipelineDesc = this;
+		ENQUEUE_RENDER_COMMAND(TPipelineUpdateResource)(
+			[_PipelineResource, PipelineDesc]()
 			{
-				FRHI::Get()->UpdateHardwareResourcePL(Pipeline_RT, PipeDesc);
+				FRHI::Get()->UpdateHardwareResourcePL(_PipelineResource, PipelineDesc);
 			});
 	}
 
@@ -43,10 +44,11 @@ namespace tix
 	{
 		TI_ASSERT(PipelineResource != nullptr);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TPipelineDestroyFPipeline,
-			FPipelinePtr, Pipeline_RT, PipelineResource,
+		FPipelinePtr _PipelineResource = PipelineResource;
+		ENQUEUE_RENDER_COMMAND(TPipelineDestroyFPipeline)(
+			[_PipelineResource]()
 			{
-				Pipeline_RT = nullptr;
+				//_PipelineResource = nullptr;
 			});
 		PipelineResource = nullptr;
 	}

@@ -142,7 +142,8 @@ namespace tix
 			// Send a render thread task to update lights uniform buffer
 			if (bLightsDirty)
 			{
-				ENQUEUE_UNIQUE_RENDER_COMMAND(InitSceneLightsUniformBuffer,
+				ENQUEUE_RENDER_COMMAND(InitSceneLightsUniformBuffer)(
+					[]()
 					{
 						FRenderThread::Get()->GetRenderScene()->GetSceneLights()->InitSceneLightsUniformBufferRenderResource();
 					});

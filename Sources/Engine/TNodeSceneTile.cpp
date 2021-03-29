@@ -137,20 +137,21 @@ namespace tix
 
 						// Add static mesh to scene
 						FMeshBufferPtr OccludeMeshBufferResource = StaticMesh->GetOccludeMesh() == nullptr ? nullptr : StaticMesh->GetOccludeMesh()->MeshBufferResource;
-						ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileStaticMeshToFScene,
-							FMeshBufferPtr, StaticMeshResource, StaticMesh->GetMeshBuffer()->MeshBufferResource,
-							FMeshBufferPtr, StaticOccludeMeshResource, OccludeMeshBufferResource,
-							FUniformBufferPtr, ClusterData, StaticMesh->GetMeshBuffer()->MeshClusterDataResource,
+						FMeshBufferPtr StaticMeshResource = StaticMesh->GetMeshBuffer()->MeshBufferResource;
+						FUniformBufferPtr ClusterData = StaticMesh->GetMeshBuffer()->MeshClusterDataResource;
+						ENQUEUE_RENDER_COMMAND(AddTSceneTileStaticMeshToFScene)(
+							[StaticMeshResource, OccludeMeshBufferResource, ClusterData]()
 							{
-								FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(StaticMeshResource, StaticOccludeMeshResource, ClusterData);
+								FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(StaticMeshResource, OccludeMeshBufferResource, ClusterData);
 							});
 
 
 						// Add primitive to scene
-						ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(AddTSceneTileMeshPrimitivesToFSceneTile,
-							FSceneTileResourcePtr, RenderThreadSceneTileResource, SceneTileResource->RenderThreadTileResource,
-							TVector<uint32>, Indices, PrimitiveIndices,
-							TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
+						FSceneTileResourcePtr RenderThreadSceneTileResource = SceneTileResource->RenderThreadTileResource;
+						TVector<uint32> Indices = PrimitiveIndices;
+						TVector<FPrimitivePtr> Primitives = LinkedPrimitives;
+						ENQUEUE_RENDER_COMMAND(AddTSceneTileMeshPrimitivesToFSceneTile)(
+							[RenderThreadSceneTileResource, Indices, Primitives]()
 							{
 								const uint32 TotalPrimitives = (uint32)Primitives.size();
 								for (uint32 p = 0; p < TotalPrimitives; ++p)
@@ -200,11 +201,12 @@ namespace tix
 						TTexturePtr CubeTexture = static_cast<TTexture*>(CubeResources[0].get());
 
 						// Add Env Light to FScene
-						ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(AddEnvLightToFScene,
-							FTexturePtr, CubeTexture, CubeTexture->TextureResource,
-							vector3df, Position, EnvLightInfo.Position,
+						FTexturePtr CubeTextureResource = CubeTexture->TextureResource;
+						vector3df Position = EnvLightInfo.Position;
+						ENQUEUE_RENDER_COMMAND(AddEnvLightToFScene)(
+							[CubeTextureResource, Position]()
 							{
-								FRenderThread::Get()->GetRenderScene()->AddEnvLight(CubeTexture, Position);
+								FRenderThread::Get()->GetRenderScene()->AddEnvLight(CubeTextureResource, Position);
 							});
 
 						// Remove the reference holder

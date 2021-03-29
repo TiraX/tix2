@@ -10,121 +10,6 @@ namespace tix
 	class FRenderer;
 	class FRHI;
 
-#if TIX_DEBUG_RENDER_TASK_NAME
-#	define SET_TASK_NAME(n) SetTaskName(n)
-#else
-#	define SET_TASK_NAME(n) 
-#endif
-
-#define RENDERTHREAD_TASK_FUNCTION(Code) \
-	virtual void Execute() override \
-	{ \
-		Code; \
-	}
-
-	// No parameter
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_DECLARE(TypeName, Code) \
-	class FRTTask_##TypeName : public TTask \
-	{ \
-	public: \
-		FRTTask_##TypeName() {SET_TASK_NAME(#TypeName);} \
-		RENDERTHREAD_TASK_FUNCTION(Code) \
-	};
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_CREATE(TypeName) \
-	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(); \
-	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
-
-	// One parameters
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
-	class FRTTask_##TypeName : public TTask \
-	{ \
-	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1) : ParamName1(In##ParamName1) {SET_TASK_NAME(#TypeName);} \
-		RENDERTHREAD_TASK_FUNCTION(Code) \
-	private: \
-		ParamType1 ParamName1; \
-	};
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1) \
-	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1); \
-	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
-
-	// Two parameters
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
-	class FRTTask_##TypeName : public TTask \
-	{ \
-	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2) : ParamName1(In##ParamName1), ParamName2(In##ParamName2) {SET_TASK_NAME(#TypeName);} \
-		RENDERTHREAD_TASK_FUNCTION(Code) \
-	private: \
-		ParamType1 ParamName1; \
-		ParamType2 ParamName2; \
-	};
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2) \
-	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2); \
-	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
-
-	// Three parameters
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
-	class FRTTask_##TypeName : public TTask \
-	{ \
-	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3) {SET_TASK_NAME(#TypeName);} \
-		RENDERTHREAD_TASK_FUNCTION(Code) \
-	private: \
-		ParamType1 ParamName1; \
-		ParamType2 ParamName2; \
-		ParamType3 ParamName3; \
-	};
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3) \
-	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2, ParamValue3); \
-	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
-
-	// Four parameters
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
-	class FRTTask_##TypeName : public TTask \
-	{ \
-	public: \
-		FRTTask_##TypeName(ParamType1 In##ParamName1, ParamType2 In##ParamName2, ParamType3 In##ParamName3, ParamType4 In##ParamName4) : ParamName1(In##ParamName1), ParamName2(In##ParamName2), ParamName3(In##ParamName3), ParamName4(In##ParamName4) {SET_TASK_NAME(#TypeName);} \
-		RENDERTHREAD_TASK_FUNCTION(Code) \
-	private: \
-		ParamType1 ParamName1; \
-		ParamType2 ParamName2; \
-		ParamType3 ParamName3; \
-		ParamType4 ParamName4; \
-	};
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4) \
-	FRTTask_##TypeName * Task##TypeName = ti_new FRTTask_##TypeName(ParamValue1, ParamValue2, ParamValue3, ParamValue4); \
-	FRenderThread::Get()->AddTaskToFrame(Task##TypeName);
-
-/* Add a task to run in Render thread with ONE parameter.
- * RenderThread is built in parameter.
- * RHI is built in parameter.
- */
-#define ENQUEUE_UNIQUE_RENDER_COMMAND(TypeName, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_DECLARE(TypeName, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_CREATE(TypeName)
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1)
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2)
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3)
-
-#define ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_DECLARE(TypeName, ParamType1, ParamName1, ParamValue1, ParamType2, ParamName2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4, Code) \
-	ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER_CREATE(TypeName, ParamType1, ParamValue1, ParamType2, ParamValue2, ParamType3, ParamName3, ParamValue3, ParamType4, ParamName4, ParamValue4)
-
 	struct FRenderFrame
 	{
 		typedef TThreadSafeQueue<TTask*> TTaskQueue;
@@ -223,4 +108,49 @@ namespace tix
 		static bool Inited;
 		static bool ThreadEnabled;
 	};
+
+
+	// From UE4.22
+	template<typename TSTR, typename LAMBDA>
+	class TEnqueueUniqueRenderCommandType : public TTask
+	{
+	public:
+		TEnqueueUniqueRenderCommandType(LAMBDA&& InLambda) 
+			: Lambda(tix_forward<LAMBDA>(InLambda)) 
+		{
+		}
+
+		virtual void Execute()
+		{
+			Lambda();
+		}
+
+	private:
+		LAMBDA Lambda;
+	};
+
+	template<typename TSTR, typename LAMBDA>
+	inline void EnqueueUniqueRenderCommand(LAMBDA&& Lambda)
+	{
+		typedef TEnqueueUniqueRenderCommandType<TSTR, LAMBDA> EURCType;
+		TTask* Task = ti_new EURCType(tix_forward<LAMBDA>(Lambda));
+#if TIX_DEBUG_RENDER_TASK_NAME
+		Task->SetTaskName(TSTR::CStr());
+#endif
+		FRenderThread::Get()->AddTaskToFrame(Task);
+	}
+
+#define ENQUEUE_RENDER_COMMAND(Type) \
+		struct Type##Name \
+		{  \
+			static const char* CStr() { return #Type; } \
+			static const TCHAR* TStr() { return TEXT(#Type); } \
+		}; \
+		EnqueueUniqueRenderCommand<Type##Name>
+
+	template<typename LAMBDA>
+	inline void EnqueueUniqueRenderCommand(LAMBDA& Lambda)
+	{
+		static_assert(sizeof(LAMBDA) == 0, "EnqueueUniqueRenderCommand enforces use of rvalue and therefore move to avoid an extra copy of the Lambda");
+	}
 }

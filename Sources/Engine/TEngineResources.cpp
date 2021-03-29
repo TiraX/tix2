@@ -44,8 +44,20 @@ namespace tix
 
 	void TEngineResources::DestroyGlobalResources()
 	{
-		EmptyTextureWhite = nullptr;
-		EmptyTextureBlack = nullptr;
-		EmptyTextureNormal = nullptr;
+		if (EmptyTextureWhite != nullptr)
+		{
+			EmptyTextureWhite->DestroyRenderThreadResource();
+			EmptyTextureWhite = nullptr;
+		}
+		if (EmptyTextureBlack != nullptr)
+		{
+			EmptyTextureBlack->DestroyRenderThreadResource();
+			EmptyTextureBlack = nullptr;
+		}
+		if (EmptyTextureNormal != nullptr)
+		{
+			EmptyTextureNormal->DestroyRenderThreadResource();
+			EmptyTextureNormal = nullptr;
+		}
 	}
 }

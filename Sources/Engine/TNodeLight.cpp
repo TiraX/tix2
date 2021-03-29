@@ -21,8 +21,9 @@ namespace tix
 		if (LightResource != nullptr)
 		{
 			// Remove FLight from FSceneLights
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveFLightFromFScene,
-				FLightPtr, InLight, LightResource,
+			FLightPtr InLight = LightResource;
+			ENQUEUE_RENDER_COMMAND(RemoveFLightFromFScene)(
+				[InLight]()
 				{
 					InLight->RemoveFromSceneLights_RenderThread();
 				});
@@ -44,9 +45,10 @@ namespace tix
 			AffectBox.move(AbsoluteTransformation.getTranslation());
 
 			// Update FLight Position in render thread
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateFLightPosition,
-				FLightPtr, InLight, LightResource,
-				vector3df, InPosition, GetAbsolutePosition(),
+			FLightPtr InLight = LightResource;
+			vector3df InPosition = GetAbsolutePosition();
+			ENQUEUE_RENDER_COMMAND(UpdateFLightPosition)(
+				[InLight, InPosition]()
 				{
 					InLight->UpdateLightPosition_RenderThread(InPosition);
 				});
@@ -74,8 +76,9 @@ namespace tix
 		LightResource = ti_new FLight(this);
 
 		// Add FLight to FSceneLights
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddFLightToFScene,
-			FLightPtr, InLight, LightResource,
+		FLightPtr InLight = LightResource;
+		ENQUEUE_RENDER_COMMAND(AddFLightToFScene)(
+			[InLight]()
 			{
 				InLight->AddToSceneLights_RenderThread();
 			});

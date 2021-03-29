@@ -125,9 +125,10 @@ namespace tix
 			AbsoluteTransformation.transformBoxEx(TransformedBBox);
 
 			// Init uniform buffer resource in render thread
-			ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdatePrimitiveBuffer,
-				TVector<FPrimitivePtr>, Primitives, LinkedPrimitives,
-				matrix4, LocalToWorld, AbsoluteTransformation,
+			TVector<FPrimitivePtr> Primitives = LinkedPrimitives;
+			matrix4 LocalToWorld = AbsoluteTransformation;
+			ENQUEUE_RENDER_COMMAND(UpdatePrimitiveBuffer)(
+				[Primitives, LocalToWorld]()
 				{
 					for (auto P : Primitives)
 					{

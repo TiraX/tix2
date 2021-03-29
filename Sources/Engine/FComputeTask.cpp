@@ -28,8 +28,9 @@ namespace tix
 		}
 		else
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(FComputeTaskFinalize,
-				FComputeTaskPtr, ComputeTask, this,
+			FComputeTaskPtr ComputeTask = this;
+			ENQUEUE_RENDER_COMMAND(FComputeTaskFinalize)(
+				[ComputeTask]()
 				{
 					ComputeTask->FinalizeInRenderThread();
 				});

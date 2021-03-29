@@ -24,8 +24,9 @@ void TGPUDrivenTicker::Tick(float Dt)
 	TNodeCamera * Cam = Scene->GetActiveCamera();
 	if ((Cam->GetCameraFlags() & TNodeCamera::ECAMF_MAT_VIEW_UPDATED) != 0)
 	{
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateFrustumRenderThread,
-			SViewFrustum, Frustum, Cam->GetFrustum(),
+		SViewFrustum Frustum = Cam->GetFrustum();
+		ENQUEUE_RENDER_COMMAND(UpdateFrustumRenderThread)(
+			[Frustum]()
 			{
 				FGPUDrivenRenderer::Get()->UpdateFrustumUniform(Frustum);
 			});

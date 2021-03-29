@@ -66,11 +66,11 @@ namespace tix
 			Info.VerVector = VerVector;
 			Info.Fov = Fovy;
 
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateViewProjectionRenderThread,
-				FViewProjectionInfo, ViewProjectionInfo, Info,
+			ENQUEUE_RENDER_COMMAND(UpdateViewProjectionRenderThread)(
+				[Info]()
 				{
-					FScene * Scene = FRenderThread::Get()->GetRenderScene();
-					Scene->SetViewProjection(ViewProjectionInfo);
+					FScene* Scene = FRenderThread::Get()->GetRenderScene();
+					Scene->SetViewProjection(Info);
 				});
 		}
 	}

@@ -30,8 +30,9 @@ namespace tix
 		// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
 		TI_ASSERT(RenderThreadTileResource == nullptr);
 		RenderThreadTileResource = ti_new FSceneTileResource(*this);
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddSceneTileRes,
-			FSceneTileResourcePtr, SceneTileRes, RenderThreadTileResource,
+		FSceneTileResourcePtr SceneTileRes = RenderThreadTileResource;
+		ENQUEUE_RENDER_COMMAND(AddSceneTileRes)(
+			[SceneTileRes]()
 			{
 				FRenderThread::Get()->GetRenderScene()->AddSceneTileInfo(SceneTileRes);
 			});
@@ -42,10 +43,11 @@ namespace tix
 		MeshInstanceBuffer->DestroyRenderThreadResource();
 
 		TI_ASSERT(RenderThreadTileResource != nullptr);
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(RemoveSceneTileRes,
-			FSceneTileResourcePtr, SceneTileResource, RenderThreadTileResource,
+		FSceneTileResourcePtr SceneTileResource = RenderThreadTileResource;
+		ENQUEUE_RENDER_COMMAND(RemoveSceneTileRes)(
+			[SceneTileResource]()
 			{
-				SceneTileResource = nullptr;
+				//SceneTileResource = nullptr;
 			});
 		RenderThreadTileResource = nullptr;
 	}

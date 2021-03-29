@@ -45,9 +45,10 @@ namespace tix
 		TI_ASSERT(TextureResource == nullptr);
 		TextureResource = FRHI::Get()->CreateTexture();
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TTextureUpdateFTexture,
-			FTexturePtr, Texture_RT, TextureResource,
-			TTexturePtr, TextureData, this,
+		FTexturePtr Texture_RT = TextureResource;
+		TTexturePtr TextureData = this;
+		ENQUEUE_RENDER_COMMAND(TTextureUpdateFTexture)(
+			[Texture_RT, TextureData]()
 			{
 				Texture_RT->InitTextureInfo(TextureData);
 				FRHI::Get()->UpdateHardwareResourceTexture(Texture_RT, TextureData);
@@ -58,10 +59,13 @@ namespace tix
 	{
 		if (TextureResource != nullptr)
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TTextureDestroyFTexture,
-				FTexturePtr, Texture_RT, TextureResource,
+			FTexturePtr Texture_RT = TextureResource;
+			ENQUEUE_RENDER_COMMAND(TTextureDestroyFTexture)(
+				[Texture_RT]()
 				{
-					Texture_RT = nullptr;
+
+					//_LOG(Log, "Verify ref count %d.\n", Texture_RT->referenceCount());
+					//Texture_RT = nullptr;
 				});
 			TextureResource = nullptr;
 		}

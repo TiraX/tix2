@@ -40,11 +40,11 @@ namespace tix
 				FUniformBufferPtr UniformBuffer = FRHI::Get()->CreateUniformBuffer(TMath::Max(ParamValueBuffer->GetLength(), Alignment), 1, UBFlag);
 				UniformBuffer->SetResourceName(GetResourceName());
 
-				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIUniformBuffer,
-					FUniformBufferPtr, UniformBuffer, UniformBuffer,
-					TStreamPtr, ParamValueBuffer, ParamValueBuffer,
+				TStreamPtr _ParamValueBuffer = ParamValueBuffer;
+				ENQUEUE_RENDER_COMMAND(UpdateMIUniformBuffer)(
+					[UniformBuffer, _ParamValueBuffer]()
 					{
-						FRHI::Get()->UpdateHardwareResourceUB(UniformBuffer, ParamValueBuffer->GetBuffer());
+						FRHI::Get()->UpdateHardwareResourceUB(UniformBuffer, _ParamValueBuffer->GetBuffer());
 					});
 
 				ArgumentBuffer->SetBuffer(0, UniformBuffer);
@@ -62,13 +62,13 @@ namespace tix
                 }
                 
                 FShaderPtr MaterialShader = LinkedMaterial->GetDesc().Shader->ShaderResource;
-                
-                ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateMIArgumentBuffer,
-                                                           FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
-                                                           FShaderPtr, MaterialShader, MaterialShader,
-                                                           {
-                                                               FRHI::Get()->UpdateHardwareResourceAB(ArgumentBuffer, MaterialShader);
-                                                           });
+
+				FArgumentBufferPtr _ArgumentBuffer = ArgumentBuffer;
+				ENQUEUE_RENDER_COMMAND(UpdateMIArgumentBuffer)(
+					[_ArgumentBuffer, MaterialShader]()
+					{
+						FRHI::Get()->UpdateHardwareResourceAB(_ArgumentBuffer, MaterialShader);
+					});
             }
 		}
 	}
@@ -77,10 +77,11 @@ namespace tix
 	{
 		if (ArgumentBuffer != nullptr)
 		{
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMIDestroyArgumentBuffer,
-				FArgumentBufferPtr, ArgumentBuffer, ArgumentBuffer,
+			FArgumentBufferPtr _ArgumentBuffer = ArgumentBuffer;
+			ENQUEUE_RENDER_COMMAND(TMIDestroyArgumentBuffer)(
+				[_ArgumentBuffer]()
 				{
-					ArgumentBuffer = nullptr;
+					//_ArgumentBuffer = nullptr;
 				});
 			ArgumentBuffer = nullptr;
 		}

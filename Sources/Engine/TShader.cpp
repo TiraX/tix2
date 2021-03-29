@@ -62,9 +62,10 @@ namespace tix
 		TI_ASSERT(ShaderResource == nullptr);
 		ShaderResource = FRHI::Get()->CreateShader(Names);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TShaderUpdateResource,
-			FShaderPtr, Shader_RT, ShaderResource,
-			TShaderPtr, ShaderSource, this,
+		FShaderPtr Shader_RT = ShaderResource;
+		TShaderPtr ShaderSource = this;
+		ENQUEUE_RENDER_COMMAND(TShaderUpdateResource)(
+			[Shader_RT, ShaderSource]()
 			{
 				// Add TShader -> Shader Codes herer.
 				FRHI::Get()->UpdateHardwareResourceShader(Shader_RT, ShaderSource);
@@ -83,10 +84,11 @@ namespace tix
 	{
 		TI_ASSERT(ShaderResource != nullptr);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TShaderDestroyFShader,
-			FShaderPtr, Shader_RT, ShaderResource,
+		FShaderPtr Shader_RT = ShaderResource;
+		ENQUEUE_RENDER_COMMAND(TShaderDestroyFShader)(
+			[Shader_RT]()
 			{
-				Shader_RT = nullptr;
+				//Shader_RT = nullptr;
 			});
 		ShaderResource = nullptr;
 	}

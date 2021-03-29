@@ -20,6 +20,7 @@ namespace tix
 
 	FTexture::~FTexture()
 	{
+		TI_ASSERT(IsRenderThread());
 	}
 
 	void FTexture::InitTextureInfo(TTexturePtr InTexture)

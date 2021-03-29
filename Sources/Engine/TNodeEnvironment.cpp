@@ -49,11 +49,12 @@ namespace tix
 		if ((EnvFlags & ENVF_MAIN_LIGHT_DIRTY) != 0)
 		{
 			// Notify render thread
-			ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(UpdateEnvInfoRenderThread,
-				FEnvironmentInfo, EnvInfo, EnvInfo,
+			FEnvironmentInfo _EnvInfo = EnvInfo;
+			ENQUEUE_RENDER_COMMAND(UpdateEnvInfoRenderThread)(
+				[_EnvInfo]()
 				{
-					FScene * Scene = FRenderThread::Get()->GetRenderScene();
-					Scene->SetEnvironmentInfo(EnvInfo);
+					FScene* Scene = FRenderThread::Get()->GetRenderScene();
+					Scene->SetEnvironmentInfo(_EnvInfo);
 				});
 
 			EnvFlags &= ~ENVF_MAIN_LIGHT_DIRTY;

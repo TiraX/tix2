@@ -44,6 +44,7 @@ typedef std::condition_variable TCond;
 typedef std::thread::id TThreadId;
 
 #define tix_find std::find
+#define tix_forward std::forward
 
 #include "TInputEventType.h"
 #include "TTypeCull.h"

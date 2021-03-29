@@ -148,8 +148,8 @@ namespace tix
 
 	void TEngine::AssignRenderer(FRenderer* Renderer)
 	{
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(AddRendererInRenderThread, 
-			FRenderer*, Renderer, Renderer,
+		ENQUEUE_RENDER_COMMAND(AddRendererInRenderThread)(
+			[Renderer]()
 			{
 				FRenderThread::Get()->AssignRenderer(Renderer);
 			});

@@ -65,10 +65,11 @@ namespace tix
 			MeshClusterDataResource = FRHI::Get()->CreateUniformBuffer(sizeof(TMeshClusterData), (uint32)ClusterData.size(), UB_FLAG_INTERMEDIATE);
 		}
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_THREEPARAMETER(TMeshBufferUpdateFMeshBuffer,
-			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
-			FUniformBufferPtr, ClusterDataBuffer, MeshClusterDataResource,
-			TMeshBufferPtr, InMeshData, this,
+		FMeshBufferPtr MeshBuffer = MeshBufferResource;
+		FUniformBufferPtr ClusterDataBuffer = MeshClusterDataResource;
+		TMeshBufferPtr InMeshData = this;
+		ENQUEUE_RENDER_COMMAND(TMeshBufferUpdateFMeshBuffer)(
+			[MeshBuffer, ClusterDataBuffer, InMeshData]()
 			{
 				MeshBuffer->SetFromTMeshBuffer(InMeshData);
 				FRHI::Get()->UpdateHardwareResourceMesh(MeshBuffer, InMeshData);
@@ -83,10 +84,11 @@ namespace tix
 	{
 		TI_ASSERT(MeshBufferResource != nullptr);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TMeshBufferDestroyFMeshBuffer,
-			FMeshBufferPtr, MeshBuffer, MeshBufferResource,
+		FMeshBufferPtr MeshBuffer = MeshBufferResource;
+		ENQUEUE_RENDER_COMMAND(TMeshBufferDestroyFMeshBuffer)(
+			[MeshBuffer]()
 			{
-				MeshBuffer = nullptr;
+				//MeshBuffer = nullptr;
 			});
 		MeshBufferResource = nullptr;
 	}
@@ -206,9 +208,10 @@ namespace tix
 		TI_TODO("Add gpu driven CVAR to check here.");
 		//InstanceResource->SetUsage(FRenderResource::USAGE_COPY_SOURCE);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(TInstanceBufferUpdateFInstanceBuffer,
-			FInstanceBufferPtr, InstanceBuffer, InstanceResource,
-			TInstanceBufferPtr, InInstanceData, this,
+		FInstanceBufferPtr InstanceBuffer = InstanceResource;
+		TInstanceBufferPtr InInstanceData = this;
+		ENQUEUE_RENDER_COMMAND(TInstanceBufferUpdateFInstanceBuffer)(
+			[InstanceBuffer, InInstanceData]()
 			{
 				InstanceBuffer->SetFromTInstanceBuffer(InInstanceData);
 				FRHI::Get()->UpdateHardwareResourceIB(InstanceBuffer, InInstanceData);
@@ -219,10 +222,11 @@ namespace tix
 	{
 		TI_ASSERT(InstanceResource != nullptr);
 
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(TInstanceBufferDestroyFInstanceBuffer,
-			FInstanceBufferPtr, InstanceBuffer, InstanceResource,
+		FInstanceBufferPtr InstanceBuffer = InstanceResource;
+		ENQUEUE_RENDER_COMMAND(TInstanceBufferDestroyFInstanceBuffer)(
+			[InstanceBuffer]()
 			{
-				InstanceBuffer = nullptr;
+				//InstanceBuffer = nullptr;
 			});
 		InstanceResource = nullptr;
 	}

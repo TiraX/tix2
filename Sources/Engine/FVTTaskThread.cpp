@@ -347,13 +347,11 @@ namespace tix
 		TTexturePtr Texture = TVTTextureLoader::LoadBakedVTPages(MipLevel, PageX, PageY);
 		_LOG(Log, " - VT Load Page : %d - %d _ %d\n", MipLevel, PageX, PageY);
 		// Send to render thread to init render resource of this texture
-		ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(VTAddLoadedPages,
-			uint32, PageIndex, PageIndex,
-			uint32, MipLevel, MipLevel,
-			uint32, AtlasLocation, Task.AtlasLocation,
-			TTexturePtr, TextureData, Texture,
+		uint32 AtlasLocation = Task.AtlasLocation;
+		ENQUEUE_RENDER_COMMAND(VTAddLoadedPages)(
+			[PageIndex, MipLevel, AtlasLocation, Texture]()
 			{
-				FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, TextureData);
+				FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, Texture);
 			});
 #else
 		FVTLoadingTask Task = VTLoadingTasks.front();
@@ -372,13 +370,13 @@ namespace tix
 			TTexturePtr Texture = Loader.LoadTextureWithRegion(0, StartX, StartY, StartX + FVTSystem::PPSize, StartY + FVTSystem::PPSize);
 
 			// Send to render thread to init render resource of this texture
-			ENQUEUE_UNIQUE_RENDER_COMMAND_FOURPARAMETER(VTAddLoadedPages,
-				uint32, PageIndex, Task.PageIndex[i],
-				uint32, MipLevel, Task.MipLevel[i],
-				uint32, AtlasLocation, Task.AtlasLocation[i],
-				TTexturePtr, TextureData, Texture,
+			uint32 PageIndex = Task.PageIndex[i];
+			uint32 MipLevel = Task.MipLevel[i];
+			uint32 AtlasLocation = Task.AtlasLocation[i];
+			ENQUEUE_RENDER_COMMAND(VTAddLoadedPages)(
+				[PageIndex, MipLevel, AtlasLocation, Texture]()
 				{
-					FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, TextureData);
+					FVTSystem::Get()->AddVTPageData(PageIndex, MipLevel, AtlasLocation, Texture);
 				});
 		}
 #endif
