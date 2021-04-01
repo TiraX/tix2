@@ -8,6 +8,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{863f17d7-af54-40f0-90f3-f94d128c6588}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\FLIP">
+      <UniqueIdentifier>{3dcc6493-a011-4032-88ba-ac25cdf1fcdf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -22,6 +25,15 @@
     <ClCompile Include="FLIPSimTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TFlipSolver.cpp">
+      <Filter>Source Files\FLIP</Filter>
+    </ClCompile>
+    <ClCompile Include="TFluidsParticles.cpp">
+      <Filter>Source Files\FLIP</Filter>
+    </ClCompile>
+    <ClCompile Include="TMACGrid.cpp">
+      <Filter>Source Files\FLIP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -32,6 +44,15 @@
     </ClInclude>
     <ClInclude Include="FLIPSimTicker.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TFlipSolver.h">
+      <Filter>Source Files\FLIP</Filter>
+    </ClInclude>
+    <ClInclude Include="TFluidsParticles.h">
+      <Filter>Source Files\FLIP</Filter>
+    </ClInclude>
+    <ClInclude Include="TMACGrid.h">
+      <Filter>Source Files\FLIP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -29,10 +29,9 @@ void TFLIPSimTicker::SetupScene()
 	const TString DefaultMaterial = "M_Debug.tasset";
 	const TString DefaultMaterialInstance = "DebugMaterial.tasset";
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
-	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
+	//TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
 	// Load scene
 	const TString TargetSceneAsset = "Map_OceanFFT.tasset";
-	//const TString TargetSceneAsset = "Slum01.tasset";
-	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
+	//TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }

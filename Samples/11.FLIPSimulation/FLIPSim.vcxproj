@@ -105,11 +105,17 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TFlipSolver.cpp" />
+    <ClCompile Include="TFluidsParticles.cpp" />
+    <ClCompile Include="TMACGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FLIPSimRenderer.h" />
     <ClInclude Include="FLIPSimTicker.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TFlipSolver.h" />
+    <ClInclude Include="TFluidsParticles.h" />
+    <ClInclude Include="TMACGrid.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
