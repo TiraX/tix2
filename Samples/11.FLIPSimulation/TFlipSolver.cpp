@@ -41,16 +41,65 @@ void TFlipSolver::DoSimulation(float Dt)
 	//ExtrapolateVelocityToAir();
 	//ApplyBoundaryCondition();
 	MoveParticles();
+
+	static int32 Frame = 0;
+	{
+		int8 Name[128];
+		sprintf_s(Name, "pc_%03d.json", Frame++);
+		Particles->ExportToJson(Name);
+	}
 }
 
 void TFlipSolver::TransferFromParticlesToGrids()
-{}
+{
+	Grid->ClearVelocities();
+
+	TVector<float>& U = Grid->U;
+	TVector<float>& V = Grid->V;
+	TVector<float>& W = Grid->W;
+
+	TVector<float> GridWeights;
+	GridWeights.resize(W.size());
+	memset(W.data(), 0, W.size() * sizeof(float));
+
+	const TVector<TFluidsParticles::TParticle>& P = Particles->Particles;
+	TVector<vector3di> GridIndices;
+	TVector<float> Weights;
+	for (const auto& Particle : P)
+	{
+		Grid->GetAdjacentGrid(Particle.Position, GridIndices, Weights);
+
+		for (int i = 0 ; i < 8; i++)
+		{
+			int32 Index = Grid->GetAccessIndex(GridIndices[i]);
+			U[Index] += Particle.Velocity.X;
+			V[Index] += Particle.Velocity.Y;
+			W[Index] += Particle.Velocity.Z;
+
+			GridWeights[Index] += Weights[i];
+		}
+	}
+	const int Count = (int)U.size();
+	for (int i = 0; i < Count; i++)
+	{
+		if (GridWeights[i] > 0.f)
+		{
+			float InvW = 1.f / GridWeights[i];
+			U[i] *= InvW;
+			V[i] *= InvW;
+			W[i] *= InvW;
+		}
+	}
+}
 
 void TFlipSolver::ComputeForces()
-{}
+{
+}
 
 void TFlipSolver::ComputeViscosity()
 {}
+
+
 void TFlipSolver::ComputePressure()
 {}
 void TFlipSolver::ComputeAdvection()

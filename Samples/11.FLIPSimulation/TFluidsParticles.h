@@ -12,8 +12,15 @@ public:
 	~TFluidsParticles();
 
 	void InitWithShapeSphere(const vector3df& InCenter, float InRadius, float InSeperation);
+	void ExportToJson(const TString& Filename);
 
+	struct TParticle
+	{
+		vector3df Position;
+		vector3df Velocity;
+	};
 protected:
-	TVector<vector3df> Positions;
-	TVector<vector3df> Velocities;
+	TVector<TParticle> Particles;
+
+	friend class TFlipSolver;
 };

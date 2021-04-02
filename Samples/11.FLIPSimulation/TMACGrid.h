@@ -12,20 +12,20 @@ public:
 	~TMACGrid();
 
 	void InitSize(const vector3di& InSize, float InSeperation);
+	void GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights);
+	void ClearVelocities();
 
-	const vector3di& GetSize() const
+	int32 GetAccessIndex(const vector3di& Index)
 	{
-		return Size;
+		return Index.Z * (Size.X * Size.Y) + Index.Y * Size.X + Index.X;
 	}
 
-	float GetSeperation() const
-	{
-		return Seperation;
-	}
 
 protected:
 	vector3di Size;
 	float Seperation;
 
 	TVector<float> U, V, W;
+
+	friend class TFlipSolver;
 };
