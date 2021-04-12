@@ -45,11 +45,17 @@ float3x3 GetWorldRotationMat(in VSInputWithColor vsInput)
 	"CBV(b0, visibility=SHADER_VISIBILITY_VERTEX), " \
 	"CBV(b1, visibility=SHADER_VISIBILITY_VERTEX), " \
     "DescriptorTable(SRV(t0, numDescriptors=1), visibility=SHADER_VISIBILITY_VERTEX)," \
+    "DescriptorTable(SRV(t1, numDescriptors=1), visibility=SHADER_VISIBILITY_PIXEL)," \
     "StaticSampler(s0, addressU = TEXTURE_ADDRESS_WRAP, " \
                       "addressV = TEXTURE_ADDRESS_WRAP, " \
                       "addressW = TEXTURE_ADDRESS_WRAP, " \
                         "filter = FILTER_MIN_MAG_MIP_LINEAR, "\
-                    "visibility = SHADER_VISIBILITY_VERTEX)"
+                    "visibility = SHADER_VISIBILITY_VERTEX)," \
+    "StaticSampler(s1, addressU = TEXTURE_ADDRESS_WRAP, " \
+                      "addressV = TEXTURE_ADDRESS_WRAP, " \
+                      "addressW = TEXTURE_ADDRESS_WRAP, " \
+                        "filter = FILTER_MIN_MAG_MIP_LINEAR, "\
+                    "visibility = SHADER_VISIBILITY_PIXEL)"
 	
 Texture2D OceanDisplacementTex : register(t0);
 SamplerState sampler0 : register(s0);

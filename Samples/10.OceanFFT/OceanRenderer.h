@@ -9,6 +9,7 @@
 #include "HKtCS.h"
 #include "IFFTCS.h"
 #include "DisplacementCS.h"
+#include "GenerateNormalCS.h"
 
 class FOceanRenderer : public FDefaultRenderer
 {
@@ -45,8 +46,10 @@ private:
 	FIFFTCSPtr IFFTHeightCS[3];
 	FIFFTCSPtr IFFTJacobCS[3];
 	FDisplacementCSPtr DisplacementCS;
+	FGenerateNormalCSPtr GenerateNormalCS;
 
 	// Ocean grid mesh
 	FPrimitivePtr OceanPrimitive;
 	FRenderResourceTablePtr OceanDisplacementResource;
+	FRenderResourceTablePtr OceanNormalResource;
 };

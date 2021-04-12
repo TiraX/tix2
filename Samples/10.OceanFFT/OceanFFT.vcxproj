@@ -100,6 +100,7 @@
   <ItemGroup>
     <ClCompile Include="DisplacementCS.cpp" />
     <ClCompile Include="GaussRandomCS.cpp" />
+    <ClCompile Include="GenerateNormalCS.cpp" />
     <ClCompile Include="HKtCS.cpp" />
     <ClCompile Include="HZeroCS.cpp" />
     <ClCompile Include="IFFTCS.cpp" />
@@ -114,6 +115,7 @@
   <ItemGroup>
     <ClInclude Include="DisplacementCS.h" />
     <ClInclude Include="GaussRandomCS.h" />
+    <ClInclude Include="GenerateNormalCS.h" />
     <ClInclude Include="HKtCS.h" />
     <ClInclude Include="HZeroCS.h" />
     <ClInclude Include="IFFTCS.h" />
@@ -150,6 +152,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_GenerateNormalCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_HKtCS.hlsl">

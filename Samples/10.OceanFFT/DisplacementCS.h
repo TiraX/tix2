@@ -6,7 +6,7 @@
 #pragma once 
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FDisplacementUniform)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)		// // x = Size
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Info)		// x = Size
 END_UNIFORM_BUFFER_STRUCT(FDisplacementUniform)
 
 

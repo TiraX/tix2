@@ -76,9 +76,16 @@ void FOceanRenderer::InitInRenderThread()
 	DisplacementCS->Finalize();
 	DisplacementCS->PrepareResources(RHI);
 
+	GenerateNormalCS = ti_new FGenerateNormalCS();
+	GenerateNormalCS->Finalize();
+	GenerateNormalCS->PrepareResources(RHI);
+
 	// Create displacement resource table for checker grid
 	OceanDisplacementResource = RHI->CreateRenderResourceTable(1, EHT_SHADER_RESOURCE);
 	OceanDisplacementResource->PutTextureInTable(DisplacementCS->GetDisplacementTexture(), 0);
+
+	OceanNormalResource = RHI->CreateRenderResourceTable(1, EHT_SHADER_RESOURCE);
+	OceanNormalResource->PutTextureInTable(GenerateNormalCS->GetNormalTexture(), 0);
 
 	AB_Result = RHI->CreateArgumentBuffer(1);
 	{
@@ -256,6 +263,8 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 	const float Dt = FRenderThread::Get()->GetRenderThreadFrameTime();
 	WaveHeight += SpeedWaveHeight * Dt;
 	WindSpeed += SpeedWindSpeed * Dt;
+	WaveHeight = 137.3f;
+	WindSpeed = 20.f;
 	Choppy += SpeedChoppy * Dt;
 
 	HZeroCS->UpdataComputeParams(
@@ -295,6 +304,10 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 		IFFTJacobCS[1]->GetFinalResult(),
 		IFFTJacobCS[2]->GetFinalResult()
 	);
+	GenerateNormalCS->UpdataComputeParams(
+		RHI,
+		DisplacementCS->GetDisplacementTexture()
+	);
 
 	RHI->BeginComputeTask();
 	{
@@ -326,6 +339,10 @@ void FOceanRenderer::Render(FRHI* RHI, FScene* Scene)
 
 		RHI->BeginEvent("Displacement");
 		DisplacementCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("GenerateNormal");
+		GenerateNormalCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();
@@ -364,6 +381,7 @@ void FOceanRenderer::DrawOceanGrid(FRHI* RHI, FScene* Scene)
 		RHI->SetMeshBuffer(OceanPrimitive->GetMeshBuffer(), InstanceBuffer);
 		ApplyShaderParameter(RHI, Scene, OceanPrimitive);
 		RHI->SetRenderResourceTable(2, OceanDisplacementResource);
+		RHI->SetRenderResourceTable(3, OceanNormalResource);
 
 		RHI->DrawPrimitiveIndexedInstanced(
 			OceanPrimitive->GetMeshBuffer(),

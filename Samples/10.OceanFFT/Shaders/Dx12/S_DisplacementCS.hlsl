@@ -40,7 +40,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float3 D;
     D.x = IFFT_X.Load(int3(dispatchThreadId.xy, 0)).x;
     D.y = IFFT_Y.Load(int3(dispatchThreadId.xy, 0)).x;
-    D.z = IFFT_Z.Load(int3(dispatchThreadId.xy, 0)).x;
+    D.z = -IFFT_Z.Load(int3(dispatchThreadId.xy, 0)).x;
 
     D *= perm * SizeSQ_Inv;
 
