@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "TFdmIccgSolver.h"
 
 class TMACGrid;
 class TFluidsParticles;
@@ -13,14 +14,14 @@ public:
 	TFlipSolver();
 	~TFlipSolver();
 
-	void InitGrid(const vector3di& InSize, float InSeperation);
+	void InitSolver(const vector3di& InSize, float InSeperation);
 	void CreateParticlesInSphere(const vector3df& InCenter, float InRadius, float InSeperation);
 
 	void DoSimulation(float Dt);
 
 protected:
 	void TransferFromParticlesToGrids();
-	void ComputeForces();
+	void ComputeForces(float Dt);
 	void ComputeViscosity();
 	void ComputePressure();
 	void ComputeAdvection();
@@ -29,7 +30,17 @@ protected:
 	void ApplyBoundaryCondition();
 	void MoveParticles();
 
+	void BuildLinearSystem();
+	void ApplyPressureGradient();
+
+
 protected:
 	TMACGrid* Grid;
 	TFluidsParticles* Particles;
+
+	// Matrix and vector for linear system
+	TArray3<FdmMatrixRow3> A;
+	TArray3<float> b;
+	TArray3<float> x;
+	TFdmIccgSolver* LinearSystemSolver;
 };

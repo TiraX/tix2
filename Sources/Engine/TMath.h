@@ -97,6 +97,12 @@ namespace tix
 			}
 		}
 
+		template< class T >
+		static inline T Sqr(T v)
+		{
+			return v * v;
+		}
+
 		static inline float Sqrt(float v)
 		{
 			return sqrtf(v);

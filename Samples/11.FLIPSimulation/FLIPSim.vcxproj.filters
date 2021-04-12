@@ -34,6 +34,9 @@
     <ClCompile Include="TMACGrid.cpp">
       <Filter>Source Files\FLIP</Filter>
     </ClCompile>
+    <ClCompile Include="TFdmIccgSolver.cpp">
+      <Filter>Source Files\FLIP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -52,6 +55,12 @@
       <Filter>Source Files\FLIP</Filter>
     </ClInclude>
     <ClInclude Include="TMACGrid.h">
+      <Filter>Source Files\FLIP</Filter>
+    </ClInclude>
+    <ClInclude Include="TFdmIccgSolver.h">
+      <Filter>Source Files\FLIP</Filter>
+    </ClInclude>
+    <ClInclude Include="TArray3.h">
       <Filter>Source Files\FLIP</Filter>
     </ClInclude>
   </ItemGroup>

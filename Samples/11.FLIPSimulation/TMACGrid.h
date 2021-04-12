@@ -13,19 +13,32 @@ public:
 
 	void InitSize(const vector3di& InSize, float InSeperation);
 	void GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights);
-	void ClearVelocities();
+	void ClearGrids();
+
+	float DivergenceAtCellCenter(int32 x, int32 y, int32 z);
 
 	int32 GetAccessIndex(const vector3di& Index)
 	{
 		return Index.Z * (Size.X * Size.Y) + Index.Y * Size.X + Index.X;
 	}
+	int32 GetAccessIndex(int32 x, int32 y, int32 z)
+	{
+		return z * (Size.X * Size.Y) + y * Size.X + x;
+	}
 
+	enum {
+		GridAir,
+		GridFluid,
+		GridSolid,
+	};
+protected:
 
 protected:
 	vector3di Size;
 	float Seperation;
 
-	TVector<float> U, V, W;
+	TArray3<float> U, V, W;
+	TArray3<int32> Markers;
 
 	friend class TFlipSolver;
 };

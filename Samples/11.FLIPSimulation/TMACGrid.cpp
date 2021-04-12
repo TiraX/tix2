@@ -21,10 +21,27 @@ void TMACGrid::InitSize(const vector3di& InSize, float InSeperation)
 	Size = InSize;
 	Seperation = InSeperation;
 
-	int32 TotalCount = Size.X * Size.Y * Size.Z;
-	U.resize(TotalCount);
-	V.resize(TotalCount);
-	W.resize(TotalCount);
+	U.Resize(Size);
+	V.Resize(Size);
+	W.Resize(Size);
+
+	// Init markers and set solid mark
+	Markers.Resize(Size);
+	for (int32 z = 0; z < Size.Z; z++)
+	{
+		for (int32 y = 0; y < Size.Y; y++)
+		{
+			for (int32 x = 0; x < Size.X; x++)
+			{
+				vector3di D = Size - vector3di(x, y, z);
+				if (TMath::Abs(D.X) == 0 || TMath::Abs(D.Y) == 0 || TMath::Abs(D.Z) == 0)
+				{
+					int32 Index = GetAccessIndex(vector3di(x, y, z));
+					Markers[Index] = GridSolid;
+				}
+			}
+		}
+	}
 }
 
 void TMACGrid::GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights)
@@ -63,9 +80,43 @@ void TMACGrid::GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& Outpu
 	OutputWeights[7] = Frac.X * Frac.Y * Frac.Z;
 }
 
-void TMACGrid::ClearVelocities()
+void TMACGrid::ClearGrids()
 {
-	memset(U.data(), 0, U.size() * sizeof(float));
-	memset(V.data(), 0, V.size() * sizeof(float));
-	memset(W.data(), 0, W.size() * sizeof(float));
+	// Clear velocities
+	U.ResetZero();
+	V.ResetZero();
+	W.ResetZero();
+
+	// Clear grid markers
+	for (int32 z = 0; z < Size.Z; z++)
+	{
+		for (int32 y = 0; y < Size.Y; y++)
+		{
+			for (int32 x = 0; x < Size.X; x++)
+			{
+				int32 Index = GetAccessIndex(vector3di(x, y, z));
+				if (Markers[Index] != GridSolid)
+				{
+					Markers[Index] = GridAir;
+				}
+			}
+		}
+	}
+}
+
+float TMACGrid::DivergenceAtCellCenter(int32 x, int32 y, int32 z)
+{
+	int32 Index = GetAccessIndex(x, y, z);
+	int32 IndexX1 = GetAccessIndex(x + 1, y, z);
+	int32 IndexY1 = GetAccessIndex(x, y + 1, z);
+	int32 IndexZ1 = GetAccessIndex(x, y, z + 1);
+
+	float U0 = U[Index];
+	float U1 = U[IndexX1];
+	float V0 = V[Index];
+	float V1 = V[IndexY1];
+	float Z0 = W[Index];
+	float Z1 = W[IndexZ1];
+
+	return (U1 - U0) / Seperation + (V1 - V0) / Seperation + (Z1 - Z0) / Seperation;
 }

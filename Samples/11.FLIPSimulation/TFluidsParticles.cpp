@@ -80,8 +80,8 @@ void TFluidsParticles::ExportToJson(const TString& Filename)
 	Document::AllocatorType& Allocator = JsonDoc.GetAllocator();
 
 	JsonDoc.SetObject();
-	ArrayPosition.Reserve(Particles.size() * 3, Allocator);
-	ArrayVelocity.Reserve(Particles.size() * 3, Allocator);
+	ArrayPosition.Reserve((uint32)Particles.size() * 3, Allocator);
+	ArrayVelocity.Reserve((uint32)Particles.size() * 3, Allocator);
 	for (uint32 i = 0; i < Particles.size(); i++)
 	{
 		ArrayPosition.PushBack(Particles[i].Position.X, Allocator);
@@ -94,7 +94,7 @@ void TFluidsParticles::ExportToJson(const TString& Filename)
 	}
 
 	Value TotalParticles(kNumberType);
-	TotalParticles.SetInt(Particles.size());
+	TotalParticles.SetInt((int32)Particles.size());
 	JsonDoc.AddMember("count", TotalParticles, Allocator);
 	JsonDoc.AddMember("positions", ArrayPosition, Allocator);
 	JsonDoc.AddMember("velocities", ArrayVelocity, Allocator);
@@ -106,7 +106,7 @@ void TFluidsParticles::ExportToJson(const TString& Filename)
 	TFile Output;
 	if (Output.Open(Filename, EFA_CREATEWRITE))
 	{
-		Output.Write(StrBuffer.GetString(), StrBuffer.GetSize());
+		Output.Write(StrBuffer.GetString(), (int32)StrBuffer.GetSize());
 		Output.Close();
 	}
 }
