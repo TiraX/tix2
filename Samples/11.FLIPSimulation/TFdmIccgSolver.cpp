@@ -197,6 +197,8 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 
 void TFdmIccgSolver::Preconditioner::Build(const TArray3<FdmMatrixRow3>& matrix, const vector3di& Size)
 {
+	d.Resize(Size);
+	y.Resize(Size);
 	d.ResetZero();
 	y.ResetZero();
 	const TArray3<FdmMatrixRow3>& A = matrix;

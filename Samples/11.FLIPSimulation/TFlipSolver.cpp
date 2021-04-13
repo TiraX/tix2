@@ -182,78 +182,78 @@ void TFlipSolver::BuildLinearSystem()
 	const float InvH = 1.f / Grid->Seperation;
 	const float InvHSq = InvH * InvH;
 
-for (int32 z = 0; z < Size.Z; z++)
-{
-	for (int32 y = 0; y < Size.Y; y++)
+	for (int32 z = 0; z < Size.Z; z++)
 	{
-		for (int32 x = 0; x < Size.X; x++)
+		for (int32 y = 0; y < Size.Y; y++)
 		{
-			int32 Index = Grid->GetAccessIndex(vector3di(x, y, z));
-
-			auto& ARef = A[Index];
-			ARef.Center = ARef.Right = ARef.Up = ARef.Front = 0.f;
-			b[Index] = 0.f;
-
-			if (Grid->Markers[Index] != TMACGrid::GridSolid)
+			for (int32 x = 0; x < Size.X; x++)
 			{
-				b[Index] = Grid->DivergenceAtCellCenter(x, y, z);
+				int32 Index = Grid->GetAccessIndex(vector3di(x, y, z));
 
-				int32 IndexXPlus = Grid->GetAccessIndex(x + 1, y, z);
-				if (x + 1 < Size.X && Grid->Markers[IndexXPlus] != TMACGrid::GridSolid)
+				auto& ARef = A[Index];
+				ARef.Center = ARef.Right = ARef.Up = ARef.Front = 0.f;
+				b[Index] = 0.f;
+
+				if (Grid->Markers[Index] == TMACGrid::GridFluid)
 				{
-					ARef.Center += InvHSq;
-					if (Grid->Markers[IndexXPlus] == TMACGrid::GridFluid)
+					b[Index] = Grid->DivergenceAtCellCenter(x, y, z);
+
+					int32 IndexXPlus = Grid->GetAccessIndex(x + 1, y, z);
+					if (x + 1 < Size.X && Grid->Markers[IndexXPlus] != TMACGrid::GridSolid)
 					{
-						ARef.Right -= InvHSq;
+						ARef.Center += InvHSq;
+						if (Grid->Markers[IndexXPlus] == TMACGrid::GridFluid)
+						{
+							ARef.Right -= InvHSq;
+						}
+					}
+
+					int32 IndexXNeg = Grid->GetAccessIndex(x - 1, y, z);
+					if (x > 0 && Grid->Markers[IndexXNeg] != TMACGrid::GridSolid)
+					{
+						ARef.Center += InvHSq;
+					}
+
+					int32 IndexYPlus = Grid->GetAccessIndex(x, y + 1, z);
+					if (y + 1 < Size.Y && Grid->Markers[IndexYPlus] != TMACGrid::GridSolid)
+					{
+						ARef.Center += InvHSq;
+						if (Grid->Markers[IndexYPlus] == TMACGrid::GridFluid)
+						{
+							ARef.Up -= InvHSq;
+						}
+					}
+
+					int32 IndexYNeg = Grid->GetAccessIndex(x, y - 1, z);
+					if (y > 0 && Grid->Markers[IndexYNeg] != TMACGrid::GridSolid)
+					{
+						ARef.Center += InvHSq;
+					}
+
+					int32 IndexZPlus = Grid->GetAccessIndex(x, y, z + 1);
+					if (z + 1 < Size.Z && Grid->Markers[IndexZPlus] != TMACGrid::GridSolid)
+					{
+						ARef.Center += InvHSq;
+						if (Grid->Markers[IndexZPlus] == TMACGrid::GridFluid)
+						{
+							ARef.Front -= InvHSq;
+						}
+					}
+
+					int32 IndexZNeg = Grid->GetAccessIndex(x, y, z - 1);
+					if (z > 0 && Grid->Markers[IndexZNeg] != TMACGrid::GridSolid)
+					{
+						ARef.Center += InvHSq;
 					}
 				}
-
-				int32 IndexXNeg = Grid->GetAccessIndex(x - 1, y, z);
-				if (x > 0 && Grid->Markers[IndexXNeg] != TMACGrid::GridSolid)
+				else
 				{
-					ARef.Center += InvHSq;
+					// Not GridFluid
+					ARef.Center = 1.f;
 				}
-
-				int32 IndexYPlus = Grid->GetAccessIndex(x, y + 1, z);
-				if (y + 1 < Size.Y && Grid->Markers[IndexYPlus] != TMACGrid::GridSolid)
-				{
-					ARef.Center += InvHSq;
-					if (Grid->Markers[IndexYPlus] == TMACGrid::GridFluid)
-					{
-						ARef.Up -= InvHSq;
-					}
-				}
-
-				int32 IndexYNeg = Grid->GetAccessIndex(x, y - 1, z);
-				if (y > 0 && Grid->Markers[IndexYNeg] != TMACGrid::GridSolid)
-				{
-					ARef.Center += InvHSq;
-				}
-
-				int32 IndexZPlus = Grid->GetAccessIndex(x, y, z + 1);
-				if (z + 1 < Size.Z && Grid->Markers[IndexZPlus] != TMACGrid::GridSolid)
-				{
-					ARef.Center += InvHSq;
-					if (Grid->Markers[IndexZPlus] == TMACGrid::GridFluid)
-					{
-						ARef.Front -= InvHSq;
-					}
-				}
-
-				int32 IndexZNeg = Grid->GetAccessIndex(x, y, z - 1);
-				if (z > 0 && Grid->Markers[IndexZNeg] != TMACGrid::GridSolid)
-				{
-					ARef.Center += InvHSq;
-				}
-			}
-			else
-			{
-				// Not GridFluid
-				ARef.Center = 1.f;
 			}
 		}
 	}
-}
 }
 
 void TFlipSolver::ApplyPressureGradient()

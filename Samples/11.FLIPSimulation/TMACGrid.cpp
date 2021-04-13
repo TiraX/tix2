@@ -6,6 +6,10 @@
 #include "stdafx.h"
 #include "TMACGrid.h"
 #include "FLIPSimRenderer.h"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+using namespace rapidjson;
 
 TMACGrid::TMACGrid()
 	: Seperation(1.f)
@@ -14,6 +18,67 @@ TMACGrid::TMACGrid()
 
 TMACGrid::~TMACGrid()
 {
+}
+
+void DebugMarkers(const TArray3<int32>& Markers)
+{
+	vector3di Size = Markers.GetSize();
+
+	TVector<vector3df> Positions;
+	TVector<vector3df> Velocities;
+	Positions.reserve(Size.X * Size.Y * Size.Z);
+	Velocities.reserve(Size.X * Size.Y * Size.Z);
+
+	const float Sep = 0.5f;
+	const float SepH = Sep * 0.5f;
+	for (int32 z = 0; z < Size.Z; z++)
+	{
+		for (int32 y = 0; y < Size.Y; y++)
+		{
+			for (int32 x = 0; x < Size.X; x++)
+			{
+				Positions.push_back(vector3df(x * Sep + SepH, y * Sep + SepH, z * Sep + SepH));
+				int32 Index = Markers.GetAccessIndex(x, y, z);
+				Velocities.push_back(vector3df(Markers[Index], 0, 0));
+			}
+		}
+	}
+
+	Document JsonDoc;
+	Value ArrayPosition(kArrayType);
+	Value ArrayVelocity(kArrayType);
+	Document::AllocatorType& Allocator = JsonDoc.GetAllocator();
+
+	JsonDoc.SetObject();
+	ArrayPosition.Reserve((uint32)Positions.size() * 3, Allocator);
+	ArrayVelocity.Reserve((uint32)Positions.size() * 3, Allocator);
+	for (uint32 i = 0; i < Positions.size(); i++)
+	{
+		ArrayPosition.PushBack(Positions[i].X, Allocator);
+		ArrayPosition.PushBack(Positions[i].Y, Allocator);
+		ArrayPosition.PushBack(Positions[i].Z, Allocator);
+
+		ArrayVelocity.PushBack(Velocities[i].X, Allocator);
+		ArrayVelocity.PushBack(Velocities[i].Y, Allocator);
+		ArrayVelocity.PushBack(Velocities[i].Z, Allocator);
+	}
+
+	Value TotalParticles(kNumberType);
+	TotalParticles.SetInt((int32)Positions.size());
+	JsonDoc.AddMember("count", TotalParticles, Allocator);
+	JsonDoc.AddMember("positions", ArrayPosition, Allocator);
+	JsonDoc.AddMember("velocities", ArrayVelocity, Allocator);
+
+	StringBuffer StrBuffer;
+	Writer<StringBuffer> JsonWriter(StrBuffer);
+	JsonDoc.Accept(JsonWriter);
+
+	TFile Output;
+	if (Output.Open("DebugGrid.json", EFA_CREATEWRITE))
+	{
+		Output.Write(StrBuffer.GetString(), (int32)StrBuffer.GetSize());
+		Output.Close();
+	}
 }
 
 void TMACGrid::InitSize(const vector3di& InSize, float InSeperation)
@@ -33,8 +98,9 @@ void TMACGrid::InitSize(const vector3di& InSize, float InSeperation)
 		{
 			for (int32 x = 0; x < Size.X; x++)
 			{
-				vector3di D = Size - vector3di(x, y, z);
-				if (TMath::Abs(D.X) == 0 || TMath::Abs(D.Y) == 0 || TMath::Abs(D.Z) == 0)
+				if ((x == 0 || x == Size.X - 1) ||
+					(y == 0 || y == Size.Y - 1) ||
+					(z == 0 || z == Size.Z - 1))
 				{
 					int32 Index = GetAccessIndex(vector3di(x, y, z));
 					Markers[Index] = GridSolid;
@@ -42,6 +108,8 @@ void TMACGrid::InitSize(const vector3di& InSize, float InSeperation)
 			}
 		}
 	}
+
+	//DebugMarkers(Markers);
 }
 
 void TMACGrid::GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights)
