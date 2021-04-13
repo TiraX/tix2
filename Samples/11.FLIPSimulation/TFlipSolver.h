@@ -28,7 +28,7 @@ protected:
 	void TransferFromGridsToParticles();
 	void ExtrapolateVelocityToAir();
 	void ApplyBoundaryCondition();
-	void MoveParticles();
+	void MoveParticles(float Dt);
 
 	void BuildLinearSystem();
 	void ApplyPressureGradient();
