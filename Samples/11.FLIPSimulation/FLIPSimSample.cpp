@@ -31,8 +31,7 @@ int main()
 		{
 			// Setup Simulation
 			TFlipSolver Solver;
-			//Solver.InitSolver(vector3di(32, 64, 32), 0.1f);
-			Solver.InitSolver(vector3di(4, 8, 4), 0.8f);
+			Solver.InitSolver(vector3di(32, 64, 32), 0.1f);
 			Solver.CreateParticlesInSphere(vectype(1.6f, 3.2f, 1.6f), 1.f, 0.1f);
 
 			// Do Simulation

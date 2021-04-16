@@ -11,6 +11,7 @@
 using namespace rapidjson;
 
 TFluidsParticles::TFluidsParticles()
+	: Radius(0)
 {
 }
 
@@ -28,6 +29,8 @@ void TFluidsParticles::InitWithShapeSphere(const vectype& InCenter, float InRadi
 {
 	vectype Min = InCenter - vectype(InRadius, InRadius, InRadius);
 	vectype Max = InCenter + vectype(InRadius, InRadius, InRadius);
+
+	Radius = InSeperation * 0.5f;
 
 	int MaxCount = int(InRadius * 2.f / InSeperation);
 	MaxCount = MaxCount * MaxCount * MaxCount;
@@ -56,6 +59,22 @@ void TFluidsParticles::InitWithShapeSphere(const vectype& InCenter, float InRadi
 				}
 			}
 		}
+	}
+}
+
+void TFluidsParticles::SearchParticlesNear(int32 ParticleIndex, ftype Radius, TVector<int32>& ParticleIndicesInRadius)
+{
+	const TParticle& P = Particles[ParticleIndex];
+	const ftype RSQ = Radius * Radius;
+
+	const int32 Num = (int32)Particles.size();
+	for (int32 i = 0; i < Num; i++)
+	{
+		if (i == ParticleIndex)
+			continue;
+
+		if ((Particles[i].Position - P.Position).getLengthSQ() < RSQ)
+			ParticleIndicesInRadius.push_back(i);
 	}
 }
 

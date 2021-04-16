@@ -23,8 +23,10 @@ public:
 protected:
 	void TransferFromParticlesToGrids();
 	void ComputeForces(float Dt);
+	void ComputeParticlesForces(float Dt);
 	void ComputeViscosity();
 	void ComputePressure();
+	void ComputeParticlesPressure(float Dt);
 	void ComputeAdvection();
 	void TransferFromGridsToParticles();
 	void ExtrapolateVelocityToAir();

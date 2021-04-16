@@ -42,10 +42,11 @@ void TFlipSolver::CreateParticlesInSphere(const vectype& InCenter, float Radius,
 
 void TFlipSolver::DoSimulation(float Dt)
 {
-	TransferFromParticlesToGrids();
+	//TransferFromParticlesToGrids();
 	ComputeForces(Dt);
 	ComputeViscosity();
-	ComputePressure();
+	//ComputePressure();
+	ComputeParticlesPressure(Dt);
 	ApplyBoundaryCondition();
 	TransferFromGridsToParticles();
 	MoveParticles(Dt);
@@ -94,7 +95,7 @@ void TFlipSolver::TransferFromParticlesToGrids()
 	{
 		if (GridWeights[i] > 0.f)
 		{
-			ftype InvW = 1.0 / GridWeights[i];
+			ftype InvW = (ftype)1.0 / GridWeights[i];
 			U[i] *= InvW;
 			V[i] *= InvW;
 			W[i] *= InvW;
@@ -122,6 +123,18 @@ void TFlipSolver::ComputeForces(float Dt)
 	}
 }
 
+void TFlipSolver::ComputeParticlesForces(float Dt)
+{
+	const float Gravity = -9.8f;
+	TVector<TFluidsParticles::TParticle>& P = Particles->Particles;
+
+	const ftype dVz = Gravity * Dt;
+	for (auto& Par : P)
+	{
+		Par.Velocity.Z += dVz;
+	}
+}
+
 void TFlipSolver::ComputeViscosity()
 {}
 
@@ -130,6 +143,44 @@ void TFlipSolver::ComputePressure()
 	BuildLinearSystem();
 	LinearSystemSolver->Solve(A, b, x);
 	ApplyPressureGradient();
+}
+
+const ftype PressureScale = 10.f;
+void TFlipSolver::ComputeParticlesPressure(float Dt)
+{
+	TVector<TFluidsParticles::TParticle>& P = Particles->Particles;
+	TVector<int32> ParticlesInRange;
+	ParticlesInRange.reserve(64);
+
+	TVector<vectype> Pressures;
+	Pressures.resize(P.size());
+	memset(Pressures.data(), 0, Pressures.size() * sizeof(vectype));
+
+	// Calc pressures
+	const ftype R2 = Particles->GetRadius() * 2;
+	for (int32 i = 0 ; i < (int32)P.size() ; i ++)
+	{
+		ParticlesInRange.clear();
+		Particles->SearchParticlesNear(i, Particles->GetRadius(), ParticlesInRange);
+
+		const TFluidsParticles::TParticle& Particle = P[i];
+		for (int32 pi : ParticlesInRange)
+		{
+			TFluidsParticles::TParticle& Neighbour = P[pi];
+			vectype PDir = Neighbour.Position - Particle.Position;
+
+			ftype Dis = PDir.getLength();
+			ftype Pressure = -(Dis - R2);
+
+			Pressures[pi] += PDir / Dis * Pressure * PressureScale;
+		}
+	}
+
+	// apply pressures to velocities
+	for (int32 i = 0; i < (int32)P.size(); i++)
+	{
+		P[i].Velocity += Pressures[i] * Dt;
+	}
 }
 
 void TFlipSolver::ComputeAdvection()
