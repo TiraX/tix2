@@ -39,7 +39,7 @@ void DebugMarkers(const TArray3<int32>& Markers)
 			{
 				Positions.push_back(vector3df(x * Sep + SepH, y * Sep + SepH, z * Sep + SepH));
 				int32 Index = Markers.GetAccessIndex(x, y, z);
-				Velocities.push_back(vector3df(Markers[Index], 0, 0));
+				Velocities.push_back(vector3df((float)Markers[Index], 0, 0));
 			}
 		}
 	}
@@ -112,15 +112,18 @@ void TMACGrid::InitSize(const vector3di& InSize, float InSeperation)
 	//DebugMarkers(Markers);
 }
 
-void TMACGrid::GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights)
+void TMACGrid::GetAdjacentGrid(const vectype& InPos, TVector<vector3di>& OutputIndices, TVector<ftype>& OutputWeights)
 {
 	OutputIndices.clear();
 	OutputIndices.resize(8);
 	OutputWeights.clear();
 	OutputWeights.resize(8);
 
-	vector3df Coord = InPos / Seperation;
-	vector3df RCoord = Coord - vector3df(0.5f, 0.5f, 0.5f);
+	vectype Coord = InPos / Seperation;
+	vectype RCoord = Coord - vectype(0.5f, 0.5f, 0.5f);
+	RCoord.X = TMath::Max((ftype)0.0, RCoord.X);
+	RCoord.Y = TMath::Max((ftype)0.0, RCoord.Y);
+	RCoord.Z = TMath::Max((ftype)0.0, RCoord.Z);
 	uint32 X0 = uint32(floor(RCoord.X));
 	uint32 Y0 = uint32(floor(RCoord.Y));
 	uint32 Z0 = uint32(floor(RCoord.Z));
@@ -137,7 +140,7 @@ void TMACGrid::GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& Outpu
 	OutputIndices[6] = vector3di(X0, Y1, Z1);
 	OutputIndices[7] = vector3di(X1, Y1, Z1);
 
-	vector3df Frac = RCoord - vector3df(floor(RCoord.X), floor(RCoord.Y), floor(RCoord.Z));
+	vectype Frac = RCoord - vectype(floor(RCoord.X), floor(RCoord.Y), floor(RCoord.Z));
 	OutputWeights[0] = (1.f - Frac.X) * (1.f - Frac.Y) * (1.f - Frac.Z);
 	OutputWeights[1] = Frac.X * (1.f - Frac.Y) * (1.f - Frac.Z);
 	OutputWeights[2] = (1.f - Frac.X) * Frac.Y * (1.f - Frac.Z);
@@ -172,19 +175,19 @@ void TMACGrid::ClearGrids()
 	}
 }
 
-float TMACGrid::DivergenceAtCellCenter(int32 x, int32 y, int32 z)
+ftype TMACGrid::DivergenceAtCellCenter(int32 x, int32 y, int32 z)
 {
 	int32 Index = GetAccessIndex(x, y, z);
 	int32 IndexX1 = GetAccessIndex(x + 1, y, z);
 	int32 IndexY1 = GetAccessIndex(x, y + 1, z);
 	int32 IndexZ1 = GetAccessIndex(x, y, z + 1);
 
-	float U0 = U[Index];
-	float U1 = U[IndexX1];
-	float V0 = V[Index];
-	float V1 = V[IndexY1];
-	float Z0 = W[Index];
-	float Z1 = W[IndexZ1];
+	ftype U0 = U[Index];
+	ftype U1 = U[IndexX1];
+	ftype V0 = V[Index];
+	ftype V1 = V[IndexY1];
+	ftype Z0 = W[Index];
+	ftype Z1 = W[IndexZ1];
 
 	return (U1 - U0) / Seperation + (V1 - V0) / Seperation + (Z1 - Z0) / Seperation;
 }

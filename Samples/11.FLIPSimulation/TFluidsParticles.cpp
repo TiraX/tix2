@@ -18,35 +18,35 @@ TFluidsParticles::~TFluidsParticles()
 {
 }
 //! returns a vector with each component between 0.0 ~ 1.0, un-normalized
-static inline vector3df RandomVector()
+static inline vectype RandomVector()
 {
-	const float k_inv = 1.0f / RAND_MAX;
-	return vector3df(rand() * k_inv, rand() * k_inv, rand() * k_inv);
+	const ftype k_inv = 1.0f / RAND_MAX;
+	return vectype(rand() * k_inv, rand() * k_inv, rand() * k_inv);
 }
 
-void TFluidsParticles::InitWithShapeSphere(const vector3df& InCenter, float InRadius, float InSeperation)
+void TFluidsParticles::InitWithShapeSphere(const vectype& InCenter, float InRadius, float InSeperation)
 {
-	vector3df Min = InCenter - vector3df(InRadius, InRadius, InRadius);
-	vector3df Max = InCenter + vector3df(InRadius, InRadius, InRadius);
+	vectype Min = InCenter - vectype(InRadius, InRadius, InRadius);
+	vectype Max = InCenter + vectype(InRadius, InRadius, InRadius);
 
 	int MaxCount = int(InRadius * 2.f / InSeperation);
 	MaxCount = MaxCount * MaxCount * MaxCount;
 	Particles.reserve(MaxCount);
 
-	const float JitterScale = 0.5f;
+	const ftype JitterScale = 0.5f;
 	TMath::RandSeed(3499);
 
 	float RadiusSQ = InRadius * InRadius;
-	for (float z = Min.Z; z <= Max.Z; z += InSeperation)
+	for (ftype z = Min.Z; z <= Max.Z; z += InSeperation)
 	{
-		for (float y = Min.Y; y <= Max.Y; y += InSeperation)
+		for (ftype y = Min.Y; y <= Max.Y; y += InSeperation)
 		{
-			for (float x = Min.X; x <= Max.X; x += InSeperation)
+			for (ftype x = Min.X; x <= Max.X; x += InSeperation)
 			{
-				vector3df Pos = vector3df(x, y, z);
+				vectype Pos = vectype(x, y, z);
 				if ((InCenter - Pos).getLengthSQ() < RadiusSQ)
 				{
-					vector3df Jitter = RandomVector() * 2.f - vector3df(1.f, 1.f, 1.f);
+					vectype Jitter = RandomVector() * 2.f - vectype(1.f, 1.f, 1.f);
 					Jitter *= InSeperation * JitterScale;
 					Pos += Jitter;
 

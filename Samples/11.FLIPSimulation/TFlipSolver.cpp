@@ -35,7 +35,7 @@ void TFlipSolver::InitSolver(const vector3di& InSize, float InSeperation)
 	LinearSystemSolver = ti_new TFdmIccgSolver(InSize);
 }
 
-void TFlipSolver::CreateParticlesInSphere(const vector3df& InCenter, float Radius, float InSeperation)
+void TFlipSolver::CreateParticlesInSphere(const vectype& InCenter, float Radius, float InSeperation)
 {
 	Particles->InitWithShapeSphere(InCenter, Radius, InSeperation);
 }
@@ -49,30 +49,30 @@ void TFlipSolver::DoSimulation(float Dt)
 	ApplyBoundaryCondition();
 	TransferFromGridsToParticles();
 	MoveParticles(Dt);
+}
 
-	static int32 Frame = 0;
-	{
-		int8 Name[128];
-		sprintf_s(Name, "pc_%03d.json", Frame++);
-		Particles->ExportToJson(Name);
-	}
+void TFlipSolver::ExportParticles(int32 Frame)
+{
+	int8 Name[128];
+	sprintf_s(Name, "pc_%d.json", Frame);
+	Particles->ExportToJson(Name);
 }
 
 void TFlipSolver::TransferFromParticlesToGrids()
 {
 	Grid->ClearGrids();
 
-	TArray3<float>& U = Grid->U;
-	TArray3<float>& V = Grid->V;
-	TArray3<float>& W = Grid->W;
+	TArray3<ftype>& U = Grid->U;
+	TArray3<ftype>& V = Grid->V;
+	TArray3<ftype>& W = Grid->W;
 
-	TArray3<float> GridWeights;
+	TArray3<ftype> GridWeights;
 	GridWeights.Resize(W.GetSize());
 	GridWeights.ResetZero();
 
 	const TVector<TFluidsParticles::TParticle>& P = Particles->Particles;
 	TVector<vector3di> GridIndices;
-	TVector<float> Weights;
+	TVector<ftype> Weights;
 	for (const auto& Particle : P)
 	{
 		Grid->GetAdjacentGrid(Particle.Position, GridIndices, Weights);
@@ -94,13 +94,14 @@ void TFlipSolver::TransferFromParticlesToGrids()
 	{
 		if (GridWeights[i] > 0.f)
 		{
-			float InvW = 1.f / GridWeights[i];
+			ftype InvW = 1.0 / GridWeights[i];
 			U[i] *= InvW;
 			V[i] *= InvW;
 			W[i] *= InvW;
 
 			// Mark this grid
-			Grid->Markers[i] = TMACGrid::GridFluid;
+			if (Grid->Markers[i] != TMACGrid::GridSolid)
+				Grid->Markers[i] = TMACGrid::GridFluid;
 		}
 	}
 }
@@ -110,11 +111,11 @@ void TFlipSolver::ComputeForces(float Dt)
 	// Compute gravity only
 	const float Gravity = -9.8f;
 
-	TArray3<float>& U = Grid->U;
-	TArray3<float>& V = Grid->V;
-	TArray3<float>& W = Grid->W;
+	TArray3<ftype>& U = Grid->U;
+	TArray3<ftype>& V = Grid->V;
+	TArray3<ftype>& W = Grid->W;
 
-	const float dv = Gravity * Dt;
+	const ftype dv = Gravity * Dt;
 	for (auto& w : W.GetData())
 	{
 		w += dv;
@@ -135,19 +136,19 @@ void TFlipSolver::ComputeAdvection()
 {}
 void TFlipSolver::TransferFromGridsToParticles()
 {
-	const TArray3<float>& U = Grid->U;
-	const TArray3<float>& V = Grid->V;
-	const TArray3<float>& W = Grid->W;
+	const TArray3<ftype>& U = Grid->U;
+	const TArray3<ftype>& V = Grid->V;
+	const TArray3<ftype>& W = Grid->W;
 
 	TVector<TFluidsParticles::TParticle>& P = Particles->Particles;
 
 	TVector<vector3di> GridIndices;
-	TVector<float> Weights;
+	TVector<ftype> Weights;
 	for (auto& Particle : P)
 	{
 		Grid->GetAdjacentGrid(Particle.Position, GridIndices, Weights);
 		
-		vector3df Vel;
+		vectype Vel;
 		for (int i = 0; i < 8; i++)
 		{
 			int32 Index = Grid->GetAccessIndex(GridIndices[i]);
@@ -163,7 +164,48 @@ void TFlipSolver::ExtrapolateVelocityToAir()
 {}
 void TFlipSolver::ApplyBoundaryCondition()
 {
-	TI_ASSERT(0);
+	// For simple test, bound velocity on boundaries
+	// No-flux: Project velocity on the domain boundary if closed
+	const vector3di& Size = Grid->Size;
+	TArray3<ftype>& U = Grid->U;
+	TArray3<ftype>& V = Grid->V;
+	TArray3<ftype>& W = Grid->W;
+
+	for (int32 z = 0; z < Size.Z; ++z)
+	{
+		for (int32 y = 0; y < Size.Y; y++)
+		{
+			int32 Index0 = Grid->GetAccessIndex(0, y, z);
+			int32 Index1 = Grid->GetAccessIndex(Size.X - 1, y, z);
+
+			if (U[Index0] < 0.f) U[Index0] = 0.f;
+			if (U[Index1] > 0.f) U[Index1] = 0.f;
+		}
+	}
+
+	for (int32 z = 0; z < Size.Z; ++z)
+	{
+		for (int32 x = 0; x < Size.X; x++)
+		{
+			int32 Index0 = Grid->GetAccessIndex(x, 0, z);
+			int32 Index1 = Grid->GetAccessIndex(x, Size.Y - 1, z);
+
+			if (V[Index0] < 0.f) V[Index0] = 0.f;
+			if (V[Index1] > 0.f) V[Index1] = 0.f;
+		}
+	}
+
+	for (int32 y = 0; y < Size.Y; y++)
+	{
+		for (int32 x = 0; x < Size.X; x++)
+		{
+			int32 Index0 = Grid->GetAccessIndex(x, y, 0);
+			int32 Index1 = Grid->GetAccessIndex(x, y, Size.Z - 1);
+
+			if (W[Index0] < 0.f) W[Index0] = 0.f;
+			if (W[Index1] > 0.f) W[Index1] = 0.f;
+		}
+	}
 }
 void TFlipSolver::MoveParticles(float Dt)
 {
@@ -179,8 +221,8 @@ void TFlipSolver::BuildLinearSystem()
 {
 	const vector3di& Size = Grid->Size;
 
-	const float InvH = 1.f / Grid->Seperation;
-	const float InvHSq = InvH * InvH;
+	const ftype InvH = 1.f / Grid->Seperation;
+	const ftype InvHSq = InvH * InvH;
 
 	for (int32 z = 0; z < Size.Z; z++)
 	{
@@ -259,11 +301,11 @@ void TFlipSolver::BuildLinearSystem()
 void TFlipSolver::ApplyPressureGradient()
 {
 	const vector3di& Size = Grid->Size;
-	const float InvH = 1.f / Grid->Seperation;
+	const ftype InvH = 1.f / Grid->Seperation;
 
-	TArray3<float>& U = Grid->U;
-	TArray3<float>& V = Grid->V;
-	TArray3<float>& W = Grid->W;
+	TArray3<ftype>& U = Grid->U;
+	TArray3<ftype>& V = Grid->V;
+	TArray3<ftype>& W = Grid->W;
 
 	for (int32 k = 0; k < Size.Z; k++)
 	{

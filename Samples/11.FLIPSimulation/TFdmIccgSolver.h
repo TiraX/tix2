@@ -9,16 +9,16 @@
 //! The row of FdmMatrix3 where row corresponds to (i, j, k) grid point.
 struct FdmMatrixRow3 {
 	//! Diagonal component of the matrix (row, row).
-	float Center = 0.0;
+	ftype Center = 0.0;
 
 	//! Off-diagonal element where colum refers to (i+1, j, k) grid point.
-	float Right = 0.0;
+	ftype Right = 0.0;
 
 	//! Off-diagonal element where column refers to (i, j+1, k) grid point.
-	float Up = 0.0;
+	ftype Up = 0.0;
 
 	//! OFf-diagonal element where column refers to (i, j, k+1) grid point.
-	float Front = 0.0;
+	ftype Front = 0.0;
 };
 
 //!
@@ -31,21 +31,21 @@ public:
 	TFdmIccgSolver(const vector3di& InSize);
 	~TFdmIccgSolver();
 
-	void Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>& b, TArray3<float>& x);
+	void Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<ftype>& b, TArray3<ftype>& x);
 private:
 	vector3di Size;
 	struct Preconditioner final {
-		TArray3<float> d;
-		TArray3<float> y;
+		TArray3<ftype> d;
+		TArray3<ftype> y;
 
 		void Build(const TArray3<FdmMatrixRow3>& matrix, const vector3di& Size);
 
-		void Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>& b, TArray3<float>& x);
+		void Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<ftype>& b, TArray3<ftype>& x);
 	};
 
-	TArray3<float> _r;
-	TArray3<float> _d;
-	TArray3<float> _q;
-	TArray3<float> _s;
+	TArray3<ftype> _r;
+	TArray3<ftype> _d;
+	TArray3<ftype> _q;
+	TArray3<ftype> _s;
 	Preconditioner _precond;
 };

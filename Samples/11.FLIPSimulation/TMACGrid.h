@@ -12,10 +12,10 @@ public:
 	~TMACGrid();
 
 	void InitSize(const vector3di& InSize, float InSeperation);
-	void GetAdjacentGrid(const vector3df& InPos, TVector<vector3di>& OutputIndices, TVector<float>& OutputWeights);
+	void GetAdjacentGrid(const vectype& InPos, TVector<vector3di>& OutputIndices, TVector<ftype>& OutputWeights);
 	void ClearGrids();
 
-	float DivergenceAtCellCenter(int32 x, int32 y, int32 z);
+	ftype DivergenceAtCellCenter(int32 x, int32 y, int32 z);
 
 	int32 GetAccessIndex(const vector3di& Index)
 	{
@@ -37,7 +37,7 @@ protected:
 	vector3di Size;
 	float Seperation;
 
-	TArray3<float> U, V, W;
+	TArray3<ftype> U, V, W;
 	TArray3<int32> Markers;
 
 	friend class TFlipSolver;

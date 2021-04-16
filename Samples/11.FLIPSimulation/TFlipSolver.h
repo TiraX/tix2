@@ -15,9 +15,10 @@ public:
 	~TFlipSolver();
 
 	void InitSolver(const vector3di& InSize, float InSeperation);
-	void CreateParticlesInSphere(const vector3df& InCenter, float InRadius, float InSeperation);
+	void CreateParticlesInSphere(const vectype& InCenter, float InRadius, float InSeperation);
 
 	void DoSimulation(float Dt);
+	void ExportParticles(int32 Frame);
 
 protected:
 	void TransferFromParticlesToGrids();
@@ -40,7 +41,7 @@ protected:
 
 	// Matrix and vector for linear system
 	TArray3<FdmMatrixRow3> A;
-	TArray3<float> b;
-	TArray3<float> x;
+	TArray3<ftype> b;
+	TArray3<ftype> x;
 	TFdmIccgSolver* LinearSystemSolver;
 };

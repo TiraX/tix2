@@ -11,13 +11,13 @@ public:
 	TFluidsParticles();
 	~TFluidsParticles();
 
-	void InitWithShapeSphere(const vector3df& InCenter, float InRadius, float InSeperation);
+	void InitWithShapeSphere(const vectype& InCenter, float InRadius, float InSeperation);
 	void ExportToJson(const TString& Filename);
 
 	struct TParticle
 	{
-		vector3df Position;
-		vector3df Velocity;
+		vectype Position;
+		vectype Velocity;
 	};
 protected:
 	TVector<TParticle> Particles;

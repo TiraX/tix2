@@ -6,13 +6,31 @@
 #include "stdafx.h"
 #include "TFdmIccgSolver.h"
 
-const float tolerance = std::numeric_limits<float>::epsilon();
+const ftype tolerance = std::numeric_limits<ftype>::epsilon();
 const uint32 maxNumberOfIterations = 100;
 
-inline void BlasResidual(const TArray3<FdmMatrixRow3>& a, const TArray3<float>& x,
-					const TArray3<float>& b, TArray3<float>& r)
+inline void BlasResidual(const TArray3<FdmMatrixRow3>& a, const TArray3<ftype>& x,
+					const TArray3<ftype>& b, TArray3<ftype>& r)
 {
 	const vector3di& Size = r.GetSize();
+	for (int32 k = 0; k < Size.Z; k++)
+	{
+		for (int32 j = 0; j < Size.Y; j++)
+		{
+			for (int32 i = 0; i < Size.X; i++)
+			{
+				int32 Index = r.GetAccessIndex(i, j, k);
+				if (x[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+				if (b[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+			}
+		}
+	}
 
 	// x[] always be Zero, so this is equal to r = b ???
 	//r = b;
@@ -42,19 +60,19 @@ inline void BlasResidual(const TArray3<FdmMatrixRow3>& a, const TArray3<float>& 
 	}
 }
 
-inline float BlasDot(const TArray3<float>& a, const TArray3<float>& b)
+inline ftype BlasDot(const TArray3<ftype>& a, const TArray3<ftype>& b)
 {
 	const vector3di& Size = a.GetSize();
 	TI_ASSERT(a.GetSize() == b.GetSize());
 
-	float Result = 0.f;
-	for (int32 _z = Size.Z - 1; _z >= 0; _z--)
+	ftype Result = 0.f;
+	for (int32 k = 0; k < Size.Z; k++)
 	{
-		for (int32 _y = Size.Y - 1; _y >= 0; _y--)
+		for (int32 j = 0; j < Size.Y; j++)
 		{
-			for (int32 _x = Size.X - 1; _x >= 0; _x--)
+			for (int32 i = 0; i < Size.X; i++)
 			{
-				int32 Index = a.GetAccessIndex(_x, _y, _z);
+				int32 Index = a.GetAccessIndex(i, j, k);
 				Result += a[Index] * b[Index];
 			}
 		}
@@ -62,7 +80,7 @@ inline float BlasDot(const TArray3<float>& a, const TArray3<float>& b)
 	return Result;
 }
 
-inline void BlasMvm(const TArray3<FdmMatrixRow3>& m, const TArray3<float>& v, TArray3<float>& Result)
+inline void BlasMvm(const TArray3<FdmMatrixRow3>& m, const TArray3<ftype>& v, TArray3<ftype>& Result)
 {
 	const vector3di& Size = m.GetSize();
 
@@ -82,17 +100,17 @@ inline void BlasMvm(const TArray3<FdmMatrixRow3>& m, const TArray3<float>& v, TA
 				Result[Index] =
 					m[Index].Center * v[Index] +
 					((i > 0) ? m[IndexX1].Right * v[IndexX1] : 0.f) +
-					((i < Size.X) ? m[Index].Right * v[IndexX2] : 0.f) +
+					((i + 1 < Size.X) ? m[Index].Right * v[IndexX2] : 0.f) +
 					((j > 0) ? m[IndexY1].Up * v[IndexY1] : 0.f) +
-					((j < Size.Y) ? m[Index].Up * v[IndexY2] : 0.f) +
+					((j + 1 < Size.Y) ? m[Index].Up * v[IndexY2] : 0.f) +
 					((k > 0) ? m[IndexZ1].Front * v[IndexZ1] : 0.f) +
-					((k < Size.Z) ? m[Index].Front * v[IndexZ2] : 0.f);
+					((k + 1 < Size.Z) ? m[Index].Front * v[IndexZ2] : 0.f);
 			}
 		}
 	}
 }
 
-inline void BlasAxpy(float a, const TArray3<float>& x, const TArray3<float>& y, TArray3<float>& Result)
+inline void BlasAxpy(ftype a, const TArray3<ftype>& x, const TArray3<ftype>& y, TArray3<ftype>& Result)
 {
 	const vector3di& Size = x.GetSize();
 
@@ -120,7 +138,7 @@ TFdmIccgSolver::~TFdmIccgSolver()
 {
 }
 
-void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>& b, TArray3<float>& x)
+void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<ftype>& b, TArray3<ftype>& x)
 {
 	_r.Resize(Size);
 	_d.Resize(Size);
@@ -144,7 +162,7 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 		_precond.Solve(A, _r, _d);
 
 		// sigmaNew = r.d
-		float sigmaNew = BlasDot(_r, _d);
+		ftype sigmaNew = BlasDot(_r, _d);
 
 		uint32 iter = 0;
 		bool trigger = false;
@@ -153,7 +171,7 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 			BlasMvm(A, _d, _q);
 
 			// alpha = sigmaNew/d.q
-			float alpha = sigmaNew / BlasDot(_d, _q);
+			ftype alpha = sigmaNew / BlasDot(_d, _q);
 
 			// x = x + alpha*d
 			BlasAxpy(alpha, _d, x, x);
@@ -173,7 +191,7 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 			_precond.Solve(A, _r, _s);
 
 			// sigmaOld = sigmaNew
-			float sigmaOld = sigmaNew;
+			ftype sigmaOld = sigmaNew;
 
 			// sigmaNew = r.s
 			sigmaNew = BlasDot(_r, _s);
@@ -184,7 +202,7 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 			}
 
 			// beta = sigmaNew/sigmaOld
-			float beta = sigmaNew / sigmaOld;
+			ftype beta = sigmaNew / sigmaOld;
 
 			// d = s + beta*d
 			BlasAxpy(beta, _d, _s, _d);
@@ -197,10 +215,13 @@ void TFdmIccgSolver::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>
 
 void TFdmIccgSolver::Preconditioner::Build(const TArray3<FdmMatrixRow3>& matrix, const vector3di& Size)
 {
-	d.Resize(Size);
-	y.Resize(Size);
-	d.ResetZero();
-	y.ResetZero();
+	if (d.GetSize() == vector3di(0, 0, 0))
+	{
+		d.Resize(Size);
+		y.Resize(Size);
+		d.ResetZero();
+		y.ResetZero();
+	}
 	const TArray3<FdmMatrixRow3>& A = matrix;
 
 	for (int32 k = 0; k < Size.Z; k++)
@@ -214,7 +235,12 @@ void TFdmIccgSolver::Preconditioner::Build(const TArray3<FdmMatrixRow3>& matrix,
 				int32 IndexY1 = A.GetAccessIndex(i, j - 1, k);
 				int32 IndexZ1 = A.GetAccessIndex(i, j, k - 1);
 
-				float denom = A[Index].Center -
+				if (y[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+
+				ftype denom = A[Index].Center -
 					((i > 0) ? TMath::Sqr(A[IndexX1].Right) * d[IndexX1] : 0.f) -
 					((j > 0) ? TMath::Sqr(A[IndexY1].Up) * d[IndexY1] : 0.f) -
 					((k > 0) ? TMath::Sqr(A[IndexZ1].Front) * d[IndexZ1] : 0.f);
@@ -232,9 +258,35 @@ void TFdmIccgSolver::Preconditioner::Build(const TArray3<FdmMatrixRow3>& matrix,
 	}
 }
 
-void TFdmIccgSolver::Preconditioner::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<float>& b, TArray3<float>& x)
+void TFdmIccgSolver::Preconditioner::Solve(const TArray3<FdmMatrixRow3>& A, const TArray3<ftype>& b, TArray3<ftype>& x)
 {
 	const vector3di& Size = A.GetSize();
+	for (int32 k = 0; k < Size.Z; k++)
+	{
+		for (int32 j = 0; j < Size.Y; j++)
+		{
+			for (int32 i = 0; i < Size.X; i++)
+			{
+				int32 Index = A.GetAccessIndex(i, j, k);
+				if (b[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+				if (x[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+				if (d[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+				if (y[Index] != 0.f)
+				{
+					int letsbreak = 0;
+				}
+			}
+		}
+	}
 	for (int32 k = 0; k < Size.Z; k++)
 	{
 		for (int32 j = 0; j < Size.Y; j++)
@@ -252,6 +304,11 @@ void TFdmIccgSolver::Preconditioner::Solve(const TArray3<FdmMatrixRow3>& A, cons
 						((j > 0) ? A[IndexY1].Up * y[IndexY1] : 0.f) -
 						((k > 0) ? A[IndexZ1].Front * y[IndexZ1] : 0.f)) *
 					d[Index];
+
+				if (y[Index] != 0.f)
+				{
+					int lestsbreak = 0;
+				}
 			}
 		}
 	}
@@ -273,6 +330,24 @@ void TFdmIccgSolver::Preconditioner::Solve(const TArray3<FdmMatrixRow3>& A, cons
 					((j + 1 < Size.Y) ? A[Index].Up * x[IndexY1] : 0.f) -
 					((k + 1 < Size.Z) ? A[Index].Front * x[IndexZ1] : 0.f) *
 					d[Index];
+				if (x[Index] != 0)
+				{
+					int lestsbreak = 0;
+				}
+			}
+		}
+	}
+	for (int32 k = 0; k < Size.Z; k++)
+	{
+		for (int32 j = 0; j < Size.Y; j++)
+		{
+			for (int32 i = 0; i < Size.X; i++)
+			{
+				int32 Index = x.GetAccessIndex(i, j, k);
+				if (x[Index] != 0.f)
+				{
+					int lestsbreak = 0;
+				}
 			}
 		}
 	}
