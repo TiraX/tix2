@@ -5,15 +5,16 @@
 
 #pragma once
 
-class FFLIPSimRenderer : public FDefaultRenderer
+class FFluidSolver;
+class FFluidSimRenderer : public FDefaultRenderer
 {
 public:
 	static const int32 FFT_Size = 512;
 
-	FFLIPSimRenderer();
-	virtual ~FFLIPSimRenderer();
+	FFluidSimRenderer();
+	virtual ~FFluidSimRenderer();
 
-	static FFLIPSimRenderer* Get();
+	static FFluidSimRenderer* Get();
 
 	virtual void InitInRenderThread() override;
 	virtual void InitRenderFrame(FScene* Scene) override;
@@ -26,4 +27,6 @@ private:
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	FFluidSolver* Solver;
 };

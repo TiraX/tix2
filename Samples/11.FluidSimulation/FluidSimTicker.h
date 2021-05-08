@@ -5,11 +5,11 @@
 
 #pragma once
 
-class TFLIPSimTicker : public TTicker
+class TFluidSimTicker : public TTicker
 {
 public:
-	TFLIPSimTicker();
-	virtual ~TFLIPSimTicker();
+	TFluidSimTicker();
+	virtual ~TFluidSimTicker();
 
 	virtual void Tick(float Dt) override;
 

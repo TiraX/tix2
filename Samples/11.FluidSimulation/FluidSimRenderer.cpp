@@ -4,23 +4,26 @@
 */
 
 #include "stdafx.h"
-#include "FLIPSimRenderer.h"
+#include "FluidSimRenderer.h"
+#include "FluidSolver.h"
 
-FFLIPSimRenderer::FFLIPSimRenderer()
+FFluidSimRenderer::FFluidSimRenderer()
 {
+	Solver = ti_new FFluidSolver;
 }
 
-FFLIPSimRenderer::~FFLIPSimRenderer()
+FFluidSimRenderer::~FFluidSimRenderer()
 {
+	ti_delete Solver;
 }
 
-void FFLIPSimRenderer::InitRenderFrame(FScene* Scene)
+void FFluidSimRenderer::InitRenderFrame(FScene* Scene)
 {
 	// Prepare frame view uniform buffer
 	Scene->InitRenderFrame();
 }
 
-void FFLIPSimRenderer::InitInRenderThread()
+void FFluidSimRenderer::InitInRenderThread()
 {
 	FDefaultRenderer::InitInRenderThread();
 
@@ -52,16 +55,22 @@ void FFLIPSimRenderer::InitInRenderThread()
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
+
+	// Init Simulation
+	Solver->CreateParticlesInBox(
+		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
+		0.1f, 1.f, 1000.f
+	);
+	Solver->SetCollisionBox(
+		aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f)
+	);
 }
 
-void FFLIPSimRenderer::Render(FRHI* RHI, FScene* Scene)
+void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
-
-	// Debug
-	//FSRender.DrawFullScreenTexture(RHI, AB_DebugDisplacement);
 }

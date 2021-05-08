@@ -4,24 +4,24 @@
 */
 
 #include "stdafx.h"
-#include "FLIPSimTicker.h"
-#include "FLIPSimRenderer.h"
+#include "FluidSimTicker.h"
+#include "FluidSimRenderer.h"
 
-TFLIPSimTicker::TFLIPSimTicker()
+TFluidSimTicker::TFluidSimTicker()
 {
 }
 
-TFLIPSimTicker::~TFLIPSimTicker()
+TFluidSimTicker::~TFluidSimTicker()
 {
 }
 
-void TFLIPSimTicker::Tick(float Dt)
+void TFluidSimTicker::Tick(float Dt)
 {
 	TScene * Scene = TEngine::Get()->GetScene();
 	Scene->UpdateAllNodesTransforms();
 }
 
-void TFLIPSimTicker::SetupScene()
+void TFluidSimTicker::SetupScene()
 {
 	FVTSystem::SetVTEnabled(false);
 
