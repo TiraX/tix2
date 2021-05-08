@@ -61,7 +61,7 @@ void FFluidSimRenderer::InitInRenderThread()
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
 		0.1f, 1.f, 1000.f
 	);
-	Solver->SetCollisionBox(
+	Solver->SetBoundaryBox(
 		aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f)
 	);
 }

@@ -12,6 +12,7 @@
 
 #define Sort_RootSig \
 	"CBV(b0) ," \
+	"CBV(b1) ," \
     "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))" 
 
 StructuredBuffer<FParticle> Particles : register(t0);

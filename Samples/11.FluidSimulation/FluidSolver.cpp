@@ -15,7 +15,7 @@ FFluidSolver::FFluidSolver()
 	, Epsilon(600.f)
 {
 	PbfParamsUniform = ti_new FPBFParams;
-	CollisionUniform = ti_new FCollisionInfo;
+	BoundaryUniform = ti_new FBoundaryInfo;
 }
 
 FFluidSolver::~FFluidSolver()
@@ -28,19 +28,24 @@ void FFluidSolver::CreateParticlesInBox(
 	float InParticleMass,
 	float InRestDenstiy)
 {
-	// Update params and uniforms
-	ParticleMass = InParticleMass;
-	ParticleSeperation = InParticleSeperation;
-	RestDenstiy = InRestDenstiy;
-	TI_ASSERT(0);	// Create Uniforms
-
-	// Create particles and resources
+	// Calc Total Particles
 	vector3df Ext = InParticleBox.getExtent();
 	vector3di Dim;
 	Dim.X = (int32)(Ext.X / ParticleSeperation);
 	Dim.Y = (int32)(Ext.Y / ParticleSeperation);
 	Dim.Z = (int32)(Ext.Z / ParticleSeperation);
 	TotalParticles = Dim.X * Dim.Y * Dim.Z;
+
+	// Update params and uniforms
+	ParticleMass = InParticleMass;
+	ParticleSeperation = InParticleSeperation;
+	RestDenstiy = InRestDenstiy;
+	TI_ASSERT(0);	// Create Uniforms
+
+	// Boundary Uniforms
+	TI_ASSERT(0);
+
+	// Create particles and resources
 
 	ParticleUniform = ti_new FParticles(TotalParticles);
 	int32 Index = 0;
@@ -62,9 +67,13 @@ void FFluidSolver::CreateParticlesInBox(
 	}
 	ParticleUniform->InitUniformBuffer(UB_FLAG_COMPUTE_WRITABLE);
 
+	// Other Uniforms
+	TI_ASSERT(0);
+	TI_TODO("Split pos and vel to 2 buffers");
+	TI_TODO("Create Sorted Position buffer");
 }
 
-void FFluidSolver::SetCollisionBox(const aabbox3df& InCollisionBox)
+void FFluidSolver::SetBoundaryBox(const aabbox3df& InBoundaryBox)
 {
-	CollisionBox = InCollisionBox;
+	BoundaryBox = InBoundaryBox;
 }

@@ -51,6 +51,9 @@
     <ClCompile Include="FluidSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CellInitCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -64,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="FluidSolver.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CellInitCS.h">
+      <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +95,9 @@
     </Filter>
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{82eb1c42-bba2-40a6-a6e8-fb87cf07d67e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compute">
+      <UniqueIdentifier>{87a931ed-f293-415a-996f-3203a693644c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -98,6 +98,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CellInitCS.cpp" />
     <ClCompile Include="FluidSolver.cpp" />
     <ClCompile Include="FluidSimRenderer.cpp" />
     <ClCompile Include="FluidSimSample.cpp" />
@@ -108,6 +109,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CellInitCS.h" />
     <ClInclude Include="FluidSolver.h" />
     <ClInclude Include="FluidSimRenderer.h" />
     <ClInclude Include="FluidSimTicker.h" />

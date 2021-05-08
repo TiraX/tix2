@@ -12,6 +12,7 @@
 
 #define CellInit_RootSig \
 	"CBV(b0) ," \
+	"CBV(b1) ," \
     "DescriptorTable(UAV(u0, numDescriptors=2))" 
 
 RWStructuredBuffer<uint> NumInCell : register(u0);

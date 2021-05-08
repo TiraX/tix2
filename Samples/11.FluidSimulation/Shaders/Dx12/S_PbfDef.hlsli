@@ -1,4 +1,4 @@
-cbuffer FInfoUniform : register(b0)
+cbuffer FPbfParams : register(b0)
 {
     float4 P0;  // x = mass; y = epsilon; z = m/rho; w = dt
     float4 P1;  // x = h; y = h^2; z = 1.f/(h^3) w = inv_cell_size;

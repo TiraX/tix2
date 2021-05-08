@@ -12,6 +12,7 @@
 
 #define CellInit_RootSig \
 	"CBV(b0) ," \
+	"CBV(b1) ," \
     "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=1))" 
 
 StructuredBuffer<uint> NumInCell : register(t0);
