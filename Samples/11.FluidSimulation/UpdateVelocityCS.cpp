@@ -4,38 +4,40 @@
 */
 
 #include "stdafx.h"
-#include "CellInitCS.h"
+#include "UpdateVelocityCS.h"
 
-FCellInitCS::FCellInitCS()
-	: FComputeTask("S_CellInitCS")
+FUpdateVelocityCS::FUpdateVelocityCS()
+	: FComputeTask("S_UpdateVelocityCS")
 {
 }
 
-FCellInitCS::~FCellInitCS()
+FUpdateVelocityCS::~FUpdateVelocityCS()
 {
 }
 
-void FCellInitCS::PrepareResources(FRHI * RHI)
+void FUpdateVelocityCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FCellInitCS::UpdateComputeParams(
+void FUpdateVelocityCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
-	FUniformBufferPtr InNumInCell,
-	FUniformBufferPtr InCellParticleOffsets
+	FUniformBufferPtr InPosOld,
+	FUniformBufferPtr InPositions,
+	FUniformBufferPtr InVelocities
 )
 {
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutUniformBufferInTable(InPosOld, SRV_POS_OLD);
+	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
+	ResourceTable->PutUniformBufferInTable(InVelocities, UAV_VELOCITIES);
 }
 
-void FCellInitCS::Run(FRHI * RHI)
+void FUpdateVelocityCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;

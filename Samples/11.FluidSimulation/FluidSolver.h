@@ -5,6 +5,14 @@
 
 #pragma once
 #include "CellInitCS.h"
+#include "P2CellCS.h"
+#include "CalcOffsetsCS.h"
+#include "SortCS.h"
+#include "ApplyGravityCS.h"
+#include "NeighborSearchCS.h"
+#include "LambdaCS.h"
+#include "DeltaPosCS.h"
+#include "UpdateVelocityCS.h"
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FPBFParams)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, P0)		// x = mass; y = epsilon; z = m/rho; w = dt
@@ -40,8 +48,9 @@ public:
 	void Update(FRHI* RHI, float Dt);
 
 private:
-	void UpdateParamBuffers();
-	void UpdateResourceBuffers();
+	void UpdateParamBuffers(FRHI* RHI);
+	void UpdateResourceBuffers(FRHI * RHI);
+	void UpdateComputeParams(FRHI * RHI);
 
 private:
 	enum {
@@ -67,6 +76,14 @@ private:
 
 	// Compute Tasks
 	FCellInitCSPtr CellInitCS;
+	FP2CellCSPtr P2CellCS;
+	FCalcOffsetsCSPtr CalcOffsetsCS;
+	FSortCSPtr SortCS;
+	FApplyGravityCSPtr ApplyGravityCS;
+	FNeighborSearchCSPtr NeighborSearchCS;
+	FLambdaCSPtr LambdaCS;
+	FDeltaPosCSPtr DeltaPosCS;
+	FUpdateVelocityCSPtr UpdateVelocityCS;
 
 	// Param Uniforms
 	FPBFParamsPtr UB_PbfParams;

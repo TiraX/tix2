@@ -25,6 +25,30 @@ FFluidSolver::FFluidSolver()
 	CellInitCS = ti_new FCellInitCS;
 	CellInitCS->Finalize();
 	CellInitCS->PrepareResources(RHI);
+	P2CellCS = ti_new FP2CellCS;
+	P2CellCS->Finalize();
+	P2CellCS->PrepareResources(RHI);
+	CalcOffsetsCS = ti_new FCalcOffsetsCS;
+	CalcOffsetsCS->Finalize();
+	CalcOffsetsCS->PrepareResources(RHI);
+	SortCS = ti_new FSortCS;
+	SortCS->Finalize();
+	SortCS->PrepareResources(RHI);
+	ApplyGravityCS = ti_new FApplyGravityCS;
+	ApplyGravityCS->Finalize();
+	ApplyGravityCS->PrepareResources(RHI);
+	NeighborSearchCS = ti_new FNeighborSearchCS;
+	NeighborSearchCS->Finalize();
+	NeighborSearchCS->PrepareResources(RHI);
+	LambdaCS = ti_new FLambdaCS;
+	LambdaCS->Finalize();
+	LambdaCS->PrepareResources(RHI);
+	DeltaPosCS = ti_new FDeltaPosCS;
+	DeltaPosCS->Finalize();
+	DeltaPosCS->PrepareResources(RHI);
+	UpdateVelocityCS = ti_new FUpdateVelocityCS;
+	UpdateVelocityCS->Finalize();
+	UpdateVelocityCS->PrepareResources(RHI);
 }
 
 FFluidSolver::~FFluidSolver()
@@ -89,7 +113,7 @@ void FFluidSolver::SetBoundaryBox(const aabbox3df& InBoundaryBox)
 	Flag |= DirtyBoundary;
 }
 
-void FFluidSolver::UpdateParamBuffers()
+void FFluidSolver::UpdateParamBuffers(FRHI* RHI)
 {
 	if ((Flag & DirtyParams) != 0)
 	{
@@ -113,9 +137,8 @@ void FFluidSolver::UpdateParamBuffers()
 	}
 }
 
-void FFluidSolver::UpdateResourceBuffers()
+void FFluidSolver::UpdateResourceBuffers(FRHI * RHI)
 {
-	FRHI* RHI = FRHI::Get();
 	/** Particles with Position and Velocity */
 	if ((Flag & DirtyParticles) != 0)
 	{
@@ -174,28 +197,67 @@ void FFluidSolver::UpdateResourceBuffers()
 	}
 }
 
+void FFluidSolver::UpdateComputeParams(FRHI* RHI)
+{
+	CellInitCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_NumInCell,
+		UB_CellParticleOffsets); 
+
+	TI_ASSERT(0);
+}
+
 void FFluidSolver::Update(FRHI * RHI, float Dt)
 {
 	// Update uniform buffers
 	if (Flag != 0)
 	{
-		UpdateParamBuffers();
-		UpdateResourceBuffers();
+		UpdateParamBuffers(RHI);
+		UpdateResourceBuffers(RHI);
 
+		UpdateComputeParams(RHI);
 		Flag = 0;
 	}
 
-	CellInitCS->UpdataComputeParams(RHI, 
-		UB_PbfParams->UniformBuffer, 
-		UB_Boundary->UniformBuffer, 
-		UB_NumInCell, 
-		UB_CellParticleOffsets);
 
 
 	RHI->BeginComputeTask();
 	{
 		RHI->BeginEvent("CellInit");
 		CellInitCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("P2Cell");
+		P2CellCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("CalcOffsets");
+		CalcOffsetsCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("Sort");
+		SortCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("ApplyGravity");
+		ApplyGravityCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("NeighborSearch");
+		NeighborSearchCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("Lambda");
+		LambdaCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("DeltaPos");
+		DeltaPosCS->Run(RHI);
+		RHI->EndEvent();
+
+		RHI->BeginEvent("UpdateVelocity");
+		UpdateVelocityCS->Run(RHI);
 		RHI->EndEvent();
 	}
 	RHI->EndComputeTask();

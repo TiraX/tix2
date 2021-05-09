@@ -5,11 +5,11 @@
 
 #pragma once
 
-class FCellInitCS : public FComputeTask
+class FLambdaCS : public FComputeTask
 {
 public:
-	FCellInitCS();
-	virtual ~FCellInitCS();
+	FLambdaCS();
+	virtual ~FLambdaCS();
 
 	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
@@ -18,15 +18,20 @@ public:
 		FRHI * RHI,
 		FUniformBufferPtr InPbfParams,
 		FUniformBufferPtr InBoundInfo,
-		FUniformBufferPtr InNumInCell,
-		FUniformBufferPtr InCellParticleOffsets
+		FUniformBufferPtr InPositions,
+		FUniformBufferPtr InNeighborNum,
+		FUniformBufferPtr InNeighborParticles,
+		FUniformBufferPtr InLambdas
 		);
 
 private:
 	enum
 	{
-		UAV_NUM_IN_CELL,
-		UAV_CELL_PARTICLE_OFFSETS,
+		SRV_POSITIONS,
+		SRV_NEIGHBOR_NUM,
+		SRV_NEIGHBOR_PARTICLES,
+
+		UAV_LAMBDAS,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -40,4 +45,4 @@ private:
 	FUniformBufferPtr UBRef_BoundInfo;
 
 };
-typedef TI_INTRUSIVE_PTR(FCellInitCS) FCellInitCSPtr;
+typedef TI_INTRUSIVE_PTR(FLambdaCS) FLambdaCSPtr;

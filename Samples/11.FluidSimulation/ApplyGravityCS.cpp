@@ -4,38 +4,40 @@
 */
 
 #include "stdafx.h"
-#include "CellInitCS.h"
+#include "ApplyGravityCS.h"
 
-FCellInitCS::FCellInitCS()
-	: FComputeTask("S_CellInitCS")
+FApplyGravityCS::FApplyGravityCS()
+	: FComputeTask("S_ApplyGravityCS")
 {
 }
 
-FCellInitCS::~FCellInitCS()
+FApplyGravityCS::~FApplyGravityCS()
 {
 }
 
-void FCellInitCS::PrepareResources(FRHI * RHI)
+void FApplyGravityCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FCellInitCS::UpdateComputeParams(
+void FApplyGravityCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
-	FUniformBufferPtr InNumInCell,
-	FUniformBufferPtr InCellParticleOffsets
+	FUniformBufferPtr InPositions,
+	FUniformBufferPtr InVelocities,
+	FUniformBufferPtr InPosOld
 )
 {
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
+	ResourceTable->PutUniformBufferInTable(InVelocities, SRV_VELOCITIES);
+	ResourceTable->PutUniformBufferInTable(InPosOld, UAV_POS_OLD);
 }
 
-void FCellInitCS::Run(FRHI * RHI)
+void FApplyGravityCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;

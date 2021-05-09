@@ -4,38 +4,40 @@
 */
 
 #include "stdafx.h"
-#include "CellInitCS.h"
+#include "P2CellCS.h"
 
-FCellInitCS::FCellInitCS()
-	: FComputeTask("S_CellInitCS")
+FP2CellCS::FP2CellCS()
+	: FComputeTask("S_P2CellCS")
 {
 }
 
-FCellInitCS::~FCellInitCS()
+FP2CellCS::~FP2CellCS()
 {
 }
 
-void FCellInitCS::PrepareResources(FRHI * RHI)
+void FP2CellCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FCellInitCS::UpdateComputeParams(
+void FP2CellCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
+	FUniformBufferPtr InPositions,
 	FUniformBufferPtr InNumInCell,
-	FUniformBufferPtr InCellParticleOffsets
+	FUniformBufferPtr InCellParticles
 )
 {
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
+	ResourceTable->PutUniformBufferInTable(InPositions, SRV_POSITIONS);
 	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutUniformBufferInTable(InCellParticles, UAV_CELL_PARTICLES);
 }
 
-void FCellInitCS::Run(FRHI * RHI)
+void FP2CellCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;

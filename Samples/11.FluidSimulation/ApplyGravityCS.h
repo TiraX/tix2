@@ -5,11 +5,11 @@
 
 #pragma once
 
-class FCellInitCS : public FComputeTask
+class FApplyGravityCS : public FComputeTask
 {
 public:
-	FCellInitCS();
-	virtual ~FCellInitCS();
+	FApplyGravityCS();
+	virtual ~FApplyGravityCS();
 
 	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
@@ -18,15 +18,18 @@ public:
 		FRHI * RHI,
 		FUniformBufferPtr InPbfParams,
 		FUniformBufferPtr InBoundInfo,
-		FUniformBufferPtr InNumInCell,
-		FUniformBufferPtr InCellParticleOffsets
+		FUniformBufferPtr InPositions,
+		FUniformBufferPtr InVelocities,
+		FUniformBufferPtr InPosOld
 		);
 
 private:
 	enum
 	{
-		UAV_NUM_IN_CELL,
-		UAV_CELL_PARTICLE_OFFSETS,
+		SRV_VELOCITIES,
+
+		UAV_POSITIONS,
+		UAV_POS_OLD,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -40,4 +43,4 @@ private:
 	FUniformBufferPtr UBRef_BoundInfo;
 
 };
-typedef TI_INTRUSIVE_PTR(FCellInitCS) FCellInitCSPtr;
+typedef TI_INTRUSIVE_PTR(FApplyGravityCS) FApplyGravityCSPtr;

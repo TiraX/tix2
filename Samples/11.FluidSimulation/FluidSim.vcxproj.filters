@@ -54,6 +54,30 @@
     <ClCompile Include="CellInitCS.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
+    <ClCompile Include="ApplyGravityCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="CalcOffsetsCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="DeltaPosCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="LambdaCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="NeighborSearchCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="P2CellCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="SortCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdateVelocityCS.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -69,6 +93,30 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CellInitCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplyGravityCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="CalcOffsetsCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="DeltaPosCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="LambdaCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="NeighborSearchCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="P2CellCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="SortCS.h">
+      <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateVelocityCS.h">
       <Filter>Source Files\Compute</Filter>
     </ClInclude>
   </ItemGroup>

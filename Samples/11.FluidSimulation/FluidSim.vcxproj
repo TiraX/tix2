@@ -98,22 +98,38 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ApplyGravityCS.cpp" />
+    <ClCompile Include="CalcOffsetsCS.cpp" />
     <ClCompile Include="CellInitCS.cpp" />
+    <ClCompile Include="DeltaPosCS.cpp" />
     <ClCompile Include="FluidSolver.cpp" />
     <ClCompile Include="FluidSimRenderer.cpp" />
     <ClCompile Include="FluidSimSample.cpp" />
     <ClCompile Include="FluidSimTicker.cpp" />
+    <ClCompile Include="LambdaCS.cpp" />
+    <ClCompile Include="NeighborSearchCS.cpp" />
+    <ClCompile Include="P2CellCS.cpp" />
+    <ClCompile Include="SortCS.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UpdateVelocityCS.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ApplyGravityCS.h" />
+    <ClInclude Include="CalcOffsetsCS.h" />
     <ClInclude Include="CellInitCS.h" />
+    <ClInclude Include="DeltaPosCS.h" />
     <ClInclude Include="FluidSolver.h" />
     <ClInclude Include="FluidSimRenderer.h" />
     <ClInclude Include="FluidSimTicker.h" />
+    <ClInclude Include="LambdaCS.h" />
+    <ClInclude Include="NeighborSearchCS.h" />
+    <ClInclude Include="P2CellCS.h" />
+    <ClInclude Include="SortCS.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="UpdateVelocityCS.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Dx12\S_ApplyGravityCS.hlsl">

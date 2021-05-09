@@ -5,11 +5,11 @@
 
 #pragma once
 
-class FCellInitCS : public FComputeTask
+class FNeighborSearchCS : public FComputeTask
 {
 public:
-	FCellInitCS();
-	virtual ~FCellInitCS();
+	FNeighborSearchCS();
+	virtual ~FNeighborSearchCS();
 
 	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
@@ -19,14 +19,21 @@ public:
 		FUniformBufferPtr InPbfParams,
 		FUniformBufferPtr InBoundInfo,
 		FUniformBufferPtr InNumInCell,
-		FUniformBufferPtr InCellParticleOffsets
+		FUniformBufferPtr InCellParticleOffsets,
+		FUniformBufferPtr InPositions,
+		FUniformBufferPtr InNeighborNum,
+		FUniformBufferPtr InNeighborParticles
 		);
 
 private:
 	enum
 	{
-		UAV_NUM_IN_CELL,
-		UAV_CELL_PARTICLE_OFFSETS,
+		SRV_NUM_IN_CELL,
+		SRV_CELL_PARTICLE_OFFSETS,
+		SRV_POSITIONS,
+
+		UAV_NEIGHBOR_NUM,
+		UAV_NEIGHBOR_PARTICLES,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -40,4 +47,4 @@ private:
 	FUniformBufferPtr UBRef_BoundInfo;
 
 };
-typedef TI_INTRUSIVE_PTR(FCellInitCS) FCellInitCSPtr;
+typedef TI_INTRUSIVE_PTR(FNeighborSearchCS) FNeighborSearchCSPtr;

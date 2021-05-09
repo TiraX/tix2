@@ -4,38 +4,42 @@
 */
 
 #include "stdafx.h"
-#include "CellInitCS.h"
+#include "DeltaPosCS.h"
 
-FCellInitCS::FCellInitCS()
-	: FComputeTask("S_CellInitCS")
+FDeltaPosCS::FDeltaPosCS()
+	: FComputeTask("S_DeltaPosCS")
 {
 }
 
-FCellInitCS::~FCellInitCS()
+FDeltaPosCS::~FDeltaPosCS()
 {
 }
 
-void FCellInitCS::PrepareResources(FRHI * RHI)
+void FDeltaPosCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FCellInitCS::UpdateComputeParams(
+void FDeltaPosCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
-	FUniformBufferPtr InNumInCell,
-	FUniformBufferPtr InCellParticleOffsets
+	FUniformBufferPtr InNeighborNum,
+	FUniformBufferPtr InNeighborParticles,
+	FUniformBufferPtr InLambdas,
+	FUniformBufferPtr InPositions
 )
 {
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutUniformBufferInTable(InNeighborNum, SRV_NEIGHBOR_NUM);
+	ResourceTable->PutUniformBufferInTable(InNeighborParticles, SRV_NEIGHBOR_PARTICLES);
+	ResourceTable->PutUniformBufferInTable(InLambdas, SRV_LAMBDAS);
+	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
 }
 
-void FCellInitCS::Run(FRHI * RHI)
+void FDeltaPosCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;

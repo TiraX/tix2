@@ -5,28 +5,39 @@
 
 #pragma once
 
-class FCellInitCS : public FComputeTask
+class FSortCS : public FComputeTask
 {
 public:
-	FCellInitCS();
-	virtual ~FCellInitCS();
+	FSortCS();
+	virtual ~FSortCS();
 
 	void PrepareResources(FRHI * RHI);
 	virtual void Run(FRHI * RHI) override;
 
 	void UpdateComputeParams(
-		FRHI * RHI,
+		FRHI* RHI,
 		FUniformBufferPtr InPbfParams,
 		FUniformBufferPtr InBoundInfo,
+		FUniformBufferPtr InPositions,
+		FUniformBufferPtr InVelocities,
 		FUniformBufferPtr InNumInCell,
-		FUniformBufferPtr InCellParticleOffsets
+		FUniformBufferPtr InCellParticleOffsets,
+		FUniformBufferPtr InCellParticles,
+		FUniformBufferPtr InSortedPositions,
+		FUniformBufferPtr InSortedVelocities
 		);
 
 private:
 	enum
 	{
-		UAV_NUM_IN_CELL,
-		UAV_CELL_PARTICLE_OFFSETS,
+		SRV_POSITIONS,
+		SRV_VELOCITIES,
+		SRV_NUM_IN_CELL,
+		SRV_CELL_PARTICLE_OFFSETS,
+		SRV_CELL_PARTICLES,
+
+		UAV_SORTED_POSITIONS,
+		UAV_SORTED_VELOCITIES,
 
 		PARAM_TOTAL_COUNT,
 	};
@@ -40,4 +51,4 @@ private:
 	FUniformBufferPtr UBRef_BoundInfo;
 
 };
-typedef TI_INTRUSIVE_PTR(FCellInitCS) FCellInitCSPtr;
+typedef TI_INTRUSIVE_PTR(FSortCS) FSortCSPtr;

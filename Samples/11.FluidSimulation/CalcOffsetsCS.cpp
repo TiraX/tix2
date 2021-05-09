@@ -4,23 +4,23 @@
 */
 
 #include "stdafx.h"
-#include "CellInitCS.h"
+#include "CalcOffsetsCS.h"
 
-FCellInitCS::FCellInitCS()
-	: FComputeTask("S_CellInitCS")
+FCalcOffsetsCS::FCalcOffsetsCS()
+	: FComputeTask("S_CalcOffsetsCS")
 {
 }
 
-FCellInitCS::~FCellInitCS()
+FCalcOffsetsCS::~FCalcOffsetsCS()
 {
 }
 
-void FCellInitCS::PrepareResources(FRHI * RHI)
+void FCalcOffsetsCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FCellInitCS::UpdateComputeParams(
+void FCalcOffsetsCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
@@ -35,14 +35,14 @@ void FCellInitCS::UpdateComputeParams(
 	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
 }
 
-void FCellInitCS::Run(FRHI * RHI)
+void FCalcOffsetsCS::Run(FRHI * RHI)
 {
-	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	//const uint32 BlockSize = 128;
+	//const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);
 	RHI->SetComputeConstantBuffer(1, UBRef_BoundInfo);
 	RHI->SetComputeResourceTable(2, ResourceTable);
-	RHI->DispatchCompute(vector3di(BlockSize, 1, 1), vector3di(DispatchSize, 1, 1));
+	RHI->DispatchCompute(vector3di(1, 1, 1), vector3di(1, 1, 1));
 }
