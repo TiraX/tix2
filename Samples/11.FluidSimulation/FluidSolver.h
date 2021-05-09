@@ -4,6 +4,7 @@
 */
 
 #pragma once
+#include "CellInitCS.h"
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FPBFParams)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, P0)		// x = mass; y = epsilon; z = m/rho; w = dt
@@ -36,9 +37,19 @@ public:
 		float InRestDenstiy);
 	void SetBoundaryBox(const aabbox3df& InCollisionBox);
 
-private:
+	void Update(FRHI* RHI, float Dt);
 
 private:
+	void UpdateParamBuffers();
+	void UpdateResourceBuffers();
+
+private:
+	enum {
+		DirtyParams = 1 << 0,
+		DirtyBoundary = 1 << 1,
+		DirtyParticles = 1 << 2,
+	};
+	uint32 Flag;
 	int32 TotalParticles;
 	float ParticleMass;
 	float ParticleSeperation;
@@ -50,10 +61,16 @@ private:
 	TVector<vector3df> ParticlePositions;
 
 	aabbox3df BoundaryBox;
+	int32 TotalCells;
+	float CellSize;
+	vector3di Dim;
+
+	// Compute Tasks
+	FCellInitCSPtr CellInitCS;
 
 	// Param Uniforms
-	FPBFParamsPtr PbfParamsUniform;
-	FBoundaryInfoPtr BoundaryUniform;
+	FPBFParamsPtr UB_PbfParams;
+	FBoundaryInfoPtr UB_Boundary;
 
 	// Resource Uniforms
 
@@ -65,19 +82,19 @@ private:
 
 	/** 
 	 * Particle Counts in each Cell; 
-	 * Size = ParticleCount; 
+	 * Size = CellCount; 
 	 */
 	FUniformBufferPtr UB_NumInCell;		
 
 	/**
 	 * Particle Indices in each Cell, has up to MaxParticleInCell count particles;
-	 * Size = ParticleCount * MaxParticleInCell
+	 * Size = CellCount * MaxParticleInCell
 	 */
 	FUniformBufferPtr UB_CellParticles;
 
 	/**
 	 * Accumulated Particle Index Offsets for each Cell
-	 * Size = ParticleCount
+	 * Size = CellCount
 	 */
 	FUniformBufferPtr UB_CellParticleOffsets;
 

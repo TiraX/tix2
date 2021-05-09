@@ -8,8 +8,8 @@
 #include "FluidSolver.h"
 
 FFluidSimRenderer::FFluidSimRenderer()
+	: Solver(nullptr)
 {
-	Solver = ti_new FFluidSolver;
 }
 
 FFluidSimRenderer::~FFluidSimRenderer()
@@ -57,6 +57,7 @@ void FFluidSimRenderer::InitInRenderThread()
 	}
 
 	// Init Simulation
+	Solver = ti_new FFluidSolver;
 	Solver->CreateParticlesInBox(
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
 		0.1f, 1.f, 1000.f
@@ -68,6 +69,8 @@ void FFluidSimRenderer::InitInRenderThread()
 
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	Solver->Update(RHI, 1.f / 60);
+
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
