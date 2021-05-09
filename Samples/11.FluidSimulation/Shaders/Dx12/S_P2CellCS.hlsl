@@ -15,7 +15,7 @@
 	"CBV(b1) ," \
     "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=2))" 
 
-StructuredBuffer<FParticle> Particles : register(t0);
+StructuredBuffer<float3> Positions : register(t0);
 RWStructuredBuffer<uint> NumInCell : register(u0);
 RWStructuredBuffer<uint> CellParticles : register(u1);
 
@@ -28,10 +28,10 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Index >= TotalParticles)
 		return;
 
-    FParticle Particle = Particles[Index];
+    float3 Pos = Positions[Index];
     const float cell_size_inv = P1.w;
 
-    int3 CellIndex3 = int3((Particle.Pos.xyz - BMin.xyz) * cell_size_inv);
+    int3 CellIndex3 = int3((Pos - BMin.xyz) * cell_size_inv);
     uint CellIndex = GetCellHash(CellIndex3, Dim.xyz);
 
     uint OriginNum;

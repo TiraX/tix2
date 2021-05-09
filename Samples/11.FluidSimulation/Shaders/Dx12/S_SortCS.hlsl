@@ -13,14 +13,16 @@
 #define Sort_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))" 
+    "DescriptorTable(SRV(t0, numDescriptors=5), UAV(u0, numDescriptors=2))" 
 
-StructuredBuffer<FParticle> Particles : register(t0);
-StructuredBuffer<uint> NumInCell : register(t1);
-StructuredBuffer<uint> CellParticleOffsets : register(t2);
-StructuredBuffer<uint> CellParticles : register(t3);
+StructuredBuffer<float3> Positions : register(t0);
+StructuredBuffer<float3> Velocities : register(t1);
+StructuredBuffer<uint> NumInCell : register(t2);
+StructuredBuffer<uint> CellParticleOffsets : register(t3);
+StructuredBuffer<uint> CellParticles : register(t4);
 
-RWStructuredBuffer<FParticle> SortedParticles : register(u0);
+RWStructuredBuffer<float3> SortedPositions : register(u0);
+RWStructuredBuffer<float3> SortedVelocities : register(u1);
 
 [RootSignature(Sort_RootSig)]
 [numthreads(128, 1, 1)]
@@ -38,6 +40,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         uint SrcIndex = CellParticles[Offset + i];
         uint DestIndex = Offset + i;
 
-        SortedParticles[DestIndex] = Particles[SrcIndex];
+        SortedPositions[DestIndex] = Positions[SrcIndex];
+        SortedVelocities[DestIndex] = Velocities[SrcIndex];
     }
 }

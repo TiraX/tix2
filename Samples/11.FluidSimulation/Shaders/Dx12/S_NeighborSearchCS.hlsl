@@ -17,7 +17,7 @@
 
 StructuredBuffer<uint> NumInCell : register(t0);
 StructuredBuffer<uint> CellParticleOffsets : register(t1);
-StructuredBuffer<FParticle> Particles : register(t2);
+StructuredBuffer<float3> Positions : register(t2);
 
 RWStructuredBuffer<uint> NeighborNum : register(u0);
 RWStructuredBuffer<uint> NeighborParticles : register(u1);
@@ -31,7 +31,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Index >= TotalParticles)
 		return;
 
-    FParticle Particle = Particles[Index];
+    float3 Pos = Positions[Index];
 
     const float h2 = P1.y;
     const float cell_size_inv = P1.w;
@@ -70,7 +70,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         int3(1, 1, 1),
     };
     uint NumNb = 0;
-    int3 CellIndex3 = int3((Particle.Pos.xyz - BMin.xyz) * cell_size_inv);
+    int3 CellIndex3 = int3((Pos.xyz - BMin.xyz) * cell_size_inv);
     const int NbParticleOffset = Index * MaxNeighbors;
     for (int cell = 0; cell < 27; ++cell) 
 	{
@@ -88,8 +88,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
                 uint NbIndex = NbParticleCellOffset + i;
                 if (NbIndex != Index)
                 {
-                    FParticle NbParticle = Particles[NbIndex];
-                    vector Dir = Particle.Pos - NbParticle.Pos;
+                    float3 NbPos = Positions[NbIndex];
+                    float3 Dir = Pos - NbPos;
                     float LengthSq = dot(Dir, Dir);
                     if (LengthSq < h2 && NumNb < MaxNeighbors)
                     {

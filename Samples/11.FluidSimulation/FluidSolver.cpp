@@ -46,9 +46,7 @@ void FFluidSolver::CreateParticlesInBox(
 	TI_ASSERT(0);
 
 	// Create particles and resources
-
-	ParticleUniform = ti_new FParticles(TotalParticles);
-	int32 Index = 0;
+	ParticlePositions.reserve(TotalParticles);
 	const float jitter = ParticleSeperation * 0.5f;
 	TMath::RandSeed(12306);
 	for (int32 z = 0; z < Dim.Z; z++)
@@ -57,20 +55,18 @@ void FFluidSolver::CreateParticlesInBox(
 		{
 			for (int32 x = 0; x < Dim.X; x++)
 			{
-				FFloat4& Pos = ParticleUniform->UniformBufferData[Index].Pos;
+				vector3df Pos;
 				Pos.X = x * ParticleSeperation + InParticleBox.MinEdge.X + TMath::RandomUnit() * jitter;
 				Pos.Y = y * ParticleSeperation + InParticleBox.MinEdge.Y + TMath::RandomUnit() * jitter;
 				Pos.Z = z * ParticleSeperation + InParticleBox.MinEdge.Z + TMath::RandomUnit() * jitter;
-				++Index;
+				ParticlePositions.push_back(Pos);
 			}
 		}
 	}
-	ParticleUniform->InitUniformBuffer(UB_FLAG_COMPUTE_WRITABLE);
+	TI_ASSERT(0);
 
 	// Other Uniforms
 	TI_ASSERT(0);
-	TI_TODO("Split pos and vel to 2 buffers");
-	TI_TODO("Create Sorted Position buffer");
 }
 
 void FFluidSolver::SetBoundaryBox(const aabbox3df& InBoundaryBox)

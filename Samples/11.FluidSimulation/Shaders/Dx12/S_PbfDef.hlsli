@@ -11,12 +11,6 @@ cbuffer FBoundInfo : register(b1)
     float4 BMax;
 }
 
-struct FParticle
-{
-    float4 Pos;
-    float4 Vel;
-};
-
 static const float PI = 3.14159f;
 static const float3 GRAVITY = float3(0.f, -9.8f, 0.f);
 static const uint MaxParticleInCell = 32;

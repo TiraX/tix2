@@ -13,9 +13,10 @@
 #define ApplyGravity_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(UAV(u0, numDescriptors=2))" 
+    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=2))" 
 
-RWStructuredBuffer<FParticle> Particles : register(u0);
+StructuredBuffer<float3> Velocities : register(t0);
+RWStructuredBuffer<float3> Positions : register(u0);
 RWStructuredBuffer<float3> PosOld : register(u1);
 
 [RootSignature(ApplyGravity_RootSig)]
@@ -27,18 +28,19 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Index >= TotalParticles)
 		return;
 
-    FParticle Particle = Particles[Index];
+    float3 Pos = Positions[Index];
     const float dt = P0.w;
 
     // Save old position
-    PosOld[Index] = Particles[Index].Pos.xyz;
+    PosOld[Index] = Pos;
     
     // Apply gravity
-    Particle.Vel.xyz += GRAVITY * dt;
-    Particle.Pos.xyz += Particle.Vel.xyz * dt;
+    float3 Vel = Velocities[Index];
+    Vel += GRAVITY * dt;
+    Pos += Vel.xyz * dt;
 
     // Boundary check
-    BoundaryCheck(Particle.Pos.xyz, BMin.xyz, BMax.xyz);
+    BoundaryCheck(Pos, BMin.xyz, BMax.xyz);
 
-    Particles[Index] = Particle;
+    Positions[Index] = Pos;
 }

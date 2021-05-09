@@ -19,7 +19,7 @@ StructuredBuffer<uint> NeighborNum : register(t0);
 StructuredBuffer<uint> NeighborParticles : register(t1);
 StructuredBuffer<float> Lambdas : register(t2);
 
-RWStructuredBuffer<FParticle> Particles : register(u0);
+RWStructuredBuffer<float3> Positions : register(u0);
 
 [RootSignature(DeltaPos_RootSig)]
 [numthreads(128, 1, 1)]
@@ -30,7 +30,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 	if (Index >= TotalParticles)
 		return;
 
-    FParticle Particle = Particles[Index];
+    float3 Pos = Positions[Index];
 
     const float mass = P0.x;
     const float epsilon = P0.y;
@@ -54,8 +54,8 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
         float NbLambda = Lambdas[NbIndex];
 
-        FParticle NbParticle = Particles[NbIndex];
-        float3 Dir = Particle.Pos.xyz - NbParticle.Pos.xyz;
+        float3 NbPos = Positions[NbIndex];
+        float3 Dir = Pos - NbPos;
         float s = length(Dir);
         Dir /= s;
 
@@ -63,7 +63,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     }
 
     DeltaPos *= m_by_rho;
-    Particle.Pos.xyz += DeltaPos;
+    Pos += DeltaPos;
 
-    Particles[Index] = Particle;
+    Positions[Index] = Pos;
 }

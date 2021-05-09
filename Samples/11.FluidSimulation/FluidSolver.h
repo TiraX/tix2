@@ -18,7 +18,6 @@ END_UNIFORM_BUFFER_STRUCT(FBoundaryInfo)
 
 BEGIN_UNIFORM_BUFFER_STRUCT_ARRAY_DYNAMIC(FParticles)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Pos)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, Vel)
 END_UNIFORM_BUFFER_STRUCT(FParticles)
 
 class FFluidSolver
@@ -48,6 +47,8 @@ private:
 	float TimeStep;
 	float Epsilon;
 
+	TVector<vector3df> ParticlePositions;
+
 	aabbox3df BoundaryBox;
 
 	// Param Uniforms
@@ -57,7 +58,10 @@ private:
 	// Resource Uniforms
 
 	/** Particles with Position and Velocity */
-	FParticlesPtr ParticleUniform;
+	FUniformBufferPtr UB_ParticlePositions;
+	FUniformBufferPtr UB_ParticleVelocities;
+	FUniformBufferPtr UB_SortedPositions;
+	FUniformBufferPtr UB_SortedVelocities;
 
 	/** 
 	 * Particle Counts in each Cell; 
