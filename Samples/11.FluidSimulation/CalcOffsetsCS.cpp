@@ -31,8 +31,8 @@ void FCalcOffsetsCS::UpdateComputeParams(
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutRWUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
+	ResourceTable->PutRWUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
 }
 
 void FCalcOffsetsCS::Run(FRHI * RHI)

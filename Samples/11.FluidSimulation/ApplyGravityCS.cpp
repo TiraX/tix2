@@ -8,6 +8,7 @@
 
 FApplyGravityCS::FApplyGravityCS()
 	: FComputeTask("S_ApplyGravityCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -32,15 +33,17 @@ void FApplyGravityCS::UpdateComputeParams(
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
+	ResourceTable->PutRWUniformBufferInTable(InPositions, UAV_POSITIONS);
 	ResourceTable->PutUniformBufferInTable(InVelocities, SRV_VELOCITIES);
-	ResourceTable->PutUniformBufferInTable(InPosOld, UAV_POS_OLD);
+	ResourceTable->PutRWUniformBufferInTable(InPosOld, UAV_POS_OLD);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FApplyGravityCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

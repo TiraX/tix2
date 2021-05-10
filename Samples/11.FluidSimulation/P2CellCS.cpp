@@ -8,6 +8,7 @@
 
 FP2CellCS::FP2CellCS()
 	: FComputeTask("S_P2CellCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -33,14 +34,16 @@ void FP2CellCS::UpdateComputeParams(
 	UBRef_BoundInfo = InBoundInfo;
 
 	ResourceTable->PutUniformBufferInTable(InPositions, SRV_POSITIONS);
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticles, UAV_CELL_PARTICLES);
+	ResourceTable->PutRWUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
+	ResourceTable->PutRWUniformBufferInTable(InCellParticles, UAV_CELL_PARTICLES);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FP2CellCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

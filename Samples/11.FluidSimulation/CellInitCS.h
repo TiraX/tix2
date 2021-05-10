@@ -32,6 +32,7 @@ private:
 	};
 
 private:
+	int32 ThreadsCount;
 	FRenderResourceTablePtr ResourceTable;
 
 	// Compute params

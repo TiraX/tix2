@@ -13,7 +13,7 @@
 #define DeltaPos_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=2))" 
+    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=2))" 
 
 StructuredBuffer<float3> PosOld : register(t0);
 RWStructuredBuffer<float3> Positions : register(u0);

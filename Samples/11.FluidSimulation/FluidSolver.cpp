@@ -14,6 +14,7 @@ FFluidSolver::FFluidSolver()
 	, RestDenstiy(1000.f)
 	, TimeStep(1.f / 60.f / 2.f)
 	, Epsilon(600.f)
+	, Iterations(3)
 	, TotalCells(0)
 	, CellSize(1.f)
 {
@@ -62,12 +63,13 @@ void FFluidSolver::CreateParticlesInBox(
 	float InRestDenstiy)
 {
 	// Calc Total Particles
+	const float dis = ParticleSeperation * 0.9f;
 	vector3df Ext = InParticleBox.getExtent();
-	vector3di Dim;
-	Dim.X = (int32)(Ext.X / ParticleSeperation);
-	Dim.Y = (int32)(Ext.Y / ParticleSeperation);
-	Dim.Z = (int32)(Ext.Z / ParticleSeperation);
-	TotalParticles = Dim.X * Dim.Y * Dim.Z;
+	vector3di ParticleDim;
+	ParticleDim.X = (int32)(Ext.X / dis);
+	ParticleDim.Y = (int32)(Ext.Y / dis);
+	ParticleDim.Z = (int32)(Ext.Z / dis);
+	TotalParticles = ParticleDim.X * ParticleDim.Y * ParticleDim.Z;
 
 	// Update params
 	ParticleMass = InParticleMass;
@@ -78,29 +80,30 @@ void FFluidSolver::CreateParticlesInBox(
 
 	// Create particles and resources
 	ParticlePositions.reserve(TotalParticles);
-	const float jitter = ParticleSeperation * 0.5f;
+	const float jitter = 0.f;// ParticleSeperation * 0.5f;
 	TMath::RandSeed(12306);
-	for (int32 z = 0; z < Dim.Z; z++)
+	for (float z = InParticleBox.MinEdge.Z; z < InParticleBox.MaxEdge.Z; z += dis)
 	{
-		for (int32 y = 0; y < Dim.Y; y++)
+		for (float y = InParticleBox.MinEdge.Y; y < InParticleBox.MaxEdge.Y; y += dis)
 		{
-			for (int32 x = 0; x < Dim.X; x++)
+			for (float x = InParticleBox.MinEdge.X; x < InParticleBox.MaxEdge.X; x += dis)
 			{
 				vector3df Pos;
-				Pos.X = x * ParticleSeperation + InParticleBox.MinEdge.X + TMath::RandomUnit() * jitter;
-				Pos.Y = y * ParticleSeperation + InParticleBox.MinEdge.Y + TMath::RandomUnit() * jitter;
-				Pos.Z = z * ParticleSeperation + InParticleBox.MinEdge.Z + TMath::RandomUnit() * jitter;
+				Pos.X = x + TMath::RandomUnit() * jitter;
+				Pos.Y = y + TMath::RandomUnit() * jitter;
+				Pos.Z = z + TMath::RandomUnit() * jitter;
 				ParticlePositions.push_back(Pos);
 			}
 		}
 	}
+	TotalParticles = (int32)ParticlePositions.size();
 	Flag |= DirtyParticles;
 }
 
 void FFluidSolver::SetBoundaryBox(const aabbox3df& InBoundaryBox)
 {
 	BoundaryBox = InBoundaryBox;
-	CellSize = ParticleSeperation * 0.5f;
+	CellSize = ParticleSeperation;
 	const float CellSizeInv = 1.f / CellSize;
 	
 	vector3df BoundExt = BoundaryBox.getExtent();
@@ -124,7 +127,7 @@ void FFluidSolver::UpdateParamBuffers(FRHI* RHI)
 		const float h = ParticleSeperation;
 		// Calc cell size
 		UB_PbfParams->UniformBufferData[0].P1 = FFloat4(h, h * h, 1.f / (h * h * h), 1.f / CellSize);
-		UB_PbfParams->UniformBufferData[0].Dim = FInt4(Dim.X, Dim.Y, Dim.Z, 1);
+		UB_PbfParams->UniformBufferData[0].Dim = FInt4(Dim.X, Dim.Y, Dim.Z, TotalParticles);
 		UB_PbfParams->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 	}
 
@@ -204,8 +207,62 @@ void FFluidSolver::UpdateComputeParams(FRHI* RHI)
 		UB_Boundary->UniformBuffer,
 		UB_NumInCell,
 		UB_CellParticleOffsets); 
+	P2CellCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_ParticlePositions,
+		UB_NumInCell,
+		UB_CellParticles);
+	CalcOffsetsCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_NumInCell,
+		UB_CellParticleOffsets);
 
-	TI_ASSERT(0);
+	SortCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_ParticlePositions,
+		UB_ParticleVelocities,
+		UB_NumInCell,
+		UB_CellParticleOffsets,
+		UB_CellParticles,
+		UB_SortedPositions,
+		UB_SortedVelocities);
+	ApplyGravityCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_SortedPositions,
+		UB_SortedVelocities,
+		UB_PositionOld);
+	NeighborSearchCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_NumInCell,
+		UB_CellParticleOffsets,
+		UB_SortedPositions,
+		UB_NeighborNum,
+		UB_NeighborParticles);
+	LambdaCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_SortedPositions,
+		UB_NeighborNum,
+		UB_NeighborParticles,
+		UB_Lambdas);
+	DeltaPosCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_NeighborNum,
+		UB_NeighborParticles,
+		UB_Lambdas,
+		UB_SortedPositions);
+	UpdateVelocityCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_PositionOld,
+		UB_SortedPositions,
+		UB_SortedVelocities);
 }
 
 void FFluidSolver::Update(FRHI * RHI, float Dt)
@@ -220,45 +277,96 @@ void FFluidSolver::Update(FRHI * RHI, float Dt)
 		Flag = 0;
 	}
 
-
-
 	RHI->BeginComputeTask();
 	{
 		RHI->BeginEvent("CellInit");
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_CellParticleOffsets, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		CellInitCS->Run(RHI);
 		RHI->EndEvent();
 
 		RHI->BeginEvent("P2Cell");
+		RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_CellParticles, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		P2CellCS->Run(RHI);
 		RHI->EndEvent();
 
 		RHI->BeginEvent("CalcOffsets");
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_CellParticleOffsets, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		CalcOffsetsCS->Run(RHI);
 		RHI->EndEvent();
 
 		RHI->BeginEvent("Sort");
+		RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_CellParticleOffsets, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_CellParticles, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		SortCS->Run(RHI);
 		RHI->EndEvent();
 
 		RHI->BeginEvent("ApplyGravity");
+		RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_PositionOld, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		ApplyGravityCS->Run(RHI);
 		RHI->EndEvent();
 
 		RHI->BeginEvent("NeighborSearch");
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_CellParticleOffsets, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_NeighborNum, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_NeighborParticles, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		NeighborSearchCS->Run(RHI);
 		RHI->EndEvent();
 
-		RHI->BeginEvent("Lambda");
-		LambdaCS->Run(RHI);
-		RHI->EndEvent();
+		for (int32 iter = 0; iter < Iterations; ++iter)
+		{
+			RHI->BeginEvent("Lambda", iter);
+			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_NeighborNum, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_NeighborParticles, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_Lambdas, RESOURCE_STATE_UNORDERED_ACCESS, false);
+			RHI->FlushResourceStateChange();
+			LambdaCS->Run(RHI);
+			RHI->EndEvent();
 
-		RHI->BeginEvent("DeltaPos");
-		DeltaPosCS->Run(RHI);
-		RHI->EndEvent();
+			RHI->BeginEvent("DeltaPos", iter);
+			RHI->SetResourceStateUB(UB_NeighborNum, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_NeighborParticles, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_Lambdas, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+			RHI->FlushResourceStateChange();
+			DeltaPosCS->Run(RHI);
+			RHI->EndEvent();
+		}
 
 		RHI->BeginEvent("UpdateVelocity");
+		RHI->SetResourceStateUB(UB_PositionOld, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		UpdateVelocityCS->Run(RHI);
 		RHI->EndEvent();
+
+		//RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_COPY_DEST, false);
+		//RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_COPY_DEST, false);
+		//RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_COPY_SOURCE, false);
+		//RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_COPY_SOURCE, false);
+		//RHI->FlushResourceStateChange();
+		//RHI->ComputeCopyBuffer(UB_ParticlePositions, 0, UB_SortedPositions, 0, UB_ParticlePositions->GetElements() * sizeof(vector3df));
+		//RHI->ComputeCopyBuffer(UB_ParticleVelocities, 0, UB_SortedVelocities, 0, UB_ParticleVelocities->GetElements() * sizeof(vector3df));
 	}
 	RHI->EndComputeTask();
 }

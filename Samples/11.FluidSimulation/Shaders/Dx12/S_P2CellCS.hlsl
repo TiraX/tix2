@@ -35,7 +35,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     uint CellIndex = GetCellHash(CellIndex3, Dim.xyz);
 
     uint OriginNum;
-    InterlockedAdd(NumInCell[CellIndex], 1, OriginNum);
+    InterlockedAdd(NumInCell[CellIndex].x, 1, OriginNum);
 
     if (OriginNum < MaxParticleInCell)
     {

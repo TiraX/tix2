@@ -8,6 +8,7 @@
 
 FNeighborSearchCS::FNeighborSearchCS()
 	: FComputeTask("S_NeighborSearchCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -37,14 +38,16 @@ void FNeighborSearchCS::UpdateComputeParams(
 	ResourceTable->PutUniformBufferInTable(InNumInCell, SRV_NUM_IN_CELL);
 	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, SRV_CELL_PARTICLE_OFFSETS);
 	ResourceTable->PutUniformBufferInTable(InPositions, SRV_POSITIONS);
-	ResourceTable->PutUniformBufferInTable(InNeighborNum, UAV_NEIGHBOR_NUM);
-	ResourceTable->PutUniformBufferInTable(InNeighborParticles, UAV_NEIGHBOR_PARTICLES);
+	ResourceTable->PutRWUniformBufferInTable(InNeighborNum, UAV_NEIGHBOR_NUM);
+	ResourceTable->PutRWUniformBufferInTable(InNeighborParticles, UAV_NEIGHBOR_PARTICLES);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FNeighborSearchCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

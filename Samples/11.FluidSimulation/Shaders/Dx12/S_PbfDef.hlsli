@@ -12,7 +12,7 @@ cbuffer FBoundInfo : register(b1)
 }
 
 static const float PI = 3.14159f;
-static const float3 GRAVITY = float3(0.f, -9.8f, 0.f);
+static const float3 GRAVITY = float3(0.f, 0.f, -9.8f);
 static const uint MaxParticleInCell = 32;
 static const uint MaxNeighbors = 32;
 
@@ -52,14 +52,19 @@ inline void BoundaryCheck(inout float3 Pos, in float3 BMin, in float3 BMax)
 
     if (Pos.x <= BMin.x)
         Pos.x = BMin.x + epsilon;
+
     if (Pos.y <= BMin.y)
         Pos.y = BMin.y + epsilon;
+
     if (Pos.z <= BMin.z)
         Pos.z = BMin.z + epsilon;
+
     if (Pos.x >= BMax.x)
         Pos.x = BMax.x - epsilon;
+
     if (Pos.y >= BMax.y)
         Pos.y = BMax.y - epsilon;
+        
     if (Pos.z >= BMax.z)
         Pos.z = BMax.z - epsilon;
 }

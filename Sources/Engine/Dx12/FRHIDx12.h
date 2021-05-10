@@ -36,6 +36,7 @@ namespace tix
 		virtual void EndComputeTask(bool IsTileComputeShader = false) override;
 
 		virtual void BeginEvent(const int8* InEventName) override;
+		virtual void BeginEvent(const int8* InEventName, int32 Index) override;
 		virtual void EndEvent() override;
 
 		virtual int32 GetCurrentEncodingFrameIndex() override;
@@ -107,6 +108,7 @@ namespace tix
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
+		virtual void PutRWUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutMeshBufferInHeap(FMeshBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, int32 InVBHeapSlot, int32 InIBHeapSlot) override;
 		virtual void PutInstanceBufferInHeap(FInstanceBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
@@ -125,10 +127,11 @@ namespace tix
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 		virtual void SetArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer) override;
 
-		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) override;
-		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState) override;
-		virtual void SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState) override;
-		virtual void SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState) override;
+		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) override;
+		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) override;
+		virtual void SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) override;
+		virtual void SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) override;
+		virtual void FlushResourceStateChange() override;
 
 		virtual void SetStencilRef(uint32 InRefValue) override;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset) override;

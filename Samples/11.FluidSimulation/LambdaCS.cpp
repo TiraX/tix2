@@ -8,6 +8,7 @@
 
 FLambdaCS::FLambdaCS()
 	: FComputeTask("S_LambdaCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -36,13 +37,15 @@ void FLambdaCS::UpdateComputeParams(
 	ResourceTable->PutUniformBufferInTable(InPositions, SRV_POSITIONS);
 	ResourceTable->PutUniformBufferInTable(InNeighborNum, SRV_NEIGHBOR_NUM);
 	ResourceTable->PutUniformBufferInTable(InNeighborParticles, SRV_NEIGHBOR_PARTICLES);
-	ResourceTable->PutUniformBufferInTable(InLambdas, UAV_LAMBDAS);
+	ResourceTable->PutRWUniformBufferInTable(InLambdas, UAV_LAMBDAS);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FLambdaCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

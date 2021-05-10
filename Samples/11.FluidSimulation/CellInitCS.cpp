@@ -8,6 +8,7 @@
 
 FCellInitCS::FCellInitCS()
 	: FComputeTask("S_CellInitCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -31,14 +32,16 @@ void FCellInitCS::UpdateComputeParams(
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
-	ResourceTable->PutUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+	ResourceTable->PutRWUniformBufferInTable(InNumInCell, UAV_NUM_IN_CELL);
+	ResourceTable->PutRWUniformBufferInTable(InCellParticleOffsets, UAV_CELL_PARTICLE_OFFSETS);
+
+	ThreadsCount = InNumInCell->GetElements();
 }
 
 void FCellInitCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

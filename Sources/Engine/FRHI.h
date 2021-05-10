@@ -89,6 +89,7 @@ namespace tix
 		virtual void EndComputeTask(bool IsTileComputeShader = false) = 0;
 
 		virtual void BeginEvent(const int8* InEventName) = 0;
+		virtual void BeginEvent(const int8* InEventName, int32 Index) = 0;
 		virtual void EndEvent() = 0;
 
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
@@ -161,6 +162,7 @@ namespace tix
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
+		virtual void PutRWUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutMeshBufferInHeap(FMeshBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, int32 InVBHeapSlot, int32 InIBHeapSlot) = 0;
 		virtual void PutInstanceBufferInHeap(FInstanceBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) = 0;
@@ -179,10 +181,11 @@ namespace tix
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
 
-		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState) = 0;
-		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState) = 0;
-		virtual void SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState) = 0;
-		virtual void SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState) = 0;
+		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
+		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
+		virtual void SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
+		virtual void SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
+		virtual void FlushResourceStateChange() = 0;
 
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset) = 0;

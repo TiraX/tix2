@@ -642,6 +642,14 @@ namespace tix
 		BEGIN_EVENT(CurrentWorkingCommandList.Get(), InEventName);
 	}
 
+	void FRHIDx12::BeginEvent(const int8* InEventName, int32 Index)
+	{
+		int8 TempName[64];
+		sprintf(TempName, "%s_%d", InEventName, Index);
+		TI_ASSERT(CurrentWorkingCommandList != nullptr);
+		BEGIN_EVENT(CurrentWorkingCommandList.Get(), TempName);
+	}
+
 	void FRHIDx12::EndEvent()
 	{
 		TI_ASSERT(CurrentWorkingCommandList != nullptr);
@@ -1849,18 +1857,44 @@ namespace tix
 				&BufferDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST);
 
-			//if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
-			//{
-			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-			//}
-			//else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
-			//{
-			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-			//}
-			//else
-			//{
-			//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
-			//}
+			if (InData != nullptr)
+			{
+				ComPtr<ID3D12Resource> UniformBufferUpload;
+				CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+				CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
+				VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+					&uploadHeapProperties,
+					D3D12_HEAP_FLAG_NONE,
+					&ConstantBufferDesc,
+					D3D12_RESOURCE_STATE_GENERIC_READ,
+					nullptr,
+					IID_PPV_ARGS(&UniformBufferUpload)));
+
+				// Upload the index buffer to the GPU.
+				{
+					D3D12_SUBRESOURCE_DATA UniformData = {};
+					UniformData.pData = reinterpret_cast<const uint8*>(InData);
+					UniformData.RowPitch = UniformBuffer->GetTotalBufferSize();
+					UniformData.SlicePitch = UniformData.RowPitch;
+
+					UpdateSubresources(CurrentWorkingCommandList.Get(), UniformBufferDx12->BufferResource.GetResource().Get(), UniformBufferUpload.Get(), 0, 0, 1, &UniformData);
+
+					//if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER) != 0)
+					//{
+					//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+					//}
+					//else if ((UniformBuffer->GetFlag() & UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE) != 0)
+					//{
+					//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+					//}
+					//else
+					//{
+					//	Transition(&UniformBufferDx12->BufferResource, D3D12_RESOURCE_STATE_GENERIC_READ);
+					//}
+				}
+				FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+				HoldResourceReference(UniformBufferUpload);
+			}
 
 			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 		}
@@ -2162,29 +2196,31 @@ namespace tix
 		return true;
 	}
 
-	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState)
+	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
 		Transition(&UniformBufferDx12->BufferResource, TiX2DxResourceStateMap[NewState]);
-		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+		if (Immediate)
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
-	void FRHIDx12::SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState)
+	void FRHIDx12::SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		TI_ASSERT(RESOURCE_STATE_MESHBUFFER != NewState);
 		FUniformBufferPtr CommandBuffer = InCommandBuffer->GetCommandBuffer();
-		SetResourceStateUB(CommandBuffer, NewState);
+		SetResourceStateUB(CommandBuffer, NewState, Immediate);
 	}
 
-	void FRHIDx12::SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState)
+	void FRHIDx12::SetResourceStateInsB(FInstanceBufferPtr InInstanceBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		TI_ASSERT(RESOURCE_STATE_MESHBUFFER != NewState);
 		FInstanceBufferDx12 * InstanceBufferDx12 = static_cast<FInstanceBufferDx12*>(InInstanceBuffer.get());
 		Transition(&InstanceBufferDx12->InstanceBuffer, TiX2DxResourceStateMap[NewState]);
-		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+		if (Immediate)
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
-	void FRHIDx12::SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState)
+	void FRHIDx12::SetResourceStateMB(FMeshBufferPtr InMeshBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		FMeshBufferDx12 * MeshBufferDx12 = static_cast<FMeshBufferDx12*>(InMeshBuffer.get());
 		if (NewState == RESOURCE_STATE_MESHBUFFER)
@@ -2197,6 +2233,12 @@ namespace tix
 			Transition(&MeshBufferDx12->VertexBuffer, TiX2DxResourceStateMap[NewState]);
 			Transition(&MeshBufferDx12->IndexBuffer, TiX2DxResourceStateMap[NewState]);
 		}
+		if (Immediate)
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+	}
+
+	void FRHIDx12::FlushResourceStateChange()
+	{
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
@@ -2852,43 +2894,43 @@ namespace tix
 	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
 	{
 		FUniformBufferDx12 * UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
-		
-		if ((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0)
-		{
-			// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters
-			// Create unordered access view
-			D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
-			UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
-			UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-			UAVDesc.Buffer.FirstElement = 0;
-			UAVDesc.Buffer.NumElements = InBuffer->GetElements();
-			UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-			UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ? 
-				FUniformBufferDx12::AlignForUavCounter(InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes()) : 0;
-			UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		// Create shader resource view
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		SRVDesc.Buffer.NumElements = InBuffer->GetElements();
+		SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+		SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-			D3dDevice->CreateUnorderedAccessView(
-				UBDx12->BufferResource.GetResource().Get(),
-				(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
-					UBDx12->BufferResource.GetResource().Get() : nullptr,
-				&UAVDesc,
-				Descriptor);
-		}
-		else
-		{
-			// Create shader resource view
-			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
-			SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-			SRVDesc.Buffer.NumElements = InBuffer->GetElements();
-			SRVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
-			SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+	}
 
-			D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
-			D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
-		}
+	void FRHIDx12::PutRWUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	{
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
+
+		TI_ASSERT((InBuffer->GetFlag() & UB_FLAG_COMPUTE_WRITABLE) != 0);
+		// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters
+		// Create unordered access view
+		D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+		UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		UAVDesc.Buffer.FirstElement = 0;
+		UAVDesc.Buffer.NumElements = InBuffer->GetElements();
+		UAVDesc.Buffer.StructureByteStride = InBuffer->GetStructureSizeInBytes();
+		UAVDesc.Buffer.CounterOffsetInBytes = (InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
+			FUniformBufferDx12::AlignForUavCounter(InBuffer->GetElements() * InBuffer->GetStructureSizeInBytes()) : 0;
+		UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateUnorderedAccessView(
+			UBDx12->BufferResource.GetResource().Get(),
+			(InBuffer->GetFlag() & UB_FLAG_COMPUTE_WITH_COUNTER) != 0 ?
+			UBDx12->BufferResource.GetResource().Get() : nullptr,
+			&UAVDesc,
+			Descriptor);
 	}
 	
 	void FRHIDx12::PutMeshBufferInHeap(FMeshBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, int32 InVBHeapSlot, int32 InIBHeapSlot)

@@ -67,6 +67,8 @@ private:
 	float TimeStep;
 	float Epsilon;
 
+	int32 Iterations;
+
 	TVector<vector3df> ParticlePositions;
 
 	aabbox3df BoundaryBox;

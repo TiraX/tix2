@@ -28,16 +28,16 @@ RWStructuredBuffer<float3> SortedVelocities : register(u1);
 [numthreads(128, 1, 1)]
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    const uint TotalParticles = Dim.w; 
-    uint Index = dispatchThreadId.x;   
-	if (Index >= TotalParticles)
+    const uint TotalCells = Dim.x * Dim.y * Dim.z; 
+    uint CellIndex = dispatchThreadId.x;   
+	if (CellIndex >= TotalCells)
 		return;
     
-    uint Num = NumInCell[Index];
-    uint Offset = CellParticleOffsets[Index];
+    uint Num = NumInCell[CellIndex];
+    uint Offset = CellParticleOffsets[CellIndex];
     for (uint i = 0 ; i < Num ; i ++)
     {
-        uint SrcIndex = CellParticles[Offset + i];
+        uint SrcIndex = CellParticles[CellIndex * MaxParticleInCell + i];
         uint DestIndex = Offset + i;
 
         SortedPositions[DestIndex] = Positions[SrcIndex];

@@ -8,6 +8,7 @@
 
 FUpdateVelocityCS::FUpdateVelocityCS()
 	: FComputeTask("S_UpdateVelocityCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -33,14 +34,16 @@ void FUpdateVelocityCS::UpdateComputeParams(
 	UBRef_BoundInfo = InBoundInfo;
 
 	ResourceTable->PutUniformBufferInTable(InPosOld, SRV_POS_OLD);
-	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
-	ResourceTable->PutUniformBufferInTable(InVelocities, UAV_VELOCITIES);
+	ResourceTable->PutRWUniformBufferInTable(InPositions, UAV_POSITIONS);
+	ResourceTable->PutRWUniformBufferInTable(InVelocities, UAV_VELOCITIES);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FUpdateVelocityCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

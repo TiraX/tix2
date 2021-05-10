@@ -8,6 +8,7 @@
 
 FDeltaPosCS::FDeltaPosCS()
 	: FComputeTask("S_DeltaPosCS")
+	, ThreadsCount(0)
 {
 }
 
@@ -36,13 +37,15 @@ void FDeltaPosCS::UpdateComputeParams(
 	ResourceTable->PutUniformBufferInTable(InNeighborNum, SRV_NEIGHBOR_NUM);
 	ResourceTable->PutUniformBufferInTable(InNeighborParticles, SRV_NEIGHBOR_PARTICLES);
 	ResourceTable->PutUniformBufferInTable(InLambdas, SRV_LAMBDAS);
-	ResourceTable->PutUniformBufferInTable(InPositions, UAV_POSITIONS);
+	ResourceTable->PutRWUniformBufferInTable(InPositions, UAV_POSITIONS);
+
+	ThreadsCount = InPositions->GetElements();
 }
 
 void FDeltaPosCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
-	const uint32 DispatchSize = (UBRef_PbfParams->GetElements() + BlockSize - 1) / BlockSize;
+	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;
 
 	RHI->SetComputePipeline(ComputePipeline);
 	RHI->SetComputeConstantBuffer(0, UBRef_PbfParams);

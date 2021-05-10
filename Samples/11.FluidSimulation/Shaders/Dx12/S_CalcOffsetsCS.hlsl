@@ -23,7 +23,8 @@ RWStructuredBuffer<uint> CellParticleOffsets : register(u0);
 void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, uint3 dispatchThreadId : SV_DispatchThreadID)
 {
     CellParticleOffsets[0] = 0;
-    for (int i = 1 ; i < Dim.w; i ++)
+    int TotalCells = Dim.x * Dim.y * Dim.z;
+    for (int i = 1 ; i < TotalCells; i ++)
     {
         CellParticleOffsets[i] = CellParticleOffsets[i - 1] + NumInCell[i - 1];
     }

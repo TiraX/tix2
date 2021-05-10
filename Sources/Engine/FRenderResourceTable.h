@@ -19,6 +19,7 @@ namespace tix
 		TI_API void PutTextureInTable(FTexturePtr InTexture, uint32 Index);
 		TI_API void PutRWTextureInTable(FTexturePtr InTexture, uint32 MipLevel, uint32 Index);
 		TI_API void PutUniformBufferInTable(FUniformBufferPtr InBuffer, uint32 Index);
+		TI_API void PutRWUniformBufferInTable(FUniformBufferPtr InBuffer, uint32 Index);
 		TI_API void PutMeshBufferInTable(FMeshBufferPtr InBuffer, int32 VBIndex, int32 IBIndex);
 		TI_API void PutInstanceBufferInTable(FInstanceBufferPtr InBuffer, uint32 Index);
 		TI_API void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
