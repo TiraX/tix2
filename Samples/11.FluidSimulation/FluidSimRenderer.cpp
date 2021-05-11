@@ -86,14 +86,8 @@ void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 	RHI->SetGraphicsPipeline(PL_Fluid);
 	RHI->SetMeshBuffer(MB_Fluid, nullptr);
 	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
-	//ApplyShaderParameter(RHI, Scene, OceanPrimitive);
-	//RHI->SetRenderResourceTable(2, OceanDisplacementResource);
-	//RHI->SetRenderResourceTable(3, OceanNormalResource);
 
-	RHI->DrawPrimitiveInstanced(
-		MB_Fluid,
-		1,
-		0);
+	RHI->DrawPrimitiveInstanced(MB_Fluid, 1, 0);
 }
 
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
