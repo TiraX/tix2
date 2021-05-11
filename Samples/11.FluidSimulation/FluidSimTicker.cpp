@@ -27,11 +27,14 @@ void TFluidSimTicker::SetupScene()
 
 	// PreLoad default material first
 	const TString DefaultMaterial = "M_Debug.tasset";
-	const TString DefaultMaterialInstance = "DebugMaterial.tasset";
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
-	//TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
+	const TString ParticleMaterial = "M_Particle.tasset";
+	TAssetLibrary::Get()->LoadAsset(ParticleMaterial);
 
 	// Load scene
 	const TString TargetSceneAsset = "Map_OceanFFT.tasset";
 	//TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
+
+	// Setup Camera
+	TEngine::Get()->GetScene()->GetActiveCamera()->SetPosition(vector3df(0, 16.f, 8.f));
 }

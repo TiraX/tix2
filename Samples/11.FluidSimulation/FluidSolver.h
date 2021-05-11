@@ -47,6 +47,16 @@ public:
 
 	void Update(FRHI* RHI, float Dt);
 
+	int32 GetTotalParticles() const
+	{
+		return TotalParticles;
+	}
+
+	FUniformBufferPtr GetSimulatedPositions()
+	{
+		return UB_ParticlePositions;
+	}
+
 private:
 	void UpdateParamBuffers(FRHI* RHI);
 	void UpdateResourceBuffers(FRHI * RHI);
@@ -58,6 +68,7 @@ private:
 		DirtyBoundary = 1 << 1,
 		DirtyParticles = 1 << 2,
 	};
+
 	uint32 Flag;
 	int32 TotalParticles;
 	float ParticleMass;

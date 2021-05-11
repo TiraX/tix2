@@ -2196,6 +2196,33 @@ namespace tix
 		return true;
 	}
 
+	bool FRHIDx12::CopyBufferRegion(
+		FMeshBufferPtr DstBuffer,
+		uint32 DstOffsetInBytes,
+		FUniformBufferPtr SrcBuffer,
+		uint32 SrcOffsetInBytes,
+		uint32 Bytes)
+	{
+		FMeshBufferDx12* DstBufferDx12 = static_cast<FMeshBufferDx12*>(DstBuffer.get());
+		FUniformBufferDx12* SrcBufferDx12 = static_cast<FUniformBufferDx12*>(SrcBuffer.get());
+
+		// Copy vertex data
+		const uint32 InstanceStride = DstBuffer->GetStride();
+		TI_ASSERT((DstBuffer->GetVerticesCount() * DstBuffer->GetStride() - DstOffsetInBytes) >= Bytes);
+		TI_ASSERT((SrcBuffer->GetTotalBufferSize() - SrcOffsetInBytes) >= Bytes);
+		CurrentWorkingCommandList->CopyBufferRegion(
+			DstBufferDx12->VertexBuffer.Resource.Get(),
+			DstOffsetInBytes,
+			SrcBufferDx12->BufferResource.GetResource().Get(),
+			SrcOffsetInBytes,
+			Bytes);
+
+		HoldResourceReference(DstBuffer);
+		HoldResourceReference(SrcBuffer);
+
+		return true;
+	}
+
 	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());
@@ -2226,12 +2253,14 @@ namespace tix
 		if (NewState == RESOURCE_STATE_MESHBUFFER)
 		{
 			Transition(&MeshBufferDx12->VertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-			Transition(&MeshBufferDx12->IndexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			if (MeshBufferDx12->IndexBuffer.Resource != nullptr)
+				Transition(&MeshBufferDx12->IndexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		}
 		else
 		{
 			Transition(&MeshBufferDx12->VertexBuffer, TiX2DxResourceStateMap[NewState]);
-			Transition(&MeshBufferDx12->IndexBuffer, TiX2DxResourceStateMap[NewState]);
+			if (MeshBufferDx12->IndexBuffer.Resource != nullptr)
+				Transition(&MeshBufferDx12->IndexBuffer, TiX2DxResourceStateMap[NewState]);
 		}
 		if (Immediate)
 			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
@@ -3342,6 +3371,14 @@ namespace tix
 	void FRHIDx12::SetStencilRef(uint32 InRefValue)
 	{
 		CurrentWorkingCommandList->OMSetStencilRef(InRefValue);
+	}
+
+	void FRHIDx12::DrawPrimitiveInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset)
+	{
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		CurrentWorkingCommandList->DrawInstanced(MeshBuffer->GetVerticesCount(), InstanceCount, 0, 0);
+
+		//FStats::Stats.TrianglesRendered += MeshBuffer->GetIndicesCount() / 3 * InstanceCount;
 	}
 
 	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset)

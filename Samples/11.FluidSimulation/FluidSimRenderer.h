@@ -21,8 +21,12 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
+	void DrawParticles(FRHI* RHI, FScene* Scene);
 
 private:
+	FMeshBufferPtr MB_Fluid;
+	FPipelinePtr PL_Fluid;
+
 	FArgumentBufferPtr AB_Result;
 
 	FFullScreenRender FSRender;

@@ -157,6 +157,12 @@ namespace tix
 			FInstanceBufferPtr SrcBuffer,
 			uint32 SrcInstanceOffset,
 			uint32 InstanceCount) = 0;
+		virtual bool CopyBufferRegion(
+			FMeshBufferPtr DstBuffer,
+			uint32 DstOffsetInBytes,
+			FUniformBufferPtr SrcBuffer,
+			uint32 SrcOffsetInBytes,
+			uint32 Bytes) = 0;
 
 		virtual void PutConstantBufferInHeap(FUniformBufferPtr InUniformBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
 		virtual void PutTextureInHeap(FTexturePtr InTexture, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) = 0;
@@ -188,6 +194,7 @@ namespace tix
 		virtual void FlushResourceStateChange() = 0;
 
 		virtual void SetStencilRef(uint32 InRefValue) = 0;
+		virtual void DrawPrimitiveInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset) = 0;
 		virtual void DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 InstanceCount, uint32 InstanceOffset) = 0;
 		virtual void GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize) = 0;
         
