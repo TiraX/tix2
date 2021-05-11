@@ -32,6 +32,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10.OceanFFT", "..\..\Sample
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11.FluidSimulation", "..\..\Samples\11.FluidSimulation\FluidSim.vcxproj", "{C7E07E07-67B9-4E19-9849-CDD852399FA0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12.SkinnedAnimation", "..\..\Samples\12.SkinnedAnimation\SkinnedAnimation.vcxproj", "{D5418879-C0EC-4C52-9C93-F6EA09254369}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -90,6 +92,10 @@ Global
 		{C7E07E07-67B9-4E19-9849-CDD852399FA0}.Debug|x64.Build.0 = Debug|x64
 		{C7E07E07-67B9-4E19-9849-CDD852399FA0}.Release|x64.ActiveCfg = Release|x64
 		{C7E07E07-67B9-4E19-9849-CDD852399FA0}.Release|x64.Build.0 = Release|x64
+		{D5418879-C0EC-4C52-9C93-F6EA09254369}.Debug|x64.ActiveCfg = Debug|x64
+		{D5418879-C0EC-4C52-9C93-F6EA09254369}.Debug|x64.Build.0 = Debug|x64
+		{D5418879-C0EC-4C52-9C93-F6EA09254369}.Release|x64.ActiveCfg = Release|x64
+		{D5418879-C0EC-4C52-9C93-F6EA09254369}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
