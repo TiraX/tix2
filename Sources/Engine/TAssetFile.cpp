@@ -410,6 +410,7 @@ namespace tix
 
 			Material->SetShaderVsFormat(Header->VsFormat);
 			Material->SetShaderInsFormat(Header->InsFormat);
+			Material->SetPrimitiveType((E_PRIMITIVE_TYPE)Header->PrmitiveType);
 			Material->SetBlendState((E_BLEND_MODE)Header->BlendMode, Header->BlendState);
 			Material->SetRasterizerState(Header->RasterizerDesc);
 			Material->SetDepthStencilState(Header->DepthStencilDesc);

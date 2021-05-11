@@ -25,6 +25,11 @@ namespace tix
 		Desc.InsFormat = InInsFormat;
 	}
 
+	void TMaterial::SetPrimitiveType(E_PRIMITIVE_TYPE InPrimitiveType)
+	{
+		Desc.PrimitiveType = InPrimitiveType;
+	}
+
 	void TMaterial::EnableDepthWrite(bool bEnable)
 	{
 		if (bEnable)

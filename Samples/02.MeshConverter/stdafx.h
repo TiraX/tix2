@@ -19,6 +19,17 @@ namespace tix
 {
 	class TJSON;
 
+	inline E_PRIMITIVE_TYPE GetPrimitiveType(const TString& name)
+	{
+		ReturnEnumValue(name, EPT_POINTLIST);
+		ReturnEnumValue(name, EPT_LINES);
+		ReturnEnumValue(name, EPT_LINESTRIP);
+		ReturnEnumValue(name, EPT_TRIANGLELIST);
+		ReturnEnumValue(name, EPT_TRIANGLESTRIP);
+
+		return EPT_TRIANGLELIST;
+	}
+
 	inline E_VERTEX_STREAM_SEGMENT GetVertexSegment(const TString& name)
 	{
 		ReturnEnumValue(name, EVSSEG_POSITION);

@@ -12,7 +12,7 @@ namespace tix
 		TIRES_VERSION_MAINFILE = 1,
 		TIRES_VERSION_CHUNK_MESH = 1,
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
-		TIRES_VERSION_CHUNK_MATERIAL = 1,
+		TIRES_VERSION_CHUNK_MATERIAL = 2,	// v2, Add primitive_type export
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		TIRES_VERSION_CHUNK_SCENE = 2,	// v2, Add sky light SH3 export
 		TIRES_VERSION_CHUNK_SCENETILE = 2,	// v2, Add reflection capture support
@@ -237,6 +237,7 @@ namespace tix
 		TDepthStencilDesc DepthStencilDesc;
 		uint32 VsFormat;
 		uint32 InsFormat;
+		uint32 PrmitiveType;
 
 		uint8 ColorBuffers[ERTC_COUNT];
 		int32 DepthBuffer;

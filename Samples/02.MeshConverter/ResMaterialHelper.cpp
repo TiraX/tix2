@@ -32,6 +32,15 @@ namespace tix
 			Helper.SetShaderName((E_SHADER_STAGE)s, Shaders[s].GetString());
 		}
 
+		// topology
+		{
+			TJSONNode JTopology = Doc["topology"];
+			if (!JTopology.IsNull())
+			{ 
+				Helper.PipelineDesc.PrimitiveType = GetPrimitiveType(JTopology.GetString());
+			}
+		}
+
 		// vertex format
 		{
 			TJSONNode JVSFormat = Doc["vs_format"];
@@ -261,6 +270,7 @@ namespace tix
 			Define.DepthStencilDesc = PipelineDesc.DepthStencilDesc;
 			Define.VsFormat = PipelineDesc.VsFormat;
 			Define.InsFormat = PipelineDesc.InsFormat;
+			Define.PrmitiveType = PipelineDesc.PrimitiveType;
 
 			int32 cb = 0;
 			for (; cb < ERTC_COUNT; ++cb)
