@@ -8,8 +8,8 @@
 class FFluidSolver
 {
 public:
-	static const int32 MaxParticleInCell = 256;
-	static const int32 MaxNeighbors = 32;
+	static const int32 MaxParticleInCell = 32 * 32;
+	static const int32 MaxNeighbors = 32 * 32;
 
 	FFluidSolver();
 	virtual ~FFluidSolver();

@@ -287,10 +287,11 @@ void FFluidSolverCPU::NeighborSearch()
 						vector3df NbPos = UB_SortedPositions[NbIndex];
 						vector3df Dir = Pos - NbPos;
 						float LengthSq = Dir.dotProduct(Dir);
-						if (LengthSq < h2 && NumNb < MaxNeighbors)
+						if (LengthSq < h2)
 						{
 							UB_NeighborParticles[NbParticleOffset + NumNb] = NbIndex;
 							NumNb++;
+							TI_ASSERT(NumNb <= MaxNeighbors);
 						}
 					}
 				}
