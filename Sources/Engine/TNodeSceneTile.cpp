@@ -74,9 +74,9 @@ namespace tix
 		TI_TODO("Remove scene tile resources from FScene, like meshes and env lights");
 	}
 
-	void TNodeSceneTile::UpdateAllTransformation()
+	void TNodeSceneTile::Tick(float Dt)
 	{
-		TNode::UpdateAllTransformation();
+		TNode::Tick(Dt);
 
 		// check if Asset is loaded
 		if (SceneTileResource != nullptr)

@@ -45,7 +45,7 @@ namespace tix
 	public:
 		virtual ~TNodeSceneTile();
 
-		virtual void UpdateAllTransformation() override;
+		virtual void Tick(float Dt) override;
 
 		TInstanceBufferPtr GetInstanceBuffer()
 		{
