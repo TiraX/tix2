@@ -94,20 +94,20 @@ void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 	RHI->DrawPrimitiveInstanced(MB_Fluid, 1, 0);
 }
 
+static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	if (!PauseUpdate)
 	{
-		Solver->Update(RHI, 1.f / 60);
-	}
-	else
-	{
-		if (StepNext)
+		if (Counter % 10 == 0)
 		{
-			Solver->Update(RHI, 1.f / 60);
-			StepNext = false;
+			PauseUpdate = true;
+			_LOG(Log, "Pause at %d\n", Counter);
 		}
+		++Counter;
 	}
+
+	Solver->Update(RHI, 1.f / 60);
 
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);

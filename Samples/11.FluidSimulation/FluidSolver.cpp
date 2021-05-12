@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "FluidSolver.h"
+#include "FluidSimRenderer.h"
 
 FFluidSolver::FFluidSolver()
 	: Flag(0)
@@ -361,13 +362,33 @@ void FFluidSolver::Update(FRHI * RHI, float Dt)
 		RHI->EndEvent();
 
 		// Copy sorted positions, velocities to particle positions and velocities
-		RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_COPY_DEST, false);
-		RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_COPY_DEST, false);
-		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_COPY_SOURCE, false);
-		RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_COPY_SOURCE, false);
-		RHI->FlushResourceStateChange();
-		RHI->CopyBufferRegion(UB_ParticlePositions, 0, UB_SortedPositions, UB_ParticlePositions->GetElements() * sizeof(vector3df));
-		RHI->CopyBufferRegion(UB_ParticleVelocities, 0, UB_SortedVelocities, UB_ParticleVelocities->GetElements() * sizeof(vector3df));
+		if (!FFluidSimRenderer::PauseUpdate)
+		{
+			RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_COPY_DEST, false);
+			RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_COPY_DEST, false);
+			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_COPY_SOURCE, false);
+			RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_COPY_SOURCE, false);
+			RHI->FlushResourceStateChange();
+			RHI->CopyBufferRegion(UB_ParticlePositions, 0, UB_SortedPositions, UB_ParticlePositions->GetElements() * sizeof(vector3df));
+			RHI->CopyBufferRegion(UB_ParticleVelocities, 0, UB_SortedVelocities, UB_ParticleVelocities->GetElements() * sizeof(vector3df));
+		}
+		else
+		{
+			// Pause state change, always simulate the previous data
+			if (FFluidSimRenderer::StepNext)
+			{
+				// Step next data
+				RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_COPY_DEST, false);
+				RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_COPY_DEST, false);
+				RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_COPY_SOURCE, false);
+				RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_COPY_SOURCE, false);
+				RHI->FlushResourceStateChange();
+				RHI->CopyBufferRegion(UB_ParticlePositions, 0, UB_SortedPositions, UB_ParticlePositions->GetElements() * sizeof(vector3df));
+				RHI->CopyBufferRegion(UB_ParticleVelocities, 0, UB_SortedVelocities, UB_ParticleVelocities->GetElements() * sizeof(vector3df));
+
+				FFluidSimRenderer::StepNext = false;
+			}
+		}
 	}
 	RHI->EndComputeTask();
 }
