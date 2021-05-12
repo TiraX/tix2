@@ -17,8 +17,6 @@ TFluidSimTicker::~TFluidSimTicker()
 
 void TFluidSimTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TFluidSimTicker::SetupScene()

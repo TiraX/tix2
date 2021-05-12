@@ -17,8 +17,6 @@ TSkyAtmosphereTicker::~TSkyAtmosphereTicker()
 
 void TSkyAtmosphereTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TSkyAtmosphereTicker::SetupScene()

@@ -17,8 +17,6 @@ TGTAOTicker::~TGTAOTicker()
 
 void TGTAOTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TGTAOTicker::SetupScene()

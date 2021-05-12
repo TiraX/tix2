@@ -17,8 +17,6 @@ TRTAOTicker::~TRTAOTicker()
 
 void TRTAOTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TRTAOTicker::SetupScene()

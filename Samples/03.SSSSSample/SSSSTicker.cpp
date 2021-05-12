@@ -18,8 +18,6 @@ TSSSSTicker::~TSSSSTicker()
 
 void TSSSSTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TSSSSTicker::SetupScene()

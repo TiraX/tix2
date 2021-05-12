@@ -17,8 +17,6 @@ TSkinnedAnimationTicker::~TSkinnedAnimationTicker()
 
 void TSkinnedAnimationTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TSkinnedAnimationTicker::SetupScene()

@@ -16,8 +16,6 @@ TVirtualTextureTicker::~TVirtualTextureTicker()
 
 void TVirtualTextureTicker::Tick(float Dt)
 {
-	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 }
 
 void TVirtualTextureTicker::SetupScene()

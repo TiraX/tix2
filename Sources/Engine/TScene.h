@@ -43,7 +43,6 @@ namespace tix
 		TI_API void LoadSceneAync(const TString& InSceneAssetName);
 
 		TI_API void TickAllNodes(float Dt, TNode* Root = nullptr);
-		TI_API void UpdateAllNodesTransforms(TNode* Root = nullptr);
 
 		void SetSceneFlag(E_SCENE_FLAG flag, bool enable)
 		{
@@ -75,6 +74,7 @@ namespace tix
 		void AddToActiveList(E_SCENE_LIST_TYPE List, TNode * ActiveNode);
 	protected:
 		void BindLights();
+		void UpdateAllNodesTransforms(TNode* Root = nullptr);
 
 	protected:
 		TNodeSceneRoot * NodeRoot;

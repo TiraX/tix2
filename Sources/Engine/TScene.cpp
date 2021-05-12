@@ -49,6 +49,8 @@ namespace tix
 			Root = NodeRoot;
 
 		Root->Tick(Dt);
+
+		UpdateAllNodesTransforms();
 	}
 
 	void TScene::UpdateAllNodesTransforms(TNode* Root)

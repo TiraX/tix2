@@ -18,7 +18,6 @@ TGPUDrivenTicker::~TGPUDrivenTicker()
 void TGPUDrivenTicker::Tick(float Dt)
 {
 	TScene * Scene = TEngine::Get()->GetScene();
-	Scene->UpdateAllNodesTransforms();
 
 	// Send frustum info to render thread
 	TNodeCamera * Cam = Scene->GetActiveCamera();
