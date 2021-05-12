@@ -60,6 +60,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+      <FloatingPointModel>Strict</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +109,8 @@
     <ClCompile Include="FluidSimRenderer.cpp" />
     <ClCompile Include="FluidSimSample.cpp" />
     <ClCompile Include="FluidSimTicker.cpp" />
+    <ClCompile Include="FluidSolverCPU.cpp" />
+    <ClCompile Include="FluidSolverGPU.cpp" />
     <ClCompile Include="LambdaCS.cpp" />
     <ClCompile Include="NeighborSearchCS.cpp" />
     <ClCompile Include="P2CellCS.cpp" />
@@ -126,6 +130,8 @@
     <ClInclude Include="FluidSolver.h" />
     <ClInclude Include="FluidSimRenderer.h" />
     <ClInclude Include="FluidSimTicker.h" />
+    <ClInclude Include="FluidSolverCPU.h" />
+    <ClInclude Include="FluidSolverGPU.h" />
     <ClInclude Include="LambdaCS.h" />
     <ClInclude Include="NeighborSearchCS.h" />
     <ClInclude Include="P2CellCS.h" />

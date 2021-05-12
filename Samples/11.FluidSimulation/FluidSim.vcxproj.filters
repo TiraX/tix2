@@ -90,6 +90,12 @@
     <ClCompile Include="ApplyDeltaPosCS.cpp">
       <Filter>Source Files\Compute</Filter>
     </ClCompile>
+    <ClCompile Include="FluidSolverCPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FluidSolverGPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -133,6 +139,12 @@
     </ClInclude>
     <ClInclude Include="ApplyDeltaPosCS.h">
       <Filter>Source Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidSolverCPU.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidSolverGPU.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

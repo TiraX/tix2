@@ -6,7 +6,10 @@
 #include "stdafx.h"
 #include "FluidSimRenderer.h"
 #include "FluidSolver.h"
+#include "FluidSolverCPU.h"
+#include "FluidSolverGPU.h"
 
+#define USE_SOLVER_GPU (0)
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -56,7 +59,11 @@ void FFluidSimRenderer::InitInRenderThread()
 	}
 
 	// Init Simulation
-	Solver = ti_new FFluidSolver;
+#if USE_SOLVER_GPU
+	Solver = ti_new FFluidSolverGPU;
+#else
+	Solver = ti_new FFluidSolverCPU;
+#endif
 	Solver->CreateParticlesInBox(
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
 		0.1f, 1.f, 1000.f
@@ -80,11 +87,13 @@ void FFluidSimRenderer::InitInRenderThread()
 
 void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 {
+#if USE_SOLVER_GPU
+	FFluidSolverGPU* SolverGPU = static_cast<FFluidSolverGPU*>(Solver);
 	// Copy simulation result to Mesh Buffer
-	RHI->SetResourceStateUB(Solver->GetSimulatedPositions(), RESOURCE_STATE_COPY_SOURCE, false);
+	RHI->SetResourceStateUB(SolverGPU->GetSimulatedPositions(), RESOURCE_STATE_COPY_SOURCE, false);
 	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_COPY_DEST, false);
 	RHI->FlushResourceStateChange();
-	RHI->CopyBufferRegion(MB_Fluid, 0, Solver->GetSimulatedPositions(), 0, Solver->GetTotalParticles() * sizeof(vector3df));
+	RHI->CopyBufferRegion(MB_Fluid, 0, SolverGPU->GetSimulatedPositions(), 0, Solver->GetTotalParticles() * sizeof(vector3df));
 
 	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_MESHBUFFER, true);
 	RHI->SetGraphicsPipeline(PL_Fluid);
@@ -92,11 +101,30 @@ void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
 
 	RHI->DrawPrimitiveInstanced(MB_Fluid, 1, 0);
+#else
+	FFluidSolverCPU* SolverCPU = static_cast<FFluidSolverCPU*>(Solver);
+	FUniformBufferPtr TempPositions = RHI->CreateUniformBuffer(sizeof(vector3df), Solver->GetTotalParticles(), UB_FLAG_INTERMEDIATE);
+	TempPositions->SetResourceName("TempPositions");
+	RHI->UpdateHardwareResourceUB(TempPositions, SolverCPU->GetSimulatedPositions().data());
+
+	// Copy simulation result to Mesh Buffer
+	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_COPY_DEST, true);
+	RHI->CopyBufferRegion(MB_Fluid, 0, TempPositions, 0, Solver->GetTotalParticles() * sizeof(vector3df));
+
+	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_MESHBUFFER, true);
+	RHI->SetGraphicsPipeline(PL_Fluid);
+	RHI->SetMeshBuffer(MB_Fluid, nullptr);
+	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
+	RHI->DrawPrimitiveInstanced(MB_Fluid, 1, 0);
+
+#endif
 }
 
 static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+#if USE_SOLVER_GPU
 	if (!PauseUpdate)
 	{
 		if (Counter % 10 == 0)
@@ -106,6 +134,7 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 		}
 		++Counter;
 	}
+#endif
 
 	Solver->Update(RHI, 1.f / 60);
 
