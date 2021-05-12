@@ -98,6 +98,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ApplyDeltaPosCS.cpp" />
     <ClCompile Include="ApplyGravityCS.cpp" />
     <ClCompile Include="CalcOffsetsCS.cpp" />
     <ClCompile Include="CellInitCS.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="UpdateVelocityCS.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ApplyDeltaPosCS.h" />
     <ClInclude Include="ApplyGravityCS.h" />
     <ClInclude Include="CalcOffsetsCS.h" />
     <ClInclude Include="CellInitCS.h" />
@@ -132,6 +134,12 @@
     <ClInclude Include="UpdateVelocityCS.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\Dx12\S_ApplyDeltaPosCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_ApplyGravityCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>

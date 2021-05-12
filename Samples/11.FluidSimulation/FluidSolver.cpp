@@ -48,6 +48,9 @@ FFluidSolver::FFluidSolver()
 	DeltaPosCS = ti_new FDeltaPosCS;
 	DeltaPosCS->Finalize();
 	DeltaPosCS->PrepareResources(RHI);
+	ApplyDeltaPosCS = ti_new FApplyDeltaPosCS;
+	ApplyDeltaPosCS->Finalize();
+	ApplyDeltaPosCS->PrepareResources(RHI);
 	UpdateVelocityCS = ti_new FUpdateVelocityCS;
 	UpdateVelocityCS->Finalize();
 	UpdateVelocityCS->PrepareResources(RHI);
@@ -198,6 +201,10 @@ void FFluidSolver::UpdateResourceBuffers(FRHI * RHI)
 		UB_Lambdas = RHI->CreateUniformBuffer(sizeof(float), TotalParticles, UB_FLAG_COMPUTE_WRITABLE);
 		UB_Lambdas->SetResourceName("Lambdas");
 		RHI->UpdateHardwareResourceUB(UB_Lambdas, nullptr);
+
+		UB_DeltaPositions = RHI->CreateUniformBuffer(sizeof(vector3df), TotalParticles, UB_FLAG_COMPUTE_WRITABLE);
+		UB_DeltaPositions->SetResourceName("DeltaPositions");
+		RHI->UpdateHardwareResourceUB(UB_DeltaPositions, nullptr);
 	}
 }
 
@@ -257,6 +264,12 @@ void FFluidSolver::UpdateComputeParams(FRHI* RHI)
 		UB_NeighborNum,
 		UB_NeighborParticles,
 		UB_Lambdas,
+		UB_SortedPositions,
+		UB_DeltaPositions);
+	ApplyDeltaPosCS->UpdateComputeParams(RHI,
+		UB_PbfParams->UniformBuffer,
+		UB_Boundary->UniformBuffer,
+		UB_DeltaPositions,
 		UB_SortedPositions);
 	UpdateVelocityCS->UpdateComputeParams(RHI,
 		UB_PbfParams->UniformBuffer,
@@ -347,9 +360,17 @@ void FFluidSolver::Update(FRHI * RHI, float Dt)
 			RHI->SetResourceStateUB(UB_NeighborNum, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
 			RHI->SetResourceStateUB(UB_NeighborParticles, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
 			RHI->SetResourceStateUB(UB_Lambdas, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
-			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_DeltaPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
 			RHI->FlushResourceStateChange();
 			DeltaPosCS->Run(RHI);
+			RHI->EndEvent();
+
+			RHI->BeginEvent("ApplyDeltaPos", iter);
+			RHI->SetResourceStateUB(UB_DeltaPositions, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+			RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_UNORDERED_ACCESS, false);
+			RHI->FlushResourceStateChange();
+			ApplyDeltaPosCS->Run(RHI);
 			RHI->EndEvent();
 		}
 

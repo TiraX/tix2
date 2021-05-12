@@ -13,13 +13,14 @@
 #define DeltaPos_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(SRV(t0, numDescriptors=3), UAV(u0, numDescriptors=1))" 
+    "DescriptorTable(SRV(t0, numDescriptors=4), UAV(u0, numDescriptors=1))" 
 
 StructuredBuffer<uint> NeighborNum : register(t0);
 StructuredBuffer<uint> NeighborParticles : register(t1);
 StructuredBuffer<float> Lambdas : register(t2);
+StructuredBuffer<float3> Positions : register(t3);
 
-RWStructuredBuffer<float3> Positions : register(u0);
+RWStructuredBuffer<float3> DeltaPosition : register(u0);
 
 [RootSignature(DeltaPos_RootSig)]
 [numthreads(128, 1, 1)]
@@ -56,14 +57,12 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
 
         float3 NbPos = Positions[NbIndex];
         float3 Dir = Pos - NbPos;
-        float s = length(Dir);
+        float s = max(length(Dir), 1e-6);
         Dir /= s;
 
         DeltaPos += spiky_gradient(Dir, s, h, h3_inv) * (Lambda + NbLambda);
     }
 
     DeltaPos *= m_by_rho;
-    Pos += DeltaPos;
-
-    Positions[Index] = Pos;
+    DeltaPosition[Index] = DeltaPos;
 }

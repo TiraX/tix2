@@ -4,48 +4,41 @@
 */
 
 #include "stdafx.h"
-#include "DeltaPosCS.h"
+#include "ApplyDeltaPosCS.h"
 
-FDeltaPosCS::FDeltaPosCS()
-	: FComputeTask("S_DeltaPosCS")
+FApplyDeltaPosCS::FApplyDeltaPosCS()
+	: FComputeTask("S_ApplyDeltaPosCS")
 	, ThreadsCount(0)
 {
 }
 
-FDeltaPosCS::~FDeltaPosCS()
+FApplyDeltaPosCS::~FApplyDeltaPosCS()
 {
 }
 
-void FDeltaPosCS::PrepareResources(FRHI * RHI)
+void FApplyDeltaPosCS::PrepareResources(FRHI * RHI)
 {
 	ResourceTable = RHI->CreateRenderResourceTable(PARAM_TOTAL_COUNT, EHT_SHADER_RESOURCE);
 }
 
-void FDeltaPosCS::UpdateComputeParams(
+void FApplyDeltaPosCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InPbfParams,
 	FUniformBufferPtr InBoundInfo,
-	FUniformBufferPtr InNeighborNum,
-	FUniformBufferPtr InNeighborParticles,
-	FUniformBufferPtr InLambdas,
-	FUniformBufferPtr InPositions,
-	FUniformBufferPtr InDeltaPosition
+	FUniformBufferPtr InDeltaPosition,
+	FUniformBufferPtr InPositions
 )
 {
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutUniformBufferInTable(InNeighborNum, SRV_NEIGHBOR_NUM);
-	ResourceTable->PutUniformBufferInTable(InNeighborParticles, SRV_NEIGHBOR_PARTICLES);
-	ResourceTable->PutUniformBufferInTable(InLambdas, SRV_LAMBDAS);
-	ResourceTable->PutRWUniformBufferInTable(InPositions, SRV_POSITIONS);
-
-	ResourceTable->PutRWUniformBufferInTable(InDeltaPosition, UAV_DELTA_POS);
+	ResourceTable->PutRWUniformBufferInTable(InDeltaPosition, SRV_DELTA_POS);
+	ResourceTable->PutRWUniformBufferInTable(InPositions, UAV_POSITIONS);
 
 	ThreadsCount = InPositions->GetElements();
 }
 
-void FDeltaPosCS::Run(FRHI * RHI)
+void FApplyDeltaPosCS::Run(FRHI * RHI)
 {
 	const uint32 BlockSize = 128;
 	const uint32 DispatchSize = (ThreadsCount + BlockSize - 1) / BlockSize;

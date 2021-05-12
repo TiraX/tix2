@@ -12,6 +12,7 @@
 #include "NeighborSearchCS.h"
 #include "LambdaCS.h"
 #include "DeltaPosCS.h"
+#include "ApplyDeltaPosCS.h"
 #include "UpdateVelocityCS.h"
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FPBFParams)
@@ -97,6 +98,7 @@ private:
 	FLambdaCSPtr LambdaCS;
 	FDeltaPosCSPtr DeltaPosCS;
 	FUpdateVelocityCSPtr UpdateVelocityCS;
+	FApplyDeltaPosCSPtr ApplyDeltaPosCS;
 
 	// Param Uniforms
 	FPBFParamsPtr UB_PbfParams;
@@ -151,4 +153,10 @@ private:
 	 * Size = ParticleCount
 	 */
 	FUniformBufferPtr UB_Lambdas;
+
+	/**
+	 * Delta Pos for each particle
+	 * Size = ParticleCount
+	 */
+	FUniformBufferPtr UB_DeltaPositions;
 };

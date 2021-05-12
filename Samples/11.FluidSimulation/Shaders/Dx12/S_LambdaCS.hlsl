@@ -54,7 +54,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
         float3 NbPos = Positions[NbIndex];
 
         float3 Dir = Pos - NbPos;
-        float s = length(Dir);
+        float s = max(length(Dir), 1e-6);
         Dir /= s;
         float3 NbGrad = spiky_gradient(Dir, s, h, h3_inv) * m_by_rho;
         Grad += NbGrad;
