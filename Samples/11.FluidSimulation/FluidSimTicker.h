@@ -5,13 +5,14 @@
 
 #pragma once
 
-class TFluidSimTicker : public TTicker
+class TFluidSimTicker : public TTicker, public TEventHandler
 {
 public:
 	TFluidSimTicker();
 	virtual ~TFluidSimTicker();
 
 	virtual void Tick(float Dt) override;
+	virtual bool OnEvent(const TEvent& e) override;
 
 	static void SetupScene();
 

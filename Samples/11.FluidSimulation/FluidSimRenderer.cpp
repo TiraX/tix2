@@ -7,6 +7,10 @@
 #include "FluidSimRenderer.h"
 #include "FluidSolver.h"
 
+
+bool FFluidSimRenderer::PauseUpdate = false;
+bool FFluidSimRenderer::StepNext = false;
+
 FFluidSimRenderer::FFluidSimRenderer()
 	: Solver(nullptr)
 {
@@ -92,7 +96,18 @@ void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	Solver->Update(RHI, 1.f / 60);
+	if (!PauseUpdate)
+	{
+		Solver->Update(RHI, 1.f / 60);
+	}
+	else
+	{
+		if (StepNext)
+		{
+			Solver->Update(RHI, 1.f / 60);
+			StepNext = false;
+		}
+	}
 
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);

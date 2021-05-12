@@ -191,15 +191,15 @@ namespace tix
 
 	struct TEvent
 	{
-		E_EVENT_TYPE	type;		// event type
-		int				touch_id;	// touch point index
-		unsigned int	param;		// event param(when key event, this is the key code.)
-        float           force;
-		int				posX0;		// mouse position
-		int				posY0;
-		int				posX1;		// mouse position
-		int				posY1;
-		uint32				Flag;
+		E_EVENT_TYPE type;		// event type
+		int32 touch_id;	// touch point index
+		uint32 param;		// event param(when key event, this is the key code.)
+        float force;
+		int32 posX0;		// mouse position
+		int32 posY0;
+		int32 posX1;		// mouse position
+		int32 posY1;
+		uint32 Flag;
 
 		TEvent()
 			: type(EET_INVALID)

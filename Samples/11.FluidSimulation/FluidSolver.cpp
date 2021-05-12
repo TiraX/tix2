@@ -360,14 +360,14 @@ void FFluidSolver::Update(FRHI * RHI, float Dt)
 		UpdateVelocityCS->Run(RHI);
 		RHI->EndEvent();
 
-		// Swap sorted positions, velocities with particle positions and velocities
-		FUniformBufferPtr TempPos, TempVel;
-		TempPos = UB_ParticlePositions;
-		TempVel = UB_ParticleVelocities;
-		UB_ParticlePositions = UB_SortedPositions;
-		UB_ParticleVelocities = UB_SortedVelocities;
-		UB_SortedPositions = TempPos;
-		UB_SortedVelocities = TempVel;
+		// Copy sorted positions, velocities to particle positions and velocities
+		RHI->SetResourceStateUB(UB_ParticlePositions, RESOURCE_STATE_COPY_DEST, false);
+		RHI->SetResourceStateUB(UB_ParticleVelocities, RESOURCE_STATE_COPY_DEST, false);
+		RHI->SetResourceStateUB(UB_SortedPositions, RESOURCE_STATE_COPY_SOURCE, false);
+		RHI->SetResourceStateUB(UB_SortedVelocities, RESOURCE_STATE_COPY_SOURCE, false);
+		RHI->FlushResourceStateChange();
+		RHI->CopyBufferRegion(UB_ParticlePositions, 0, UB_SortedPositions, UB_ParticlePositions->GetElements() * sizeof(vector3df));
+		RHI->CopyBufferRegion(UB_ParticleVelocities, 0, UB_SortedVelocities, UB_ParticleVelocities->GetElements() * sizeof(vector3df));
 	}
 	RHI->EndComputeTask();
 }

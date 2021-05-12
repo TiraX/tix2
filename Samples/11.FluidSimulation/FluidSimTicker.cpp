@@ -36,5 +36,32 @@ void TFluidSimTicker::SetupScene()
 	//TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 
 	// Setup Camera
-	TEngine::Get()->GetScene()->GetActiveCamera()->SetPosition(vector3df(0, 16.f, 8.f));
+	TEngine::Get()->GetScene()->GetActiveCamera()->SetPosition(vector3df(4.4f, 16.f, 8.f));
+	TEngine::Get()->GetScene()->GetActiveCamera()->SetTarget(vector3df(4.4f, 0.5f, 1.f));
+}
+
+bool TFluidSimTicker::OnEvent(const TEvent& e)
+{
+	if (e.type == EET_KEY_DOWN)
+	{
+		if (e.param == KEY_SPACE)
+		{
+			// pause / resume simulation
+			ENQUEUE_RENDER_COMMAND(PauseResumeSim)(
+				[]()
+				{
+					FFluidSimRenderer::PauseUpdate = !FFluidSimRenderer::PauseUpdate;
+				});
+		}
+		else if (e.param == KEY_KEY_P)
+		{
+			// step next sim
+			ENQUEUE_RENDER_COMMAND(NextSim)(
+				[]()
+				{
+					FFluidSimRenderer::StepNext = true;
+				});
+		}
+	} 
+	return true;
 }
