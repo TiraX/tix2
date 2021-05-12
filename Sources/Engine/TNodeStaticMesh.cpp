@@ -13,6 +13,8 @@ namespace tix
 		, InstanceCount(0)
 		, InstanceOffset(0)
 	{
+		// Duplicated, All static meshes now managed by TNodeSceneTile. 
+		TI_ASSERT(0);
 	}
 
 	TNodeStaticMesh::~TNodeStaticMesh()
