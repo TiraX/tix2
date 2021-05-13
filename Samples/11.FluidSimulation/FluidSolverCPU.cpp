@@ -56,7 +56,7 @@ void FFluidSolverCPU::UpdateResourceBuffers(FRHI * RHI)
 }
 
 #define BRUTE_FORCE_NB_SEARCH (0)
-void FFluidSolverCPU::Update(FRHI * RHI, float Dt)
+void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 {
 	// Update uniform buffers
 	static int32 CPUFrame = 0;
@@ -204,7 +204,8 @@ inline void BoundaryCheck(vector3df& Pos, const vector3df& BMin, const vector3df
 void FFluidSolverCPU::ApplyGravity()
 {
 	const vector3df Gravity = vector3df(0.f, 0.f, -9.8f);
-	const vector3df GravityDt = Gravity * TimeStep;
+	const float Dt = (TimeStep / SubStep);
+	const vector3df GravityDt = Gravity * Dt;
 
 #if RUN_PARALLEL
 #pragma omp parallel for
@@ -217,7 +218,7 @@ void FFluidSolverCPU::ApplyGravity()
 		UB_PositionOld[p] = Pos;
 
 		Vel += GravityDt;
-		Pos += Vel * TimeStep;
+		Pos += Vel * Dt;
 
 		BoundaryCheck(Pos, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
 
@@ -452,7 +453,7 @@ void FFluidSolverCPU::ApplyDeltaPos()
 }
 void FFluidSolverCPU::UpdateVelocity()
 {
-	const float DtInv = 1.f / TimeStep;
+	const float DtInv = 1.f / (TimeStep / SubStep);
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif

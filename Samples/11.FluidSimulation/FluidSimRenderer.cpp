@@ -9,7 +9,7 @@
 #include "FluidSolverCPU.h"
 #include "FluidSolverGPU.h"
 
-#define USE_SOLVER_GPU (1)
+#define USE_SOLVER_GPU (0)
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -125,15 +125,15 @@ static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
 #if USE_SOLVER_GPU
-	if (!PauseUpdate)
-	{
-		if (Counter % 10 == 0)
-		{
-			PauseUpdate = true;
-			_LOG(Log, "Pause at %d\n", Counter);
-		}
-		++Counter;
-	}
+	//if (!PauseUpdate)
+	//{
+	//	if (Counter % 10 == 0)
+	//	{
+	//		PauseUpdate = true;
+	//		_LOG(Log, "Pause at %d\n", Counter);
+	//	}
+	//	++Counter;
+	//}
 #endif
 
 	Solver->Update(RHI, 1.f / 60);

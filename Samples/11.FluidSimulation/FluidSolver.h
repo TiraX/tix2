@@ -8,8 +8,8 @@
 class FFluidSolver
 {
 public:
-	static const int32 MaxParticleInCell = 32 * 32;
-	static const int32 MaxNeighbors = 32 * 32;
+	static const int32 MaxParticleInCell = 32;
+	static const int32 MaxNeighbors = 32;
 
 	FFluidSolver();
 	virtual ~FFluidSolver();
@@ -21,7 +21,8 @@ public:
 		float InRestDenstiy);
 	void SetBoundaryBox(const aabbox3df& InCollisionBox);
 
-	virtual void Update(FRHI* RHI, float Dt) = 0;
+	void Update(FRHI* RHI, float Dt);
+	virtual void Sim(FRHI* RHI, float Dt) = 0;
 
 	int32 GetTotalParticles() const
 	{
@@ -44,6 +45,7 @@ protected:
 	float RestDenstiy;
 	
 	float TimeStep;
+	int32 SubStep;
 	float Epsilon;
 
 	int32 Iterations;

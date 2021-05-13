@@ -57,7 +57,7 @@ void FFluidSolverGPU::UpdateParamBuffers(FRHI* RHI)
 		// P0: x = mass; y = epsilon; z = m/rho; w = dt
 		// P1: x = h; y = h^2; z = 1.f/(h^3) w = inv_cell_size;
 		// Dim: xyz = Dim, w = TotalParticles
-		UB_PbfParams->UniformBufferData[0].P0 = FFloat4(ParticleMass, Epsilon, ParticleMass / RestDenstiy, TimeStep);
+		UB_PbfParams->UniformBufferData[0].P0 = FFloat4(ParticleMass, Epsilon, ParticleMass / RestDenstiy, TimeStep / SubStep);
 		const float h = ParticleSeperation;
 		// Calc cell size
 		UB_PbfParams->UniformBufferData[0].P1 = FFloat4(h, h * h, 1.f / (h * h * h), 1.f / CellSize);
@@ -209,7 +209,7 @@ void FFluidSolverGPU::UpdateComputeParams(FRHI* RHI)
 		UB_SortedVelocities);
 }
 
-void FFluidSolverGPU::Update(FRHI * RHI, float Dt)
+void FFluidSolverGPU::Sim(FRHI * RHI, float Dt)
 {
 	// Update uniform buffers
 	if (Flag != 0)

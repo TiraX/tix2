@@ -13,7 +13,8 @@ FFluidSolver::FFluidSolver()
 	, ParticleMass(1.f)
 	, ParticleSeperation(0.1f)
 	, RestDenstiy(1000.f)
-	, TimeStep(1.f / 60.f / 3.f)
+	, TimeStep(1.f / 60.f)
+	, SubStep(3)
 	, Epsilon(600.f)
 	, Iterations(3)
 	, TotalCells(0)
@@ -83,4 +84,12 @@ void FFluidSolver::SetBoundaryBox(const aabbox3df& InBoundaryBox)
 	TotalCells = Dim.X * Dim.Y * Dim.Z;
 
 	Flag |= DirtyBoundary;
+}
+
+void FFluidSolver::Update(FRHI* RHI, float Dt)
+{
+	for (int32 s = 0; s < SubStep; s++)
+	{
+		Sim(RHI, Dt);
+	}
 }

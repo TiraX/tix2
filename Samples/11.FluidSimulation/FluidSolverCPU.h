@@ -12,7 +12,7 @@ public:
 	FFluidSolverCPU();
 	virtual ~FFluidSolverCPU();
 
-	virtual void Update(FRHI* RHI, float Dt) override;
+	virtual void Sim(FRHI* RHI, float Dt) override;
 
 	const TVector<vector3df>& GetSimulatedPositions()
 	{

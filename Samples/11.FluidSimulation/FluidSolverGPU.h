@@ -37,7 +37,7 @@ public:
 	FFluidSolverGPU();
 	virtual ~FFluidSolverGPU();
 
-	virtual void Update(FRHI* RHI, float Dt) override;
+	virtual void Sim(FRHI* RHI, float Dt) override;
 
 	FUniformBufferPtr GetSimulatedPositions()
 	{
