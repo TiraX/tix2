@@ -14,9 +14,16 @@
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
 
+FFluidSimRenderer* Instance = nullptr;
+FFluidSimRenderer* FFluidSimRenderer::Get()
+{
+	return Instance;
+}
+
 FFluidSimRenderer::FFluidSimRenderer()
 	: Solver(nullptr)
 {
+	Instance = this;
 }
 
 FFluidSimRenderer::~FFluidSimRenderer()
@@ -24,6 +31,8 @@ FFluidSimRenderer::~FFluidSimRenderer()
 	MB_Fluid = nullptr;
 	PL_Fluid = nullptr;
 	ti_delete Solver;
+
+	Instance = nullptr;
 }
 
 void FFluidSimRenderer::InitRenderFrame(FScene* Scene)
@@ -68,10 +77,8 @@ void FFluidSimRenderer::InitInRenderThread()
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
 		0.1f, 1.f, 1000.f
 	);
-	const aabbox3df FluidBoundary(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
-	Solver->SetBoundaryBox(
-		FluidBoundary
-	);
+	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
+	Solver->SetBoundaryBox(FluidBoundary);
 	// Create render resources
 	MB_Fluid = RHI->CreateEmptyMeshBuffer(EPT_POINTLIST, EVSSEG_POSITION, Solver->GetTotalParticles(), EIT_16BIT, 0, FluidBoundary);
 	MB_Fluid->SetResourceName("MB_Fluid");
@@ -83,6 +90,12 @@ void FFluidSimRenderer::InitInRenderThread()
 	TResourcePtr ParticleMaterialResource = ParticleMaterialAsset->GetResourcePtr();
 	TMaterialPtr ParticleMaterial = static_cast<TMaterial*>(ParticleMaterialResource.get());
 	PL_Fluid = ParticleMaterial->PipelineResource;
+}
+
+void FFluidSimRenderer::MoveBoundary(const vector3df& Offset)
+{
+	FluidBoundary += Offset;
+	Solver->SetBoundaryBox(FluidBoundary);
 }
 
 void FFluidSimRenderer::DrawParticles(FRHI* RHI, FScene* Scene)

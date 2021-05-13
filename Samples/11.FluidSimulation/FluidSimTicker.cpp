@@ -8,6 +8,7 @@
 #include "FluidSimRenderer.h"
 
 TFluidSimTicker::TFluidSimTicker()
+	: Action(Action_None)
 {
 }
 
@@ -17,6 +18,26 @@ TFluidSimTicker::~TFluidSimTicker()
 
 void TFluidSimTicker::Tick(float Dt)
 {
+	const float Speed = 1.f;
+	if (Action == Action_MoveLeft)
+	{
+		float delta = -Speed * Dt;
+		ENQUEUE_RENDER_COMMAND(MoveBoundBox)(
+			[delta]()
+			{
+				FFluidSimRenderer::Get()->MoveBoundary(vector3df(delta, 0.f, 0.f));
+			});
+
+	}
+	else if (Action == Action_MoveRight)
+	{
+		float delta = Speed * Dt;
+		ENQUEUE_RENDER_COMMAND(MoveBoundBox)(
+			[delta]()
+			{
+				FFluidSimRenderer::Get()->MoveBoundary(vector3df(delta, 0.f, 0.f));
+			});
+	}
 }
 
 void TFluidSimTicker::SetupScene()
@@ -60,6 +81,18 @@ bool TFluidSimTicker::OnEvent(const TEvent& e)
 					FFluidSimRenderer::StepNext = true;
 				});
 		}
+		else if (e.param == KEY_LEFT)
+		{
+			Action = Action_MoveLeft;
+		}
+		else if (e.param == KEY_RIGHT)
+		{
+			Action = Action_MoveRight;
+		}
 	} 
+	else if (e.type == EET_KEY_UP)
+	{
+		Action = Action_None;
+	}
 	return true;
 }

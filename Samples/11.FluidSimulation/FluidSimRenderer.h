@@ -23,10 +23,13 @@ public:
 	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
+	void MoveBoundary(const vector3df& offset);
+
 private:
 	void DrawParticles(FRHI* RHI, FScene* Scene);
 
 private:
+	aabbox3df FluidBoundary;
 	FMeshBufferPtr MB_Fluid;
 	FPipelinePtr PL_Fluid;
 
