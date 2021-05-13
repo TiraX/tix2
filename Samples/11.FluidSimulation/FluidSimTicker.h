@@ -17,4 +17,11 @@ public:
 	static void SetupScene();
 
 protected:
+	enum
+	{
+		Action_None,
+		Action_MoveLeft,
+		Action_MoveRight
+	};
+	int32 Action;
 };
