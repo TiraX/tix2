@@ -88,6 +88,7 @@ void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 		ApplyDeltaPos();
 	}
 	UpdateVelocity();
+	OutputDebugInfo();
 
 	// Copy sorted positions, velocities to particle positions and velocities
 	if (!FFluidSimRenderer::PauseUpdate)
@@ -179,27 +180,45 @@ void FFluidSolverCPU::Sort()
 	}
 }
 
-inline void BoundaryCheck(vector3df& Pos, const vector3df& BMin, const vector3df& BMax)
+inline void BoundaryCheck(vector3df& Pos, vector3df& Vel, const vector3df& BMin, const vector3df& BMax)
 {
 	const float epsilon = 1e-5f;
 
 	if (Pos.X <= BMin.X)
+	{
 		Pos.X = BMin.X + epsilon;
+		Vel.X = TMath::Max(Vel.X, 0.f);
+	}
 
 	if (Pos.Y <= BMin.Y)
+	{
 		Pos.Y = BMin.Y + epsilon;
+		Vel.Y = TMath::Max(Vel.Y, 0.f);
+	}
 
 	if (Pos.Z <= BMin.Z)
+	{
 		Pos.Z = BMin.Z + epsilon;
+		Vel.Z = TMath::Max(Vel.Z, 0.f);
+	}
 
 	if (Pos.X >= BMax.X)
+	{
 		Pos.X = BMax.X - epsilon;
+		Vel.X = TMath::Min(Vel.X, 0.f);
+	}
 
 	if (Pos.Y >= BMax.Y)
+	{
 		Pos.Y = BMax.Y - epsilon;
+		Vel.Y = TMath::Min(Vel.Y, 0.f);
+	}
 
 	if (Pos.Z >= BMax.Z)
+	{
 		Pos.Z = BMax.Z - epsilon;
+		Vel.Z = TMath::Min(Vel.Z, 0.f);
+	}
 }
 void FFluidSolverCPU::ApplyGravity()
 {
@@ -220,9 +239,10 @@ void FFluidSolverCPU::ApplyGravity()
 		Vel += GravityDt;
 		Pos += Vel * Dt;
 
-		BoundaryCheck(Pos, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
+		BoundaryCheck(Pos, Vel, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
 
 		UB_SortedPositions[p] = Pos;
+		UB_SortedVelocities[p] = Vel;
 	}
 
 }
@@ -399,7 +419,7 @@ void FFluidSolverCPU::Lambda()
 		}
 
 		SumGradSq += Grad.dotProduct(Grad);
-		float DensityContraint = max(Density * m_by_rho, 0.f);
+		float DensityContraint = max(Density * m_by_rho - 1.f, 0.f);
 		UB_Lambdas[Index] = (-DensityContraint) / (SumGradSq + Epsilon);
 	}
 }
@@ -462,11 +482,47 @@ void FFluidSolverCPU::UpdateVelocity()
 		vector3df Pos = UB_SortedPositions[p];
 		vector3df Vel = UB_SortedVelocities[p];
 
-		BoundaryCheck(Pos, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
-
 		Vel = (Pos - UB_PositionOld[p]) * DtInv;
+
+		BoundaryCheck(Pos, Vel, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
+
+		float vl = Vel.getLength();
 
 		UB_SortedPositions[p] = Pos;
 		UB_SortedVelocities[p] = Vel;
 	}
+}
+
+void FFluidSolverCPU::OutputDebugInfo()
+{
+	TVector<float> vl, dpl;
+	vl.resize(TotalParticles);
+	dpl.resize(TotalParticles);
+#if RUN_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 p = 0; p < TotalParticles; p++)
+	{
+		vl[p] = UB_SortedVelocities[p].getLength();
+		dpl[p] = UB_DeltaPositions[p].getLength();
+	}
+
+	float vlmax = 0.f;
+	float dplmax = 0.f;
+	int32 max_index = -1;
+	int32 max_index1 = -1;
+	for (int32 p = 0; p < TotalParticles; p++)
+	{
+		if (vl[p] > vlmax)
+		{
+			vlmax = vl[p];
+			max_index = p;
+		}
+		if (dpl[p] > dplmax)
+		{
+			dplmax = dpl[p];
+			max_index1 = p;
+		}
+	}
+	_LOG(Log, "  max_v = %.4f at %5d; max_dp = %.4f at %5d; nb_num = %d...", vlmax, max_index, dplmax, max_index1, UB_NeighborNum[max_index]);
 }

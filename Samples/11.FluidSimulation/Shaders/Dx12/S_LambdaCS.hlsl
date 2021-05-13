@@ -63,6 +63,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     }
 
     SumGradSq += dot(Grad, Grad);
-    float DensityContraint = max(Density * m_by_rho, 0.f);
+    float DensityContraint = max(Density * m_by_rho - 1.f, 0.f);
     Lambdas[Index] = (-DensityContraint) / (SumGradSq + epsilon);
 }

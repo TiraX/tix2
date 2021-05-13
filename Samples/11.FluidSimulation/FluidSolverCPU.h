@@ -34,6 +34,7 @@ private:
 	void DeltaPos();
 	void ApplyDeltaPos();
 	void UpdateVelocity();
+	void OutputDebugInfo();
 
 private:
 	// Resource Uniforms
