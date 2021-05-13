@@ -9,8 +9,6 @@ class FFluidSolver;
 class FFluidSimRenderer : public FDefaultRenderer
 {
 public:
-	static const int32 FFT_Size = 512;
-
 	static bool PauseUpdate;
 	static bool StepNext;
 
