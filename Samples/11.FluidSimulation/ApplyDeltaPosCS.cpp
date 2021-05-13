@@ -32,7 +32,7 @@ void FApplyDeltaPosCS::UpdateComputeParams(
 	UBRef_PbfParams = InPbfParams;
 	UBRef_BoundInfo = InBoundInfo;
 
-	ResourceTable->PutRWUniformBufferInTable(InDeltaPosition, SRV_DELTA_POS);
+	ResourceTable->PutUniformBufferInTable(InDeltaPosition, SRV_DELTA_POS);
 	ResourceTable->PutRWUniformBufferInTable(InPositions, UAV_POSITIONS);
 
 	ThreadsCount = InPositions->GetElements();

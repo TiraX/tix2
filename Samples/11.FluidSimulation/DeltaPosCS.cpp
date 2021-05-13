@@ -38,7 +38,7 @@ void FDeltaPosCS::UpdateComputeParams(
 	ResourceTable->PutUniformBufferInTable(InNeighborNum, SRV_NEIGHBOR_NUM);
 	ResourceTable->PutUniformBufferInTable(InNeighborParticles, SRV_NEIGHBOR_PARTICLES);
 	ResourceTable->PutUniformBufferInTable(InLambdas, SRV_LAMBDAS);
-	ResourceTable->PutRWUniformBufferInTable(InPositions, SRV_POSITIONS);
+	ResourceTable->PutUniformBufferInTable(InPositions, SRV_POSITIONS);
 
 	ResourceTable->PutRWUniformBufferInTable(InDeltaPosition, UAV_DELTA_POS);
 

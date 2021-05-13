@@ -13,7 +13,7 @@ FFluidSolver::FFluidSolver()
 	, ParticleMass(1.f)
 	, ParticleSeperation(0.1f)
 	, RestDenstiy(1000.f)
-	, TimeStep(1.f / 60.f / 2.f)
+	, TimeStep(1.f / 60.f / 3.f)
 	, Epsilon(600.f)
 	, Iterations(3)
 	, TotalCells(0)
@@ -49,7 +49,7 @@ void FFluidSolver::CreateParticlesInBox(
 
 	// Create particles and resources
 	ParticlePositions.reserve(TotalParticles);
-	const float jitter = 0.f;// ParticleSeperation * 0.5f;
+	const float jitter = 0.f;// ParticleSeperation * 0.2f;
 	TMath::RandSeed(12306);
 	for (float z = InParticleBox.MinEdge.Z; z < InParticleBox.MaxEdge.Z; z += dis)
 	{

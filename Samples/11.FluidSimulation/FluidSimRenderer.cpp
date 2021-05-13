@@ -9,7 +9,7 @@
 #include "FluidSolverCPU.h"
 #include "FluidSolverGPU.h"
 
-#define USE_SOLVER_GPU (0)
+#define USE_SOLVER_GPU (1)
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
