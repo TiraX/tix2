@@ -159,9 +159,6 @@
     <ClCompile Include="ResSceneTileHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResMeshCluster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -185,6 +182,9 @@
     </ClCompile>
     <ClCompile Include="ResAnimSequenceHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
+      <Filter>Source Files\TiX2</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

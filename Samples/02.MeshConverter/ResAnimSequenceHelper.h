@@ -20,5 +20,17 @@ namespace tix
 	private:
 
 	private:
+		int32 TotalFrames;
+		int32 TotalTracks;
+		TString RefSkeleton;
+
+		struct FTrackInfo
+		{
+			int32 RefBoneIndex;
+			TVector<float> PosKeys;
+			TVector<float> RotKeys;
+			TVector<float> ScaleKeys;
+		};
+		TVector<FTrackInfo> Tracks;
 	};
 }

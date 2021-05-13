@@ -13,6 +13,8 @@ using namespace rapidjson;
 namespace tix
 {
 	TResAnimSequenceHelper::TResAnimSequenceHelper()
+		: TotalFrames(0)
+		, TotalTracks(0)
 	{
 	}
 
@@ -23,202 +25,68 @@ namespace tix
 	void TResAnimSequenceHelper::LoadAnimSequence(TJSON& Doc, TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResAnimSequenceHelper Helper;
+		// Bones
+		Helper.TotalFrames = Doc["total_frames"].GetInt();
+		Helper.TotalTracks = Doc["total_tracks"].GetInt();
+		Helper.RefSkeleton = Doc["ref_skeleton"].GetString();
 
-		// shaders
-		//TJSONNode Shaders = Doc["shaders"];
-		//TI_ASSERT(Shaders.IsArray() && Shaders.Size() == ESS_COUNT);
-		//for (int32 s = 0; s < ESS_COUNT; ++s)
-		//{
-		//	Helper.SetShaderName((E_SHADER_STAGE)s, Shaders[s].GetString());
-		//}
+		TJSONNode JTracks = Doc["tracks"];
+		TI_ASSERT(JTracks.IsArray() && JTracks.Size() == Helper.TotalTracks);
 
-		//// topology
-		//{
-		//	TJSONNode JTopology = Doc["topology"];
-		//	if (!JTopology.IsNull())
-		//	{ 
-		//		Helper.PipelineDesc.PrimitiveType = GetPrimitiveType(JTopology.GetString());
-		//	}
-		//}
+		Helper.Tracks.resize(Helper.TotalTracks);
+		for (int32 t = 0; t < Helper.TotalTracks; t++)
+		{
+			TJSONNode JTrack = JTracks[t];
+			FTrackInfo& Info = Helper.Tracks[t];
+			Info.RefBoneIndex = JTrack["ref_bone_index"].GetInt();
 
-		//// vertex format
-		//{
-		//	TJSONNode JVSFormat = Doc["vs_format"];
-		//	TI_ASSERT(JVSFormat.IsArray());
-		//	uint32 VsFormat = 0;
-		//	for (int32 vs = 0; vs < JVSFormat.Size(); ++vs)
-		//	{
-		//		VsFormat |= GetVertexSegment(JVSFormat[vs].GetString());
-		//	}
-		//	Helper.SetShaderVsFormat(VsFormat);
-		//}
+			ConvertJArrayToArray(JTrack["pos_keys"], Info.PosKeys);
+			ConvertJArrayToArray(JTrack["rot_keys"], Info.RotKeys);
+			ConvertJArrayToArray(JTrack["scale_keys"], Info.ScaleKeys);
 
-		//// instance format
-		//{
-		//	TJSONNode JINSFormat = Doc["ins_format"];
-		//	if (!JINSFormat.IsNull())
-		//	{
-		//		TI_ASSERT(JINSFormat.IsArray());
-		//		uint32 InsFormat = 0;
-		//		for (int32 vs = 0; vs < JINSFormat.Size(); ++vs)
-		//		{
-		//			InsFormat |= GetInstanceSegment(JINSFormat[vs].GetString());
-		//		}
-		//		Helper.SetShaderInsFormat(InsFormat);
-		//	}
-		//}
-
-		//// blend mode
-		//TJSONNode BM = Doc["blend_mode"];
-		//Helper.SetBlendMode(GetBlendMode(BM.IsNull() ? "null" : BM.GetString()));
-
-		//// depth write / depth test / two sides
-		//TJSONNode depth_write = Doc["depth_write"];
-		//Helper.EnableDepthWrite(depth_write.IsNull() ? true : depth_write.GetBool());
-
-		//TJSONNode depth_test = Doc["depth_test"];
-		//Helper.EnableDepthTest(depth_test.IsNull() ? true : depth_test.GetBool());
-
-		//TJSONNode two_sides = Doc["two_sides"];
-		//Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
-
-		//// stencil state
-		//TJSONNode stencil_enable = Doc["stencil_enable"];
-		//if (!stencil_enable.IsNull())
-		//{
-		//	if (stencil_enable.GetBool())
-		//		Helper.PipelineDesc.Enable(EPSO_STENCIL);
-		//	else
-		//		Helper.PipelineDesc.Disable(EPSO_STENCIL);
-		//}
-
-		//// Not enable depth test, then set depth compare function to Always
-		//if (!Helper.PipelineDesc.IsEnabled(EPSO_DEPTH_TEST))
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.DepthFunc = ECF_ALWAYS;
-		//}
-
-		//TJSONNode stencil_read_mask = Doc["stencil_read_mask"];
-		//if (!stencil_read_mask.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.StencilReadMask = (uint8)stencil_read_mask.GetInt();
-		//}
-
-		//TJSONNode stencil_write_mask = Doc["stencil_write_mask"];
-		//if (!stencil_write_mask.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.StencilWriteMask = (uint8)stencil_write_mask.GetInt();
-		//}
-
-		//TJSONNode front_stencil_fail = Doc["front_stencil_fail"];
-		//if (!front_stencil_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFailOp = GetStencilOp(front_stencil_fail.GetString());
-		//}
-
-		//TJSONNode front_stencil_depth_fail = Doc["front_stencil_depth_fail"];
-		//if (!front_stencil_depth_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilDepthFailOp = GetStencilOp(front_stencil_depth_fail.GetString());
-		//}
-
-		//TJSONNode front_stencil_pass = Doc["front_stencil_pass"];
-		//if (!front_stencil_pass.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilPassOp = GetStencilOp(front_stencil_pass.GetString());
-		//}
-
-		//TJSONNode front_stencil_func = Doc["front_stencil_func"];
-		//if (!front_stencil_func.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFunc = GetComparisonFunc(front_stencil_func.GetString());
-		//}
-
-		//TJSONNode back_stencil_fail = Doc["back_stencil_fail"];
-		//if (!back_stencil_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFailOp = GetStencilOp(back_stencil_fail.GetString());
-		//}
-
-		//TJSONNode back_stencil_depth_fail = Doc["back_stencil_depth_fail"];
-		//if (!back_stencil_depth_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilDepthFailOp = GetStencilOp(back_stencil_depth_fail.GetString());
-		//}
-
-		//TJSONNode back_stencil_pass = Doc["back_stencil_pass"];
-		//if (!back_stencil_pass.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilPassOp = GetStencilOp(back_stencil_pass.GetString());
-		//}
-
-		//TJSONNode back_stencil_func = Doc["back_stencil_func"];
-		//if (!back_stencil_func.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFunc = GetComparisonFunc(back_stencil_func.GetString());
-		//}
-
-		//// rt format
-		//TJSONNode RT_Colors = Doc["rt_colors"];
-		//TI_ASSERT(RT_Colors.IsArray() && RT_Colors.Size() <= 4);
-
-		//Helper.PipelineDesc.RTCount = (int32)RT_Colors.Size();
-		//for (int32 cb = 0; cb < RT_Colors.Size(); ++cb)
-		//{
-		//	Helper.PipelineDesc.RTFormats[cb] = GetPixelFormat(RT_Colors[cb].GetString());
-		//}
-		//TJSONNode RT_Depth = Doc["rt_depth"];
-		//Helper.PipelineDesc.DepthFormat = GetPixelFormat(RT_Depth.GetString());
-
+			TI_ASSERT(Info.PosKeys.size() == 0 || Info.PosKeys.size() == 3 || Info.PosKeys.size() == Helper.TotalFrames * 3);
+			TI_ASSERT(Info.RotKeys.size() == 0 || Info.RotKeys.size() == 4 || Info.RotKeys.size() == Helper.TotalFrames * 4);
+			TI_ASSERT(Info.ScaleKeys.size() == 0 || Info.ScaleKeys.size() == 3 || Info.ScaleKeys.size() == Helper.TotalFrames * 3);
+		}
 		Helper.OutputAnimSequence(OutStream, OutStrings);
 	}
 	
 	void TResAnimSequenceHelper::OutputAnimSequence(TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResfileChunkHeader ChunkHeader;
-		ChunkHeader.ID = TIRES_ID_CHUNK_MATERIAL;
-		ChunkHeader.Version = TIRES_VERSION_CHUNK_MATERIAL;
+		ChunkHeader.ID = TIRES_ID_CHUNK_ANIMS;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_ANIM;
 		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);
-		//for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
-		//{
-		//	THeaderMaterial Define;
-		//	for (int32 s = 0; s < ESS_COUNT; ++s)
-		//	{
-		//		Define.ShaderNames[s] = AddStringToList(OutStrings, ShaderNames[s]);
-		//		Define.ShaderCodeLength[s] = ShaderCodes[s].GetLength();
-		//	}
+		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
+		{
+			THeaderAnimSequence Define;
+			Define.NumFrames = TotalFrames;
+			Define.NumTracks = TotalTracks;
+			HeaderStream.Put(&Define, sizeof(THeaderAnimSequence));
 
-		//	Define.Flags = PipelineDesc.Flags;
-		//	Define.BlendMode = BlendMode;
-		//	Define.BlendState = PipelineDesc.BlendState;
-		//	Define.RasterizerDesc = PipelineDesc.RasterizerDesc;
-		//	Define.DepthStencilDesc = PipelineDesc.DepthStencilDesc;
-		//	Define.VsFormat = PipelineDesc.VsFormat;
-		//	Define.InsFormat = PipelineDesc.InsFormat;
-		//	Define.PrmitiveType = PipelineDesc.PrimitiveType;
+			int32 Offset = 0;
+			for (int32 t = 0; t < TotalTracks; ++t)
+			{
+				const FTrackInfo& Track = Tracks[t];
+				THeaderTrack HeaderTrack;
+				HeaderTrack.RefBoneIndex = Track.RefBoneIndex;
+				HeaderTrack.KeyDataOffset = Offset;
+				HeaderTrack.NumPosKeys = (int32)(Track.PosKeys.size() / 3);
+				HeaderTrack.NumRotKeys = (int32)(Track.RotKeys.size() / 4);
+				HeaderTrack.NumScaleKeys = (int32)(Track.ScaleKeys.size() / 3);
+				Offset += HeaderTrack.NumPosKeys * 3 + HeaderTrack.NumRotKeys * 4 + HeaderTrack.NumScaleKeys * 3;
 
-		//	int32 cb = 0;
-		//	for (; cb < ERTC_COUNT; ++cb)
-		//	{
-		//		Define.ColorBuffers[cb] = PipelineDesc.RTFormats[cb];
-		//	}
-		//	Define.DepthBuffer = PipelineDesc.DepthFormat;
-
-		//	// Save header
-		//	HeaderStream.Put(&Define, sizeof(THeaderMaterial));
-
-		//	// Write codes
-		//	for (int32 s = 0; s < ESS_COUNT; ++s)
-		//	{
-		//		if (ShaderCodes[s].GetLength() > 0)
-		//		{
-		//			DataStream.Put(ShaderCodes[s].GetBuffer(), ShaderCodes[s].GetLength());
-		//			FillZero4(DataStream);
-		//		}
-		//	}
-		//}
+				HeaderStream.Put(&HeaderTrack, sizeof(THeaderTrack));
+				if (!Track.PosKeys.empty())
+					DataStream.Put(Track.PosKeys.data(), (uint32)(Track.PosKeys.size() * sizeof(float)));
+				if (!Track.RotKeys.empty())
+					DataStream.Put(Track.RotKeys.data(), (uint32)(Track.RotKeys.size() * sizeof(float)));
+				if (!Track.ScaleKeys.empty())
+					DataStream.Put(Track.ScaleKeys.data(), (uint32)(Track.ScaleKeys.size() * sizeof(float)));
+			}
+		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 

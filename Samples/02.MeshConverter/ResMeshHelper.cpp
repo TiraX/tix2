@@ -10,36 +10,6 @@
 #include "ResMeshCluster.h"
 #include "ResMultiThreadTask.h"
 
-void ConvertJArrayToArray(TJSONNode& JArray, TVector<float>& OutArray)
-{
-	TI_ASSERT(JArray.IsArray());
-	int32 JArraySize = JArray.Size();
-	OutArray.reserve(JArraySize);
-	for (int32 i = 0; i < JArraySize; ++i)
-	{
-		OutArray.push_back(JArray[i].GetFloat());
-	}
-}
-void ConvertJArrayToArray(TJSONNode& JArray, TVector<int32>& OutArray)
-{
-	TI_ASSERT(JArray.IsArray());
-	int32 JArraySize = JArray.Size();
-	OutArray.reserve(JArraySize);
-	for (int32 i = 0; i < JArraySize; ++i)
-	{
-		OutArray.push_back(JArray[i].GetInt());
-	}
-}
-void ConvertJArrayToArray(TJSONNode& JArray, TVector<TString>& OutArray)
-{
-	TI_ASSERT(JArray.IsArray());
-	int32 JArraySize = JArray.Size();
-	OutArray.reserve(JArraySize);
-	for (int32 i = 0; i < JArraySize; ++i)
-	{
-		OutArray.push_back(JArray[i].GetString());
-	}
-}
 
 inline int32 GetSegmentElements(E_VERTEX_STREAM_SEGMENT Segment)
 {

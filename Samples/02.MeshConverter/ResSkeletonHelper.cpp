@@ -10,27 +10,11 @@
 
 using namespace rapidjson;
 
-void ConvertJArrayToVec3(const TJSONNode& JArray, vector3df& V3)
-{
-	TI_ASSERT(JArray.IsArray() && JArray.Size() == 3);
-	int32 JArraySize = JArray.Size();
-	V3.X = JArray[0].GetFloat();
-	V3.Y = JArray[1].GetFloat();
-	V3.Z = JArray[2].GetFloat();
-}
-void ConvertJArrayToQuat(const TJSONNode& JArray, quaternion& Q4)
-{
-	TI_ASSERT(JArray.IsArray() && JArray.Size() == 4);
-	int32 JArraySize = JArray.Size();
-	Q4.X = JArray[0].GetFloat();
-	Q4.Y = JArray[1].GetFloat();
-	Q4.Z = JArray[2].GetFloat();
-	Q4.W = JArray[3].GetFloat();
-}
 
 namespace tix
 {
 	TResSkeletonHelper::TResSkeletonHelper()
+		: TotalBones(0)
 	{
 	}
 
@@ -70,44 +54,17 @@ namespace tix
 		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);
-		//for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
-		//{
-		//	THeaderMaterial Define;
-		//	for (int32 s = 0; s < ESS_COUNT; ++s)
-		//	{
-		//		Define.ShaderNames[s] = AddStringToList(OutStrings, ShaderNames[s]);
-		//		Define.ShaderCodeLength[s] = ShaderCodes[s].GetLength();
-		//	}
+		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
+		{
+			THeaderSkeleton Define;
+			Define.NumBones = TotalBones;
 
-		//	Define.Flags = PipelineDesc.Flags;
-		//	Define.BlendMode = BlendMode;
-		//	Define.BlendState = PipelineDesc.BlendState;
-		//	Define.RasterizerDesc = PipelineDesc.RasterizerDesc;
-		//	Define.DepthStencilDesc = PipelineDesc.DepthStencilDesc;
-		//	Define.VsFormat = PipelineDesc.VsFormat;
-		//	Define.InsFormat = PipelineDesc.InsFormat;
-		//	Define.PrmitiveType = PipelineDesc.PrimitiveType;
+			// Save header
+			HeaderStream.Put(&Define, sizeof(THeaderSkeleton));
 
-		//	int32 cb = 0;
-		//	for (; cb < ERTC_COUNT; ++cb)
-		//	{
-		//		Define.ColorBuffers[cb] = PipelineDesc.RTFormats[cb];
-		//	}
-		//	Define.DepthBuffer = PipelineDesc.DepthFormat;
-
-		//	// Save header
-		//	HeaderStream.Put(&Define, sizeof(THeaderMaterial));
-
-		//	// Write codes
-		//	for (int32 s = 0; s < ESS_COUNT; ++s)
-		//	{
-		//		if (ShaderCodes[s].GetLength() > 0)
-		//		{
-		//			DataStream.Put(ShaderCodes[s].GetBuffer(), ShaderCodes[s].GetLength());
-		//			FillZero4(DataStream);
-		//		}
-		//	}
-		//}
+			// Write bones
+			DataStream.Put(Bones.data(), (uint32)(Bones.size() * sizeof(FBoneInfo)));
+		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
