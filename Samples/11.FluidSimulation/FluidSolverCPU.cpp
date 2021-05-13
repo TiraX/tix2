@@ -55,6 +55,7 @@ void FFluidSolverCPU::UpdateResourceBuffers(FRHI * RHI)
 	}
 }
 
+#define BRUTE_FORCE_NB_SEARCH (0)
 void FFluidSolverCPU::Update(FRHI * RHI, float Dt)
 {
 	// Update uniform buffers
@@ -67,12 +68,19 @@ void FFluidSolverCPU::Update(FRHI * RHI, float Dt)
 		Flag = 0;
 	}
 
+#if BRUTE_FORCE_NB_SEARCH
+	UB_SortedPositions = UB_ParticlePositions;
+	UB_SortedVelocities = UB_ParticleVelocities;
+	ApplyGravity();
+	NeighborSearchBF();
+#else
 	CellInit();
 	P2Cell();
 	CalcOffset();
 	Sort();
 	ApplyGravity();
 	NeighborSearch();
+#endif
 	for (int32 iter = 0; iter < Iterations; ++iter)
 	{
 		Lambda();
@@ -295,6 +303,37 @@ void FFluidSolverCPU::NeighborSearch()
 						}
 					}
 				}
+			}
+		}
+		UB_NeighborNum[p] = NumNb;
+	}
+}
+
+void FFluidSolverCPU::NeighborSearchBF()
+{
+	const float h = ParticleSeperation;
+	const float h2 = h * h;
+	const float h3_inv = 1.f / (h * h * h);
+
+#if RUN_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 p = 0; p < TotalParticles; p++)
+	{
+		vector3df Pos = UB_SortedPositions[p];
+
+		int32 NumNb = 0;
+		for (int32 i = 0; i < TotalParticles; i++)
+		{
+			if (i == p)
+				continue;
+
+			const vector3df& NbPos = UB_SortedPositions[i];
+			float lsq = (NbPos - Pos).getLengthSQ();
+			if (lsq < h2)
+			{
+				UB_NeighborParticles[p * MaxNeighbors + NumNb] = i;
+				++NumNb;
 			}
 		}
 		UB_NeighborNum[p] = NumNb;

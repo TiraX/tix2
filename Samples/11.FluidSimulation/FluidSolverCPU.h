@@ -29,6 +29,7 @@ private:
 	void Sort();
 	void ApplyGravity();
 	void NeighborSearch();
+	void NeighborSearchBF();
 	void Lambda();
 	void DeltaPos();
 	void ApplyDeltaPos();
