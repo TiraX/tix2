@@ -10,6 +10,24 @@
 
 using namespace rapidjson;
 
+void ConvertJArrayToVec3(const TJSONNode& JArray, vector3df& V3)
+{
+	TI_ASSERT(JArray.IsArray() && JArray.Size() == 3);
+	int32 JArraySize = JArray.Size();
+	V3.X = JArray[0].GetFloat();
+	V3.Y = JArray[1].GetFloat();
+	V3.Z = JArray[2].GetFloat();
+}
+void ConvertJArrayToQuat(const TJSONNode& JArray, quaternion& Q4)
+{
+	TI_ASSERT(JArray.IsArray() && JArray.Size() == 4);
+	int32 JArraySize = JArray.Size();
+	Q4.X = JArray[0].GetFloat();
+	Q4.Y = JArray[1].GetFloat();
+	Q4.Z = JArray[2].GetFloat();
+	Q4.W = JArray[3].GetFloat();
+}
+
 namespace tix
 {
 	TResSkeletonHelper::TResSkeletonHelper()
@@ -24,151 +42,22 @@ namespace tix
 	{
 		TResSkeletonHelper Helper;
 
-		//// shaders
-		//TJSONNode Shaders = Doc["shaders"];
-		//TI_ASSERT(Shaders.IsArray() && Shaders.Size() == ESS_COUNT);
-		//for (int32 s = 0; s < ESS_COUNT; ++s)
-		//{
-		//	Helper.SetShaderName((E_SHADER_STAGE)s, Shaders[s].GetString());
-		//}
+		// Bones
+		Helper.TotalBones = Doc["total_bones"].GetInt();
 
-		//// topology
-		//{
-		//	TJSONNode JTopology = Doc["topology"];
-		//	if (!JTopology.IsNull())
-		//	{ 
-		//		Helper.PipelineDesc.PrimitiveType = GetPrimitiveType(JTopology.GetString());
-		//	}
-		//}
+		TJSONNode JBones = Doc["bones"];
+		TI_ASSERT(JBones.IsArray() && JBones.Size() == Helper.TotalBones);
 
-		//// vertex format
-		//{
-		//	TJSONNode JVSFormat = Doc["vs_format"];
-		//	TI_ASSERT(JVSFormat.IsArray());
-		//	uint32 VsFormat = 0;
-		//	for (int32 vs = 0; vs < JVSFormat.Size(); ++vs)
-		//	{
-		//		VsFormat |= GetVertexSegment(JVSFormat[vs].GetString());
-		//	}
-		//	Helper.SetShaderVsFormat(VsFormat);
-		//}
-
-		//// instance format
-		//{
-		//	TJSONNode JINSFormat = Doc["ins_format"];
-		//	if (!JINSFormat.IsNull())
-		//	{
-		//		TI_ASSERT(JINSFormat.IsArray());
-		//		uint32 InsFormat = 0;
-		//		for (int32 vs = 0; vs < JINSFormat.Size(); ++vs)
-		//		{
-		//			InsFormat |= GetInstanceSegment(JINSFormat[vs].GetString());
-		//		}
-		//		Helper.SetShaderInsFormat(InsFormat);
-		//	}
-		//}
-
-		//// blend mode
-		//TJSONNode BM = Doc["blend_mode"];
-		//Helper.SetBlendMode(GetBlendMode(BM.IsNull() ? "null" : BM.GetString()));
-
-		//// depth write / depth test / two sides
-		//TJSONNode depth_write = Doc["depth_write"];
-		//Helper.EnableDepthWrite(depth_write.IsNull() ? true : depth_write.GetBool());
-
-		//TJSONNode depth_test = Doc["depth_test"];
-		//Helper.EnableDepthTest(depth_test.IsNull() ? true : depth_test.GetBool());
-
-		//TJSONNode two_sides = Doc["two_sides"];
-		//Helper.EnableTwoSides(two_sides.IsNull() ? false : two_sides.GetBool());
-
-		//// stencil state
-		//TJSONNode stencil_enable = Doc["stencil_enable"];
-		//if (!stencil_enable.IsNull())
-		//{
-		//	if (stencil_enable.GetBool())
-		//		Helper.PipelineDesc.Enable(EPSO_STENCIL);
-		//	else
-		//		Helper.PipelineDesc.Disable(EPSO_STENCIL);
-		//}
-
-		//// Not enable depth test, then set depth compare function to Always
-		//if (!Helper.PipelineDesc.IsEnabled(EPSO_DEPTH_TEST))
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.DepthFunc = ECF_ALWAYS;
-		//}
-
-		//TJSONNode stencil_read_mask = Doc["stencil_read_mask"];
-		//if (!stencil_read_mask.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.StencilReadMask = (uint8)stencil_read_mask.GetInt();
-		//}
-
-		//TJSONNode stencil_write_mask = Doc["stencil_write_mask"];
-		//if (!stencil_write_mask.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.StencilWriteMask = (uint8)stencil_write_mask.GetInt();
-		//}
-
-		//TJSONNode front_stencil_fail = Doc["front_stencil_fail"];
-		//if (!front_stencil_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFailOp = GetStencilOp(front_stencil_fail.GetString());
-		//}
-
-		//TJSONNode front_stencil_depth_fail = Doc["front_stencil_depth_fail"];
-		//if (!front_stencil_depth_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilDepthFailOp = GetStencilOp(front_stencil_depth_fail.GetString());
-		//}
-
-		//TJSONNode front_stencil_pass = Doc["front_stencil_pass"];
-		//if (!front_stencil_pass.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilPassOp = GetStencilOp(front_stencil_pass.GetString());
-		//}
-
-		//TJSONNode front_stencil_func = Doc["front_stencil_func"];
-		//if (!front_stencil_func.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.FrontFace.StencilFunc = GetComparisonFunc(front_stencil_func.GetString());
-		//}
-
-		//TJSONNode back_stencil_fail = Doc["back_stencil_fail"];
-		//if (!back_stencil_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFailOp = GetStencilOp(back_stencil_fail.GetString());
-		//}
-
-		//TJSONNode back_stencil_depth_fail = Doc["back_stencil_depth_fail"];
-		//if (!back_stencil_depth_fail.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilDepthFailOp = GetStencilOp(back_stencil_depth_fail.GetString());
-		//}
-
-		//TJSONNode back_stencil_pass = Doc["back_stencil_pass"];
-		//if (!back_stencil_pass.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilPassOp = GetStencilOp(back_stencil_pass.GetString());
-		//}
-
-		//TJSONNode back_stencil_func = Doc["back_stencil_func"];
-		//if (!back_stencil_func.IsNull())
-		//{
-		//	Helper.PipelineDesc.DepthStencilDesc.BackFace.StencilFunc = GetComparisonFunc(back_stencil_func.GetString());
-		//}
-
-		//// rt format
-		//TJSONNode RT_Colors = Doc["rt_colors"];
-		//TI_ASSERT(RT_Colors.IsArray() && RT_Colors.Size() <= 4);
-
-		//Helper.PipelineDesc.RTCount = (int32)RT_Colors.Size();
-		//for (int32 cb = 0; cb < RT_Colors.Size(); ++cb)
-		//{
-		//	Helper.PipelineDesc.RTFormats[cb] = GetPixelFormat(RT_Colors[cb].GetString());
-		//}
-		//TJSONNode RT_Depth = Doc["rt_depth"];
-		//Helper.PipelineDesc.DepthFormat = GetPixelFormat(RT_Depth.GetString());
+		Helper.Bones.resize(Helper.TotalBones);
+		for (int32 b = 0; b < Helper.TotalBones; b++)
+		{
+			TJSONNode JBone = JBones[b];
+			FBoneInfo& Info = Helper.Bones[b];
+			Info.ParentIndex = JBone["parent_index"].GetInt();
+			ConvertJArrayToVec3(JBone["translation"], Info.Pos);
+			ConvertJArrayToQuat(JBone["rotation"], Info.Rot);
+			ConvertJArrayToVec3(JBone["scale"], Info.Scale);
+		}
 
 		Helper.OutputSkeleton(OutStream, OutStrings);
 	}
@@ -176,8 +65,8 @@ namespace tix
 	void TResSkeletonHelper::OutputSkeleton(TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResfileChunkHeader ChunkHeader;
-		ChunkHeader.ID = TIRES_ID_CHUNK_MATERIAL;
-		ChunkHeader.Version = TIRES_VERSION_CHUNK_MATERIAL;
+		ChunkHeader.ID = TIRES_ID_CHUNK_SKELETON;
+		ChunkHeader.Version = TIRES_VERSION_CHUNK_SKELETON;
 		ChunkHeader.ElementCount = 1;
 
 		TStream HeaderStream, DataStream(1024 * 8);

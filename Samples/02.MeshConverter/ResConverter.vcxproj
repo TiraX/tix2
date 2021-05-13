@@ -104,6 +104,7 @@
     <ClInclude Include="..\..\Sources\Engine\TThread.h" />
     <ClInclude Include="..\..\Sources\Engine\TTimer.h" />
     <ClInclude Include="dds.h" />
+    <ClInclude Include="ResAnimSequenceHelper.h" />
     <ClInclude Include="ResConverter.h" />
     <ClInclude Include="ResHelper.h" />
     <ClInclude Include="ResMaterialHelper.h" />
@@ -134,6 +135,7 @@
     <ClCompile Include="..\..\Sources\Engine\TThread.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TTimer.cpp" />
     <ClCompile Include="MainWin32.cpp" />
+    <ClCompile Include="ResAnimSequenceHelper.cpp" />
     <ClCompile Include="ResConverter.cpp" />
     <ClCompile Include="ResHelper.cpp" />
     <ClCompile Include="ResMaterialHelper.cpp" />

@@ -12,6 +12,8 @@
 #include "ResMaterialInstanceHelper.h"
 #include "ResSceneHelper.h"
 #include "ResSceneTileHelper.h"
+#include "ResSkeletonHelper.h"
+#include "ResAnimSequenceHelper.h"
 #include "ResMultiThreadTask.h"
 
 TString FilenameSrc;
@@ -248,7 +250,7 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 			f.Read(content, f.GetSize(), f.GetSize());
 			content[f.GetSize()] = 0;
 			f.Close();
-			
+
 			TJSON JsonDoc;
 			JsonDoc.Parse(content);
 
@@ -295,6 +297,18 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 				// Instances
 				TStream& InsStream = Resfile.GetChunk(ECL_SCENETILE);
 				TResSceneTileHelper::LoadSceneTile(JsonDoc, InsStream, Resfile.Strings);
+			}
+			else if (strcmp(type, "skeleton") == 0)
+			{
+				// Skeletons
+				TStream& SkStream = Resfile.GetChunk(ECL_SKELETON);
+				TResSkeletonHelper::LoadSkeleton(JsonDoc, SkStream, Resfile.Strings);
+			}
+			else if (strcmp(type, "animation") == 0)
+			{
+				// Animations
+				TStream& AnimStream = Resfile.GetChunk(ECL_ANIMATIONS);
+				TResAnimSequenceHelper::LoadAnimSequence(JsonDoc, AnimStream, Resfile.Strings);
 			}
 			else
 			{

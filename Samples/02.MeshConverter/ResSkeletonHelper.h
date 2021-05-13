@@ -20,5 +20,14 @@ namespace tix
 	private:
 
 	private:
+		struct FBoneInfo
+		{
+			int32 ParentIndex;
+			vector3df Pos;
+			quaternion Rot;
+			vector3df Scale;
+		};
+		int32 TotalBones;
+		TVector<FBoneInfo> Bones;
 	};
 }

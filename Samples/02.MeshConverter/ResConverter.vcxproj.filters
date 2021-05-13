@@ -91,6 +91,9 @@
     <ClInclude Include="ResSkeletonHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResAnimSequenceHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -178,6 +181,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResSkeletonHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResAnimSequenceHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

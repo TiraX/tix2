@@ -16,6 +16,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		TIRES_VERSION_CHUNK_SCENE = 2,	// v2, Add sky light SH3 export
 		TIRES_VERSION_CHUNK_SCENETILE = 2,	// v2, Add reflection capture support
+		TIRES_VERSION_CHUNK_SKELETON = 1,
 		//TIRES_VERSION_CHUNK_ANIM	= 2,	// add morph animation support
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
@@ -54,8 +55,9 @@ namespace tix
 		TIRES_ID_CHUNK_MINSTANCE	= TI_MAKE_IDENTIFIER('M', 'A', 'T', 'I'),
 		TIRES_ID_CHUNK_SCENE		= TI_MAKE_IDENTIFIER('S', 'C', 'E', 'N'),
 		TIRES_ID_CHUNK_SCENETILE	= TI_MAKE_IDENTIFIER('S', 'T', 'I', 'L'),
+		TIRES_ID_CHUNK_SKELETON		= TI_MAKE_IDENTIFIER('S', 'K', 'E', 'L'),
+		TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
-		//TIRES_ID_CHUNK_ANIMS		= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
 		//TIRES_ID_CHUNK_CONTROLLER	= TI_MAKE_IDENTIFIER('C', 'T', 'R', 'L'),
 		//TIRES_ID_CHUNK_LIGHT		= TI_MAKE_IDENTIFIER('L', 'I', 'T', '.'),
 		//TIRES_ID_CHUNK_CAMERA		= TI_MAKE_IDENTIFIER('C', 'A', 'M', 'E'), 
@@ -80,10 +82,11 @@ namespace tix
 		// Contain mesh instances information
 		ECL_SCENETILE,
 
+		ECL_SKELETON,
+		ECL_ANIMATIONS,
 		//ECL_MATERIALS,
 		//ECL_CONTROLLERS,
 		//ECL_SHADERS,
-		//ECL_ANIMATIONS,
 		//ECL_PARTICLEEFFECT,
 		//ECL_TIMATERIAL,
 		//ECL_UI,

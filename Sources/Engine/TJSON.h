@@ -48,7 +48,7 @@ namespace tix
 			: JsonValue(InValue)
 		{}
 
-		TJSONNode operator[] (const int8* Name)
+		TJSONNode operator[] (const int8* Name) const
 		{
 			if (IsNull())
 				return TJSONNode();
@@ -63,7 +63,7 @@ namespace tix
 			return TJSONNode();
 		}
 
-		TJSONNode operator[] (int32 Index)
+		TJSONNode operator[] (int32 Index) const
 		{
 			if (IsNull())
 				return TJSONNode();
@@ -91,7 +91,7 @@ namespace tix
 			return JsonValue == nullptr;
 		}
 
-		bool IsArray()
+		bool IsArray() const
 		{
 			if (IsNull())
 				return false;
@@ -99,7 +99,7 @@ namespace tix
 			return JsonValue->IsArray();
 		}
 
-		bool IsObject()
+		bool IsObject() const
 		{
 			if (IsNull())
 				return false;
@@ -107,7 +107,7 @@ namespace tix
 			return JsonValue->IsObject();
 		}
 
-		bool IsString()
+		bool IsString() const
 		{
 			if (IsNull())
 				return false;
@@ -123,7 +123,7 @@ namespace tix
 			return (int32)JsonValue->Size();
 		}
 
-		bool GetBool()
+		bool GetBool() const
 		{
 			if (IsNull())
 				return false;
@@ -131,7 +131,7 @@ namespace tix
 			return JsonValue->GetBool();
 		}
 
-		const int8* GetString()
+		const int8* GetString() const
 		{
 			static const int8* EmptyStr = "";
 			if (IsNull())
@@ -140,7 +140,7 @@ namespace tix
 			return JsonValue->GetString();
 		}
 
-		int32 GetInt()
+		int32 GetInt() const
 		{
 			if (IsNull())
 				return 0;
@@ -148,7 +148,7 @@ namespace tix
 			return JsonValue->GetInt();
 		}
 
-		float GetFloat()
+		float GetFloat() const
 		{
 			if (IsNull())
 				return 0.f;
