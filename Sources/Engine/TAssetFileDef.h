@@ -10,7 +10,7 @@ namespace tix
 	enum
 	{
 		TIRES_VERSION_MAINFILE = 1,
-		TIRES_VERSION_CHUNK_MESH = 1,
+		TIRES_VERSION_CHUNK_MESH = 2,	// v2, Support for skeletal_mesh, add RefSkeleton attribute
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
 		TIRES_VERSION_CHUNK_MATERIAL = 2,	// v2, Add primitive_type export
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
@@ -147,6 +147,8 @@ namespace tix
 		uint32 Flag;
 		aabbox3df BBox;
 
+		int32 RefSkeletonStrIndex;
+
 		enum
 		{
 			FLAG_MORPH_SOURCE	= 1 << 0,
@@ -162,6 +164,7 @@ namespace tix
 			, Clusters(0)
 			, ClusterSize(0)
 			, Flag(0)
+			, RefSkeletonStrIndex(-1)
 		{
 		}
 	};

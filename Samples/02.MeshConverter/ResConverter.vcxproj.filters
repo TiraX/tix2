@@ -88,6 +88,9 @@
     <ClInclude Include="ResTextureTaskHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResSkeletonHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -172,6 +175,9 @@
       <Filter>Source Files\TiX2</Filter>
     </ClCompile>
     <ClCompile Include="ResTextureHelperEnvCubeFilter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResSkeletonHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

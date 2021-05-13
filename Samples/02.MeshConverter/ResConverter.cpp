@@ -254,9 +254,10 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 
 			const int8* type = JsonDoc["type"].GetString();
 
-			if (strcmp(type, "static_mesh") == 0)
+			if (strcmp(type, "static_mesh") == 0 ||
+				strcmp(type, "skeletal_mesh") == 0)
 			{
-				// Static Mesh
+				// Static Mesh & Skeletal Mesh
 				TStream& MeshStream = Resfile.GetChunk(ECL_MESHES);
 				TResMeshHelper::LoadMeshFile(JsonDoc, MeshStream, Resfile.Strings);
 			}

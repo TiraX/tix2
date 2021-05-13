@@ -115,6 +115,7 @@
     <ClInclude Include="ResSceneTileHelper.h" />
     <ClInclude Include="ResSettings.h" />
     <ClInclude Include="ResShaderBindingHelper.h" />
+    <ClInclude Include="ResSkeletonHelper.h" />
     <ClInclude Include="ResTextureHelper.h" />
     <ClInclude Include="ResTextureTaskHelper.h" />
     <ClInclude Include="stdafx.h" />
@@ -143,6 +144,7 @@
     <ClCompile Include="ResSceneHelper.cpp" />
     <ClCompile Include="ResSceneTileHelper.cpp" />
     <ClCompile Include="ResShaderBindingHelper.cpp" />
+    <ClCompile Include="ResSkeletonHelper.cpp" />
     <ClCompile Include="ResTextureHelpeDXTDecoder.cpp" />
     <ClCompile Include="ResTextureHelper.cpp" />
     <ClCompile Include="ResTextureHelperAstc.cpp" />

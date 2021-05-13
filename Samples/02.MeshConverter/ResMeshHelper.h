@@ -93,6 +93,7 @@ namespace tix
 
 		int32 NumVertices;
 		int32 NumTriangles;
+		TString RefSkeleton;
 		TResMeshSegment Segments[ESSI_TOTAL];
 
 		TResMeshFaces Faces;

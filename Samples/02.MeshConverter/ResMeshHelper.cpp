@@ -120,6 +120,7 @@ namespace tix
 			MeshHeader.Flag = 0;
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
+			MeshHeader.RefSkeletonStrIndex = AddStringToList(OutStrings, Mesh.RefSkeleton);
 
 			TVector<THeaderMeshSection> MeshSections;
 			MeshSections.resize(MeshHeader.Sections);
@@ -484,6 +485,15 @@ namespace tix
 		//int32 Version = Doc["version"].GetInt();
 		int32 TotalVertices = Doc["vertex_count_total"].GetInt();
 		int32 TotalIndices = Doc["index_count_total"].GetInt();
+
+		{
+			// Get ref skeleton if this is a skeletal mesh
+			TJSONNode JSkeleton = Doc["skeleton"];
+			if (!JSkeleton.IsNull())
+			{
+				ResMesh.GetMesh().RefSkeleton = JSkeleton.GetString();
+			}
+		}
 
 		//int32 VCount = Doc["vertex_count_total"].GetInt();
 		//int32 ICount = Doc["index_count_total"].GetInt();
