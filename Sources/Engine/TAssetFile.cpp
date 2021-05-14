@@ -139,6 +139,14 @@ namespace tix
 				ChunkHeader[ECL_SCENETILE] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SCENETILE);
 				break;
+			case TIRES_ID_CHUNK_SKELETON:
+				ChunkHeader[ECL_SKELETON] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_SKELETON);
+				break;
+			case TIRES_ID_CHUNK_ANIMATION:
+				ChunkHeader[ECL_ANIMATIONS] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_ANIM);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -680,10 +688,11 @@ namespace tix
 			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
 			SceneTile->LevelName = GetString(Header->LevelNameIndex);
 			SceneTile->TotalEnvLights = Header->NumEnvLights;
-			SceneTile->TotalStaticMeshes = Header->NumStaticMeshes;
-			SceneTile->TotalSMSections = Header->NumSMSections;
-			SceneTile->TotalSMInstances = Header->NumSMInstances;
-			SceneTile->TotalSKMActors = Header->NumSKMActors;
+
+			SceneTile->SMInfos.NumMeshes = Header->NumStaticMeshes;
+			SceneTile->SMInfos.TotalSections = Header->NumSMSections;
+			SceneTile->SMInstances.NumInstances = Header->NumSMInstances;
+
 			SceneTile->Position.X = Header->Position.X;
 			SceneTile->Position.Y = Header->Position.Y;
 			SceneTile->BBox = Header->BBox;
@@ -718,7 +727,7 @@ namespace tix
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
 			const int32* AssetsSkeletons = AssetsMaterialInstances + Header->NumMaterialInstances;
 			const int32* AssetsAnims = AssetsSkeletons + Header->NumSkeletons;
-			const int32* AssetsSMs = AssetsMaterialInstances + Header->NumAnims;
+			const int32* AssetsSMs = AssetsAnims + Header->NumAnims;
 			const int32* SMSections = AssetsSMs + Header->NumStaticMeshes;
 			const int32* SMInstanceCount = SMSections + Header->NumStaticMeshes;
 			const int32* AssetsSMInstances = SMInstanceCount + Header->NumStaticMeshes;
@@ -747,32 +756,38 @@ namespace tix
 				AssetLib->LoadAssetAysc(MIName);
 			}
 			// Skeletons
+			TVector<TAssetPtr> LoadedSkeletons;
+			LoadedSkeletons.reserve(Header->NumSkeletons);
 			for (int32 sk = 0; sk < Header->NumSkeletons; ++sk)
 			{
 				TString SKName = GetString(AssetsSkeletons[sk]);
-				AssetLib->LoadAssetAysc(SKName);
+				TAssetPtr Asset = AssetLib->LoadAssetAysc(SKName);
+				LoadedSkeletons.push_back(Asset);
 			}
 			// Anims
+			TVector<TAssetPtr> LoadedAnims;
+			LoadedAnims.reserve(Header->NumAnims);
 			for (int32 a = 0; a < Header->NumAnims; ++a)
 			{
 				TString AnimName = GetString(AssetsAnims[a]);
-				AssetLib->LoadAssetAysc(AnimName);
+				TAssetPtr Asset = AssetLib->LoadAssetAysc(AnimName);
+				LoadedAnims.push_back(Asset);
 			}
 
 			// Load meshes, add it to scene tile node when loading finished.
-			SceneTile->StaticMeshes.reserve(Header->NumStaticMeshes);
+			SceneTile->SMInfos.MeshAssets.reserve(Header->NumStaticMeshes);
 			for (int32 m = 0; m < Header->NumStaticMeshes; ++m)
 			{
 				TString MeshName = GetString(AssetsSMs[m]);
 				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
-				SceneTile->StaticMeshes.push_back(MeshAsset);
+				SceneTile->SMInfos.MeshAssets.push_back(MeshAsset);
 			}
-			SceneTile->SkeletalMeshes.reserve(Header->NumSkeletalMeshes);
+			SceneTile->SKMInfos.MeshAssets.reserve(Header->NumSkeletalMeshes);
 			for (int32 m = 0; m < Header->NumSkeletalMeshes; ++m)
 			{
 				TString MeshName = GetString(AssetsSKMs[m]);
 				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
-				SceneTile->SkeletalMeshes.push_back(MeshAsset);
+				SceneTile->SKMInfos.MeshAssets.push_back(MeshAsset);
 			}
 
 			// Static Mesh Instances
@@ -795,7 +810,7 @@ namespace tix
 						TotalSMSections += MeshSectionCount;
 					}
 					TI_ASSERT(TotalSMSections == Header->NumSMSections);
-					SceneTile->SMSectionsCount.reserve(Header->NumStaticMeshes);
+					SceneTile->SMInfos.SectionsCount.reserve(Header->NumStaticMeshes);
 				}
 				else
 				{
@@ -803,9 +818,9 @@ namespace tix
 					TotalSMSections = Header->NumStaticMeshes;
 				}
 
-				SceneTile->SMInstanceCountAndOffset.reserve(TotalSMSections);
-				SceneTile->SMInstanceBuffer = ti_new TInstanceBuffer;
-				SceneTile->SMInstanceBuffer->SetResourceName(Filename + "-TileInstance");
+				SceneTile->SMInstances.InstanceCountAndOffset.reserve(TotalSMSections);
+				SceneTile->SMInstances.InstanceBuffer = ti_new TInstanceBuffer;
+				SceneTile->SMInstances.InstanceBuffer->SetResourceName(Filename + "-TileInstance");
 				uint8* Data = ti_new uint8[TInstanceBuffer::InstanceStride * TotalSMInstances];
 
 				int32 InstanceOffsetSrc = 0;
@@ -839,7 +854,7 @@ namespace tix
 					}
 					const int32 InstanceDataLength = DataOffset - InstanceDataStart;
 					// Save instance offset and count
-					SceneTile->SMInstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+					SceneTile->SMInstances.InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
 					InstanceOffsetSrc += InstanceCount;
 					InstanceOffsetDst += InstanceCount;
 
@@ -854,14 +869,14 @@ namespace tix
 							memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
 							DataOffset += InstanceDataLength;
 							// Save instance offset and count
-							SceneTile->SMInstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+							SceneTile->SMInstances.InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
 							InstanceOffsetDst += InstanceCount;
 						}
-						SceneTile->SMSectionsCount.push_back(MeshSectionCount);
+						SceneTile->SMInfos.SectionsCount.push_back(MeshSectionCount);
 					}
 				}
 
-				SceneTile->SMInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalSMInstances);
+				SceneTile->SMInstances.InstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalSMInstances);
 				TI_ASSERT(InstanceOffsetDst == TotalSMInstances);
 				ti_delete[] Data;
 				FStats::Stats.InstancesLoaded += TotalSMInstances;
@@ -870,8 +885,20 @@ namespace tix
 			// Skeletal Mesh Actors
 			{
 				uint32 TotalSKMActors = Header->NumSKMActors;
+				SceneTile->SKMActorInfos.reserve(TotalSKMActors);
+				for (uint32 a = 0; a < TotalSKMActors; a++)
+				{
+					const TResSKMActor& SKMActor = SKMActorData[a];
 
-				TI_ASSERT(0);
+					TSkeletalMeshActorInfo ActorInfo;
+					ActorInfo.SkeletonAsset = LoadedSkeletons[SKMActor.SKIndex];
+					ActorInfo.MeshAssetRef = SceneTile->SKMInfos.MeshAssets[SKMActor.SKMIndex];
+					ActorInfo.AnimAsset = SKMActor.AnimIndex >= 0 ? LoadedAnims[SKMActor.AnimIndex] : nullptr;
+					ActorInfo.Pos = SKMActor.Position;
+					ActorInfo.Rot = SKMActor.Rotation;
+					ActorInfo.Scale = SKMActor.Scale;
+					SceneTile->SKMActorInfos.push_back(ActorInfo);
+				}
 			}
 
 			OutResources.push_back(SceneTile);

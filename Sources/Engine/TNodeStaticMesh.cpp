@@ -77,7 +77,7 @@ namespace tix
 			const TMeshSection& MeshSection = InStaticMesh->GetMeshSection(s);
 			TI_ASSERT(InStaticMesh->GetMeshBuffer()->MeshBufferResource != nullptr);
 			FPrimitivePtr Primitive = ti_new FPrimitive;
-			Primitive->SetMesh(
+			Primitive->SetInstancedStaticMesh(
 				InStaticMesh->GetMeshBuffer()->MeshBufferResource,
 				MeshSection.IndexStart,
 				MeshSection.Triangles,

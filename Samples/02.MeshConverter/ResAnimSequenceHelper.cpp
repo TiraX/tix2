@@ -58,7 +58,7 @@ namespace tix
 	void TResAnimSequenceHelper::OutputAnimSequence(TStream& OutStream, TVector<TString>& OutStrings)
 	{
 		TResfileChunkHeader ChunkHeader;
-		ChunkHeader.ID = TIRES_ID_CHUNK_ANIMS;
+		ChunkHeader.ID = TIRES_ID_CHUNK_ANIMATION;
 		ChunkHeader.Version = TIRES_VERSION_CHUNK_ANIM;
 		ChunkHeader.ElementCount = 1;
 

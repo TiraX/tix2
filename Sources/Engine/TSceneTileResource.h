@@ -7,6 +7,38 @@
 
 namespace tix
 {
+	struct TMeshInfoInTile
+	{
+		uint32 NumMeshes;
+		uint32 TotalSections;
+		TVector<TAssetPtr> MeshAssets;
+		TVector<uint32> SectionsCount;
+
+		TMeshInfoInTile()
+			: NumMeshes(0)
+			, TotalSections(0)
+		{}
+	};
+	struct TStaticMeshInstanceInfo
+	{
+		uint32 NumInstances;	// Total static mesh instances
+		TVector<vector2di> InstanceCountAndOffset;	// X is Count, Y is Offset
+		TInstanceBufferPtr InstanceBuffer;
+
+		TStaticMeshInstanceInfo()
+			: NumInstances(0)
+		{}
+	};
+	struct TSkeletalMeshActorInfo
+	{
+		TAssetPtr MeshAssetRef;
+		TAssetPtr SkeletonAsset;
+		TAssetPtr AnimAsset;
+		vector3df Pos;
+		quaternion Rot;
+		vector3df Scale;
+	};
+
 	// Hold all resources in a tile, like meshes, instances, etc
 	class TSceneTileResource : public TResource
 	{
@@ -16,7 +48,7 @@ namespace tix
 
 		TInstanceBufferPtr GetInstanceBuffer()
 		{
-			return SMInstanceBuffer;
+			return SMInstances.InstanceBuffer;
 		}
 
 	public:
@@ -42,20 +74,14 @@ namespace tix
 		TVector<TEnvLightInfo> EnvLightInfos;
 
 		// Static Meshes
-		// static meshes always processed with instances
-		uint32 TotalStaticMeshes;
-		TVector<TAssetPtr> StaticMeshes;
-		uint32 TotalSMSections;	// Total static mesh sections
-		uint32 TotalSMInstances;	// Total static mesh instances
-		TVector<vector2di> SMInstanceCountAndOffset;	// X is Count, Y is Offset
-		TVector<uint32> SMSectionsCount;
-		TInstanceBufferPtr SMInstanceBuffer;
+		// Static meshes always processed with instances
+		TMeshInfoInTile SMInfos;
+		TStaticMeshInstanceInfo SMInstances;
 
 		// Skeletal Meshes
-		// skeletal mesh always processed with actors
-		uint32 TotalSkeletalMeshes;
-		TVector<TAssetPtr> SkeletalMeshes;
-		uint32 TotalSKMActors;
+		// Skeletal mesh always processed with actors
+		TMeshInfoInTile SKMInfos;
+		TVector<TSkeletalMeshActorInfo> SKMActorInfos;
 
 		FSceneTileResourcePtr RenderThreadTileResource;
 	};

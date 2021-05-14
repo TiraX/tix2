@@ -90,7 +90,10 @@ namespace tix
 			MeshHeader.Flag = 0;
 			vector3df FirstPosition(Mesh.Segments[ESSI_POSITION].Data[0], Mesh.Segments[ESSI_POSITION].Data[1], Mesh.Segments[ESSI_POSITION].Data[2]);
 			MeshHeader.BBox.reset(FirstPosition);
-			MeshHeader.RefSkeletonStrIndex = AddStringToList(OutStrings, Mesh.RefSkeleton);
+			if (Mesh.RefSkeleton != "")
+			{
+				MeshHeader.RefSkeletonStrIndex = AddStringToList(OutStrings, Mesh.RefSkeleton);
+			}
 
 			TVector<THeaderMeshSection> SMSections;
 			SMSections.resize(MeshHeader.Sections);

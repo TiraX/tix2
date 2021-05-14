@@ -28,6 +28,6 @@ void TSkinnedAnimationTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
 
 	// Load scene
-	const TString TargetSceneAsset = "Map_OceanFFT.tasset";
-	//TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
+	const TString TargetSceneAsset = "Map_Anim.tasset";
+	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
 }

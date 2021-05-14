@@ -35,11 +35,12 @@ namespace tix
 			TI_ASSERT(FirstResource->GetType() == ERES_SCENE_TILE);
 
 			NodeSceneTile->SceneTileResource = static_cast<TSceneTileResource*>(FirstResource.get());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalSMSections == NodeSceneTile->SceneTileResource->SMInstanceCountAndOffset.size());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalStaticMeshes == NodeSceneTile->SceneTileResource->SMSectionsCount.size());
-			TI_ASSERT(NodeSceneTile->LoadedMeshAssets.empty());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->SMInfos.TotalSections == NodeSceneTile->SceneTileResource->SMInstances.InstanceCountAndOffset.size());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->SMInfos.NumMeshes == NodeSceneTile->SceneTileResource->SMInfos.SectionsCount.size());
+			TI_ASSERT(NodeSceneTile->LoadedStaticMeshAssets.empty() && NodeSceneTile->LoadedSkeletalMeshAssets.empty());
 			// Init Loaded mesh asset array.
-			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->StaticMeshes.size());
+			NodeSceneTile->LoadedStaticMeshAssets.resize(NodeSceneTile->SceneTileResource->SMInfos.MeshAssets.size());
+			NodeSceneTile->LoadedSkeletalMeshAssets.resize(NodeSceneTile->SceneTileResource->SKMInfos.MeshAssets.size());
 			// Init Loaded env light array
 			NodeSceneTile->LoadedEnvLightInfos.resize(NodeSceneTile->SceneTileResource->EnvLightInfos.size());
 		}
@@ -88,14 +89,14 @@ namespace tix
 
 	void TNodeSceneTile::LoadStaticMeshes()
 	{
-		const uint32 StaticMeshCount = (uint32)SceneTileResource->StaticMeshes.size();
+		const uint32 StaticMeshCount = (uint32)SceneTileResource->SMInfos.MeshAssets.size();
 		if (StaticMeshCount > 0)
 		{
 			uint32 LoadedMeshCount = 0;
 			uint32 MeshSectionOffset = 0;
 			for (uint32 m = 0; m < StaticMeshCount; ++m)
 			{
-				TAssetPtr MeshAsset = SceneTileResource->StaticMeshes[m];
+				TAssetPtr MeshAsset = SceneTileResource->SMInfos.MeshAssets[m];
 
 				if (MeshAsset != nullptr)
 				{
@@ -111,7 +112,7 @@ namespace tix
 						// MeshResources Include mesh sections and 1 collision set
 						// Mesh sections
 						const uint32 TotalSections = StaticMesh->GetMeshSectionCount();
-						TI_ASSERT(TotalSections > 0 && SceneTileResource->SMSectionsCount[m] == TotalSections);
+						TI_ASSERT(TotalSections > 0 && SceneTileResource->SMInfos.SectionsCount[m] == TotalSections);
 						LinkedPrimitives.reserve(TotalSections);
 						PrimitiveIndices.reserve(TotalSections);
 						for (uint32 Section = 0; Section < TotalSections; ++Section)
@@ -121,16 +122,15 @@ namespace tix
 							const TMeshSection& MeshSection = StaticMesh->GetMeshSection(Section);
 
 							FPrimitivePtr Primitive = ti_new FPrimitive;
-							Primitive->SetMesh(
+							Primitive->SetInstancedStaticMesh(
 								StaticMesh->GetMeshBuffer()->MeshBufferResource,
 								MeshSection.IndexStart,
 								MeshSection.Triangles,
 								MeshSection.DefaultMaterial,
-								SceneTileResource->SMInstanceBuffer->InstanceResource,
-								SceneTileResource->SMInstanceCountAndOffset[MeshSectionOffset + Section].X,
-								SceneTileResource->SMInstanceCountAndOffset[MeshSectionOffset + Section].Y
+								SceneTileResource->SMInstances.InstanceBuffer->InstanceResource,
+								SceneTileResource->SMInstances.InstanceCountAndOffset[MeshSectionOffset + Section].X,
+								SceneTileResource->SMInstances.InstanceCountAndOffset[MeshSectionOffset + Section].Y
 							);
-							Primitive->SetSceneTilePos(SceneTileResource->Position);
 							LinkedPrimitives.push_back(Primitive);
 							PrimitiveIndices.push_back(MeshSectionOffset + Section);
 						}
@@ -161,9 +161,9 @@ namespace tix
 							});
 
 						// Remove the reference holder
-						TI_ASSERT(LoadedMeshAssets[m] == nullptr);
-						LoadedMeshAssets[m] = MeshAsset;
-						SceneTileResource->StaticMeshes[m] = nullptr;
+						TI_ASSERT(LoadedStaticMeshAssets[m] == nullptr);
+						LoadedStaticMeshAssets[m] = MeshAsset;
+						SceneTileResource->SMInfos.MeshAssets[m] = nullptr;
 
 						++LoadedMeshCount;
 					}
@@ -172,12 +172,60 @@ namespace tix
 				{
 					++LoadedMeshCount;
 				}
-				MeshSectionOffset += SceneTileResource->SMSectionsCount[m];
+				MeshSectionOffset += SceneTileResource->SMInfos.SectionsCount[m];
 			}
 			TI_ASSERT(LoadedMeshCount <= StaticMeshCount);
 			if (LoadedMeshCount == StaticMeshCount)
 			{
-				SceneTileResource->StaticMeshes.clear();
+				SceneTileResource->SMInfos.MeshAssets.clear();
+			}
+		}
+	}
+
+	void TNodeSceneTile::LoadSkeletalMeshes()
+	{
+		const uint32 SkeletalMeshCount = (uint32)SceneTileResource->SKMInfos.MeshAssets.size();
+		if (SkeletalMeshCount > 0)
+		{
+			uint32 LoadedMeshCount = 0;
+			uint32 MeshSectionOffset = 0;
+			for (uint32 m = 0; m < SkeletalMeshCount; ++m)
+			{
+				TAssetPtr MeshAsset = SceneTileResource->SKMInfos.MeshAssets[m];
+
+				if (MeshAsset != nullptr)
+				{
+					if (MeshAsset->IsLoaded())
+					{
+						// Go through all actors used this mesh
+						for (uint32 a = 0; a < SceneTileResource->SKMActorInfos.size(); a++)
+						{
+							const TSkeletalMeshActorInfo& SKMActorInfo = SceneTileResource->SKMActorInfos[a];
+							if (SKMActorInfo.MeshAssetRef == MeshAsset)
+							{
+								TI_ASSERT(SKMActorInfo.SkeletonAsset != nullptr);
+								TI_ASSERT(0);
+							}
+						}
+
+						// Remove the reference holder
+						TI_ASSERT(LoadedSkeletalMeshAssets[m] == nullptr);
+						LoadedSkeletalMeshAssets[m] = MeshAsset;
+						SceneTileResource->SKMInfos.MeshAssets[m] = nullptr;
+
+						++LoadedMeshCount;
+					}
+				}
+				else
+				{
+					++LoadedMeshCount;
+				}
+				MeshSectionOffset += SceneTileResource->SMInfos.SectionsCount[m];
+			}
+			TI_ASSERT(LoadedMeshCount <= SkeletalMeshCount);
+			if (LoadedMeshCount == SkeletalMeshCount)
+			{
+				SceneTileResource->SMInfos.MeshAssets.clear();
 			}
 		}
 	}

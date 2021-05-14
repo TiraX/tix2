@@ -197,7 +197,7 @@ namespace tix
 				{
 					TJSONNode JActor = JSKMActors[actor];
 
-					TJSONNode JAnim = JActorObj["linked_anim"];
+					TJSONNode JAnim = JActor["linked_anim"];
 					TJSONNode JPosition = JActor["position"];
 					TJSONNode JRotation = JActor["rotation"];
 					TJSONNode JScale = JActor["scale"];

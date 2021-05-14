@@ -26,7 +26,7 @@ namespace tix
 
 		const TVector<vector2di>& GetInstanceCountAndOffset() const
 		{
-			return SMInstanceCountAndOffset;
+			return InstanceCountAndOffset;
 		}
 
 		FInstanceBufferPtr GetInstanceBuffer()
@@ -63,7 +63,7 @@ namespace tix
 		uint32 TotalSMSections;
 		uint32 TotalSMInstances;
 		// X is Count, Y is Offset
-		TVector<vector2di> SMInstanceCountAndOffset;
+		TVector<vector2di> InstanceCountAndOffset;
 		FInstanceBufferPtr InstanceBuffer;
 
 		TVector<FPrimitivePtr> Primitives;

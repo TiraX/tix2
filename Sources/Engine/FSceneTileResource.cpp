@@ -21,13 +21,13 @@ namespace tix
 		: FRenderResource(RRT_SCENE_TILE)
 		, Position(InSceneTileResource.Position)
 		, BBox(InSceneTileResource.BBox)
-		, TotalStaticMeshes(InSceneTileResource.TotalStaticMeshes)
-		, TotalSMSections(InSceneTileResource.TotalSMSections)
-		, TotalSMInstances(InSceneTileResource.TotalSMInstances)
-		, SMInstanceCountAndOffset(InSceneTileResource.SMInstanceCountAndOffset)
+		, TotalStaticMeshes(InSceneTileResource.SMInfos.NumMeshes)
+		, TotalSMSections(InSceneTileResource.SMInfos.TotalSections)
+		, TotalSMInstances(InSceneTileResource.SMInstances.NumInstances)
+		, InstanceCountAndOffset(InSceneTileResource.SMInstances.InstanceCountAndOffset)
 	{
 		TI_ASSERT(IsGameThread());
-		InstanceBuffer = InSceneTileResource.SMInstanceBuffer->InstanceResource;
+		InstanceBuffer = InSceneTileResource.SMInstances.InstanceBuffer->InstanceResource;
 
 		Primitives.resize(TotalSMSections);
 	}

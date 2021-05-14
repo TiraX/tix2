@@ -58,12 +58,14 @@ namespace tix
 		}
 	protected:
 		void LoadStaticMeshes();
+		void LoadSkeletalMeshes();
 		void LoadEnvCubemaps();
 
 	protected:
 		TSceneTileResourcePtr SceneTileResource;
 		// Used for holding Mesh Asset reference, to delete them when scene tile un-loading
-		TVector<TAssetPtr> LoadedMeshAssets;
+		TVector<TAssetPtr> LoadedStaticMeshAssets;
+		TVector<TAssetPtr> LoadedSkeletalMeshAssets;
 		// Used for holding Env Light Resources, to delete them when scene tile un-loading
 		TVector<TSceneTileResource::TEnvLightInfo> LoadedEnvLightInfos;
 

@@ -25,7 +25,7 @@ namespace tix
 		PrimitiveUniformBuffer = nullptr;
 	}
 
-	void FPrimitive::SetMesh(
+	void FPrimitive::SetInstancedStaticMesh(
 		FMeshBufferPtr InMeshBuffer, 
 		uint32 InIndexStart,
 		uint32 InTriangles,
