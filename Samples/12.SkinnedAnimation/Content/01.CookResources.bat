@@ -23,7 +23,7 @@ for /r . %%i in (*.tjs) do (
   set Source=!B:%CD%\=!
   set Target=!Source:~0,-4!
   echo converting - !Source!
-  %Converter% !Source! Cooked\Windows\!Target!.tasset -iterate -Force32BitIndex -ForceAlphaChannel
+  %Converter% !Source! Cooked\Windows\!Target!.tasset -Force32BitIndex -ForceAlphaChannel
 )
 
 rem %VTBaker% showcase_01.tjs Cooked/Windows -DumpAllVTs -DumpAllVTWithBorder -DumpAllPages -IgnoreBorders -DebugBorders -VTSize=16384 -PPSize=256

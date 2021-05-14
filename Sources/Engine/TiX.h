@@ -56,6 +56,8 @@ using namespace std;
 #include "TResource.h"
 #include "TTexture.h"
 #include "TMeshBuffer.h"
+#include "TSkeleton.h"
+#include "TAnimSequence.h"
 #include "TCollisionSet.h"
 #include "TPipeline.h"
 #include "TShader.h"

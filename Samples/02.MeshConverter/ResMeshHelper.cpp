@@ -92,14 +92,14 @@ namespace tix
 			MeshHeader.BBox.reset(FirstPosition);
 			MeshHeader.RefSkeletonStrIndex = AddStringToList(OutStrings, Mesh.RefSkeleton);
 
-			TVector<THeaderMeshSection> MeshSections;
-			MeshSections.resize(MeshHeader.Sections);
+			TVector<THeaderMeshSection> SMSections;
+			SMSections.resize(MeshHeader.Sections);
 			for (int32 s = 0 ; s < MeshHeader.Sections ; ++ s)
 			{
-				MeshSections[s].StrId_Name = AddStringToList(OutStrings, Mesh.Sections[s].Name);
-				MeshSections[s].StrMaterialInstance = AddStringToList(OutStrings, Mesh.Sections[s].LinkedMaterialInstance);
-				MeshSections[s].IndexStart = Mesh.Sections[s].IndexStart;
-				MeshSections[s].Triangles = Mesh.Sections[s].Triangles;
+				SMSections[s].StrId_Name = AddStringToList(OutStrings, Mesh.Sections[s].Name);
+				SMSections[s].StrMaterialInstance = AddStringToList(OutStrings, Mesh.Sections[s].LinkedMaterialInstance);
+				SMSections[s].IndexStart = Mesh.Sections[s].IndexStart;
+				SMSections[s].Triangles = Mesh.Sections[s].Triangles;
 			}
 
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
@@ -119,13 +119,13 @@ namespace tix
 				int32 IndexOffset = 0;
 				for (int32 s = 0; s < MeshHeader.Sections; ++s)
 				{
-					MeshSections[s].IndexStart = IndexOffset;
-					MeshSections[s].Triangles = (int32)(Mesh.Sections[s].ClusterIndices.size() * MeshHeader.ClusterSize);
+					SMSections[s].IndexStart = IndexOffset;
+					SMSections[s].Triangles = (int32)(Mesh.Sections[s].ClusterIndices.size() * MeshHeader.ClusterSize);
 					for (const auto& CI : Mesh.Sections[s].ClusterIndices)
 					{
 						TI_ASSERT(CI.size() == MeshHeader.ClusterSize * 3);
 					}
-					IndexOffset += MeshSections[s].Triangles * 3;
+					IndexOffset += SMSections[s].Triangles * 3;
 				}
 			}
 
@@ -318,7 +318,7 @@ namespace tix
 			// Fill header
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
 			FillZero4(HeaderStream);
-			HeaderStream.Put(MeshSections.data(), (uint32)(sizeof(THeaderMeshSection) * MeshSections.size()));
+			HeaderStream.Put(SMSections.data(), (uint32)(sizeof(THeaderMeshSection) * SMSections.size()));
 			FillZero4(HeaderStream);
 		}
 

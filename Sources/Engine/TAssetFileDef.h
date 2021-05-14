@@ -15,7 +15,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_MATERIAL = 2,	// v2, Add primitive_type export
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
 		TIRES_VERSION_CHUNK_SCENE = 2,	// v2, Add sky light SH3 export
-		TIRES_VERSION_CHUNK_SCENETILE = 2,	// v2, Add reflection capture support
+		TIRES_VERSION_CHUNK_SCENETILE = 3,	// v2, Add reflection capture support; v3, Add skeletal mesh actor support
 		TIRES_VERSION_CHUNK_SKELETON = 1,
 		TIRES_VERSION_CHUNK_ANIM = 1,
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
@@ -327,9 +327,13 @@ namespace tix
 		int32 NumTextures;
 		int32 NumMaterials;
 		int32 NumMaterialInstances;
-		int32 NumMeshes;
-		int32 NumMeshSections;
-		int32 NumInstances;
+		int32 NumSkeletons;
+		int32 NumAnims;
+		int32 NumStaticMeshes;
+		int32 NumSMSections;
+		int32 NumSMInstances;
+		int32 NumSkeletalMeshes;
+		int32 NumSKMActors;
 	};
 
 	struct THeaderEnvLight
@@ -339,8 +343,19 @@ namespace tix
 		vector3df Position;
 	};
 
-	struct THeaderSceneMeshInstance
+	struct TResSMInstance
 	{
+		vector3df Position;
+		quaternion Rotation;
+		vector3df Scale;
+	};
+
+	struct TResSKMActor
+	{
+		int32 SKMIndex;	// Index to dependency.meshes[]
+		int32 SKIndex;	// Index to dependency.skeletons[]
+		int32 AnimIndex;	// Index to dependency.anims[]
+
 		vector3df Position;
 		quaternion Rotation;
 		vector3df Scale;
@@ -354,14 +369,9 @@ namespace tix
 	struct THeaderAnimSequence
 	{
 		int32 NumFrames;
+		float Length;
+		float RateScale;
 		int32 NumTracks;
-	};
-	struct THeaderTrack
-	{
-		int32 RefBoneIndex;
-		int32 KeyDataOffset;	// Count by float (not byte)
-		int32 NumPosKeys;
-		int32 NumRotKeys;
-		int32 NumScaleKeys;
+		int32 NumData;	// Count by float (not byte)
 	};
 }

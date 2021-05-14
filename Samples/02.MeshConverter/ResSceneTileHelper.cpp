@@ -10,9 +10,14 @@
 namespace tix
 {
 	TResSceneTileHelper::TResSceneTileHelper()
-		: MeshesTotal(0)
-		, MeshSectionsTotal(0)
-		, InstancesTotal(0)
+		: StaticMeshesTotal(0)
+		, SMSectionsTotal(0)
+		, SMInstancesTotal(0)
+		, ReflectionCapturesTotal(0)
+		, SkeletalMeshTotal(0)
+		, SkeletonTotal(0)
+		, AnimationTotal(0)
+		, SKMActorsTotal(0)
 		, EnvLights(0)
 	{
 	}
@@ -28,15 +33,25 @@ namespace tix
 		// Instances Name
 		TString TileName = Doc["name"].GetString();
 		Helper.LevelName = Doc["level"].GetString();
-		const int32 MeshCount = Doc["meshes_total"].GetInt();
-		const int32 InsTotalCount = Doc["instances_total"].GetInt();
-		const int32 MeshSectionsCount = Doc["mesh_sections_total"].GetInt();
+		const int32 StaticMeshCount = Doc["static_mesh_total"].GetInt();
+		const int32 SMInsTotalCount = Doc["sm_instances_total"].GetInt();
+		const int32 SMSectionsCount = Doc["sm_sections_total"].GetInt();
+
 		const int32 ReflectionCaptures = Doc["reflection_captures_total"].GetInt();
 
-		Helper.MeshesTotal = MeshCount;
-		Helper.MeshSectionsTotal = MeshSectionsCount;
-		Helper.InstancesTotal = InsTotalCount;
+		const int32 SkeletalMeshTotal = Doc["skeletal_meshes_total"].GetInt();
+		const int32 SkeletonTotal = Doc["skeletons_total"].GetInt();
+		const int32 AnimationTotal = Doc["anims_total"].GetInt();
+		const int32 SKMActorTotal = Doc["skm_actors_total"].GetInt();
+
+		Helper.StaticMeshesTotal = StaticMeshCount;
+		Helper.SMSectionsTotal = SMSectionsCount;
+		Helper.SMInstancesTotal = SMInsTotalCount;
 		Helper.ReflectionCapturesTotal = ReflectionCaptures;
+		Helper.SkeletalMeshTotal = SkeletalMeshTotal;
+		Helper.SkeletonTotal = SkeletonTotal;
+		Helper.AnimationTotal = AnimationTotal;
+		Helper.SKMActorsTotal = SKMActorTotal;
 
 		Helper.Position = TJSONUtil::JsonArrayToVector2di(Doc["position"]);
 		Helper.BBox = TJSONUtil::JsonArrayToAABBox(Doc["bbox"]);
@@ -66,7 +81,10 @@ namespace tix
 			TJSONNode JAssetTextures = JAssetList["textures"];
 			TJSONNode JAssetMaterials = JAssetList["materials"];
 			TJSONNode JAssetMaterialInstances = JAssetList["material_instances"];
-			TJSONNode JAssetMeshes = JAssetList["meshes"];
+			TJSONNode JAssetSkeletons = JAssetList["skeletons"];
+			TJSONNode JAssetAnims = JAssetList["anims"];
+			TJSONNode JAssetSMs = JAssetList["static_meshes"];
+			TJSONNode JAssetSKMs = JAssetList["skeletal_meshes"];
 
 			Helper.AssetTextures.reserve(JAssetTextures.Size());
 			for (int32 i = 0; i < JAssetTextures.Size(); ++i)
@@ -89,32 +107,52 @@ namespace tix
 				Helper.AssetMaterialInstances.push_back(JMI.GetString());
 			}
 
-			Helper.AssetMeshes.reserve(JAssetMeshes.Size());
-			for (int32 i = 0; i < JAssetMeshes.Size(); ++i)
+			Helper.AssetAnims.reserve(JAssetAnims.Size());
+			for (int32 i = 0; i < JAssetAnims.Size(); ++i)
 			{
-				TJSONNode JMesh = JAssetMeshes[i];
-				Helper.AssetMeshes.push_back(JMesh.GetString());
+				TJSONNode JAnim = JAssetAnims[i];
+				Helper.AssetAnims.push_back(JAnim.GetString());
+			}
+
+			Helper.AssetSkeletons.reserve(JAssetSkeletons.Size());
+			for (int32 i = 0; i < JAssetSkeletons.Size(); ++i)
+			{
+				TJSONNode JSkeleton = JAssetSkeletons[i];
+				Helper.AssetSkeletons.push_back(JSkeleton.GetString());
+			}
+
+			Helper.AssetSMs.reserve(JAssetSMs.Size());
+			for (int32 i = 0; i < JAssetSMs.Size(); ++i)
+			{
+				TJSONNode JSM = JAssetSMs[i];
+				Helper.AssetSMs.push_back(JSM.GetString());
+			}
+			Helper.AssetSKMs.reserve(JAssetSKMs.Size());
+			for (int32 i = 0; i < JAssetSKMs.Size(); ++i)
+			{
+				TJSONNode JSKM = JAssetSKMs[i];
+				Helper.AssetSKMs.push_back(JSKM.GetString());
 			}
 		}
 
-		// Instances
+		// Static Mesh Instances
 		{
-			TJSONNode JInstanceObjects = Doc["instances"];
-			TI_ASSERT(JInstanceObjects.IsArray());
-			Helper.Instances.reserve(InsTotalCount);
-			Helper.MeshInstanceCount.resize(JInstanceObjects.Size());
-			Helper.MeshSections.resize(JInstanceObjects.Size());
-			for (int32 obj = 0; obj < JInstanceObjects.Size(); ++obj)
+			TJSONNode JSMInstanceObjects = Doc["static_mesh_instances"];
+			TI_ASSERT(JSMInstanceObjects.IsArray());
+			Helper.SMInstances.reserve(SMInsTotalCount);
+			Helper.SMInstanceCount.resize(JSMInstanceObjects.Size());
+			Helper.SMSections.resize(JSMInstanceObjects.Size());
+			for (int32 obj = 0; obj < JSMInstanceObjects.Size(); ++obj)
 			{
-				TJSONNode JInstanceObj = JInstanceObjects[obj];
+				TJSONNode JInstanceObj = JSMInstanceObjects[obj];
 				TJSONNode JLinkedMesh = JInstanceObj["linked_mesh"];
 				TJSONNode JMeshSections = JInstanceObj["mesh_sections"];
 				TJSONNode JInstances = JInstanceObj["instances"];
 
 				// Make sure InstanceObject has the same order with dependency-mesh
-				TI_ASSERT(JLinkedMesh.GetString() == Helper.AssetMeshes[obj]);
-				Helper.MeshInstanceCount[obj] = JInstances.Size();
-				Helper.MeshSections[obj] = JMeshSections.GetInt();
+				TI_ASSERT(JLinkedMesh.GetString() == Helper.AssetSMs[obj]);
+				Helper.SMInstanceCount[obj] = JInstances.Size();
+				Helper.SMSections[obj] = JMeshSections.GetInt();
 
 				for (int32 ins = 0 ; ins < JInstances.Size(); ++ ins)
 				{
@@ -123,7 +161,7 @@ namespace tix
 					TJSONNode JRotation = JIns["rotation"];
 					TJSONNode JScale = JIns["scale"];
 
-					TResInstance Ins;
+					TResSMInstance Ins;
 					Ins.Position[0] = JPosition[0].GetFloat();
 					Ins.Position[1] = JPosition[1].GetFloat();
 					Ins.Position[2] = JPosition[2].GetFloat();
@@ -134,7 +172,51 @@ namespace tix
 					Ins.Scale[0] = JScale[0].GetFloat();
 					Ins.Scale[1] = JScale[1].GetFloat();
 					Ins.Scale[2] = JScale[2].GetFloat();
-					Helper.Instances.push_back(Ins);
+					Helper.SMInstances.push_back(Ins);
+				}
+			}
+		}
+
+
+		// Skeleton Mesh Actors
+		{
+			TJSONNode JSKMActorObjects = Doc["skeletal_mesh_actors"];
+			TI_ASSERT(JSKMActorObjects.IsArray());
+			Helper.SKMActors.reserve(SkeletalMeshTotal);
+			for (int32 obj = 0; obj < JSKMActorObjects.Size(); ++obj)
+			{
+				TJSONNode JActorObj = JSKMActorObjects[obj];
+				TJSONNode JLinkedMesh = JActorObj["linked_skm"];
+				TJSONNode JLinkedSkeleton = JActorObj["linked_sk"];
+				TJSONNode JSKMActors = JActorObj["actors"];
+
+				const int32 SKMIndex = IndexInArray<TString>(JLinkedMesh.GetString(), Helper.AssetSKMs);
+				const int32 SKIndex = IndexInArray<TString>(JLinkedSkeleton.GetString(), Helper.AssetSkeletons);
+
+				for (int32 actor = 0; actor < JSKMActors.Size(); ++actor)
+				{
+					TJSONNode JActor = JSKMActors[actor];
+
+					TJSONNode JAnim = JActorObj["linked_anim"];
+					TJSONNode JPosition = JActor["position"];
+					TJSONNode JRotation = JActor["rotation"];
+					TJSONNode JScale = JActor["scale"];
+
+					TResSKMActor Actor;
+					Actor.SKMIndex = SKMIndex;
+					Actor.SKIndex = SKIndex;
+					Actor.AnimIndex = IndexInArray<TString>(JAnim.GetString(), Helper.AssetAnims);;
+					Actor.Position[0] = JPosition[0].GetFloat();
+					Actor.Position[1] = JPosition[1].GetFloat();
+					Actor.Position[2] = JPosition[2].GetFloat();
+					Actor.Rotation[0] = JRotation[0].GetFloat();
+					Actor.Rotation[1] = JRotation[1].GetFloat();
+					Actor.Rotation[2] = JRotation[2].GetFloat();
+					Actor.Rotation[3] = JRotation[3].GetFloat();
+					Actor.Scale[0] = JScale[0].GetFloat();
+					Actor.Scale[1] = JScale[1].GetFloat();
+					Actor.Scale[2] = JScale[2].GetFloat();
+					Helper.SKMActors.push_back(Actor);
 				}
 			}
 		}
@@ -164,9 +246,13 @@ namespace tix
 			SceneTileHeader.NumTextures = (int32)AssetTextures.size();
 			SceneTileHeader.NumMaterials = (int32)AssetMaterials.size();
 			SceneTileHeader.NumMaterialInstances = (int32)AssetMaterialInstances.size();
-			SceneTileHeader.NumMeshes = (int32)AssetMeshes.size();
-			SceneTileHeader.NumMeshSections = MeshSectionsTotal;
-			SceneTileHeader.NumInstances = (int32)Instances.size();
+			SceneTileHeader.NumSkeletons = (int32)AssetSkeletons.size();
+			SceneTileHeader.NumAnims = (int32)AssetAnims.size();
+			SceneTileHeader.NumStaticMeshes = (int32)AssetSMs.size();
+			SceneTileHeader.NumSMSections = SMSectionsTotal;
+			SceneTileHeader.NumSMInstances = (int32)SMInstances.size();
+			SceneTileHeader.NumSkeletalMeshes = (int32)AssetSKMs.size();
+			SceneTileHeader.NumSKMActors = (int32)SKMActors.size();
 
 			// reflections
 			TI_ASSERT(SceneTileHeader.NumEnvLights == EnvLights.size());
@@ -196,30 +282,50 @@ namespace tix
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
-			for (const auto& A : AssetMeshes)
+			for (const auto& A : AssetSkeletons)
 			{
 				int32 Name = AddStringToList(OutStrings, A);
 				DataStream.Put(&Name, sizeof(int32));
 			}
-			TI_ASSERT(AssetMeshes.size() == MeshSections.size());
-			for (const auto& A : MeshSections)
+			for (const auto& A : AssetAnims)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : AssetSMs)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			TI_ASSERT(AssetSMs.size() == SMSections.size());
+			for (const auto& A : SMSections)
 			{
 				int32 Count = A;
 				DataStream.Put(&Count, sizeof(int32));
 			}
-			TI_ASSERT(AssetMeshes.size() == MeshInstanceCount.size());
-			int32 TotalInstances = 0;
-			for (const auto& A : MeshInstanceCount)
+			TI_ASSERT(AssetSMs.size() == SMInstanceCount.size());
+			int32 TotalSMInstances = 0;
+			for (const auto& A : SMInstanceCount)
 			{
 				int32 Count = A;
 				DataStream.Put(&Count, sizeof(int32));
-				TotalInstances += Count;
+				TotalSMInstances += Count;
 			}
-			TI_ASSERT(TotalInstances == SceneTileHeader.NumInstances);
-			for (const auto& A : Instances)
+			TI_ASSERT(TotalSMInstances == SceneTileHeader.NumSMInstances);
+			for (const auto& A : SMInstances)
 			{
-				const TResInstance& Ins = A;
-				DataStream.Put(&Ins, sizeof(TResInstance));
+				const TResSMInstance& Ins = A;
+				DataStream.Put(&Ins, sizeof(TResSMInstance));
+			}
+			for (const auto& A : AssetSKMs)
+			{
+				int32 Name = AddStringToList(OutStrings, A);
+				DataStream.Put(&Name, sizeof(int32));
+			}
+			for (const auto& A : SKMActors)
+			{
+				const TResSKMActor& Actor = A;
+				DataStream.Put(&Actor, sizeof(TResSKMActor));
 			}
 
 			HeaderStream.Put(&SceneTileHeader, sizeof(THeaderSceneTile));

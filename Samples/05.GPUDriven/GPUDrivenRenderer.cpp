@@ -238,17 +238,17 @@ void FGPUDrivenRenderer::UpdateGPUCommandBuffer(FRHI* RHI, FScene * Scene)
 	RHI->UpdateHardwareResourceGPUCommandBuffer(PreZGPUCommandBuffer);
 
 	// Create empty GPU command buffer, gather visible draw commands, make it enough for all instances
-	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
-	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	const uint32 TotalSMInstances = SceneMetaInfo->GetSceneInstancesAdded();
+	ProcessedGPUCommandBuffer = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalSMInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	ProcessedGPUCommandBuffer->SetResourceName("ProcessedCB");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedGPUCommandBuffer);
 
-	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	ProcessedPreZGPUCommandBuffer = RHI->CreateGPUCommandBuffer(PreZGPUCommandSignature, TotalSMInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	ProcessedPreZGPUCommandBuffer->SetResourceName("ProcessedOccluderCB");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(ProcessedPreZGPUCommandBuffer);
 
 	TI_TODO("Temp cluster dc count. Change it!");
-	GPUCommandBufferCluster = RHI->CreateGPUCommandBuffer(GPUCommandSignatureCluster, TotalInstances * 8, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
+	GPUCommandBufferCluster = RHI->CreateGPUCommandBuffer(GPUCommandSignatureCluster, TotalSMInstances * 8, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE | UB_FLAG_COMPUTE_WRITABLE | UB_FLAG_COMPUTE_WITH_COUNTER);
 	GPUCommandBufferCluster->SetResourceName("DrawListCluster");
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBufferCluster);
 }
@@ -258,13 +258,13 @@ void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
 	const TVector<FPrimitivePtr>& Primitives = Scene->GetStaticDrawList(LIST_OPAQUE);
 	const uint32 PrimsCount = (uint32)Primitives.size();
 	const uint32 PrimsAdded = SceneMetaInfo->GetScenePrimitivesAdded();
-	const uint32 TotalInstances = SceneMetaInfo->GetSceneInstancesAdded();
+	const uint32 TotalSMInstances = SceneMetaInfo->GetSceneInstancesAdded();
 	if (PrimsAdded == 0)
 	{
 		return;
 	}
 
-	GPUCommandBufferTest = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
+	GPUCommandBufferTest = RHI->CreateGPUCommandBuffer(GPUCommandSignature, TotalSMInstances, UB_FLAG_GPU_COMMAND_BUFFER_RESOURCE);
 	GPUCommandBufferTest->SetResourceName("DrawListCBTest");
 
 	// Copy instance as single draw call in gpu command buffer
@@ -280,7 +280,7 @@ void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
 	const uint32 CommandStride = GPUCommandSignature->GetCommandStrideInBytes();
 	TI_ASSERT(CommandStride == sizeof(IndirectCommand));
 	uint32 CommandTestIndex = 0;
-	for (uint32 Ins = 0 ; Ins < TotalInstances ; ++ Ins)
+	for (uint32 Ins = 0 ; Ins < TotalSMInstances ; ++ Ins)
 	{
 		if (InstanceMetaInfo->UniformBufferData[Ins].Info.W > 0)
 		{
@@ -295,7 +295,7 @@ void FGPUDrivenRenderer::SimluateCopyVisibleInstances(FRHI* RHI, FScene * Scene)
 			++CommandTestIndex;
 		}
 	}
-	TI_ASSERT(GPUCommandBufferTest->GetEncodedCommandsCount() <= TotalInstances);
+	TI_ASSERT(GPUCommandBufferTest->GetEncodedCommandsCount() <= TotalSMInstances);
 	RHI->UpdateHardwareResourceGPUCommandBuffer(GPUCommandBufferTest);
 }
 

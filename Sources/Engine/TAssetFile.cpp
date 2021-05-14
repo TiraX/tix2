@@ -680,9 +680,10 @@ namespace tix
 			TSceneTileResourcePtr SceneTile = ti_new TSceneTileResource;
 			SceneTile->LevelName = GetString(Header->LevelNameIndex);
 			SceneTile->TotalEnvLights = Header->NumEnvLights;
-			SceneTile->TotalMeshes = Header->NumMeshes;
-			SceneTile->TotalMeshSections = Header->NumMeshSections;
-			SceneTile->TotalInstances = Header->NumInstances;
+			SceneTile->TotalStaticMeshes = Header->NumStaticMeshes;
+			SceneTile->TotalSMSections = Header->NumSMSections;
+			SceneTile->TotalSMInstances = Header->NumSMInstances;
+			SceneTile->TotalSKMActors = Header->NumSKMActors;
 			SceneTile->Position.X = Header->Position.X;
 			SceneTile->Position.Y = Header->Position.Y;
 			SceneTile->BBox = Header->BBox;
@@ -715,12 +716,17 @@ namespace tix
 			const int32* AssetsTextures = (const int32*)(SceneTileDataStart + sizeof(THeaderEnvLight) * Header->NumEnvLights);
 			const int32* AssetsMaterials = AssetsTextures + Header->NumTextures;
 			const int32* AssetsMaterialInstances = AssetsMaterials + Header->NumMaterials;
-			const int32* AssetsMeshes = AssetsMaterialInstances + Header->NumMaterialInstances;
-			const int32* MeshSections = AssetsMeshes + Header->NumMeshes;
-			const int32* MeshInstanceCount = MeshSections + Header->NumMeshes;
-			const int32* AssetsInstances = MeshInstanceCount + Header->NumMeshes;
+			const int32* AssetsSkeletons = AssetsMaterialInstances + Header->NumMaterialInstances;
+			const int32* AssetsAnims = AssetsSkeletons + Header->NumSkeletons;
+			const int32* AssetsSMs = AssetsMaterialInstances + Header->NumAnims;
+			const int32* SMSections = AssetsSMs + Header->NumStaticMeshes;
+			const int32* SMInstanceCount = SMSections + Header->NumStaticMeshes;
+			const int32* AssetsSMInstances = SMInstanceCount + Header->NumStaticMeshes;
+			const int32* AssetsSKMs = AssetsSMInstances + Header->NumSMInstances * sizeof(TResSMInstance) / sizeof(int32);
+			const int32* AssetsSKMActors = AssetsSKMs + Header->NumSkeletalMeshes;
 
-			const THeaderSceneMeshInstance* InstanceData = (const THeaderSceneMeshInstance*)(AssetsInstances);
+			const TResSMInstance* SMInstanceData = (const TResSMInstance*)(AssetsSMInstances);
+			const TResSKMActor* SKMActorData = (const TResSKMActor*)(AssetsSKMActors);
 
 			// Textures
 			for (int32 t = 0; t < Header->NumTextures; ++t)
@@ -740,108 +746,213 @@ namespace tix
 				TString MIName = GetString(AssetsMaterialInstances[mi]);
 				AssetLib->LoadAssetAysc(MIName);
 			}
+			// Skeletons
+			for (int32 sk = 0; sk < Header->NumSkeletons; ++sk)
+			{
+				TString SKName = GetString(AssetsSkeletons[sk]);
+				AssetLib->LoadAssetAysc(SKName);
+			}
+			// Anims
+			for (int32 a = 0; a < Header->NumAnims; ++a)
+			{
+				TString AnimName = GetString(AssetsAnims[a]);
+				AssetLib->LoadAssetAysc(AnimName);
+			}
 
 			// Load meshes, add it to scene tile node when loading finished.
-			SceneTile->Meshes.reserve(Header->NumMeshes);
-			for (int32 m = 0; m < Header->NumMeshes; ++m)
+			SceneTile->StaticMeshes.reserve(Header->NumStaticMeshes);
+			for (int32 m = 0; m < Header->NumStaticMeshes; ++m)
 			{
-				TString MeshName = GetString(AssetsMeshes[m]);
+				TString MeshName = GetString(AssetsSMs[m]);
 				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
-				SceneTile->Meshes.push_back(MeshAsset);
+				SceneTile->StaticMeshes.push_back(MeshAsset);
+			}
+			SceneTile->SkeletalMeshes.reserve(Header->NumSkeletalMeshes);
+			for (int32 m = 0; m < Header->NumSkeletalMeshes; ++m)
+			{
+				TString MeshName = GetString(AssetsSKMs[m]);
+				TAssetPtr MeshAsset = AssetLib->LoadAssetAysc(MeshName);
+				SceneTile->SkeletalMeshes.push_back(MeshAsset);
 			}
 
-			// false = all mesh sections in a model share the same instance buffer
-			// true = all sections use a separate instance buffer, for GPU cull system
-			static const bool ExpandInstanceForEachMeshSections = true;
-
-			// Instances
-			TI_ASSERT(Header->NumMeshes > 0 && Header->NumInstances > 0);
-			uint32 TotalInstances = 0;
-			uint32 TotalMeshSections = 0;
-			if (ExpandInstanceForEachMeshSections)
+			// Static Mesh Instances
 			{
-				// Calculate expanded instance count
-				for (int32 m = 0; m < Header->NumMeshes; ++m)
-				{
-					const int32 MeshSectionCount = MeshSections[m];
-					const int32 InstanceCount = MeshInstanceCount[m];
+				// false = all mesh sections in a model share the same instance buffer
+				// true = all sections use a separate instance buffer, for GPU cull system
+				static const bool ExpandInstanceForEachMeshSections = true;
 
-					TotalInstances += MeshSectionCount * InstanceCount;
-					TotalMeshSections += MeshSectionCount;
-				}
-				TI_ASSERT(TotalMeshSections == Header->NumMeshSections);
-				SceneTile->MeshSectionsCount.reserve(Header->NumMeshes);
-			}
-			else
-			{
-				TotalInstances = Header->NumInstances;
-				TotalMeshSections = Header->NumMeshes;
-			}
-
-			SceneTile->InstanceCountAndOffset.reserve(TotalMeshSections);
-			SceneTile->MeshInstanceBuffer = ti_new TInstanceBuffer;
-			SceneTile->MeshInstanceBuffer->SetResourceName(Filename + "-TileInstance");
-			int8* Data = ti_new int8[TInstanceBuffer::InstanceStride * TotalInstances];
-
-			int32 InstanceOffsetSrc = 0;
-			int32 InstanceOffsetDst = 0;
-			int32 DataOffset = 0;
-			for (int32 m = 0; m < Header->NumMeshes; ++m)
-			{
-				const int32 InstanceCount = MeshInstanceCount[m];
-				
-				// Compute instance data for the 1st mesh section
-				const int32 InstanceDataStart = DataOffset;
-				for (int32 i = 0; i < InstanceCount; ++i)
-				{
-					const THeaderSceneMeshInstance& Instance = InstanceData[i + InstanceOffsetSrc];
-
-					FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
-					FMatrix RotationScaleMat;
-					GetInstanceRotationScaleMatrix(RotationScaleMat, Instance.Rotation, Instance.Scale);
-#if USE_HALF_FOR_INSTANCE_ROTATION
-					FHalf4 RotScaleMat[3];
-					MatrixRotationScaleToHalf3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
-#else
-					FFloat4 RotScaleMat[3];
-					MatrixRotationScaleToFloat3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
-#endif
-
-					memcpy(Data + DataOffset, &Transition, sizeof(FFloat4));
-					DataOffset += sizeof(FFloat4);
-					memcpy(Data + DataOffset, RotScaleMat, sizeof(RotScaleMat));
-					DataOffset += sizeof(RotScaleMat);
-				}
-				const int32 InstanceDataLength = DataOffset - InstanceDataStart;
-				// Save instance offset and count
-				SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
-				InstanceOffsetSrc += InstanceCount;
-				InstanceOffsetDst += InstanceCount;
-
+				uint32 TotalSMInstances = 0;
+				uint32 TotalSMSections = 0;
 				if (ExpandInstanceForEachMeshSections)
 				{
-					// Copy the same instance data for other mesh sections
-					const int32 MeshSectionCount = MeshSections[m];
-					TI_ASSERT(MeshSectionCount > 0);
-
-					for (int32 s = 1; s < MeshSectionCount; ++s)
+					// Calculate expanded instance count
+					for (int32 m = 0; m < Header->NumStaticMeshes; ++m)
 					{
-						memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
-						DataOffset += InstanceDataLength;
-						// Save instance offset and count
-						SceneTile->InstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
-						InstanceOffsetDst += InstanceCount;
+						const int32 MeshSectionCount = SMSections[m];
+						const int32 InstanceCount = SMInstanceCount[m];
+
+						TotalSMInstances += MeshSectionCount * InstanceCount;
+						TotalSMSections += MeshSectionCount;
 					}
-					SceneTile->MeshSectionsCount.push_back(MeshSectionCount);
+					TI_ASSERT(TotalSMSections == Header->NumSMSections);
+					SceneTile->SMSectionsCount.reserve(Header->NumStaticMeshes);
 				}
+				else
+				{
+					TotalSMInstances = Header->NumSMInstances;
+					TotalSMSections = Header->NumStaticMeshes;
+				}
+
+				SceneTile->SMInstanceCountAndOffset.reserve(TotalSMSections);
+				SceneTile->SMInstanceBuffer = ti_new TInstanceBuffer;
+				SceneTile->SMInstanceBuffer->SetResourceName(Filename + "-TileInstance");
+				uint8* Data = ti_new uint8[TInstanceBuffer::InstanceStride * TotalSMInstances];
+
+				int32 InstanceOffsetSrc = 0;
+				int32 InstanceOffsetDst = 0;
+				int32 DataOffset = 0;
+				for (int32 m = 0; m < Header->NumStaticMeshes; ++m)
+				{
+					const int32 InstanceCount = SMInstanceCount[m];
+
+					// Compute instance data for the 1st mesh section
+					const int32 InstanceDataStart = DataOffset;
+					for (int32 i = 0; i < InstanceCount; ++i)
+					{
+						const TResSMInstance& Instance = SMInstanceData[i + InstanceOffsetSrc];
+
+						FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
+						FMatrix RotationScaleMat;
+						GetInstanceRotationScaleMatrix(RotationScaleMat, Instance.Rotation, Instance.Scale);
+#if USE_HALF_FOR_INSTANCE_ROTATION
+						FHalf4 RotScaleMat[3];
+						MatrixRotationScaleToHalf3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
+#else
+						FFloat4 RotScaleMat[3];
+						MatrixRotationScaleToFloat3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);
+#endif
+
+						memcpy(Data + DataOffset, &Transition, sizeof(FFloat4));
+						DataOffset += sizeof(FFloat4);
+						memcpy(Data + DataOffset, RotScaleMat, sizeof(RotScaleMat));
+						DataOffset += sizeof(RotScaleMat);
+					}
+					const int32 InstanceDataLength = DataOffset - InstanceDataStart;
+					// Save instance offset and count
+					SceneTile->SMInstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+					InstanceOffsetSrc += InstanceCount;
+					InstanceOffsetDst += InstanceCount;
+
+					if (ExpandInstanceForEachMeshSections)
+					{
+						// Copy the same instance data for other mesh sections
+						const int32 MeshSectionCount = SMSections[m];
+						TI_ASSERT(MeshSectionCount > 0);
+
+						for (int32 s = 1; s < MeshSectionCount; ++s)
+						{
+							memcpy(Data + DataOffset, Data + InstanceDataStart, InstanceDataLength);
+							DataOffset += InstanceDataLength;
+							// Save instance offset and count
+							SceneTile->SMInstanceCountAndOffset.push_back(vector2di(InstanceCount, InstanceOffsetDst));
+							InstanceOffsetDst += InstanceCount;
+						}
+						SceneTile->SMSectionsCount.push_back(MeshSectionCount);
+					}
+				}
+
+				SceneTile->SMInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalSMInstances);
+				TI_ASSERT(InstanceOffsetDst == TotalSMInstances);
+				ti_delete[] Data;
+				FStats::Stats.InstancesLoaded += TotalSMInstances;
 			}
 
-			SceneTile->MeshInstanceBuffer->SetInstanceStreamData(TInstanceBuffer::InstanceFormat, Data, TotalInstances);
-			TI_ASSERT(InstanceOffsetDst == TotalInstances);
-			ti_delete[] Data;
-			FStats::Stats.InstancesLoaded += TotalInstances;
+			// Skeletal Mesh Actors
+			{
+				uint32 TotalSKMActors = Header->NumSKMActors;
+
+				TI_ASSERT(0);
+			}
 
 			OutResources.push_back(SceneTile);
 		}
+	}
+
+	void TAssetFile::CreateSkeleton(TVector<TResourcePtr>& OutResources)
+	{
+		if (ChunkHeader[ECL_SKELETON] == nullptr)
+			return;
+
+		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_SKELETON];
+		const int32 SkeletonCount = ChunkHeader[ECL_SKELETON]->ElementCount;
+		if (SkeletonCount == 0)
+		{
+			return;
+		}
+
+		TI_TODO("Maybe we dont need TVector<TResourcePtr> to hold multi res. ONLY return 1 resource");
+		// New mesh format should have 1 mesh buffer ONLY, and multiple mesh sections
+		TI_ASSERT(SkeletonCount == 1);
+		// Mesh sections and 1 collision
+		OutResources.reserve(SkeletonCount + 1);
+
+		// Load skeleton
+		const int8* SkeletonDataStart = (const int8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const int8* BoneDataStart = (const int8*)(SkeletonDataStart + TMath::Align4((int32)sizeof(THeaderSkeleton)));
+
+		const THeaderSkeleton* Header = (const THeaderSkeleton*)(SkeletonDataStart);
+		const TBoneInfo* BoneInfos = (const TBoneInfo*)(BoneDataStart);
+
+		TI_ASSERT(Header->NumBones > 0);
+
+		// Create skeleton resource
+		TSkeletonPtr Skeleton = ti_new TSkeleton(Header->NumBones);
+		Skeleton->SetResourceName(Filename + "-SK");
+
+		for (int32 b = 0; b < Header->NumBones; b++)
+		{
+			const TBoneInfo& Bone = BoneInfos[b];
+			Skeleton->AddBone(Bone);
+		}
+		OutResources.push_back(Skeleton);
+	}
+	void TAssetFile::CreateAnimSequence(TVector<TResourcePtr>& OutResources)
+	{
+		if (ChunkHeader[ECL_ANIMATIONS] == nullptr)
+			return;
+
+		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_ANIMATIONS];
+		const int32 AnimCount = ChunkHeader[ECL_ANIMATIONS]->ElementCount;
+		if (AnimCount == 0)
+		{
+			return;
+		}
+
+		TI_TODO("Maybe we dont need TVector<TResourcePtr> to hold multi res. ONLY return 1 resource");
+		TI_ASSERT(AnimCount == 1);
+		OutResources.reserve(AnimCount + 1);
+
+		// Load animation
+		const int8* AnimDataStart = (const int8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const int8* TrackDataStart = (const int8*)(AnimDataStart + TMath::Align4((int32)sizeof(THeaderAnimSequence)));
+
+		const THeaderAnimSequence* Header = (const THeaderAnimSequence*)(AnimDataStart);
+		const TTrackInfo* TrackInfos = (const TTrackInfo*)(TrackDataStart);
+
+		TI_ASSERT(Header->NumFrames > 0 && Header->NumTracks > 0 && Header->NumData > 0);
+		const float* FrameDataStart = (const float*)(TrackDataStart + TMath::Align4((int32)sizeof(TTrackInfo) * Header->NumTracks));
+
+		// Create animation resource
+		TAnimSequencePtr AnimSequence = ti_new TAnimSequence(Header->NumFrames, Header->Length, Header->RateScale, Header->NumTracks);
+		AnimSequence->SetResourceName(Filename + "-AS");
+
+		for (int32 t = 0; t < Header->NumTracks; t++)
+		{
+			const TTrackInfo& Track = TrackInfos[t];
+			AnimSequence->AddTrack(Track);
+		}
+		AnimSequence->SetFrameData(Header->NumData, FrameDataStart);
+
+		OutResources.push_back(AnimSequence);
 	}
 }

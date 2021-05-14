@@ -26,7 +26,7 @@ namespace tix
 
 		const TVector<vector2di>& GetInstanceCountAndOffset() const
 		{
-			return InstanceCountAndOffset;
+			return SMInstanceCountAndOffset;
 		}
 
 		FInstanceBufferPtr GetInstanceBuffer()
@@ -34,19 +34,19 @@ namespace tix
 			return InstanceBuffer;
 		}
 
-		uint32 GetTotalMeshes() const
+		uint32 GetTotalStaticMeshes() const
 		{
-			return TotalMeshes;
+			return TotalStaticMeshes;
 		}
 
 		uint32 GetTotalMeshSections() const
 		{
-			return TotalMeshSections;
+			return TotalSMSections;
 		}
 
 		uint32 GetTotalInstances() const
 		{
-			return TotalInstances;
+			return TotalSMInstances;
 		}
 
 		void AddPrimitive(uint32 Index, FPrimitivePtr Primitive);
@@ -59,11 +59,11 @@ namespace tix
 	private:
 		vector2di Position;
 		aabbox3df BBox;
-		uint32 TotalMeshes;
-		uint32 TotalMeshSections;
-		uint32 TotalInstances;
+		uint32 TotalStaticMeshes;
+		uint32 TotalSMSections;
+		uint32 TotalSMInstances;
 		// X is Count, Y is Offset
-		TVector<vector2di> InstanceCountAndOffset;
+		TVector<vector2di> SMInstanceCountAndOffset;
 		FInstanceBufferPtr InstanceBuffer;
 
 		TVector<FPrimitivePtr> Primitives;

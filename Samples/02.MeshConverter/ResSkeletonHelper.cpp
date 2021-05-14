@@ -10,7 +10,6 @@
 
 using namespace rapidjson;
 
-
 namespace tix
 {
 	TResSkeletonHelper::TResSkeletonHelper()
@@ -36,7 +35,7 @@ namespace tix
 		for (int32 b = 0; b < Helper.TotalBones; b++)
 		{
 			TJSONNode JBone = JBones[b];
-			FBoneInfo& Info = Helper.Bones[b];
+			TBoneInfo& Info = Helper.Bones[b];
 			Info.ParentIndex = JBone["parent_index"].GetInt();
 			ConvertJArrayToVec3(JBone["translation"], Info.Pos);
 			ConvertJArrayToQuat(JBone["rotation"], Info.Rot);
@@ -63,7 +62,7 @@ namespace tix
 			HeaderStream.Put(&Define, sizeof(THeaderSkeleton));
 
 			// Write bones
-			DataStream.Put(Bones.data(), (uint32)(Bones.size() * sizeof(FBoneInfo)));
+			DataStream.Put(Bones.data(), (uint32)(Bones.size() * sizeof(TBoneInfo)));
 		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();

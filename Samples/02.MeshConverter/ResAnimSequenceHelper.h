@@ -21,6 +21,8 @@ namespace tix
 
 	private:
 		int32 TotalFrames;
+		float SequenceLength;
+		float RateScale;
 		int32 TotalTracks;
 		TString RefSkeleton;
 

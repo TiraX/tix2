@@ -77,7 +77,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 
 		const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 
-		uint32 TotalInstances = 0;
+		uint32 TotalSMInstances = 0;
 		uint32 TotalDrawCommands = 0;
 		TotalTrianglesInScene = 0;
 		for (const auto& T : SceneTileResources)
@@ -85,7 +85,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			FSceneTileResourcePtr TileRes = T.second;
 
 			// Stat total instances count
-			TotalInstances += TileRes->GetInstanceBuffer()->GetInstancesCount();
+			TotalSMInstances += TileRes->GetInstanceBuffer()->GetInstancesCount();
 
 			// Stat total draw commands
 			const TVector<FPrimitivePtr>& TilePrimitives = TileRes->GetPrimitives();
@@ -100,8 +100,8 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			}
 		}
 
-		TI_ASSERT(TotalInstances == TotalDrawCommands); // ??? should be the same or NOT ??? I see not
-		TI_ASSERT(TotalInstances > 0 && TotalLoadedMeshes > 0);
+		TI_ASSERT(TotalSMInstances == TotalDrawCommands); // ??? should be the same or NOT ??? I see not
+		TI_ASSERT(TotalSMInstances > 0 && TotalLoadedMeshes > 0);
 		TI_ASSERT(TotalClusters > 0);
 
 		// Allocate space for draw arguments
@@ -137,7 +137,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 			);
 
 			// Create MergedInstanceBuffer resource
-			MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
+			MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalSMInstances, TInstanceBuffer::InstanceStride);
 			MergedInstanceBuffer->SetResourceName("MergedInstanceBuffer");
 			RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
 
@@ -302,7 +302,7 @@ void FSceneMetaInfos::PrepareSceneResources(FRHI* RHI, FScene * Scene, FGPUComma
 					InstanceDstOffset += TileInstances->GetInstancesCount();
 				}
 			}
-			TI_ASSERT(InstanceDstOffset == TotalInstances);
+			TI_ASSERT(InstanceDstOffset == TotalSMInstances);
 			TI_ASSERT(DrawCmdIndex == TotalDrawCommands);
 
 			SceneMeshBBoxesUniform->InitUniformBuffer();

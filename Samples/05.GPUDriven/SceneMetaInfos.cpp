@@ -247,10 +247,10 @@ namespace tix
 			const THMap<vector2di, FSceneTileResourcePtr>& SceneTileResources = Scene->GetSceneTiles();
 
 			// SceneInstancesAdded calculated in CollectSceneMetaInfos().
-			const uint32 TotalInstances = SceneInstancesAdded;
-			if (TotalInstances > 0)
+			const uint32 TotalSMInstances = SceneInstancesAdded;
+			if (TotalSMInstances > 0)
 			{
-				MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalInstances, TInstanceBuffer::InstanceStride);
+				MergedInstanceBuffer = RHI->CreateEmptyInstanceBuffer(TotalSMInstances, TInstanceBuffer::InstanceStride);
 				MergedInstanceBuffer->SetResourceName("SceneMergedIB");
 				RHI->UpdateHardwareResourceIB(MergedInstanceBuffer, nullptr);
 
@@ -263,7 +263,7 @@ namespace tix
 					RHI->CopyBufferRegion(MergedInstanceBuffer, InstanceDstOffset, TileInstances, 0, TileInstances->GetInstancesCount());
 					InstanceDstOffset += TileInstances->GetInstancesCount();
 				}
-				TI_ASSERT(InstanceDstOffset == TotalInstances);
+				TI_ASSERT(InstanceDstOffset == TotalSMInstances);
 
 			}
 		}

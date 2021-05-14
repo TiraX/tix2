@@ -11,9 +11,10 @@ namespace tix
 	TSceneTileResource::TSceneTileResource()
 		: TResource(ERES_SCENE_TILE)
 		, TotalEnvLights(0)
-		, TotalMeshes(0)
-		, TotalMeshSections(0)
-		, TotalInstances(0)
+		, TotalStaticMeshes(0)
+		, TotalSMSections(0)
+		, TotalSMInstances(0)
+		, TotalSKMActors(0)
 	{
 	}
 
@@ -24,8 +25,8 @@ namespace tix
 	void TSceneTileResource::InitRenderThreadResource()
 	{
 		// Init all instances render resource
-		TI_ASSERT(MeshInstanceBuffer != nullptr);
-		MeshInstanceBuffer->InitRenderThreadResource();
+		TI_ASSERT(SMInstanceBuffer != nullptr);
+		SMInstanceBuffer->InitRenderThreadResource();
 
 		// Register scene tile info to FSceneMetaInfos, for GPU tile frustum cull
 		TI_ASSERT(RenderThreadTileResource == nullptr);
@@ -40,7 +41,7 @@ namespace tix
 
 	void TSceneTileResource::DestroyRenderThreadResource()
 	{
-		MeshInstanceBuffer->DestroyRenderThreadResource();
+		SMInstanceBuffer->DestroyRenderThreadResource();
 
 		TI_ASSERT(RenderThreadTileResource != nullptr);
 		FSceneTileResourcePtr SceneTileResource = RenderThreadTileResource;

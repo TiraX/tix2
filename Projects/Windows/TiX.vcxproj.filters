@@ -325,6 +325,12 @@
     <ClCompile Include="..\..\Sources\Engine\TImageLoaderHDR.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TSkeleton.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TAnimSequence.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -740,6 +746,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDXR.h">
       <Filter>Sources\Render\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TSkeleton.h">
+      <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TAnimSequence.h">
+      <Filter>Sources\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

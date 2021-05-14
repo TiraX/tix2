@@ -16,7 +16,7 @@ namespace tix
 
 		TInstanceBufferPtr GetInstanceBuffer()
 		{
-			return MeshInstanceBuffer;
+			return SMInstanceBuffer;
 		}
 
 	public:
@@ -41,14 +41,21 @@ namespace tix
 		};
 		TVector<TEnvLightInfo> EnvLightInfos;
 
-		uint32 TotalMeshes;
-		uint32 TotalMeshSections;
-		uint32 TotalInstances;
-		TVector<TAssetPtr> Meshes;
-		// X is Count, Y is Offset
-		TVector<vector2di> InstanceCountAndOffset;
-		TVector<uint32> MeshSectionsCount;
-		TInstanceBufferPtr MeshInstanceBuffer;
+		// Static Meshes
+		// static meshes always processed with instances
+		uint32 TotalStaticMeshes;
+		TVector<TAssetPtr> StaticMeshes;
+		uint32 TotalSMSections;	// Total static mesh sections
+		uint32 TotalSMInstances;	// Total static mesh instances
+		TVector<vector2di> SMInstanceCountAndOffset;	// X is Count, Y is Offset
+		TVector<uint32> SMSectionsCount;
+		TInstanceBufferPtr SMInstanceBuffer;
+
+		// Skeletal Meshes
+		// skeletal mesh always processed with actors
+		uint32 TotalSkeletalMeshes;
+		TVector<TAssetPtr> SkeletalMeshes;
+		uint32 TotalSKMActors;
 
 		FSceneTileResourcePtr RenderThreadTileResource;
 	};

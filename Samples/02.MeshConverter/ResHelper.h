@@ -111,29 +111,29 @@ namespace tix
 		strcpy(str_cpy, value.c_str());
 		char *start, *end;
 		start = str_cpy;
-		end = start;
+end = start;
 
-		TString str;
-		while (*end)
-		{
-			if (*end == sep)
-			{
-				*end = 0;
-				str = start;
-				start = end + 1;
-				Result.push_back(str);
-			}
-			++end;
-		}
+TString str;
+while (*end)
+{
+	if (*end == sep)
+	{
+		*end = 0;
+		str = start;
+		start = end + 1;
+		Result.push_back(str);
+	}
+	++end;
+}
 
-		if (strlen(start) > 0)
-		{
-			str = start;
-			Result.push_back(str);
-		}
+if (strlen(start) > 0)
+{
+	str = start;
+	Result.push_back(str);
+}
 
-		delete[] str_cpy;
-		return Result;
+delete[] str_cpy;
+return Result;
 	}
 
 	inline void FillZero4(TStream& Stream)
@@ -146,7 +146,7 @@ namespace tix
 
 	inline int32 AddStringToList(TVector<TString>& Strings, const TString& String)
 	{
-		for (int32 s = 0 ; s < (int32)Strings.size() ; ++ s)
+		for (int32 s = 0; s < (int32)Strings.size(); ++s)
 		{
 			if (Strings[s] == String)
 			{
@@ -208,6 +208,17 @@ namespace tix
 	void ConvertJArrayToArray(const TJSONNode& JArray, TVector<TString>& OutArray);
 	void ConvertJArrayToVec3(const TJSONNode& JArray, vector3df& V3);
 	void ConvertJArrayToQuat(const TJSONNode& JArray, quaternion& Q4);
+
+	template< class T >
+	int32 IndexInArray (const T& v, const TVector<T>& Arr)
+	{
+		for (int32 i = 0; i < (int32)Arr.size(); i++)
+		{
+			if (Arr[i] == v)
+				return i;
+		}
+		return -1;
+	};
 	/////////////////////////////////////////////////////////////////
 	class TResFileHelper
 	{

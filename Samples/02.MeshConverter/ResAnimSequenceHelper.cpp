@@ -27,6 +27,10 @@ namespace tix
 		TResAnimSequenceHelper Helper;
 		// Bones
 		Helper.TotalFrames = Doc["total_frames"].GetInt();
+		Helper.SequenceLength = Doc["sequence_length"].GetFloat();
+		TI_ASSERT(Helper.SequenceLength > 0.f);
+		Helper.RateScale = Doc["rate_scale"].GetFloat();
+		TI_ASSERT(Helper.RateScale > 0.f);
 		Helper.TotalTracks = Doc["total_tracks"].GetInt();
 		Helper.RefSkeleton = Doc["ref_skeleton"].GetString();
 
@@ -58,27 +62,31 @@ namespace tix
 		ChunkHeader.Version = TIRES_VERSION_CHUNK_ANIM;
 		ChunkHeader.ElementCount = 1;
 
+		THeaderAnimSequence Define;
 		TStream HeaderStream, DataStream(1024 * 8);
 		for (int32 t = 0; t < ChunkHeader.ElementCount; ++t)
 		{
-			THeaderAnimSequence Define;
 			Define.NumFrames = TotalFrames;
+			Define.Length = SequenceLength;
+			Define.RateScale = RateScale;
 			Define.NumTracks = TotalTracks;
-			HeaderStream.Put(&Define, sizeof(THeaderAnimSequence));
+			Define.NumData = 0;
+			// Do not put into header stream now, since we want to upadte NumData
+			//HeaderStream.Put(&Define, sizeof(THeaderAnimSequence));
 
 			int32 Offset = 0;
 			for (int32 t = 0; t < TotalTracks; ++t)
 			{
 				const FTrackInfo& Track = Tracks[t];
-				THeaderTrack HeaderTrack;
-				HeaderTrack.RefBoneIndex = Track.RefBoneIndex;
-				HeaderTrack.KeyDataOffset = Offset;
-				HeaderTrack.NumPosKeys = (int32)(Track.PosKeys.size() / 3);
-				HeaderTrack.NumRotKeys = (int32)(Track.RotKeys.size() / 4);
-				HeaderTrack.NumScaleKeys = (int32)(Track.ScaleKeys.size() / 3);
-				Offset += HeaderTrack.NumPosKeys * 3 + HeaderTrack.NumRotKeys * 4 + HeaderTrack.NumScaleKeys * 3;
+				TTrackInfo TrackInfo;
+				TrackInfo.RefBoneIndex = Track.RefBoneIndex;
+				TrackInfo.KeyDataOffset = Offset;
+				TrackInfo.NumPosKeys = (int32)(Track.PosKeys.size() / 3);
+				TrackInfo.NumRotKeys = (int32)(Track.RotKeys.size() / 4);
+				TrackInfo.NumScaleKeys = (int32)(Track.ScaleKeys.size() / 3);
+				Offset += TrackInfo.NumPosKeys * 3 + TrackInfo.NumRotKeys * 4 + TrackInfo.NumScaleKeys * 3;
+				HeaderStream.Put(&TrackInfo, sizeof(TTrackInfo));
 
-				HeaderStream.Put(&HeaderTrack, sizeof(THeaderTrack));
 				if (!Track.PosKeys.empty())
 					DataStream.Put(Track.PosKeys.data(), (uint32)(Track.PosKeys.size() * sizeof(float)));
 				if (!Track.RotKeys.empty())
@@ -86,13 +94,17 @@ namespace tix
 				if (!Track.ScaleKeys.empty())
 					DataStream.Put(Track.ScaleKeys.data(), (uint32)(Track.ScaleKeys.size() * sizeof(float)));
 			}
+			Define.NumData = Offset;
 		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();
 
 		OutStream.Put(&ChunkHeader, sizeof(TResfileChunkHeader));
 		FillZero4(OutStream);
+		OutStream.Put(&Define, sizeof(THeaderAnimSequence));
+		FillZero4(OutStream);
 		OutStream.Put(HeaderStream.GetBuffer(), HeaderStream.GetLength());
+		FillZero4(OutStream);
 		OutStream.Put(DataStream.GetBuffer(), DataStream.GetLength());
 	}
 }

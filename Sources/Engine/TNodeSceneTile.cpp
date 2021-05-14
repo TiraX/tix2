@@ -35,11 +35,11 @@ namespace tix
 			TI_ASSERT(FirstResource->GetType() == ERES_SCENE_TILE);
 
 			NodeSceneTile->SceneTileResource = static_cast<TSceneTileResource*>(FirstResource.get());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalMeshSections == NodeSceneTile->SceneTileResource->InstanceCountAndOffset.size());
-			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalMeshes == NodeSceneTile->SceneTileResource->MeshSectionsCount.size());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalSMSections == NodeSceneTile->SceneTileResource->SMInstanceCountAndOffset.size());
+			TI_ASSERT(NodeSceneTile->SceneTileResource->TotalStaticMeshes == NodeSceneTile->SceneTileResource->SMSectionsCount.size());
 			TI_ASSERT(NodeSceneTile->LoadedMeshAssets.empty());
 			// Init Loaded mesh asset array.
-			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->Meshes.size());
+			NodeSceneTile->LoadedMeshAssets.resize(NodeSceneTile->SceneTileResource->StaticMeshes.size());
 			// Init Loaded env light array
 			NodeSceneTile->LoadedEnvLightInfos.resize(NodeSceneTile->SceneTileResource->EnvLightInfos.size());
 		}
@@ -88,14 +88,14 @@ namespace tix
 
 	void TNodeSceneTile::LoadStaticMeshes()
 	{
-		const uint32 MeshCount = (uint32)SceneTileResource->Meshes.size();
-		if (MeshCount > 0)
+		const uint32 StaticMeshCount = (uint32)SceneTileResource->StaticMeshes.size();
+		if (StaticMeshCount > 0)
 		{
 			uint32 LoadedMeshCount = 0;
 			uint32 MeshSectionOffset = 0;
-			for (uint32 m = 0; m < MeshCount; ++m)
+			for (uint32 m = 0; m < StaticMeshCount; ++m)
 			{
-				TAssetPtr MeshAsset = SceneTileResource->Meshes[m];
+				TAssetPtr MeshAsset = SceneTileResource->StaticMeshes[m];
 
 				if (MeshAsset != nullptr)
 				{
@@ -111,7 +111,7 @@ namespace tix
 						// MeshResources Include mesh sections and 1 collision set
 						// Mesh sections
 						const uint32 TotalSections = StaticMesh->GetMeshSectionCount();
-						TI_ASSERT(TotalSections > 0 && SceneTileResource->MeshSectionsCount[m] == TotalSections);
+						TI_ASSERT(TotalSections > 0 && SceneTileResource->SMSectionsCount[m] == TotalSections);
 						LinkedPrimitives.reserve(TotalSections);
 						PrimitiveIndices.reserve(TotalSections);
 						for (uint32 Section = 0; Section < TotalSections; ++Section)
@@ -126,9 +126,9 @@ namespace tix
 								MeshSection.IndexStart,
 								MeshSection.Triangles,
 								MeshSection.DefaultMaterial,
-								SceneTileResource->MeshInstanceBuffer->InstanceResource,
-								SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].X,
-								SceneTileResource->InstanceCountAndOffset[MeshSectionOffset + Section].Y
+								SceneTileResource->SMInstanceBuffer->InstanceResource,
+								SceneTileResource->SMInstanceCountAndOffset[MeshSectionOffset + Section].X,
+								SceneTileResource->SMInstanceCountAndOffset[MeshSectionOffset + Section].Y
 							);
 							Primitive->SetSceneTilePos(SceneTileResource->Position);
 							LinkedPrimitives.push_back(Primitive);
@@ -163,7 +163,7 @@ namespace tix
 						// Remove the reference holder
 						TI_ASSERT(LoadedMeshAssets[m] == nullptr);
 						LoadedMeshAssets[m] = MeshAsset;
-						SceneTileResource->Meshes[m] = nullptr;
+						SceneTileResource->StaticMeshes[m] = nullptr;
 
 						++LoadedMeshCount;
 					}
@@ -172,12 +172,12 @@ namespace tix
 				{
 					++LoadedMeshCount;
 				}
-				MeshSectionOffset += SceneTileResource->MeshSectionsCount[m];
+				MeshSectionOffset += SceneTileResource->SMSectionsCount[m];
 			}
-			TI_ASSERT(LoadedMeshCount <= MeshCount);
-			if (LoadedMeshCount == MeshCount)
+			TI_ASSERT(LoadedMeshCount <= StaticMeshCount);
+			if (LoadedMeshCount == StaticMeshCount)
 			{
-				SceneTileResource->Meshes.clear();
+				SceneTileResource->StaticMeshes.clear();
 			}
 		}
 	}
