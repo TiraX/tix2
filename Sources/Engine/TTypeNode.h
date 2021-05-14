@@ -11,7 +11,8 @@ namespace tix
 	{
 		ENT_Node = TI_MAKE_IDENTIFIER('N', 'O', 'D', 'E'),
 		ENT_SceneRoot = TI_MAKE_IDENTIFIER('R', 'O', 'O', 'T'),
-		ENT_StaticMesh = TI_MAKE_IDENTIFIER('M', 'E', 'S', 'H'),
+		ENT_StaticMesh = TI_MAKE_IDENTIFIER('S', 'T', 'A', 'M'),
+		ENT_SkeletalMesh = TI_MAKE_IDENTIFIER('S', 'K', 'M', 'M'),
 		ENT_Camera = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'A'),
 		ENT_CameraNav = TI_MAKE_IDENTIFIER('C', 'A', 'M', 'N'),
 		ENT_Light = TI_MAKE_IDENTIFIER('L', 'I', 'T', 'P'),

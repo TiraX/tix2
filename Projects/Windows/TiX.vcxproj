@@ -88,6 +88,7 @@
     <ClCompile Include="..\..\Sources\Engine\TNodeEnvironment.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeLight.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeSceneTile.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TNodeSkeletalMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TNodeStaticMesh.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPath.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TPipeline.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="..\..\Sources\Engine\TNodeEnvironment.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeLight.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeSceneTile.h" />
+    <ClInclude Include="..\..\Sources\Engine\TNodeSkeletalMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TNodeStaticMesh.h" />
     <ClInclude Include="..\..\Sources\Engine\TPath.h" />
     <ClInclude Include="..\..\Sources\Engine\TPipeline.h" />

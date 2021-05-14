@@ -331,6 +331,9 @@
     <ClCompile Include="..\..\Sources\Engine\TAnimSequence.cpp">
       <Filter>Sources\Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\TNodeSkeletalMesh.cpp">
+      <Filter>Sources\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -752,6 +755,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\TAnimSequence.h">
       <Filter>Sources\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\TNodeSkeletalMesh.h">
+      <Filter>Sources\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -83,6 +83,7 @@ namespace tix
 		if (SceneTileResource != nullptr)
 		{
 			LoadStaticMeshes();
+			LoadSkeletalMeshes();
 			LoadEnvCubemaps();
 		}
 	}
@@ -197,13 +198,35 @@ namespace tix
 				{
 					if (MeshAsset->IsLoaded())
 					{
+						const TVector<TResourcePtr>& MeshResources = MeshAsset->GetResources();
+						TI_ASSERT(MeshResources[0]->GetType() == ERES_STATIC_MESH);
+						TStaticMeshPtr StaticMesh = static_cast<TStaticMesh*>(MeshResources[0].get());
+
 						// Go through all actors used this mesh
 						for (uint32 a = 0; a < SceneTileResource->SKMActorInfos.size(); a++)
 						{
 							const TSkeletalMeshActorInfo& SKMActorInfo = SceneTileResource->SKMActorInfos[a];
 							if (SKMActorInfo.MeshAssetRef == MeshAsset)
 							{
-								TI_ASSERT(SKMActorInfo.SkeletonAsset != nullptr);
+								// Skeleton asset
+								TI_ASSERT(SKMActorInfo.SkeletonAsset != nullptr && SKMActorInfo.SkeletonAsset->IsLoaded());
+								const TVector<TResourcePtr>& SkeletonResources = SKMActorInfo.SkeletonAsset->GetResources();
+								TI_ASSERT(SkeletonResources[0]->GetType() == ERES_SKELETON);
+								TSkeletonPtr Skeleton = static_cast<TSkeleton*>(SkeletonResources[0].get());
+
+								// Animation asset
+								TAnimSequencePtr Anim = nullptr;
+								if (SKMActorInfo.AnimAsset != nullptr)
+								{
+									const TVector<TResourcePtr>& AnimResources = SKMActorInfo.AnimAsset->GetResources();
+									TI_ASSERT(AnimResources[0]->GetType() == ERES_ANIM_SEQUENCE);
+									Anim = static_cast<TAnimSequence*>(AnimResources[0].get());
+								}
+
+								// Create skeletal node
+								TNodeSkeletalMesh* NodeSkeletalMesh = TNodeFactory::CreateNode<TNodeSkeletalMesh>(this, MeshAsset->GetName());
+								NodeSkeletalMesh->LinkMeshAndSkeleton(StaticMesh, Skeleton);
+								NodeSkeletalMesh->SetAnimation(Anim);
 								TI_ASSERT(0);
 							}
 						}

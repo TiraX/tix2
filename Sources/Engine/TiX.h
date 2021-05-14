@@ -73,6 +73,7 @@ using namespace std;
 #include "TNodeCameraNav.h"
 #include "TNodeEnvironment.h"
 #include "TNodeStaticMesh.h"
+#include "TNodeSkeletalMesh.h"
 #include "TNodeLight.h"
 #include "TNodeSceneTile.h"
 #include "TScene.h"
