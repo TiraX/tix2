@@ -39,6 +39,8 @@ namespace tix
 					return ARGUMENT_EB_VIEW;
 				if (BufferName == "Primitive")
 					return ARGUMENT_EB_PRIMITIVE;
+				if (BufferName == "Bones")
+					return ARGUMENT_EB_BONES;
 				if (BufferName == "Lights")
 					return ARGUMENT_EB_LIGHTS;
 				if (BufferName == "EnvCube")

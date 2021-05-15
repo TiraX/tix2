@@ -67,6 +67,45 @@ namespace tix
 		}
 	}
 
+	void FPrimitive::SetSkeletalMesh(
+		FMeshBufferPtr InMeshBuffer,
+		uint32 InIndexStart,
+		uint32 InTriangles,
+		TMaterialInstancePtr InMInstance)
+	{
+		// Add mesh buffer
+		MeshBuffer = InMeshBuffer;
+		IndexStart = InIndexStart;
+		Triangles = InTriangles;
+
+		// Add pipeline
+		TMaterialPtr Material = InMInstance->LinkedMaterial;
+		TI_ASSERT(Material->PipelineResource != nullptr);
+		Pipeline = Material->PipelineResource;
+
+		// Instance material argument buffer
+		Argument = InMInstance->ArgumentBuffer;
+
+		// Draw List
+		if (Material->GetBlendMode() == BLEND_MODE_OPAQUE)
+		{
+			DrawList = LIST_OPAQUE;
+		}
+		else if (Material->GetBlendMode() == BLEND_MODE_MASK)
+		{
+			DrawList = LIST_MASK;
+		}
+		else
+		{
+			DrawList = LIST_TRANSLUCENT;
+		}
+	}
+
+	void FPrimitive::SetSkeletonResource(FUniformBufferPtr InSkeletonResource)
+	{
+		SkeletonResourceRef = InSkeletonResource;
+	}
+
 	void FPrimitive::SetLocalToWorld(const matrix4 InLocalToWorld)
 	{
 		TI_ASSERT(IsRenderThread());

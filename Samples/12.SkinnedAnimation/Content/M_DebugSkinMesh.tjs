@@ -1,0 +1,29 @@
+{
+	"name": "M_DebugSkinMesh",
+	"type": "material",
+	"version": 1,
+	"desc": "Material from TiX exporter.",
+	"shaders": [
+		"S_DebugOpaqueSkinMeshVS",
+		"S_DebugOpaquePS",
+		"",
+		"",
+		""
+	],
+	"vs_format": [
+		"EVSSEG_POSITION",
+		"EVSSEG_NORMAL",
+		"EVSSEG_TEXCOORD0",
+		"EVSSEG_TANGENT",
+		"EVSSEG_BLENDINDEX",
+		"EVSSEG_BLENDWEIGHT"
+	],
+	"rt_colors": [
+		"EPF_RGBA16F"
+	],
+	"rt_depth": "EPF_DEPTH24_STENCIL8",
+	"blend_mode": "BLEND_MODE_OPAQUE",
+	"depth_write": true,
+	"depth_test": true,
+	"two_sides": false
+}

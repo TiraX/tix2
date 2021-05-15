@@ -31,18 +31,73 @@ namespace tix
 		TJSONNode JBones = Doc["bones"];
 		TI_ASSERT(JBones.IsArray() && JBones.Size() == Helper.TotalBones);
 
-		Helper.Bones.resize(Helper.TotalBones);
+		Helper.InitBones.resize(Helper.TotalBones);
 		for (int32 b = 0; b < Helper.TotalBones; b++)
 		{
 			TJSONNode JBone = JBones[b];
-			TBoneInfo& Info = Helper.Bones[b];
+			ResBoneInfo& Info = Helper.InitBones[b];
 			Info.ParentIndex = JBone["parent_index"].GetInt();
-			ConvertJArrayToVec3(JBone["translation"], Info.Pos);
-			ConvertJArrayToQuat(JBone["rotation"], Info.Rot);
-			ConvertJArrayToVec3(JBone["scale"], Info.Scale);
+			ConvertJArrayToVec3(JBone["translation"], Info.InitPos);
+			ConvertJArrayToQuat(JBone["rotation"], Info.InitRot);
+			ConvertJArrayToVec3(JBone["scale"], Info.InitScale);
 		}
 
+		Helper.CalcInvBindTransform();
+
 		Helper.OutputSkeleton(OutStream, OutStrings);
+	}
+
+	matrix4 MakeMatrix(const vector3df& Trans, const quaternion& Rot, const vector3df& Scale)
+	{
+		matrix4 Result;
+		Rot.getMatrix(Result);
+		Result.postScale(Scale);
+		Result.setTranslation(Trans);
+
+		return Result;
+	}
+
+	void TResSkeletonHelper::CalcInvBindTransform()
+	{
+		TVector<matrix4> BindMatrix;
+		BindMatrix.resize(InitBones.size());
+
+		for (int32 b = 0; b < TotalBones; b++)
+		{
+			const ResBoneInfo& Bone = InitBones[b];
+			if (Bone.ParentIndex == -1)
+			{
+				BindMatrix[b] = MakeMatrix(Bone.InitPos, Bone.InitRot, Bone.InitScale);
+			}
+			else
+			{
+				matrix4 ParentMat = BindMatrix[Bone.ParentIndex];
+				matrix4 Mat = MakeMatrix(Bone.InitPos, Bone.InitRot, Bone.InitScale);
+				BindMatrix[b] = ParentMat * Mat;
+			}
+		}
+
+		matrix4 testmat;
+		testmat.setTranslation(vector3df(1, 2, 3));
+		matrix4 invmat;
+		testmat.getInverse(invmat);
+
+		ConvertedBones.resize(InitBones.size());
+		for (int32 b = 0; b < TotalBones; b++)
+		{
+			matrix4 InvMat;
+			BindMatrix[b].getInverse(InvMat);
+
+			TBoneInitInfo& Bone = ConvertedBones[b];
+			Bone.ParentIndex = InitBones[b].ParentIndex;
+			Bone.InvPos = InvMat.getTranslation();
+			Bone.InvRot = InvMat;
+			Bone.InvScale = InvMat.getScale();
+
+			vector3df NewScale = vector3df(1.f / Bone.InvScale.X, 1.f / Bone.InvScale.Y, 1.f / Bone.InvScale.Z);
+			InvMat.postScale(NewScale);
+			Bone.InvRot = InvMat;
+		}
 	}
 	
 	void TResSkeletonHelper::OutputSkeleton(TStream& OutStream, TVector<TString>& OutStrings)
@@ -62,7 +117,7 @@ namespace tix
 			HeaderStream.Put(&Define, sizeof(THeaderSkeleton));
 
 			// Write bones
-			DataStream.Put(Bones.data(), (uint32)(Bones.size() * sizeof(TBoneInfo)));
+			DataStream.Put(ConvertedBones.data(), (uint32)(ConvertedBones.size() * sizeof(TBoneInitInfo)));
 		}
 
 		ChunkHeader.ChunkSize = HeaderStream.GetLength() + DataStream.GetLength();

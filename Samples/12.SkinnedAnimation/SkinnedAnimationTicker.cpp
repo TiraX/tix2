@@ -26,6 +26,8 @@ void TSkinnedAnimationTicker::SetupScene()
 	// PreLoad default material first
 	const TString DefaultMaterial = "M_Debug.tasset";
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterial);
+	const TString DefaultSKMaterial = "M_DebugSkinMesh.tasset";
+	TAssetLibrary::Get()->LoadAsset(DefaultSKMaterial);
 
 	// Load scene
 	const TString TargetSceneAsset = "Map_Anim.tasset";

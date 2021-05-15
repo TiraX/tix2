@@ -90,6 +90,7 @@ namespace tix
 			{
 				//MeshBuffer = nullptr;
 			});
+		MeshBuffer = nullptr;
 		MeshBufferResource = nullptr;
 	}
 

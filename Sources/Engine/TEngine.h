@@ -41,6 +41,8 @@ namespace tix
 		TI_API static void	InitEngine(const TEngineDesc& Config);
 		TI_API static void	Destroy();
 
+		TI_API static float GameTime();
+
 		static E_Platform GetPlatform()
 		{
 			return CurrentPlatform;
@@ -94,6 +96,8 @@ namespace tix
 
 		uint64 LastFrameTime;
 		TVector<TTicker*> Tickers;
+
+		float GameTimeElapsed;
 
 		typedef TThreadSafeQueue<TTask*> TTaskQueue;
 		TTaskQueue MainThreadTasks;

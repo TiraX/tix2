@@ -18,9 +18,19 @@ namespace tix
 		void OutputSkeleton(TStream& OutStream, TVector<TString>& OutStrings);
 
 	private:
+		void CalcInvBindTransform();
 
 	private:
+		struct ResBoneInfo
+		{
+			int32 ParentIndex;
+			vector3df InitPos;
+			quaternion InitRot;
+			vector3df InitScale;
+		};
+
 		int32 TotalBones;
-		TVector<TBoneInfo> Bones;
+		TVector<ResBoneInfo> InitBones;
+		TVector<TBoneInitInfo> ConvertedBones;
 	};
 }

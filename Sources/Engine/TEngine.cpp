@@ -97,6 +97,11 @@ namespace tix
 		return s_engine;
 	}
 
+	float TEngine::GameTime()
+	{
+		return s_engine->GameTimeElapsed;
+	}
+
 	TEngine::TEngine()
 		: IsRunning(false)
 		, LogSystem(nullptr)
@@ -104,6 +109,7 @@ namespace tix
 		, Scene(nullptr)
 		, ResourceLibrary(nullptr)
 		, LastFrameTime(0)
+		, GameTimeElapsed(0.f)
 		, MainThreadTasks(1024)
 	{
 	}
@@ -216,6 +222,8 @@ namespace tix
 		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 		float  Dt = Delta * 0.001f;
+
+		GameTimeElapsed += Dt;
 
 		BeginFrame();
 

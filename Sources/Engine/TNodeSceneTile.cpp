@@ -225,9 +225,9 @@ namespace tix
 
 								// Create skeletal node
 								TNodeSkeletalMesh* NodeSkeletalMesh = TNodeFactory::CreateNode<TNodeSkeletalMesh>(this, MeshAsset->GetName());
+								NodeSkeletalMesh->SetSceneTileResource(SceneTileResource);
 								NodeSkeletalMesh->LinkMeshAndSkeleton(StaticMesh, Skeleton);
 								NodeSkeletalMesh->SetAnimation(Anim);
-								TI_ASSERT(0);
 							}
 						}
 

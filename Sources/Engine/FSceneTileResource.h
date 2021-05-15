@@ -50,6 +50,7 @@ namespace tix
 		}
 
 		void AddPrimitive(uint32 Index, FPrimitivePtr Primitive);
+		void AppendPrimitive(FPrimitivePtr Primitive);
 
 		const TVector<FPrimitivePtr>& GetPrimitives() const
 		{

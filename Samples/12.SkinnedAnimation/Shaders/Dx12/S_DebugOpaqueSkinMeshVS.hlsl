@@ -1,8 +1,8 @@
 #include "Common.hlsli"
 #include "S_BasePassRS.hlsli"
-#include "VS_Instanced.hlsli"
+#include "VS_SkinMesh.hlsli"
 
-[RootSignature(BasePass_StaticMesh_RootSig)]
+[RootSignature(BasePass_SkeletalMesh_RootSig)]
 VSOutput main(VSInput vsInput)
 {
     VSOutput vsOutput;

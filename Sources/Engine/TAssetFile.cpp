@@ -176,6 +176,12 @@ namespace tix
 		if (ChunkHeader[ECL_SCENETILE] != nullptr)
 			CreateSceneTile(OutResources);
 
+		if (ChunkHeader[ECL_ANIMATIONS] != nullptr)
+			CreateAnimSequence(OutResources);
+
+		if (ChunkHeader[ECL_SKELETON] != nullptr)
+			CreateSkeleton(OutResources);
+
 		for (auto& Res : OutResources)
 		{
 			Res->SetResourceName(Filename);
@@ -928,7 +934,7 @@ namespace tix
 		const int8* BoneDataStart = (const int8*)(SkeletonDataStart + TMath::Align4((int32)sizeof(THeaderSkeleton)));
 
 		const THeaderSkeleton* Header = (const THeaderSkeleton*)(SkeletonDataStart);
-		const TBoneInfo* BoneInfos = (const TBoneInfo*)(BoneDataStart);
+		const TBoneInitInfo* BoneInfos = (const TBoneInitInfo*)(BoneDataStart);
 
 		TI_ASSERT(Header->NumBones > 0);
 
@@ -938,7 +944,7 @@ namespace tix
 
 		for (int32 b = 0; b < Header->NumBones; b++)
 		{
-			const TBoneInfo& Bone = BoneInfos[b];
+			const TBoneInitInfo& Bone = BoneInfos[b];
 			Skeleton->AddBone(Bone);
 		}
 		OutResources.push_back(Skeleton);

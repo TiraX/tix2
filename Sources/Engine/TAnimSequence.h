@@ -30,6 +30,35 @@ namespace tix
 		virtual void InitRenderThreadResource() override {};
 		virtual void DestroyRenderThreadResource() override {};
 
+		int32 GetNumFrames() const
+		{
+			return NumFrames;
+		}
+
+		float GetSequenceLength() const
+		{
+			return SequenceLength;
+		}
+
+		float GetRateScale() const
+		{
+			return RateScale;
+		}
+
+		float GetFrameLength() const
+		{
+			return SequenceLength / NumFrames;
+		}
+
+		const TVector<TTrackInfo>& GetTrackInfos() const
+		{
+			return Tracks;
+		}
+
+		const TVector<float>& GetFrameData() const
+		{
+			return FrameData;
+		}
 	protected:
 
 	protected:

@@ -41,4 +41,11 @@ namespace tix
 		Primitives[Index] = Primitive;
 		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
 	}
+
+	void FSceneTileResource::AppendPrimitive(FPrimitivePtr Primitive)
+	{
+		// Temp use, wait for refactor
+		Primitives.push_back(Primitive);
+		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
+	}
 }

@@ -32,6 +32,15 @@ namespace tix
 			uint32 InInstanceCount,
 			uint32 InInstanceOffset
 		);
+		void SetSkeletalMesh(
+			FMeshBufferPtr InMeshBuffer,
+			uint32 InIndexStart,
+			uint32 InTriangles,
+			TMaterialInstancePtr InMInstance
+		);
+		void SetSkeletonResource(
+			FUniformBufferPtr InSkeletonResource
+		);
 
 		FMeshBufferPtr GetMeshBuffer()
 		{
@@ -69,6 +78,10 @@ namespace tix
 		{
 			return PrimitiveUniformBuffer;
 		}
+		FUniformBufferPtr GetSkeletonUniform()
+		{
+			return SkeletonResourceRef;
+		}
 		E_DRAWLIST_TYPE GetDrawList() const
 		{
 			return DrawList;
@@ -92,10 +105,13 @@ namespace tix
 		uint32 InstanceCount;
 		uint32 InstanceOffset;
 
+		FUniformBufferPtr SkeletonResourceRef;
+
 		FPipelinePtr Pipeline;
 		FArgumentBufferPtr Argument;
 
 		// Every primitive has a unique Primitive uniform buffer, because VT UVTransform
+		// Duplicated, always use instance buffer for GPU driven
 		FPrimitiveUniformBufferPtr PrimitiveUniformBuffer;
 
 		E_DRAWLIST_TYPE DrawList;

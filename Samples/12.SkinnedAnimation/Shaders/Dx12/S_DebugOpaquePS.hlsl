@@ -2,7 +2,7 @@
 #include "S_BasePassRS.hlsli"
 #include "PS_Common.hlsli"
 
-[RootSignature(BasePass_RootSig)]
+[RootSignature(BasePass_StaticMesh_RootSig)]
 float4 main(VSOutput input) : SV_Target0
 {
 	float Light = saturate(dot(MainLightDirection, input.normal));
