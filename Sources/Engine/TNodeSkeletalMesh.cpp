@@ -145,9 +145,9 @@ namespace tix
 
 			if (Track.NumPosKeys > 0)
 			{
-				if (Frame0 >= Track.NumPosKeys)
+				if (Track.NumPosKeys == 1)
 				{
-					Pos = PosKeys[Track.NumPosKeys - 1];
+					Pos = PosKeys[0];
 				}
 				else
 				{
@@ -157,9 +157,9 @@ namespace tix
 
 			if (Track.NumRotKeys > 0)
 			{
-				if (Frame0 >= Track.NumRotKeys)
+				if (Track.NumRotKeys == 1)
 				{
-					Rot = RotKeys[Track.NumRotKeys - 1];
+					Rot = RotKeys[0];
 				}
 				else
 				{
@@ -169,9 +169,9 @@ namespace tix
 
 			if (Track.NumScaleKeys > 0)
 			{
-				if (Frame0 >= Track.NumScaleKeys)
+				if (Track.NumScaleKeys == 1)
 				{
-					Scale = ScaleKeys[Track.NumScaleKeys - 1];
+					Scale = ScaleKeys[0];
 				}
 				else
 				{

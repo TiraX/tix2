@@ -934,7 +934,7 @@ namespace tix
 		const int8* BoneDataStart = (const int8*)(SkeletonDataStart + TMath::Align4((int32)sizeof(THeaderSkeleton)));
 
 		const THeaderSkeleton* Header = (const THeaderSkeleton*)(SkeletonDataStart);
-		const TBoneInitInfo* BoneInfos = (const TBoneInitInfo*)(BoneDataStart);
+		const TBoneInfo* BoneInfos = (const TBoneInfo*)(BoneDataStart);
 
 		TI_ASSERT(Header->NumBones > 0);
 
@@ -944,9 +944,10 @@ namespace tix
 
 		for (int32 b = 0; b < Header->NumBones; b++)
 		{
-			const TBoneInitInfo& Bone = BoneInfos[b];
+			const TBoneInfo& Bone = BoneInfos[b];
 			Skeleton->AddBone(Bone);
 		}
+		Skeleton->ComputeInvBindMatrices();
 		OutResources.push_back(Skeleton);
 	}
 	void TAssetFile::CreateAnimSequence(TVector<TResourcePtr>& OutResources)

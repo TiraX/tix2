@@ -104,8 +104,9 @@ namespace tix
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->GetPrimitiveUniform()->UniformBuffer);
 			break;
 		case ARGUMENT_EB_BONES:
-			TI_ASSERT(Primitive->GetSkeletonUniform() != nullptr);
-			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->GetSkeletonUniform());
+			//TI_ASSERT(Primitive->GetSkeletonUniform() != nullptr);
+			if (Primitive->GetSkeletonUniform() != nullptr)
+				RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Primitive->GetSkeletonUniform());
 			break;
 		case ARGUMENT_EB_LIGHTS:
 			RHI->SetUniformBuffer(ShaderStage, Argument.BindingIndex, Scene->GetSceneLights()->GetSceneLightsUniform()->UniformBuffer);

@@ -8,6 +8,13 @@
 
 namespace tix
 {
+	inline void MakeMatrix(matrix4& Mat, const vector3df& Pos, const quaternion& Rot, const vector3df& Scale)
+	{
+		Rot.getMatrix(Mat);
+		Mat.postScale(Scale);
+		Mat.setTranslation(Pos);
+	}
+
 	TSkeleton::TSkeleton()
 		: TResource(ERES_SKELETON)
 	{
@@ -16,10 +23,9 @@ namespace tix
 	TSkeleton::TSkeleton(int32 NumBones)
 		: TResource(ERES_SKELETON)
 	{
-		BoneParents.reserve(NumBones);
-		InvBindMatrix.reserve(NumBones);
+		Bones.reserve(NumBones);
 
-		BoneTransforms.resize(NumBones);
+		InvBindMatrix.resize(NumBones);
 	}
 
 	TSkeleton::~TSkeleton()
@@ -28,46 +34,62 @@ namespace tix
 
 	void TSkeleton::AddBone(int32 ParentIndex, const vector3df& InvTrans, const quaternion& InvRot, const vector3df& InvScale)
 	{
-		TBoneInitInfo Bone;
+		TBoneInfo Bone;
 		Bone.ParentIndex = ParentIndex;
-		Bone.InvPos = InvTrans;
-		Bone.InvRot = InvRot;
-		Bone.InvScale = InvScale;
+		Bone.Pos = InvTrans;
+		Bone.Rot = InvRot;
+		Bone.Scale = InvScale;
 
 		AddBone(Bone);
 	}
 
-	void TSkeleton::AddBone(const TBoneInitInfo& Bone)
+	void TSkeleton::ComputeInvBindMatrices()
 	{
-		BoneParents.push_back(Bone.ParentIndex);
+		TVector<matrix4> BindMatrix;
+		BindMatrix.resize(Bones.size());
 
-		matrix4 InvMat;
-		Bone.InvRot.getMatrix(InvMat);
-		InvMat.postScale(Bone.InvScale);
-		InvMat.setTranslation(Bone.InvPos);
-		InvBindMatrix.push_back(InvMat);
+		const int32 NumBones = (int32)Bones.size();
+		for (int32 b = 0; b < NumBones; b++)
+		{
+			const TBoneInfo& Bone = Bones[b];
+			if (Bone.ParentIndex == -1)
+			{
+				MakeMatrix(BindMatrix[b], Bone.Pos, Bone.Rot, Bone.Scale);
+			}
+			else
+			{
+				matrix4 ParentMat = BindMatrix[Bone.ParentIndex];
+				matrix4 Mat;
+				MakeMatrix(Mat, Bone.Pos, Bone.Rot, Bone.Scale);
+				BindMatrix[b] =  Mat * ParentMat;
+			}
+		}
+
+		InvBindMatrix.resize(Bones.size());
+		for (int32 b = 0; b < NumBones; b++)
+		{
+			BindMatrix[b].getInverse(InvBindMatrix[b]);
+		}
+	}
+
+	void TSkeleton::AddBone(const TBoneInfo& Bone)
+	{
+		Bones.push_back(Bone);
 	}
 
 	void TSkeleton::SetBonePos(int32 BoneIndex, const vector3df& InPos)
 	{
-		BoneTransforms[BoneIndex].Pos = InPos;
+		Bones[BoneIndex].Pos = InPos;
 	}
 
 	void TSkeleton::SetBoneRot(int32 BoneIndex, const quaternion& InRot)
 	{
-		BoneTransforms[BoneIndex].Rot = InRot;
+		Bones[BoneIndex].Rot = InRot;
 	}
 
 	void TSkeleton::SetBoneScale(int32 BoneIndex, const vector3df& InScale)
 	{
-		BoneTransforms[BoneIndex].Scale = InScale;
-	}
-
-	inline void MakeMatrix(matrix4& Mat, const vector3df& Pos, const quaternion& Rot, const vector3df& Scale)
-	{
-		Rot.getMatrix(Mat);
-		Mat.postScale(Scale);
-		Mat.setTranslation(Pos);
+		Bones[BoneIndex].Scale = InScale;
 	}
 
 	void TSkeleton::InitRenderThreadResource()
@@ -75,6 +97,7 @@ namespace tix
 		//TI_ASSERT(SkeletonResource == nullptr);
 		// Skeleton Bone info resource always need to re-create
 		SkeletonResource = FRHI::Get()->CreateUniformBuffer(sizeof(float)*12*MaxBones, 1, 0);
+		SkeletonResource->SetResourceName(GetResourceName());
 
 		FUniformBufferPtr SkeletonDataResource = SkeletonResource;
 		TVector<float> BoneData = BoneMatricsData;
@@ -102,32 +125,32 @@ namespace tix
 	void TSkeleton::BuildGlobalPoses()
 	{
 		TVector<matrix4> GlobalPoses;
-		GlobalPoses.resize(BoneParents.size());
+		GlobalPoses.resize(Bones.size());
 
 		// Update Tree
-		const int32 NumBones = (int32)BoneParents.size();
+		const int32 NumBones = (int32)Bones.size();
 		for (int32 b = 0; b < NumBones; b++)
 		{
-			const TBoneTransform& BTrans = BoneTransforms[b];
+			const TBoneInfo& Bone = Bones[b];
 
-			if (BoneParents[b] < 0)
+			if (Bone.ParentIndex < 0)
 			{
 				// Root
-				MakeMatrix(GlobalPoses[b], BTrans.Pos, BTrans.Rot, BTrans.Scale);
+				MakeMatrix(GlobalPoses[b], Bone.Pos, Bone.Rot, Bone.Scale);
 			}
 			else
 			{
 				matrix4 Mat;
-				MakeMatrix(Mat, BTrans.Pos, BTrans.Rot, BTrans.Scale);
+				MakeMatrix(Mat, Bone.Pos, Bone.Rot, Bone.Scale);
 
-				GlobalPoses[b] = GlobalPoses[BoneParents[b]] * Mat;
+				GlobalPoses[b] = Mat * GlobalPoses[Bone.ParentIndex];
 			}
 		}
 
 		// Multi with InvBindPose
 		for (int32 b = 0; b < NumBones; b++)
 		{
-			GlobalPoses[b] = InvBindMatrix[b] * GlobalPoses[b];
+			GlobalPoses[b] = GlobalPoses[b] * InvBindMatrix[b];
 		}
 
 		// Gather data to 4x3 matrices

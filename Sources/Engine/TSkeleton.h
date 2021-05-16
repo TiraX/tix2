@@ -7,16 +7,9 @@
 
 namespace tix
 {
-	struct TBoneInitInfo
+	struct TBoneInfo
 	{
 		int32 ParentIndex;
-		vector3df InvPos;
-		quaternion InvRot;
-		vector3df InvScale;
-	};
-
-	struct TBoneTransform
-	{
 		vector3df Pos;
 		quaternion Rot;
 		vector3df Scale;
@@ -33,7 +26,8 @@ namespace tix
 		~TSkeleton();
 
 		void AddBone(int32 ParentIndex, const vector3df& InvTrans, const quaternion& InvRot, const vector3df& InvScale);
-		void AddBone(const TBoneInitInfo& Bone);
+		void AddBone(const TBoneInfo& Bone);
+		void ComputeInvBindMatrices();
 
 		void SetBonePos(int32 BoneIndex, const vector3df& InPos);
 		void SetBoneRot(int32 BoneIndex, const quaternion& InRot);
@@ -46,7 +40,7 @@ namespace tix
 
 		int32 GetBones() const
 		{
-			return (int32)BoneParents.size();
+			return (int32)Bones.size();
 		}
 	protected:
 
@@ -54,8 +48,7 @@ namespace tix
 		FUniformBufferPtr SkeletonResource;
 
 	protected:
-		TVector<int32> BoneParents;
-		TVector<TBoneTransform> BoneTransforms;
+		TVector<TBoneInfo> Bones;
 		TVector<matrix4> InvBindMatrix;
 
 		TVector<float> BoneMatricsData;

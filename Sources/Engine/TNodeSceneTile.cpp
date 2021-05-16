@@ -228,6 +228,9 @@ namespace tix
 								NodeSkeletalMesh->SetSceneTileResource(SceneTileResource);
 								NodeSkeletalMesh->LinkMeshAndSkeleton(StaticMesh, Skeleton);
 								NodeSkeletalMesh->SetAnimation(Anim);
+								NodeSkeletalMesh->SetPosition(SKMActorInfo.Pos);
+								NodeSkeletalMesh->SetRotate(SKMActorInfo.Rot);
+								NodeSkeletalMesh->SetScale(SKMActorInfo.Scale);
 							}
 						}
 

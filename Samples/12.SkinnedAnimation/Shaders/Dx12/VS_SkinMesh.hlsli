@@ -51,6 +51,12 @@ float3 GetWorldPosition(in VSInput vsInput)
 	return position;
 }
 
+float3 GetWorldPosition(in float3 Pos)
+{
+	float3 position = mul(float4(Pos, 1.0), LocalToWorld).xyz;
+	return position;
+}
+
 half3 TransformNormal(in half3 Normal, in half3x3 RotMat)
 {
 	return mul(Normal, RotMat);

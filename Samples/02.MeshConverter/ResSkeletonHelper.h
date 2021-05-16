@@ -31,6 +31,5 @@ namespace tix
 
 		int32 TotalBones;
 		TVector<ResBoneInfo> InitBones;
-		TVector<TBoneInitInfo> ConvertedBones;
 	};
 }
