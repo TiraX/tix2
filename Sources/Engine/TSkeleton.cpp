@@ -61,7 +61,7 @@ namespace tix
 				matrix4 ParentMat = BindMatrix[Bone.ParentIndex];
 				matrix4 Mat;
 				MakeMatrix(Mat, Bone.Pos, Bone.Rot, Bone.Scale);
-				BindMatrix[b] =  Mat * ParentMat;
+				BindMatrix[b] =  ParentMat * Mat;
 			}
 		}
 
@@ -143,7 +143,7 @@ namespace tix
 				matrix4 Mat;
 				MakeMatrix(Mat, Bone.Pos, Bone.Rot, Bone.Scale);
 
-				GlobalPoses[b] = Mat * GlobalPoses[Bone.ParentIndex];
+				GlobalPoses[b] = GlobalPoses[Bone.ParentIndex] * Mat;
 			}
 		}
 

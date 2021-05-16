@@ -119,8 +119,8 @@ namespace tix
 
 		const int32 Frame0 = (int32)(AnimTime / FrameLength);
 		const int32 Frame1 = Frame0 + 1;
-
-		const float t = (AnimTime / FrameLength - FrameLength * Frame0) / FrameLength;
+		
+		const float t = (AnimTime - FrameLength * Frame0) / FrameLength;
 
 		// Go through tracks
 		const TVector<TTrackInfo>& Tracks = Animation->GetTrackInfos();
@@ -132,6 +132,7 @@ namespace tix
 		for (int32 track = 0; track < NumTracks; track++)
 		{
 			const TTrackInfo Track = Tracks[track];
+			TI_ASSERT(Track.RefBoneIndex == track);
 
 			const float* TrackKeys = FrameData + Track.KeyDataOffset;
 
