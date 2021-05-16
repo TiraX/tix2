@@ -82,7 +82,9 @@ namespace tix
 
 					RHI->DrawPrimitiveIndexedInstanced(
 						Primitive->GetMeshBuffer(),
+						Primitive->GetTriangles() * 3,
 						InstanceBuffer == nullptr ? 1 : Primitive->GetInstanceCount(),
+						Primitive->GetIndexStart(),
 						Primitive->GetInstanceOffset());
 				}
 			}

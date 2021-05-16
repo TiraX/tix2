@@ -3389,6 +3389,15 @@ namespace tix
 		FStats::Stats.TrianglesRendered += MeshBuffer->GetIndicesCount() / 3 * InstanceCount;
 	}
 
+	void FRHIDx12::DrawPrimitiveIndexedInstanced(FMeshBufferPtr MeshBuffer, uint32 IndicesCount, uint32 InstanceCount, uint32 IndexOffset, uint32 InstanceOffset)
+	{
+		TI_ASSERT(CurrentCommandListState.ListType == EPL_GRAPHICS);
+		TI_ASSERT(IndicesCount <= MeshBuffer->GetIndicesCount());
+		CurrentWorkingCommandList->DrawIndexedInstanced(IndicesCount, InstanceCount, IndexOffset, 0, InstanceOffset);
+
+		FStats::Stats.TrianglesRendered += MeshBuffer->GetIndicesCount() / 3 * InstanceCount;
+	}
+
 	void FRHIDx12::GraphicsCopyBuffer(FUniformBufferPtr Dest, uint32 DestOffset, FUniformBufferPtr Src, uint32 SrcOffset, uint32 CopySize)
 	{
 		TI_ASSERT(0);
