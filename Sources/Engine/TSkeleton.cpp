@@ -94,37 +94,36 @@ namespace tix
 
 	void TSkeleton::InitRenderThreadResource()
 	{
-		//TI_ASSERT(SkeletonResource == nullptr);
-		// Skeleton Bone info resource always need to re-create
-		SkeletonResource = FRHI::Get()->CreateUniformBuffer(sizeof(float)*12*MaxBones, 1, 0);
-		SkeletonResource->SetResourceName(GetResourceName());
+		////TI_ASSERT(SkeletonResource == nullptr);
+		//// Skeleton Bone info resource always need to re-create
+		//SkeletonResource = FRHI::Get()->CreateUniformBuffer(sizeof(float)*12*MaxBones, 1, 0);
+		//SkeletonResource->SetResourceName(GetResourceName());
 
-		FUniformBufferPtr SkeletonDataResource = SkeletonResource;
-		TVector<float> BoneData = BoneMatricsData;
-		ENQUEUE_RENDER_COMMAND(TSkeletonUpdateSkeletonResource)(
-			[SkeletonDataResource, BoneData]()
-			{
-				FRHI::Get()->UpdateHardwareResourceUB(SkeletonDataResource, BoneData.data());
-			});
+		//FUniformBufferPtr SkeletonDataResource = SkeletonResource;
+		//TVector<float> BoneData = BoneMatricsData;
+		//ENQUEUE_RENDER_COMMAND(TSkeletonUpdateSkeletonResource)(
+		//	[SkeletonDataResource, BoneData]()
+		//	{
+		//		FRHI::Get()->UpdateHardwareResourceUB(SkeletonDataResource, BoneData.data());
+		//	});
 	}
 
 	void TSkeleton::DestroyRenderThreadResource()
 	{
-		TI_ASSERT(SkeletonResource != nullptr);
-		
-		FUniformBufferPtr SkeletonDataResource = SkeletonResource;
-		ENQUEUE_RENDER_COMMAND(TSkeletonDestroySkeletonResource)(
-			[SkeletonDataResource]()
-			{
-				//SkeletonDataResource = nullptr;
-			});
-		SkeletonDataResource = nullptr;
-		SkeletonResource = nullptr;
+		//TI_ASSERT(SkeletonResource != nullptr);
+		//
+		//FUniformBufferPtr SkeletonDataResource = SkeletonResource;
+		//ENQUEUE_RENDER_COMMAND(TSkeletonDestroySkeletonResource)(
+		//	[SkeletonDataResource]()
+		//	{
+		//		//SkeletonDataResource = nullptr;
+		//	});
+		//SkeletonDataResource = nullptr;
+		//SkeletonResource = nullptr;
 	}
 
 	void TSkeleton::BuildGlobalPoses()
 	{
-		TVector<matrix4> GlobalPoses;
 		GlobalPoses.resize(Bones.size());
 
 		// Update Tree
@@ -153,26 +152,30 @@ namespace tix
 			GlobalPoses[b] = GlobalPoses[b] * InvBindMatrix[b];
 		}
 
+	}
+
+	void TSkeleton::GatherBoneData(TVector<float>& BoneData, const TVector<uint32>& BoneMap)
+	{
 		// Gather data to 4x3 matrices
-
-		BoneMatricsData.resize(MaxBones * 4 * 3);
-		for (int i = 0; i < NumBones; ++i)
+		BoneData.resize(MaxBones * 4 * 3);
+		for (int32 i = 0; i < (int32)BoneMap.size(); ++i)
 		{
-			const matrix4 Mat = GlobalPoses[i];
-			BoneMatricsData[i * 4 * 3 + 0] = Mat[0];
-			BoneMatricsData[i * 4 * 3 + 1] = Mat[4];
-			BoneMatricsData[i * 4 * 3 + 2] = Mat[8];
-			BoneMatricsData[i * 4 * 3 + 3] = Mat[12];
+			const int32 Index = BoneMap[i];
+			const matrix4& Mat = GlobalPoses[Index];
+			BoneData[i * 4 * 3 + 0] = Mat[0];
+			BoneData[i * 4 * 3 + 1] = Mat[4];
+			BoneData[i * 4 * 3 + 2] = Mat[8];
+			BoneData[i * 4 * 3 + 3] = Mat[12];
 
-			BoneMatricsData[i * 4 * 3 + 4] = Mat[1];
-			BoneMatricsData[i * 4 * 3 + 5] = Mat[5];
-			BoneMatricsData[i * 4 * 3 + 6] = Mat[9];
-			BoneMatricsData[i * 4 * 3 + 7] = Mat[13];
+			BoneData[i * 4 * 3 + 4] = Mat[1];
+			BoneData[i * 4 * 3 + 5] = Mat[5];
+			BoneData[i * 4 * 3 + 6] = Mat[9];
+			BoneData[i * 4 * 3 + 7] = Mat[13];
 
-			BoneMatricsData[i * 4 * 3 + 8] = Mat[2];
-			BoneMatricsData[i * 4 * 3 + 9] = Mat[6];
-			BoneMatricsData[i * 4 * 3 + 10] = Mat[10];
-			BoneMatricsData[i * 4 * 3 + 11] = Mat[14];
+			BoneData[i * 4 * 3 + 8] = Mat[2];
+			BoneData[i * 4 * 3 + 9] = Mat[6];
+			BoneData[i * 4 * 3 + 10] = Mat[10];
+			BoneData[i * 4 * 3 + 11] = Mat[14];
 		}
 	}
 }

@@ -80,6 +80,8 @@ namespace tix
 			);
 			LinkedPrimitives.push_back(Primitive);
 		}
+		SkeletonResources.resize(LinkedPrimitives.size());
+
 		TVector<FPrimitivePtr> Primitives = LinkedPrimitives;
 		if (SceneTileResourceRef != nullptr)
 		{
@@ -194,18 +196,40 @@ namespace tix
 		{
 			// Build matrices from skeleton
 			Skeleton->BuildGlobalPoses();
-			Skeleton->InitRenderThreadResource();
+
+			TVector< TVector<float> > BoneDatas;
+			BoneDatas.resize(LinkedPrimitives.size());
+
+			for (int32 p = 0; p < (int32)LinkedPrimitives.size(); p++)
+			{
+				const TMeshSection& MeshSection = StaticMesh->GetMeshSection(p);
+
+				SkeletonResources[p] = FRHI::Get()->CreateUniformBuffer(sizeof(float) * 12 * TSkeleton::MaxBones, 1, 0);
+				SkeletonResources[p]->SetResourceName(Skeleton->GetResourceName());
+
+				Skeleton->GatherBoneData(BoneDatas[p], MeshSection.BoneMap);
+			}
+			TVector<FUniformBufferPtr> SkeletonDataResources = SkeletonResources;
+			ENQUEUE_RENDER_COMMAND(TSkeletonUpdateSkeletonResource)(
+				[SkeletonDataResources, BoneDatas]()
+				{
+					TI_ASSERT(SkeletonDataResources.size() == BoneDatas.size());
+					for (int32 i = 0; i < (int32)SkeletonDataResources.size(); i++)
+					{
+						FRHI::Get()->UpdateHardwareResourceUB(SkeletonDataResources[i], BoneDatas[i].data());
+					}
+				});
 
 			// Link skeleton resource to primitives
 			TVector<FPrimitivePtr> Primitives = LinkedPrimitives;
-			FUniformBufferPtr SkeletonResource = Skeleton->SkeletonResource;
 			ENQUEUE_RENDER_COMMAND(PrimitiveSetSkeleton)(
-				[Primitives, SkeletonResource]()
+				[Primitives, SkeletonDataResources]()
 				{
+					TI_ASSERT(Primitives.size() == SkeletonDataResources.size());
 					const uint32 TotalPrimitives = (uint32)Primitives.size();
 					for (uint32 p = 0; p < TotalPrimitives; ++p)
 					{
-						Primitives[p]->SetSkeletonResource(SkeletonResource);
+						Primitives[p]->SetSkeletonResource(SkeletonDataResources[p]);
 					}
 				});
 

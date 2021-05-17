@@ -34,6 +34,7 @@ namespace tix
 		void SetBoneScale(int32 BoneIndex, const vector3df& InScale);
 
 		void BuildGlobalPoses();
+		void GatherBoneData(TVector<float>& BoneData, const TVector<uint32>& BoneMap);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
@@ -45,12 +46,11 @@ namespace tix
 	protected:
 
 	public:
-		FUniformBufferPtr SkeletonResource;
+		//FUniformBufferPtr SkeletonResource;
 
 	protected:
 		TVector<TBoneInfo> Bones;
 		TVector<matrix4> InvBindMatrix;
-
-		TVector<float> BoneMatricsData;
+		TVector<matrix4> GlobalPoses;
 	};
 }

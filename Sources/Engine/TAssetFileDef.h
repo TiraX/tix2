@@ -10,7 +10,7 @@ namespace tix
 	enum
 	{
 		TIRES_VERSION_MAINFILE = 1,
-		TIRES_VERSION_CHUNK_MESH = 2,	// v2, Support for skeletal_mesh, add RefSkeleton attribute
+		TIRES_VERSION_CHUNK_MESH = 2,	// v2, Support for skeletal_mesh, add RefSkeleton attribute, add ActiveBones to mesh sections
 		TIRES_VERSION_CHUNK_TEXTURE = 1,
 		TIRES_VERSION_CHUNK_MATERIAL = 2,	// v2, Add primitive_type export
 		TIRES_VERSION_CHUNK_MINSTANCE = 1,
@@ -178,12 +178,14 @@ namespace tix
 		int32 StrMaterialInstance;
 		uint32 IndexStart;
 		uint32 Triangles;
+		uint32 ActiveBones;
 
 		THeaderMeshSection()
 			: StrId_Name(0)
 			, StrMaterialInstance(0)
 			, IndexStart(0)
 			, Triangles(0)
+			, ActiveBones(0)
 		{}
 	};
 

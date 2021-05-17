@@ -214,7 +214,20 @@ namespace tix
 		const THeaderMeshSection * HeaderSections = (const THeaderMeshSection*)(SectionDataStart);
 
 		TI_ASSERT(Header->Sections > 0);
-		const int8* VertexDataStart = MeshDataStart + TMath::Align4((int32)sizeof(THeaderMesh)) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections + sizeof(THeaderCollisionSet);
+		// Calc Active Bone Info
+		int32 TotalActiveBones = 0;
+		for (int32 s = 0; s < Header->Sections; s++)
+		{
+			TotalActiveBones += HeaderSections[s].ActiveBones;
+		}
+
+		const uint32* ActiveBoneData = (uint32*)(SectionDataStart + Header->Sections * sizeof(THeaderMeshSection));
+
+		const int8* VertexDataStart = MeshDataStart + 
+			TMath::Align4((int32)sizeof(THeaderMesh)) * MeshCount + 
+			sizeof(THeaderMeshSection) * Header->Sections + 
+			TotalActiveBones * sizeof(uint32) + 
+			sizeof(THeaderCollisionSet);
 
 		// Create mesh buffer resource
 		TMeshBufferPtr MeshBuffer = ti_new TMeshBuffer();
@@ -239,6 +252,7 @@ namespace tix
 		FStats::Stats.IndexDataInBytes += TMath::Align4((int32)(IndexStride * Header->PrimitiveCount * 3));
 
 		// Load sections
+		int32 BoneMapOffset = 0;
 		for (int32 s = 0 ; s < Header->Sections ; ++ s)
 		{
 			const THeaderMeshSection& HeaderSection = HeaderSections[s];
@@ -246,6 +260,12 @@ namespace tix
 			TMeshSection MeshSection;
 			MeshSection.IndexStart = HeaderSection.IndexStart;
 			MeshSection.Triangles = HeaderSection.Triangles;
+			MeshSection.BoneMap.resize(HeaderSection.ActiveBones);
+			if (HeaderSection.ActiveBones > 0)
+			{
+				memcpy(MeshSection.BoneMap.data(), ActiveBoneData + BoneMapOffset, HeaderSection.ActiveBones * sizeof(uint32));
+				BoneMapOffset += HeaderSection.ActiveBones;
+			}
 
 			// Load material
 			TString MaterialResName = GetString(HeaderSection.StrMaterialInstance);
@@ -262,7 +282,10 @@ namespace tix
 
 		// Load collisions
 		{
-			const int8* CollisionHeaderStart = MeshDataStart + sizeof(THeaderMesh) * MeshCount + sizeof(THeaderMeshSection) * Header->Sections;
+			const int8* CollisionHeaderStart = MeshDataStart + 
+				sizeof(THeaderMesh) * MeshCount + 
+				sizeof(THeaderMeshSection) * Header->Sections +
+				TotalActiveBones * sizeof(uint32);
 			const int8* CollisionDataStart = VertexDataStart + 
 				TMath::Align4(Header->VertexCount * VertexStride)	// Vertex data size
 				+ TMath::Align4((int32)(IndexStride * Header->PrimitiveCount * 3))		// Index data size

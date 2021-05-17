@@ -18,6 +18,7 @@ namespace tix
 		TMaterialInstancePtr DefaultMaterial;
 		uint32 IndexStart;
 		uint32 Triangles;
+		TVector<uint32> BoneMap;
 	};
 
 	struct TMeshClusterData

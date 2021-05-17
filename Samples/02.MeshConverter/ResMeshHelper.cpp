@@ -97,12 +97,18 @@ namespace tix
 
 			TVector<THeaderMeshSection> SMSections;
 			SMSections.resize(MeshHeader.Sections);
+			TVector<uint32> TotalActiveBones;
 			for (int32 s = 0 ; s < MeshHeader.Sections ; ++ s)
 			{
 				SMSections[s].StrId_Name = AddStringToList(OutStrings, Mesh.Sections[s].Name);
 				SMSections[s].StrMaterialInstance = AddStringToList(OutStrings, Mesh.Sections[s].LinkedMaterialInstance);
 				SMSections[s].IndexStart = Mesh.Sections[s].IndexStart;
 				SMSections[s].Triangles = Mesh.Sections[s].Triangles;
+				SMSections[s].ActiveBones = (uint32)Mesh.Sections[s].ActiveBones.size();
+				for (uint32 b = 0; b < SMSections[s].ActiveBones; b++)
+				{
+					TotalActiveBones.push_back(Mesh.Sections[s].ActiveBones[b]);
+				}
 			}
 
 			if (TResSettings::GlobalSettings.MeshClusterSize > 0)
@@ -322,6 +328,10 @@ namespace tix
 			HeaderStream.Put(&MeshHeader, sizeof(THeaderMesh));
 			FillZero4(HeaderStream);
 			HeaderStream.Put(SMSections.data(), (uint32)(sizeof(THeaderMeshSection) * SMSections.size()));
+			if (TotalActiveBones.size() > 0)
+			{
+				HeaderStream.Put(TotalActiveBones.data(), (uint32)TotalActiveBones.size() * sizeof(uint32));
+			}
 			FillZero4(HeaderStream);
 		}
 
@@ -559,8 +569,14 @@ namespace tix
 				TJSONNode JMaterial = JSection["material"];
 				TJSONNode JIndexStart= JSection["index_start"];
 				TJSONNode JTriangles = JSection["triangles"];
+				TJSONNode JBoneMap = JSection["bone_map"];
 
 				Section.Name = JSectionName.GetString();
+				Section.ActiveBones.resize(JBoneMap.Size());
+				for (int32 b = 0; b < JBoneMap.Size(); ++b)
+				{
+					Section.ActiveBones[b] = JBoneMap[b].GetInt();
+				}
 
 				if (!JMaterial.IsNull())
 				{

@@ -56,6 +56,7 @@ namespace tix
 		TVector< TVector<uint32> > ClusterIndices;
 		TVector< aabbox3df > ClusterBBoxes;
 		TVector< vector4df > ClusterCones;
+		TVector< uint32 > ActiveBones;
 	};
 
 	struct TResMeshDefine
