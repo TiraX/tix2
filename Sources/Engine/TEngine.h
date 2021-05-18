@@ -61,6 +61,9 @@ namespace tix
 		TI_API void AssignRenderer(FRenderer* Renderer);
 		TI_API void AddTicker(TTicker* Ticker);
 
+		TI_API void FreezeTick();
+		TI_API void TickStepNext();
+
         TI_API void LowMemoryWarning() {};
         
 #if defined (TI_PLATFORM_IOS)
@@ -98,6 +101,9 @@ namespace tix
 		TVector<TTicker*> Tickers;
 
 		float GameTimeElapsed;
+
+		bool bFreezeTick;
+		bool bStepNext;
 
 		typedef TThreadSafeQueue<TTask*> TTaskQueue;
 		TTaskQueue MainThreadTasks;

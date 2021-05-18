@@ -1,0 +1,36 @@
+{
+	"name": "Map_Anim",
+	"type": "scene",
+	"version": 1,
+	"desc": "Scene tiles information from TiX exporter.",
+	"static_mesh_total": 3,
+	"sm_instances_total": 3,
+	"skm_actors_total": 2,
+	"cameras": [
+		{
+			"location": [ 8.4042682647705078, 5.971282958984375, 2.4285447597503662 ],
+			"target": [ 7.4201254844665527, 5.9815859794616699, 2.2514631748199463 ],
+			"rotator": [ -10.199828147888184, 179.40016174316406, 2.9819733526892378e-07 ],
+			"fov": 90,
+			"aspect": 1.7777780294418335
+		}
+	],
+	"environment":
+	{
+		"sun_light":
+		{
+			"name": "DirectionalLight_1",
+			"direction": [ 0.035009145736694336, -0.46986556053161621, -0.88204348087310791 ],
+			"color": [ 1, 1, 1, 1 ],
+			"intensity": 1
+		},
+		"sky_light":
+		{
+			"name": "SkyLight_1",
+			"irradiance_sh3": [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+		}
+	},
+	"tiles": [
+		[ 0, 0 ]
+	]
+}

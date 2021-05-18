@@ -111,6 +111,8 @@ namespace tix
 		, LastFrameTime(0)
 		, GameTimeElapsed(0.f)
 		, MainThreadTasks(1024)
+		, bFreezeTick(false)
+		, bStepNext(false)
 	{
 	}
 
@@ -164,6 +166,16 @@ namespace tix
 	void TEngine::AddTicker(TTicker* Ticker)
 	{
 		Tickers.push_back(Ticker);
+	}
+
+	void TEngine::FreezeTick()
+	{
+		bFreezeTick = !bFreezeTick;
+	}
+
+	void TEngine::TickStepNext()
+	{
+		bStepNext = true;
 	}
 
 	static const uint64 FrameInterval = 16;
@@ -222,6 +234,15 @@ namespace tix
 		uint64 CurrentFrameTime = TTimer::GetCurrentTimeMillis();
 		uint32 Delta = (uint32)(CurrentFrameTime - LastFrameTime);
 		float  Dt = Delta * 0.001f;
+		if (bFreezeTick)
+		{
+			Dt = 0.f;
+			if (bStepNext)
+			{
+				Dt = Delta * 0.001f;
+				bStepNext = false;
+			}
+		}
 
 		GameTimeElapsed += Dt;
 

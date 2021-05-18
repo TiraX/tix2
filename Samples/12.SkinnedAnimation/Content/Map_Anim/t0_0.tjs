@@ -1,0 +1,105 @@
+{
+	"name": "Map_Anim_t0_0",
+	"level": "Map_Anim",
+	"type": "scene_tile",
+	"version": 1,
+	"desc": "Scene tiles contains mesh instance information from TiX exporter.",
+	"position": [ 0, 0 ],
+	"bbox": [ -499999.375, -499999.09375, -75000.0234375, 500000.59375, 500000.71875, 75000.015625 ],
+	"static_mesh_total": 3,
+	"sm_sections_total": 4,
+	"sm_instances_total": 3,
+	"texture_total": 0,
+	"skeletal_meshes_total": 2,
+	"skeletons_total": 2,
+	"anims_total": 2,
+	"skm_actors_total": 2,
+	"reflection_captures_total": 0,
+	"reflection_captures": [],
+	"dependency":
+	{
+		"textures": [],
+		"materials": [],
+		"material_instances": [],
+		"anims": [
+			"Mannequin/Animations/ThirdPersonRun.tasset",
+			"SKM_Animation/SKM_BoneTest_Anim.tasset"
+		],
+		"skeletons": [
+			"Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.tasset",
+			"SKM_Animation/SKM_BoneTest_Skeleton.tasset"
+		],
+		"static_meshes": [
+			"/Engine/MapTemplates/SM_Template_Map_Floor.tasset",
+			"/Engine/BasicShapes/Sphere.tasset",
+			"/Engine/EngineMeshes/SM_MatPreviewMesh_01.tasset"
+		],
+		"skeletal_meshes": [
+			"Mannequin/Character/Mesh/SK_Mannequin.tasset",
+			"SKM_Animation/SKM_BoneTest.tasset"
+		]
+	},
+	"static_mesh_instances": [
+		{
+			"linked_mesh": "/Engine/MapTemplates/SM_Template_Map_Floor.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 5.4000000953674316, 5.9000000953674316, 0.19999998807907104 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "/Engine/BasicShapes/Sphere.tasset",
+			"mesh_sections": 1,
+			"instances": [
+				{
+					"position": [ 0.59999996423721313, 0.79999995231628418, 0 ],
+					"rotation": [ -0.70710676908493042, -0, 0, 0.70710670948028564 ],
+					"scale": [ 1000000, 150000, 1000000 ]
+				}
+			]
+		},
+		{
+			"linked_mesh": "/Engine/EngineMeshes/SM_MatPreviewMesh_01.tasset",
+			"mesh_sections": 2,
+			"instances": [
+				{
+					"position": [ 2.3999998569488525, 5.9000000953674316, 0.17999999225139618 ],
+					"rotation": [ -0, 0, -0.70710676908493042, 0.70710670948028564 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		}
+	],
+	"skeletal_mesh_actors": [
+		{
+			"linked_skm": "Mannequin/Character/Mesh/SK_Mannequin.tasset",
+			"linked_sk": "Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.tasset",
+			"mesh_sections": 2,
+			"actors": [
+				{
+					"linked_anim": "Mannequin/Animations/ThirdPersonRun.tasset",
+					"position": [ 3.0999999046325684, 9.5, 0.19999998807907104 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		},
+		{
+			"linked_skm": "SKM_Animation/SKM_BoneTest.tasset",
+			"linked_sk": "SKM_Animation/SKM_BoneTest_Skeleton.tasset",
+			"mesh_sections": 1,
+			"actors": [
+				{
+					"linked_anim": "SKM_Animation/SKM_BoneTest_Anim.tasset",
+					"position": [ 3.5, 2.8999998569488525, 0.19999998807907104 ],
+					"rotation": [ 0, 0, 0, 1 ],
+					"scale": [ 1, 1, 1 ]
+				}
+			]
+		}
+	]
+}

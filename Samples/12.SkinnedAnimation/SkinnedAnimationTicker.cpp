@@ -19,6 +19,25 @@ void TSkinnedAnimationTicker::Tick(float Dt)
 {
 }
 
+bool TSkinnedAnimationTicker::OnEvent(const TEvent& e)
+{
+	if (e.type == EET_KEY_DOWN)
+	{
+		if (e.param == KEY_SPACE)
+		{
+			TEngine::Get()->FreezeTick();
+		}
+		else if (e.param == KEY_KEY_P)
+		{
+			TEngine::Get()->TickStepNext();
+		}	
+	}
+	else if (e.type == EET_KEY_UP)
+	{
+	}
+	return true;
+}
+
 void TSkinnedAnimationTicker::SetupScene()
 {
 	FVTSystem::SetVTEnabled(false);

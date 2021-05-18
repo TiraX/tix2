@@ -5,13 +5,14 @@
 
 #pragma once
 
-class TSkinnedAnimationTicker : public TTicker
+class TSkinnedAnimationTicker : public TTicker, public TEventHandler
 {
 public:
 	TSkinnedAnimationTicker();
 	virtual ~TSkinnedAnimationTicker();
 
 	virtual void Tick(float Dt) override;
+	virtual bool OnEvent(const TEvent& e) override;
 
 	static void SetupScene();
 

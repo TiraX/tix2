@@ -14,7 +14,7 @@ VSOutput main(VSInput vsInput)
     BoneMatrix += float3x4(BoneData[vsInput.blend_index.z * 3 + 0], BoneData[vsInput.blend_index.z * 3 + 1], BoneData[vsInput.blend_index.z * 3 + 2]) * vsInput.blend_weight.z;
     BoneMatrix += float3x4(BoneData[vsInput.blend_index.w * 3 + 0], BoneData[vsInput.blend_index.w * 3 + 1], BoneData[vsInput.blend_index.w * 3 + 2]) * vsInput.blend_weight.w;
 
-    SkinnedPosition = mul(BoneMatrix, float4(vsInput.position, 1));
+    float3 SkinnedPosition = mul(BoneMatrix, float4(vsInput.position, 1));
     //for (int i = 0; i < 4; ++i)
     //{
     //    if (vsInput.blend_weight[i] > 0.0)

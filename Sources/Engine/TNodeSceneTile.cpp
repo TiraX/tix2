@@ -77,8 +77,6 @@ namespace tix
 
 	void TNodeSceneTile::Tick(float Dt)
 	{
-		TNode::Tick(Dt);
-
 		// check if Asset is loaded
 		if (SceneTileResource != nullptr)
 		{
@@ -86,6 +84,10 @@ namespace tix
 			LoadSkeletalMeshes();
 			LoadEnvCubemaps();
 		}
+
+		// Do loading first, then tick children, Loading skeletal meshes may create child SKM node
+		TNode::Tick(Dt);
+
 	}
 
 	void TNodeSceneTile::LoadStaticMeshes()

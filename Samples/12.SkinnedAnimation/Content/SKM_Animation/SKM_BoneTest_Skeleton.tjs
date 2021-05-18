@@ -1,0 +1,33 @@
+{
+	"name": "SKM_BoneTest_Skeleton",
+	"type": "skeleton",
+	"version": 1,
+	"desc": "Skeleton from TiX exporter.",
+	"total_bones": 3,
+	"bones": [
+		{
+			"index": 0,
+			"bone_name": "Dummy001",
+			"parent_index": -1,
+			"translation": [ 0, 0, 0 ],
+			"rotation": [ -0.7071068286895752, 0, 0, 0.70710670948028564 ],
+			"scale": [ 1, 0.99999994039535522, 0.99999994039535522 ]
+		},
+		{
+			"index": 1,
+			"bone_name": "Dummy002",
+			"parent_index": 0,
+			"translation": [ 0, -2.5840990543365479, -3.0804864081801497e-07 ],
+			"rotation": [ 0, -0, 0, -1 ],
+			"scale": [ 1, 1, 1 ]
+		},
+		{
+			"index": 2,
+			"bone_name": "Dummy003",
+			"parent_index": 1,
+			"translation": [ 0, -2.0505571365356445, -2.4444548785140796e-07 ],
+			"rotation": [ 0, -0, 0, -1 ],
+			"scale": [ 1, 1, 1 ]
+		}
+	]
+}

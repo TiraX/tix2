@@ -120,7 +120,7 @@ namespace tix
 		const float FrameLength = Animation->GetFrameLength();
 
 		const int32 Frame0 = (int32)(AnimTime / FrameLength);
-		const int32 Frame1 = Frame0 + 1;
+		const int32 Frame1 = (Frame0 + 1) >= Animation->GetNumFrames() ? 0 : (Frame0 + 1);
 		
 		const float t = (AnimTime - FrameLength * Frame0) / FrameLength;
 
