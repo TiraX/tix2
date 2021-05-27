@@ -5,6 +5,7 @@
 
 #pragma once
 
+class Player;
 class TSkinnedAnimationTicker : public TTicker, public TEventHandler
 {
 public:
@@ -15,6 +16,8 @@ public:
 	virtual bool OnEvent(const TEvent& e) override;
 
 	static void SetupScene();
+	void CreatePlayer();
 
 protected:
+	Player* MainPlayer;
 };

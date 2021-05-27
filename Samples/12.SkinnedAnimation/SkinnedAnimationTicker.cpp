@@ -6,8 +6,10 @@
 #include "stdafx.h"
 #include "SkinnedAnimationTicker.h"
 #include "SkinnedAnimationRenderer.h"
+#include "Player.h"
 
 TSkinnedAnimationTicker::TSkinnedAnimationTicker()
+	: MainPlayer(nullptr)
 {
 }
 
@@ -51,4 +53,10 @@ void TSkinnedAnimationTicker::SetupScene()
 	// Load scene
 	const TString TargetSceneAsset = "Map_Anim.tasset";
 	TEngine::Get()->GetScene()->LoadSceneAync(TargetSceneAsset);
+}
+
+void TSkinnedAnimationTicker::CreatePlayer()
+{
+	MainPlayer = ti_new Player();
+	MainPlayer->LoadResources();
 }

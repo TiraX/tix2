@@ -98,6 +98,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="SkinnedAnimationRenderer.cpp" />
     <ClCompile Include="SkinnedAnimationSample.cpp" />
     <ClCompile Include="SkinnedAnimationTicker.cpp" />
@@ -107,6 +108,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Player.h" />
     <ClInclude Include="SkinnedAnimationRenderer.h" />
     <ClInclude Include="SkinnedAnimationTicker.h" />
     <ClInclude Include="stdafx.h" />
