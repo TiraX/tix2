@@ -89,7 +89,7 @@ void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 		ApplyDeltaPos();
 	}
 	UpdateVelocity();
-	XSPHViscosity();
+	//XSPHViscosity();
 	OutputDebugInfo();
 
 	// Copy sorted positions, velocities to particle positions and velocities
