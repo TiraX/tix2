@@ -50,6 +50,7 @@ void FFluidSolverCPU::UpdateResourceBuffers(FRHI * RHI)
 		UB_PositionOld.resize(TotalParticles);
 		UB_NeighborNum.resize(TotalParticles);
 		UB_NeighborParticles.resize(TotalParticles * MaxNeighbors);
+		UB_Densities.resize(TotalParticles);
 		UB_Lambdas.resize(TotalParticles);
 		UB_DeltaPositions.resize(TotalParticles);
 	}
@@ -88,6 +89,7 @@ void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 		ApplyDeltaPos();
 	}
 	UpdateVelocity();
+	XSPHViscosity();
 	OutputDebugInfo();
 
 	// Copy sorted positions, velocities to particle positions and velocities
@@ -420,6 +422,7 @@ void FFluidSolverCPU::Lambda()
 
 		SumGradSq += Grad.dotProduct(Grad);
 		float DensityContraint = max(Density * m_by_rho - 1.f, 0.f);
+		UB_Densities[Index] = Density;
 		UB_Lambdas[Index] = (-DensityContraint) / (SumGradSq + Epsilon);
 	}
 }
@@ -487,9 +490,53 @@ void FFluidSolverCPU::UpdateVelocity()
 		BoundaryCheck(Pos, Vel, BoundaryBox.MinEdge, BoundaryBox.MaxEdge);
 
 		float vl = Vel.getLength();
-
+		TI_ASSERT(!TMath::IsNaN(Pos.X) && !TMath::IsNaN(Pos.Y) && !TMath::IsNaN(Pos.Z));
 		UB_SortedPositions[p] = Pos;
 		UB_SortedVelocities[p] = Vel;
+	}
+}
+
+void FFluidSolverCPU::XSPHViscosity()
+{
+	const float h = ParticleSeperation;
+	const float h2 = h * h;
+	const float h3_inv = 1.f / (h * h * h);
+
+#if RUN_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 p = 0; p < TotalParticles; p++)
+	{
+		const int32 Index = p;
+		const uint32 NumNb = UB_NeighborNum[Index];
+		const uint32 NbParticleOffset = Index * MaxNeighbors;
+		const vector3df& Pos = UB_SortedPositions[Index];
+
+		const float Density = UB_Densities[Index];
+		vector3df Vel = UB_SortedVelocities[Index];
+		TI_ASSERT(!TMath::IsInF(Vel.X) && !TMath::IsInF(Vel.Y) && !TMath::IsInF(Vel.Z));
+
+		for (uint32 i = 0; i < NumNb; i++)
+		{
+			int NbIndex = UB_NeighborParticles[NbParticleOffset + i];
+
+			float NbDensity = UB_Densities[NbIndex];
+			NbDensity = TMath::Max(NbDensity, 1e-5f);
+
+			const vector3df& NbPos = UB_SortedPositions[NbIndex];
+			const vector3df& NbVel = UB_SortedVelocities[NbIndex];
+			vector3df Dir = Pos - NbPos;
+			float s = TMath::Max(Dir.getLength(), 1e-5f);
+			Dir /= s;
+
+			vector3df v0 = Vel;
+
+			Vel -= (Vel - NbVel) * poly6_value(s, h, h2, h3_inv) * Viscosity * ParticleMass / NbDensity;
+			TI_ASSERT(!TMath::IsInF(Vel.X) && !TMath::IsInF(Vel.Y) && !TMath::IsInF(Vel.Z));
+			TI_ASSERT(!TMath::IsNaN(Vel.X) && !TMath::IsNaN(Vel.Y) && !TMath::IsNaN(Vel.Z));
+		}
+
+		UB_SortedVelocities[Index] = Vel;
 	}
 }
 

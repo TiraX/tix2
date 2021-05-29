@@ -34,6 +34,7 @@ private:
 	void DeltaPos();
 	void ApplyDeltaPos();
 	void UpdateVelocity();
+	void XSPHViscosity();
 	void OutputDebugInfo();
 
 private:
@@ -81,7 +82,13 @@ private:
 	TVector<uint32> UB_NeighborParticles;
 
 	/**
-	 * Lambdas from density for each particle 
+	 * Densities for each particle
+	 * Size = ParticleCount
+	 */
+	TVector<float> UB_Densities;
+
+	/**
+	 * Lambdas from density for each particle
 	 * Size = ParticleCount
 	 */
 	TVector<float> UB_Lambdas;

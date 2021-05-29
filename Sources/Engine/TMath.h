@@ -119,6 +119,18 @@ namespace tix
 		}
 
 		template< class T >
+		static inline bool IsNaN(const T v)
+		{
+			return isnan(v);
+		}
+
+		template< class T >
+		static inline bool IsInF(const T v)
+		{
+			return isinf(v);
+		}
+
+		template< class T >
 		static inline T Lerp(const T src, const T dest, const float t)
 		{
 			return (T)((dest - src) * t + src);

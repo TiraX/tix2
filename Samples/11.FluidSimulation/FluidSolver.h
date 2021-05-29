@@ -43,6 +43,7 @@ protected:
 	float ParticleMass;
 	float ParticleSeperation;
 	float RestDenstiy;
+	float Viscosity;
 	
 	float TimeStep;
 	int32 SubStep;
