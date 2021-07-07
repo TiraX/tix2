@@ -64,6 +64,20 @@ namespace tix
 		return DXGI_FORMAT_UNKNOWN;
 	};
 
+	inline DXGI_FORMAT GetDxIndexFormat(E_INDEX_TYPE InFormat)
+	{
+		switch (InFormat)
+		{
+		case EIT_16BIT:
+			return DXGI_FORMAT_R16_UINT;
+		case EIT_32BIT:
+			return DXGI_FORMAT_R32_UINT;
+		default:
+			TI_ASSERT(0);
+		}
+		return DXGI_FORMAT_UNKNOWN;
+	};
+
 	static const DXGI_FORMAT k_MESHBUFFER_STREAM_FORMAT_MAP[ESSI_TOTAL] =
 	{
 		DXGI_FORMAT_R32G32B32_FLOAT,	// ESSI_POSITION,

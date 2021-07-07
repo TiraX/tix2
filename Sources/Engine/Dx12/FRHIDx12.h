@@ -190,7 +190,6 @@ namespace tix
 		void HoldResourceReference(ComPtr<ID3D12Resource> InDxResource);
 		void InitGraphicsPipeline();
 
-		void SetResourceName(ID3D12Object* InObject, const TString& InName);
 		FShaderBindingPtr CreateShaderBinding(const D3D12_ROOT_SIGNATURE_DESC& RSDesc);
 
 		uint64 UpdateSubresources(

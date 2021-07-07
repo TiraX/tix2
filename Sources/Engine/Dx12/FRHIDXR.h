@@ -14,19 +14,30 @@ using namespace Microsoft::WRL;
 
 namespace tix
 {
+	class FMeshBufferDx12;
 	class FRHIDXR
 	{
 	private:
+		friend class FRHIDx12;
 		FRHIDXR();
 		~FRHIDXR() {};
 
 		bool Init(ComPtr<ID3D12Device> D3DDevice);
+		void AddBottomLevelAccelerationStructure(FMeshBufferDx12* MeshBufferDx12);
+		void BuildAllAccelerationStructures();
+
+	private:
+		void BuildGeometryDesc(FMeshBufferDx12* MeshBufferDx12, D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc);
+		void ComputePreBuildInfo(const D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo);
+		void AllocateASResource(const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo, const TString& Name);
 
 	private:
 		// DirectX Raytracing (DXR) attributes
 		ComPtr<ID3D12Device5> DXRDevice;
 		ComPtr<ID3D12GraphicsCommandList4> DXRCommandList;
-		friend class FRHIDx12;
+
+		TVector<ComPtr<ID3D12Resource>> BLAccelerationStructures;
+
 	};
 }
 #endif	// COMPILE_WITH_RHI_DX12

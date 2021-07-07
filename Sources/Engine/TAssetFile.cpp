@@ -834,6 +834,7 @@ namespace tix
 					{
 						const int32 MeshSectionCount = SMSections[m];
 						const int32 InstanceCount = SMInstanceCount[m];
+						TI_ASSERT(InstanceCount != 0);
 
 						TotalSMInstances += MeshSectionCount * InstanceCount;
 						TotalSMSections += MeshSectionCount;

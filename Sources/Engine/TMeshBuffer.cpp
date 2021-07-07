@@ -208,6 +208,7 @@ namespace tix
 		// as GPU Driven pipeline need to copy these instance buffer into a merged instance buffer
 		TI_TODO("Add gpu driven CVAR to check here.");
 		//InstanceResource->SetUsage(FRenderResource::USAGE_COPY_SOURCE);
+		TI_ASSERT(InstanceCount != 0);
 
 		FInstanceBufferPtr InstanceBuffer = InstanceResource;
 		TInstanceBufferPtr InInstanceData = this;

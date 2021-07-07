@@ -43,12 +43,6 @@
 
 namespace tix
 {
-#if defined (TIX_DEBUG)
-#	define DX_SETNAME(Resource, Name) SetResourceName(Resource, Name)
-#else
-#	define DX_SETNAME(Resource, Name)
-#endif
-
 	FRHIDx12::FRHIDx12()
 		: FRHI(ERHI_DX12)
 		, CurrentFrame(0)
@@ -805,12 +799,6 @@ namespace tix
 		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
 	}
 
-	void FRHIDx12::SetResourceName(ID3D12Object* InObject, const TString& InName)
-	{
-		TWString WName = FromString(InName);
-		InObject->SetName(WName.c_str());
-	}
-
 	//------------------------------------------------------------------------------------------------
 	// All arrays must be populated (e.g. by calling GetCopyableFootprints)
 	uint64 FRHIDx12::UpdateSubresources(
@@ -1070,6 +1058,11 @@ namespace tix
 		HoldResourceReference(MeshBuffer);
 		HoldResourceReference(VertexBufferUpload);
 		HoldResourceReference(IndexBufferUpload);
+
+		if (IsFeatureSupported(RHI_REATURE_RAYTRACING))
+		{
+			DXR->AddBottomLevelAccelerationStructure(MBDx12);
+		}
 
 		return true;
 	}
