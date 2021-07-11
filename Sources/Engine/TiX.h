@@ -94,6 +94,7 @@ using namespace std;
 #include "FGPUCommandSignature.h"
 #include "FGPUCommandBuffer.h"
 #include "FRenderTarget.h"
+#include "FAccelerationStructure.h"
 #include "FComputeTask.h"
 #include "FFrameResources.h"
 #include "FRHI.h"

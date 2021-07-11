@@ -33,7 +33,7 @@ namespace tix
 		D3D12_INDEX_BUFFER_VIEW IndexBufferView;
 
 		friend class FRHIDx12;
-		friend class FRHIDXR;
+		friend class FBottomLevelAccelerationStructureDx12;
 		friend class FGPUCommandBufferDx12;
 	};
 

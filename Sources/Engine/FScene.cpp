@@ -115,9 +115,22 @@ namespace tix
 
 	void FScene::AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource)
 	{
+		TI_ASSERT(IsRenderThread());
 		if (SceneTileResource != nullptr)
 		{
 			SceneTiles[SceneTileResource->GetTilePosition()] = SceneTileResource;
+
+			// Create BLAS per tile
+			if (FRHI::RHIConfig.IsRaytracingEnabled())
+			{
+				FBottomLevelAccelerationStructurePtr BLAS = FRHI::Get()->CreateBottomLevelAccelerationStructure();
+				int8 Name[128];
+				sprintf_s(Name, 128, "Tile_%d_%d-BLAS",
+					SceneTileResource->GetTilePosition().X,
+					SceneTileResource->GetTilePosition().Y);
+				BLAS->SetResourceName(Name);
+				SceneBLASes[SceneTileResource->GetTilePosition()] = BLAS;
+			}
 
 			// Mark flag scene tile dirty
 			SetSceneFlag(SceneTileDirty);
@@ -130,17 +143,37 @@ namespace tix
 		TI_ASSERT(0);
 	}
 
-	void FScene::AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData)
+	void FScene::AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData, const vector2di& TilePos)
 	{
-		THMap<FMeshBufferPtr, FSceneMeshInfo>::iterator It = SceneMeshes.find(InMesh);
-		if (It != SceneMeshes.end())
+		// Add mesh buffer to scene
 		{
-			TI_ASSERT(It->second.OccludeMesh == InOccludeMesh && It->second.ClusterData == InClusterData);
-			++It->second.References;
+			THMap<FMeshBufferPtr, FSceneMeshInfo>::iterator It = SceneMeshes.find(InMesh);
+			if (It != SceneMeshes.end())
+			{
+				TI_ASSERT(It->second.OccludeMesh == InOccludeMesh && It->second.ClusterData == InClusterData);
+				++It->second.References;
+			}
+			else
+			{
+				SceneMeshes[InMesh] = FSceneMeshInfo(1, InOccludeMesh, InClusterData);
+			}
 		}
-		else
+
+		// Add mesh buffer to scene BLAS
+		if (FRHI::RHIConfig.IsRaytracingEnabled())
 		{
-			SceneMeshes[InMesh] = FSceneMeshInfo(1, InOccludeMesh, InClusterData);
+			THMap<vector2di, FBottomLevelAccelerationStructurePtr>::iterator It = SceneBLASes.find(TilePos);
+			if (It != SceneBLASes.end())
+			{
+				It->second->AddMeshBuffer(InMesh);
+			}
+			else
+			{
+				_LOG(Warning, "Failed to Add meshbuffer [%s] to scene BLAS. Can not find BLAS for tile [%d, %d].\n", 
+					InMesh->GetResourceName().c_str(), 
+					TilePos.X, 
+					TilePos.Y);
+			}
 		}
 	}
 
@@ -153,6 +186,21 @@ namespace tix
 		if (It->second.References == 0)
 		{
 			SceneMeshes.erase(It);
+		}
+	}
+
+	void FScene::BuildTileBLAS(const vector2di& TilePos)
+	{
+		THMap<vector2di, FBottomLevelAccelerationStructurePtr>::iterator It = SceneBLASes.find(TilePos);
+		if (It != SceneBLASes.end())
+		{
+			It->second->Build();
+		}
+		else
+		{
+			_LOG(Warning, "Failed to Build tile BLAS for tile [%d, %d].\n",
+				TilePos.X,
+				TilePos.Y);
 		}
 	}
 

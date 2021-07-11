@@ -22,21 +22,19 @@ namespace tix
 		FRHIDXR();
 		~FRHIDXR() {};
 
-		bool Init(ComPtr<ID3D12Device> D3DDevice);
-		void AddBottomLevelAccelerationStructure(FMeshBufferDx12* MeshBufferDx12);
-		void BuildAllAccelerationStructures();
+		bool Init(ID3D12Device* D3DDevice, ID3D12GraphicsCommandList* D3DCommandList);
+		//void AddBottomLevelAccelerationStructure(FMeshBufferDx12* MeshBufferDx12);
+		//void BuildAllAccelerationStructures();
 
 	private:
-		void BuildGeometryDesc(FMeshBufferDx12* MeshBufferDx12, D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc);
-		void ComputePreBuildInfo(const D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo);
-		void AllocateASResource(const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo, const TString& Name);
+		//void BuildGeometryDesc(FMeshBufferDx12* MeshBufferDx12, D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc);
+		//void ComputePreBuildInfo(const D3D12_RAYTRACING_GEOMETRY_DESC& GeometryDesc, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo);
+		//void AllocateASResource(const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO& PrebuildInfo, const TString& Name);
 
 	private:
 		// DirectX Raytracing (DXR) attributes
 		ComPtr<ID3D12Device5> DXRDevice;
 		ComPtr<ID3D12GraphicsCommandList4> DXRCommandList;
-
-		TVector<ComPtr<ID3D12Resource>> BLAccelerationStructures;
 
 	};
 }

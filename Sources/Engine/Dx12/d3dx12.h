@@ -20,13 +20,13 @@
 
 #if defined(TIX_DEBUG)
 #	define VALIDATE_HRESULT(e) {HRESULT _hr = e; TI_ASSERT(SUCCEEDED(_hr));}
-#	define DX_SETNAME(Resource, Name) SetResourceName(Resource, Name)
+#	define DX_SETNAME(Resource, Name) SetDxResourceName(Resource, Name)
 #else
 #	define VALIDATE_HRESULT(e) e
 #	define DX_SETNAME(Resource, Name)
 #endif
 
-inline void SetResourceName(ID3D12Object* InObject, const TString& InName)
+inline void SetDxResourceName(ID3D12Object* InObject, const TString& InName)
 {
     TWString WName = FromString(InName);
     InObject->SetName(WName.c_str());

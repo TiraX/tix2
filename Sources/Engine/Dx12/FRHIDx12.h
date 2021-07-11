@@ -42,6 +42,10 @@ namespace tix
 		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
 
+		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() override;
+		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() override;
+		virtual void BuildRaytracingAccelerationStructure() override;
+
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) override;
@@ -174,6 +178,22 @@ namespace tix
 		ComPtr<ID3D12Device> GetD3dDevice()
 		{
 			return D3dDevice;
+		}
+
+		ID3D12DescriptorHeap* GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type)
+		{
+			return DescriptorHeaps[Type].GetHeap();
+		}
+
+
+		ComPtr<ID3D12Device5> GetDXRDevice()
+		{
+			return DXR->DXRDevice;
+		}
+
+		ComPtr<ID3D12GraphicsCommandList4> GetDXRCommandList()
+		{
+			return DXR->DXRCommandList;
 		}
 
 		static uint32 GetUBSizeWithCounter(uint32 InBufferSize);

@@ -29,11 +29,6 @@ namespace tix
 		EPL_NUM,
 	};
 
-	enum E_RHI_FEATURE
-	{
-		RHI_REATURE_RAYTRACING = 1 << 0,
-	};
-
 	enum E_RESOURCE_STATE
 	{
 		RESOURCE_STATE_COMMON,
@@ -75,6 +70,8 @@ namespace tix
 		static void CreateRHI();
 		static void ReleaseRHI();
 
+		static FRHIConfig RHIConfig;
+
 		static uint32 GetGPUFrames()
 		{
 			return NumGPUFrames;
@@ -94,6 +91,10 @@ namespace tix
 
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;
+
+		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() = 0;
+		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() = 0;
+		virtual void BuildRaytracingAccelerationStructure() = 0;
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
@@ -241,17 +242,13 @@ namespace tix
 			return RenderResourceHeap[Index];
 		}
 
-		bool IsFeatureSupported(E_RHI_FEATURE InFeature) const
-		{
-			return (Features & InFeature) != 0;
-		}
-
 	protected:
 		static FRHI* RHI;
 		FRHI(E_RHI_TYPE InRHIType);
 		virtual ~FRHI();
 
 		virtual void FeatureCheck() = 0;
+		virtual void SupportFeature(E_RHI_FEATURE InFeature);
 		
 		static void GPUFrameDone()
 		{
@@ -261,7 +258,6 @@ namespace tix
 		static TI_API uint32 NumGPUFrames;
 	protected:
 		E_RHI_TYPE RHIType;
-		uint32 Features;
 		FViewport Viewport;
 		FFrameResources * FrameResources[FRHIConfig::FrameBufferNum];
 

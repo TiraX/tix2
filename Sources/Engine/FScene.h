@@ -60,11 +60,13 @@ namespace tix
 		void AddSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 		void RemoveSceneTileInfo(FSceneTileResourcePtr SceneTileResource);
 
-		void AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData);
+		void AddSceneMeshBuffer(FMeshBufferPtr InMesh, FMeshBufferPtr InOccludeMesh, FUniformBufferPtr InClusterData, const vector2di& TilePos);
 		void RemoveSceneMeshBuffer(FMeshBufferPtr InMesh);
 
 		void AddEnvLight(FTexturePtr CubeTexture, const vector3df& Position);
 		void RemoveEnvLight(FEnvLightPtr InEnvLight);
+
+		void BuildTileBLAS(const vector2di& TilePos);
 
 		bool HasSceneFlag(SceneFlag Flag) const
 		{
@@ -135,6 +137,9 @@ namespace tix
 
 		// Scene tiles
 		THMap<vector2di, FSceneTileResourcePtr> SceneTiles;
+
+		// Scene BLAS
+		THMap<vector2di, FBottomLevelAccelerationStructurePtr> SceneBLASes;
 
 		// Env Lights, leave ONE envlight temp, should support multi env light in futher
 		FEnvLightPtr EnvLight;

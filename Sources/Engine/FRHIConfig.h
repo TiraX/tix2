@@ -14,6 +14,10 @@ namespace tix
 
 		UB_SECTION_COUNT,
 	};
+	enum E_RHI_FEATURE
+	{
+		RHI_FEATURE_RAYTRACING = 1 << 0,
+	};
 	class FRHIConfig
 	{
 	public: 
@@ -31,5 +35,32 @@ namespace tix
 #endif
 
 		static const int32 StaticSamplerNum = 1;
+
+		void EnableFeature(E_RHI_FEATURE InFeature, bool enable)
+		{
+			if (enable && IsFeatureSupported(InFeature))
+				FeatureEnabledFlag |= InFeature;
+			else
+				FeatureEnabledFlag &= ~InFeature;
+		}
+
+		bool IsFeatureSupported(E_RHI_FEATURE InFeature) const
+		{
+			return (SupportedFeatures & InFeature) != 0;
+		}
+
+		bool IsRaytracingEnabled() const
+		{
+			return (FeatureEnabledFlag & RHI_FEATURE_RAYTRACING) != 0;
+		}
+
+	private:
+
+	private:
+		uint64 SupportedFeatures = 0;
+		// Features On/Off flag
+		uint64 FeatureEnabledFlag = 0;
+
+		friend class FRHI;
 	};
 }

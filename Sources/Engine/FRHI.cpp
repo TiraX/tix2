@@ -13,6 +13,7 @@ namespace tix
 {
 	FRHI* FRHI::RHI = nullptr;
 	uint32 FRHI::NumGPUFrames = 0;
+	FRHIConfig FRHI::RHIConfig;
 
 	FRHI* FRHI::Get()
 	{
@@ -40,7 +41,6 @@ namespace tix
 
 	FRHI::FRHI(E_RHI_TYPE InRHIType)
 		: RHIType(InRHIType)
-		, Features(0)
 	{
 		for (int32 i = 0; i < FRHIConfig::FrameBufferNum; ++i)
 		{
@@ -58,6 +58,11 @@ namespace tix
 	{
 		CurrentRenderTarget = nullptr;
 		CurrentBoundResource.Reset();
+	}
+
+	void FRHI::SupportFeature(E_RHI_FEATURE InFeature)
+	{
+		RHIConfig.SupportedFeatures |= InFeature;
 	}
 
 	void FRHI::SetViewport(const FViewport& InViewport)

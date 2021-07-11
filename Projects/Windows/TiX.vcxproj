@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FAccelerationStructureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FGPUCommandBufferDx12.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FAccelerationStructure.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FArgumentBuffer.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FComputeTask.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FDefaultRenderer.cpp" />
@@ -122,6 +124,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FAccelerationStructureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FArgumentBufferDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FFrameResourcesDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FGPUCommandBufferDx12.h" />
@@ -138,6 +141,7 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\FAccelerationStructure.h" />
     <ClInclude Include="..\..\Sources\Engine\FArgumentBuffer.h" />
     <ClInclude Include="..\..\Sources\Engine\FComputeTask.h" />
     <ClInclude Include="..\..\Sources\Engine\FDefaultRenderer.h" />

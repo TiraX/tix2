@@ -19,6 +19,7 @@
 #include "FArgumentBufferDx12.h"
 #include "FGPUCommandSignatureDx12.h"
 #include "FGPUCommandBufferDx12.h"
+#include "FAccelerationStructureDx12.h"
 #include <DirectXColors.h>
 #include <d3d12shader.h>
 #include <d3dcompiler.h>
@@ -202,7 +203,7 @@ namespace tix
 		_LOG(Log, "  RHI DirectX 12 inited.\n");
 
 		// Init raytracing
-		if (IsFeatureSupported(RHI_REATURE_RAYTRACING))
+		if (RHIConfig.IsFeatureSupported(RHI_FEATURE_RAYTRACING))
 		{
 			if (InitRaytracing())
 			{
@@ -217,14 +218,13 @@ namespace tix
 
 	void FRHIDx12::FeatureCheck()
 	{
-		Features = 0;
-
 		// Check for DXR
 		D3D12_FEATURE_DATA_D3D12_OPTIONS5 FeatureSupportData = {};
 		if (SUCCEEDED(D3dDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &FeatureSupportData, sizeof(FeatureSupportData)))
 			&& FeatureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
 		{
-			Features |= RHI_REATURE_RAYTRACING;
+			SupportFeature(RHI_FEATURE_RAYTRACING);
+			RHIConfig.EnableFeature(RHI_FEATURE_RAYTRACING, true);
 		}
 	}
 
@@ -232,7 +232,8 @@ namespace tix
 	{
 		DXR = ti_new FRHIDXR();
 
-		return DXR->Init(D3dDevice);
+		// Temp, use GraphicsCommandLists[0] for test
+		return DXR->Init(D3dDevice.Get(), GraphicsCommandLists[0].CommandList.Get());
 	}
 
 	// This method acquires the first available hardware adapter that supports Direct3D 12.
@@ -741,6 +742,16 @@ namespace tix
 		return ti_new FGPUCommandBufferDx12(GPUCommandSignature, CommandsCount, Flag);
 	}
 
+	FTopLevelAccelerationStructurePtr FRHIDx12::CreateTopLevelAccelerationStructure()
+	{
+		return ti_new FTopLevelAccelerationStructureDx12();
+	}
+
+	FBottomLevelAccelerationStructurePtr FRHIDx12::CreateBottomLevelAccelerationStructure()
+	{
+		return ti_new FBottomLevelAccelerationStructureDx12();
+	}
+
 	int32 FRHIDx12::GetCurrentEncodingFrameIndex()
 	{
 		return CurrentFrame;
@@ -797,6 +808,12 @@ namespace tix
 	void FRHIDx12::HoldResourceReference(ComPtr<ID3D12Resource> InDxResource)
 	{
 		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
+	}
+
+	void FRHIDx12::BuildRaytracingAccelerationStructure()
+	{
+		TI_ASSERT(0);
+		//DXR->BuildAllAccelerationStructures();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -980,18 +997,27 @@ namespace tix
 
 			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->VertexBuffer.GetResource().Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
+			D3D12_RESOURCE_STATES DestState;
 			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
-				Transition(&MBDx12->VertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+				DestState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 			}
 			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
-				Transition(&MBDx12->VertexBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				DestState = D3D12_RESOURCE_STATE_COPY_SOURCE;
 			}
 			else
 			{
 				TI_ASSERT(0);
 			}
+
+			if (RHIConfig.IsRaytracingEnabled())
+			{
+				TI_TODO("Mark Meshbuffers that need to generate BLAS.");
+				DestState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+			}
+
+			Transition(&MBDx12->VertexBuffer, DestState);
 		}
 
 		const uint32 IndexBufferSize = (InMeshData->GetIndicesCount() * (InMeshData->GetIndexType() == EIT_16BIT ? sizeof(uint16) : sizeof(uint32)));
@@ -1029,18 +1055,27 @@ namespace tix
 
 			UpdateSubresources(CurrentWorkingCommandList.Get(), MBDx12->IndexBuffer.GetResource().Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
+			D3D12_RESOURCE_STATES DestState;
 			if (MeshBuffer->GetUsage() == FRenderResource::USAGE_DEFAULT)
 			{
-				Transition(&MBDx12->IndexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+				DestState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 			}
 			else if (MeshBuffer->GetUsage() == FRenderResource::USAGE_COPY_SOURCE)
 			{
-				Transition(&MBDx12->IndexBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				DestState = D3D12_RESOURCE_STATE_COPY_SOURCE;
 			}
 			else
 			{
 				TI_ASSERT(0);
 			}
+
+			if (RHIConfig.IsRaytracingEnabled())
+			{
+				TI_TODO("Mark Meshbuffers that need to generate BLAS.");
+				DestState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+			}
+
+			Transition(&MBDx12->IndexBuffer, DestState);
 		}
 
 		FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
@@ -1058,11 +1093,6 @@ namespace tix
 		HoldResourceReference(MeshBuffer);
 		HoldResourceReference(VertexBufferUpload);
 		HoldResourceReference(IndexBufferUpload);
-
-		if (IsFeatureSupported(RHI_REATURE_RAYTRACING))
-		{
-			DXR->AddBottomLevelAccelerationStructure(MBDx12);
-		}
 
 		return true;
 	}
