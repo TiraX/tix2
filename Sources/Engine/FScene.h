@@ -117,6 +117,7 @@ namespace tix
 		}
 	private:
 		void PrepareViewUniforms();
+		void UpdateAccelerationStructure();
 
 	private:
 		FSceneLights * SceneLights;

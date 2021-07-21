@@ -15,10 +15,21 @@ namespace tix
 		FAccelerationStructure();
 		virtual ~FAccelerationStructure();
 
+		virtual void Build() = 0;
+
+		void MarkDirty()
+		{
+			Dirty = true;
+		}
+
+		bool IsDirty() const
+		{
+			return Dirty;
+		}
 	protected:
 
 	protected:
-		bool IsDirty;
+		bool Dirty;
 	};
 
 	/////////////////////////////////////////////////////////////
@@ -30,7 +41,6 @@ namespace tix
 		virtual ~FBottomLevelAccelerationStructure();
 
 		virtual void AddMeshBuffer(FMeshBufferPtr InMeshBuffer) = 0;
-		virtual void Build() = 0;
 	protected:
 	};
 
@@ -41,6 +51,9 @@ namespace tix
 	public:
 		FTopLevelAccelerationStructure();
 		virtual ~FTopLevelAccelerationStructure();
+
+		virtual void ClearAllInstances() = 0;
+		virtual void AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform) = 0;
 
 	protected:
 	};

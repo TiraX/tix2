@@ -48,6 +48,7 @@ namespace tix
 	void FScene::InitRenderFrame()
 	{
 		PrepareViewUniforms();
+		UpdateAccelerationStructure();
 	}
 
 	// From UE4
@@ -117,6 +118,20 @@ namespace tix
 			SetupSkyIrradianceEnvironmentMapConstantsFromSkyIrradiance(ViewUniformBuffer->UniformBufferData[0].SkyIrradiance, EnvInfo.SkyIrradiance);
 
 			ViewUniformBuffer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+		}
+	}
+
+	void FScene::UpdateAccelerationStructure()
+	{
+		if (FRHI::RHIConfig.IsRaytracingEnabled())
+		{
+			// Re-add all blas to tlas
+			TI_TODO("Find a optimized way to do this");
+
+			SceneTLAS->ClearAllInstances();
+			SceneTLAS->AddBLASInstance();
+
+			SceneTLAS->Build();
 		}
 	}
 

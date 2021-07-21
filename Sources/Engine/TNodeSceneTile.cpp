@@ -163,6 +163,7 @@ namespace tix
 								for (uint32 p = 0; p < TotalPrimitives; ++p)
 								{
 									RenderThreadSceneTileResource->AddPrimitive(Indices[p], Primitives[p]);
+									RenderThreadSceneTileResource->CreateBLASForPrimitive(Primitives[p]);
 								}
 							});
 

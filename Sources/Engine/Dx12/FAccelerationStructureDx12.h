@@ -28,14 +28,21 @@ namespace tix
 		TVector<D3D12_RAYTRACING_GEOMETRY_DESC> GeometryDescs;
 	};
 
+	////////////////////////////////////////////////////////////
 	class FTopLevelAccelerationStructureDx12 : public FTopLevelAccelerationStructure
 	{
 	public:
-		FTopLevelAccelerationStructureDx12() {};
-		virtual ~FTopLevelAccelerationStructureDx12() {};
+		FTopLevelAccelerationStructureDx12();
+		virtual ~FTopLevelAccelerationStructureDx12();
 
+		virtual void ClearAllInstances() override;
+		virtual void AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform) override;
+		virtual void Build() override;
 	private:
 		ComPtr<ID3D12Resource> AccelerationStructure;
+		ComPtr<ID3D12Resource> ScratchResource;
+
+		TVector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDescs;
 	};
 }
 #endif	// COMPILE_WITH_RHI_DX12

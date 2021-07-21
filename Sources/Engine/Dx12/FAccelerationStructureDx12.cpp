@@ -39,15 +39,15 @@ namespace tix
 
 		GeometryDesc.Triangles.Transform3x4 = NULL;
 
-		GeometryDescs.push_back(GeometryDesc);
-		IsDirty = true;
+		GeometryDescs.push_back(GeometryDesc); 
+		MarkDirty();
 
 	}
 
 	void FBottomLevelAccelerationStructureDx12::Build()
 	{
 		TI_ASSERT(IsRenderThread());
-		if (!IsDirty)
+		if (!Dirty)
 			return;
 
 		FRHIDx12* RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
@@ -106,7 +106,90 @@ namespace tix
 		DXRCommandList->SetDescriptorHeaps(1, &DescriptorHeap);
 		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
 
-		IsDirty = false;
+		Dirty = false;
+	}
+
+	////////////////////////////////////////////////////////////
+	FTopLevelAccelerationStructureDx12::FTopLevelAccelerationStructureDx12()
+	{}
+
+	FTopLevelAccelerationStructureDx12::~FTopLevelAccelerationStructureDx12()
+	{}
+
+	void FTopLevelAccelerationStructureDx12::ClearAllInstances()
+	{
+		InstanceDescs.clear();
+	}
+
+	void FTopLevelAccelerationStructureDx12::AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform)
+	{
+		//D3D12_RAYTRACING_INSTANCE_DESC
+		TI_ASSERT(0);
+	}
+
+	void FTopLevelAccelerationStructureDx12::Build()
+	{
+		TI_ASSERT(IsRenderThread());
+		if (!Dirty)
+			return;
+
+		FRHIDx12* RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
+		ID3D12Device5* DXRDevice = RHIDx12->GetDXRDevice().Get();
+		ID3D12GraphicsCommandList4* DXRCommandList = RHIDx12->GetDXRCommandList().Get();
+
+		// Get the size requirements for the scratch and AS buffers.
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC TopLevelBuildDesc = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& TopLevelInputs = TopLevelBuildDesc.Inputs;
+		TopLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+		TopLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		TopLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		TopLevelInputs.NumDescs = (uint32)InstanceDescs.size();
+
+		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&TopLevelInputs, &PrebuildInfo);
+		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
+
+		// Allocate resource for TLAS
+		TI_ASSERT(AccelerationStructure == nullptr);
+		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ASBufferDesc,
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&AccelerationStructure)));
+		DX_SETNAME(AccelerationStructure.Get(), GetResourceName());
+
+		TI_ASSERT(ScratchResource == nullptr);
+		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ScratchBufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&ScratchResource)));
+
+		// Build top layer AS
+		TopLevelInputs.InstanceDescs = bottomLevelASnstanceDescs;
+		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
+		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
+		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
+		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
+		// to share index buffer inputs between graphics input assemblerand raytracing 
+		// acceleration structure build input, it can always put a resource into a combination 
+		// of read states simultaneously, 
+		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		ID3D12DescriptorHeap* DescriptorHeap = RHIDx12->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		DXRCommandList->SetDescriptorHeaps(1, &DescriptorHeap);
+		DXRCommandList->BuildRaytracingAccelerationStructure(&TopLevelBuildDesc, 0, nullptr);
+
+		Dirty = false;
 	}
 }
 
