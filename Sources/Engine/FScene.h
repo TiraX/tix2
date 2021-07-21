@@ -138,6 +138,9 @@ namespace tix
 		// Scene tiles
 		THMap<vector2di, FSceneTileResourcePtr> SceneTiles;
 
+		// Scene TLAS
+		FTopLevelAccelerationStructurePtr SceneTLAS;
+
 		// Scene BLAS
 		THMap<vector2di, FBottomLevelAccelerationStructurePtr> SceneBLASes;
 

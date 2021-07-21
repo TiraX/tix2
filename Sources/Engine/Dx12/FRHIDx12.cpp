@@ -810,12 +810,6 @@ namespace tix
 		ResHolders[CurrentFrame]->HoldDxReference(InDxResource);
 	}
 
-	void FRHIDx12::BuildRaytracingAccelerationStructure()
-	{
-		TI_ASSERT(0);
-		//DXR->BuildAllAccelerationStructures();
-	}
-
 	//------------------------------------------------------------------------------------------------
 	// All arrays must be populated (e.g. by calling GetCopyableFootprints)
 	uint64 FRHIDx12::UpdateSubresources(

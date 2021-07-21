@@ -17,11 +17,18 @@ namespace tix
 
 		// Reserve memory for containers
 		SceneTiles.reserve(128);
+
+		if (FRHI::RHIConfig.IsRaytracingEnabled())
+		{
+			SceneTLAS = FRHI::Get()->CreateTopLevelAccelerationStructure();
+			SceneTLAS->SetResourceName("SceneTLAS");
+		}
 	}
 
 	FScene::~FScene()
 	{
 		SAFE_DELETE(SceneLights);
+		SceneTLAS = nullptr;
 	}
 
 	void FScene::SetViewProjection(const FViewProjectionInfo& Info)

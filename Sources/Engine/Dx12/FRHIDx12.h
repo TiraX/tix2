@@ -44,7 +44,6 @@ namespace tix
 
 		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() override;
 		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() override;
-		virtual void BuildRaytracingAccelerationStructure() override;
 
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;

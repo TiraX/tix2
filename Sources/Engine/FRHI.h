@@ -94,7 +94,6 @@ namespace tix
 
 		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() = 0;
 		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() = 0;
-		virtual void BuildRaytracingAccelerationStructure() = 0;
 
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
