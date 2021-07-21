@@ -57,6 +57,9 @@ namespace tix
 			return Primitives;
 		}
 
+		void CreateBLASForPrimitive(FPrimitivePtr Primitive);
+		void BuildBLAS();
+
 	private:
 		vector2di Position;
 		aabbox3df BBox;
@@ -68,5 +71,8 @@ namespace tix
 		FInstanceBufferPtr InstanceBuffer;
 
 		TVector<FPrimitivePtr> Primitives;
+
+		// Scene BLAS, store by tiles
+		TVector<FBottomLevelAccelerationStructurePtr> SceneTileBLASes;
 	};
 }

@@ -48,4 +48,31 @@ namespace tix
 		Primitives.push_back(Primitive);
 		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
 	}
+
+	void FSceneTileResource::CreateBLASForPrimitive(FPrimitivePtr Primitive)
+	{
+		if (FRHI::RHIConfig.IsRaytracingEnabled())
+		{
+			FBottomLevelAccelerationStructurePtr BLAS = FRHI::Get()->CreateBottomLevelAccelerationStructure();
+
+			FMeshBufferPtr MB = Primitive->GetMeshBuffer();
+			int8 Name[128];
+			sprintf_s(Name, 128, "BLAS_%d_%d-%s",
+				Position.X,
+				Position.Y,
+				MB->GetResourceName().c_str());
+			BLAS->SetResourceName(Name);
+			BLAS->AddMeshBuffer(MB);
+
+			SceneTileBLASes.push_back(BLAS);
+		}
+	}
+
+	void FSceneTileResource::BuildBLAS()
+	{
+		for (auto& BLASPtr : SceneTileBLASes)
+		{
+			BLASPtr->Build();
+		}
+	}
 }

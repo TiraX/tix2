@@ -142,15 +142,13 @@ namespace tix
 						FMeshBufferPtr OccludeMeshBufferResource = StaticMesh->GetOccludeMesh() == nullptr ? nullptr : StaticMesh->GetOccludeMesh()->MeshBufferResource;
 						FMeshBufferPtr StaticMeshResource = StaticMesh->GetMeshBuffer()->MeshBufferResource;
 						FUniformBufferPtr ClusterData = StaticMesh->GetMeshBuffer()->MeshClusterDataResource;
-						vector2di TilePos = SceneTileResource->Position;
 						ENQUEUE_RENDER_COMMAND(AddTSceneTileStaticMeshToFScene)(
-							[StaticMeshResource, OccludeMeshBufferResource, ClusterData, TilePos]()
+							[StaticMeshResource, OccludeMeshBufferResource, ClusterData]()
 							{
 								FRenderThread::Get()->GetRenderScene()->AddSceneMeshBuffer(
 									StaticMeshResource, 
 									OccludeMeshBufferResource, 
-									ClusterData, 
-									TilePos);
+									ClusterData);
 							});
 
 
@@ -187,11 +185,11 @@ namespace tix
 			{
 				// Tile Loading Done
 				SceneTileResource->SMInfos.MeshAssets.clear();
-				vector2di TilePos = SceneTileResource->Position;
+				FSceneTileResourcePtr RenderThreadSceneTileResource = SceneTileResource->RenderThreadTileResource;
 				ENQUEUE_RENDER_COMMAND(BuildTileBLAS)(
-					[TilePos]()
+					[RenderThreadSceneTileResource]()
 					{
-						FRenderThread::Get()->GetRenderScene()->BuildTileBLAS(TilePos);
+						RenderThreadSceneTileResource->BuildBLAS();
 					});
 			}
 		}

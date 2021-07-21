@@ -51,6 +51,7 @@ namespace tix
 
 		const TMeshSection& GetMeshSection(int32 SectionIndex) const
 		{
+			TI_TODO("Remove Mesh Section Info, treat mesh section as another MeshBuffer.");
 			return MeshSections[SectionIndex];
 		}
 
