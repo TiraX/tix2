@@ -1,0 +1,34 @@
+{
+	"name": "ArchVis_RT",
+	"type": "scene",
+	"version": 1,
+	"desc": "Scene tiles information from TiX exporter.",
+	"static_mesh_total": 117,
+	"sm_instances_total": 247,
+	"skm_actors_total": 0,
+	"cameras": [
+		{
+			"location": [ -1.7288432121276855, 0.65852397680282593, 1.3139184713363647 ],
+			"target": [ -2.3390257358551025, -0.089224085211753845, 1.0520981550216675 ],
+			"rotator": [ -15.178092956542969, -129.21536254882812, 0 ],
+			"fov": 90,
+			"aspect": 1.7777780294418335
+		}
+	],
+	"environment":
+	{
+		"sun_light":
+		{
+			"name": "DirectionalLight_1",
+			"direction": [ 0.68698239326477051, 0.71468591690063477, -0.13145028054714203 ],
+			"color": [ 1, 1, 1, 1 ],
+			"intensity": 1000
+		}
+	},
+	"tiles": [
+		[ -1, 0 ],
+		[ -1, -1 ],
+		[ 0, -1 ],
+		[ 0, 0 ]
+	]
+}
