@@ -38,6 +38,7 @@ public:
 	virtual ~FFluidSolverGPU();
 
 	virtual void Sim(FRHI* RHI, float Dt) override;
+	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) override;
 
 	FUniformBufferPtr GetSimulatedPositions()
 	{

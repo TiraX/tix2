@@ -23,6 +23,7 @@ public:
 
 	void Update(FRHI* RHI, float Dt);
 	virtual void Sim(FRHI* RHI, float Dt) = 0;
+	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) {};
 
 	int32 GetTotalParticles() const
 	{

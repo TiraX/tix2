@@ -173,7 +173,8 @@ namespace tix
 			IID_PPV_ARGS(&ScratchResource)));
 
 		// Build top layer AS
-		TopLevelInputs.InstanceDescs = bottomLevelASnstanceDescs;
+		TI_ASSERT(0);
+		//TopLevelInputs.InstanceDescs = bottomLevelASnstanceDescs;
 		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
 		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure->GetGPUVirtualAddress();
 

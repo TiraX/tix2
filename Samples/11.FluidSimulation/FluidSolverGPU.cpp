@@ -343,3 +343,19 @@ void FFluidSolverGPU::Sim(FRHI * RHI, float Dt)
 	}
 	RHI->EndComputeTask();
 }
+
+void FFluidSolverGPU::RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline)
+{
+	// Copy simulation result to Mesh Buffer
+	RHI->SetResourceStateUB(GetSimulatedPositions(), RESOURCE_STATE_COPY_SOURCE, false);
+	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_COPY_DEST, false);
+	RHI->FlushResourceStateChange();
+	RHI->CopyBufferRegion(Mesh, 0, GetSimulatedPositions(), 0, GetTotalParticles() * sizeof(vector3df));
+
+	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_MESHBUFFER, true);
+	RHI->SetGraphicsPipeline(Pipeline);
+	RHI->SetMeshBuffer(Mesh, nullptr);
+	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
+	RHI->DrawPrimitiveInstanced(Mesh, 1, 0);
+}

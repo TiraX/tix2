@@ -114,6 +114,24 @@ void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 	}
 }
 
+void FFluidSolverCPU::RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline)
+{
+	FUniformBufferPtr TempPositions = RHI->CreateUniformBuffer(sizeof(vector3df), GetTotalParticles(), UB_FLAG_INTERMEDIATE);
+	TempPositions->SetResourceName("TempPositions");
+	RHI->UpdateHardwareResourceUB(TempPositions, GetSimulatedPositions().data());
+
+	// Copy simulation result to Mesh Buffer
+	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_COPY_DEST, true);
+	RHI->CopyBufferRegion(Mesh, 0, TempPositions, 0, GetTotalParticles() * sizeof(vector3df));
+
+	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_MESHBUFFER, true);
+	RHI->SetGraphicsPipeline(Pipeline);
+	RHI->SetMeshBuffer(Mesh, nullptr);
+	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+
+	RHI->DrawPrimitiveInstanced(Mesh, 1, 0);
+}
+
 void FFluidSolverCPU::CellInit()
 {
 	memset(UB_NumInCell.data(), 0, UB_NumInCell.size() * sizeof(uint32));

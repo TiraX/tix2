@@ -128,8 +128,9 @@ namespace tix
 			// Re-add all blas to tlas
 			TI_TODO("Find a optimized way to do this");
 
+			TI_ASSERT(0);
 			SceneTLAS->ClearAllInstances();
-			SceneTLAS->AddBLASInstance();
+			//SceneTLAS->AddBLASInstance();
 
 			SceneTLAS->Build();
 		}

@@ -24,7 +24,6 @@ public:
 	void MoveBoundary(const vector3df& offset);
 
 private:
-	void DrawParticles(FRHI* RHI, FScene* Scene);
 
 private:
 	aabbox3df FluidBoundary;
