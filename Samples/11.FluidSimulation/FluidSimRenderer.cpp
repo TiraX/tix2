@@ -8,8 +8,13 @@
 #include "FluidSolver.h"
 #include "FluidSolverCPU.h"
 #include "FluidSolverGPU.h"
+#include "FluidSolverGrid2d.h"
 
-#define USE_SOLVER_GPU (1)
+#define SOLVER_CPU (0)
+#define SOLVER_GPU (1)
+#define SOLVER_GRID2D (2)
+
+#define FLUID_SOLVER SOLVER_GRID2D
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -68,11 +73,19 @@ void FFluidSimRenderer::InitInRenderThread()
 	}
 
 	// Init Simulation
-#if USE_SOLVER_GPU
-	Solver = ti_new FFluidSolverGPU;
-#else
+#if FLUID_SOLVER == SOLVER_CPU
 	Solver = ti_new FFluidSolverCPU;
+#elif FLUID_SOLVER == SOLVER_GPU
+	Solver = ti_new FFluidSolverGPU;
+#elif FLUID_SOLVER == SOLVER_GRID2D
+	Solver = ti_new FFluidSolverGrid2d;
+#else
+	TI_ASSERT(0);
 #endif
+
+#if FLUID_SOLVER == SOLVER_GRID2D
+	Solver->CreateGrid(128, 512);
+#else
 	Solver->CreateParticlesInBox(
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
 		0.1f, 1.f, 1000.f
@@ -90,6 +103,7 @@ void FFluidSimRenderer::InitInRenderThread()
 	TResourcePtr ParticleMaterialResource = ParticleMaterialAsset->GetResourcePtr();
 	TMaterialPtr ParticleMaterial = static_cast<TMaterial*>(ParticleMaterialResource.get());
 	PL_Fluid = ParticleMaterial->PipelineResource;
+#endif
 }
 
 void FFluidSimRenderer::MoveBoundary(const vector3df& Offset)
@@ -119,6 +133,7 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	DrawSceneTiles(RHI, Scene);
 
 	Solver->RenderParticles(RHI, Scene, MB_Fluid, PL_Fluid);
+	Solver->RenderGrid(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

@@ -112,6 +112,7 @@
     <ClCompile Include="FluidSimTicker.cpp" />
     <ClCompile Include="FluidSolverCPU.cpp" />
     <ClCompile Include="FluidSolverGPU.cpp" />
+    <ClCompile Include="FluidSolverGrid2d.cpp" />
     <ClCompile Include="LambdaCS.cpp" />
     <ClCompile Include="NeighborSearchCS.cpp" />
     <ClCompile Include="P2CellCS.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="FluidSimTicker.h" />
     <ClInclude Include="FluidSolverCPU.h" />
     <ClInclude Include="FluidSolverGPU.h" />
+    <ClInclude Include="FluidSolverGrid2d.h" />
     <ClInclude Include="LambdaCS.h" />
     <ClInclude Include="NeighborSearchCS.h" />
     <ClInclude Include="P2CellCS.h" />
