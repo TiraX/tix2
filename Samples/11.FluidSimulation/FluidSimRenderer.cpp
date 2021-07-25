@@ -84,7 +84,7 @@ void FFluidSimRenderer::InitInRenderThread()
 #endif
 
 #if FLUID_SOLVER == SOLVER_GRID2D
-	Solver->CreateGrid(128, 512);
+	Solver->CreateGrid(RHI, &FSRender);
 #else
 	Solver->CreateParticlesInBox(
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
@@ -115,6 +115,7 @@ void FFluidSimRenderer::MoveBoundary(const vector3df& Offset)
 static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	Solver->UpdateMousePosition(MousePosition);
 #if USE_SOLVER_GPU
 	//if (!PauseUpdate)
 	//{
@@ -133,7 +134,7 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	DrawSceneTiles(RHI, Scene);
 
 	Solver->RenderParticles(RHI, Scene, MB_Fluid, PL_Fluid);
-	Solver->RenderGrid(RHI, Scene);
+	Solver->RenderGrid(RHI, Scene, &FSRender);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

@@ -7,33 +7,6 @@
     <FxCompile Include="Shaders\Dx12\S_DebugOpaqueVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_SortCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_ApplyGravityCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CalcOffsetsCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_CellInitCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_DeltaPosCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_LambdaCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_NeighborSearchCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_P2CellCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_UpdateVelocityCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_ParticlesPS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
@@ -41,7 +14,64 @@
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_ApplyDeltaPosCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_ApplyGravityCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CalcOffsetsCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CellInitCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_DeltaPosCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_LambdaCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_NeighborSearchCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_P2CellCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SortCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_UpdateVelocityCS.hlsl">
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_AdvectionDyeCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_AdvectionVelCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_CurlCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_DivergenceCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_GradientSubstractCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_PressureCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_VorticityCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_ClearPressureCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SplatDyeCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_SplatVelCS.hlsl">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,36 +90,6 @@
     <ClCompile Include="FluidSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CellInitCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="ApplyGravityCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="CalcOffsetsCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="DeltaPosCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="LambdaCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="NeighborSearchCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="P2CellCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="SortCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="UpdateVelocityCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
-    <ClCompile Include="ApplyDeltaPosCS.cpp">
-      <Filter>Source Files\Compute</Filter>
-    </ClCompile>
     <ClCompile Include="FluidSolverCPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,6 +98,66 @@
     </ClCompile>
     <ClCompile Include="FluidSolverGrid2d.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplyDeltaPosCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplyGravityCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="CalcOffsetsCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="CellInitCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="DeltaPosCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="LambdaCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="NeighborSearchCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="P2CellCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="SortCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdateVelocityCS.cpp">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClCompile>
+    <ClCompile Include="CurlCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="VorticityCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvectionDyeCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvectionVelCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="ClearPressureCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="DivergenceCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="GradientSubstractCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="PressureCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="SplatDyeCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClCompile>
+    <ClCompile Include="SplatVelCS.cpp">
+      <Filter>Source Files\Compute\Grid2d</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,36 +173,6 @@
     <ClInclude Include="FluidSolver.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="CellInitCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="ApplyGravityCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="CalcOffsetsCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="DeltaPosCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="LambdaCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="NeighborSearchCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="P2CellCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="SortCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="UpdateVelocityCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
-    <ClInclude Include="ApplyDeltaPosCS.h">
-      <Filter>Source Files\Compute</Filter>
-    </ClInclude>
     <ClInclude Include="FluidSolverCPU.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -151,6 +181,69 @@
     </ClInclude>
     <ClInclude Include="FluidSolverGrid2d.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateVelocityCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplyDeltaPosCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplyGravityCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="CalcOffsetsCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="CellInitCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="DeltaPosCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="LambdaCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="NeighborSearchCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="P2CellCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="SortCS.h">
+      <Filter>Source Files\Compute\Pbf</Filter>
+    </ClInclude>
+    <ClInclude Include="CurlCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="VorticityCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvectionDyeCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvectionVelCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="ClearPressureCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="GradientSubstractCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="PressureCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="DivergenceCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="SplatDyeCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="SplatVelCS.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="SplatParam.h">
+      <Filter>Source Files\Compute\Grid2d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -167,7 +260,10 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Shaders\Dx12\S_PbfDef.hlsli">
-      <Filter>Source Files\Shaders</Filter>
+      <Filter>Source Files\Shaders\Pbf</Filter>
+    </None>
+    <None Include="Shaders\Dx12\S_Grid2dDef.hlsli">
+      <Filter>Source Files\Shaders\Grid2d</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +275,18 @@
     </Filter>
     <Filter Include="Source Files\Compute">
       <UniqueIdentifier>{87a931ed-f293-415a-996f-3203a693644c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compute\Pbf">
+      <UniqueIdentifier>{5913b839-c6a5-4263-94d6-3e7c2205ebd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compute\Grid2d">
+      <UniqueIdentifier>{54365877-61b3-4810-9312-fadbc1152811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders\Pbf">
+      <UniqueIdentifier>{f16cce08-c1de-47bc-9a5b-8430d686e0d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders\Grid2d">
+      <UniqueIdentifier>{918830e7-e0ed-4d28-8e1f-e7386fa00d40}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

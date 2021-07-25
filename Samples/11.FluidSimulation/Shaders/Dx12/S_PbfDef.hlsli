@@ -9,7 +9,7 @@ cbuffer FBoundInfo : register(b1)
 {
     float4 BMin;
     float4 BMax;
-}
+};
 
 static const float PI = 3.14159f;
 static const float3 GRAVITY = float3(0.f, 0.f, -9.8f);

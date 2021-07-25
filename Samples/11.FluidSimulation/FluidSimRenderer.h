@@ -22,7 +22,10 @@ public:
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 	void MoveBoundary(const vector3df& offset);
-
+	void SetMousePosition(const vector2di& Position)
+	{
+		MousePosition = Position;
+	}
 private:
 
 private:
@@ -36,4 +39,6 @@ private:
 	FRenderTargetPtr RT_BasePass;
 
 	FFluidSolver* Solver;
+
+	vector2di MousePosition;
 };

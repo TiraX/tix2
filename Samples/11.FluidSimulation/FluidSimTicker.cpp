@@ -94,5 +94,17 @@ bool TFluidSimTicker::OnEvent(const TEvent& e)
 	{
 		Action = Action_None;
 	}
+	else if (e.type == EET_MOVE)
+	{
+		vector2di MousePosition;
+		MousePosition.X = e.posX0;
+		MousePosition.Y = e.posY0;
+		ENQUEUE_RENDER_COMMAND(SendMousePosition)(
+			[MousePosition]()
+			{
+				FFluidSimRenderer::Get()->SetMousePosition(MousePosition);
+			});
+		//_LOG(Log, "Move : X0: %d, Y0: %d;  X1: %d, Y1: %d.\n", e.posX0, e.posY0, e.posX1, e.posY1);
+	}
 	return true;
 }

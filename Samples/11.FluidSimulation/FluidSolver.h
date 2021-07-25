@@ -21,12 +21,13 @@ public:
 		float InRestDenstiy);
 	void SetBoundaryBox(const aabbox3df& InCollisionBox);
 
-	virtual void CreateGrid(int32 Size, int32 DyeSize) {};
+	virtual void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender) {};
 
 	void Update(FRHI* RHI, float Dt);
 	virtual void Sim(FRHI* RHI, float Dt) = 0;
 	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) {};
-	virtual void RenderGrid(FRHI* RHI, FScene* Scene) {};
+	virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer) {};
+	virtual void UpdateMousePosition(const vector2di& InPosition) {};
 
 	int32 GetTotalParticles() const
 	{
