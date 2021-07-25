@@ -24,13 +24,14 @@ void FAdvectionVelCS::PrepareResources(FRHI * RHI)
 void FAdvectionVelCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
-	FTexturePtr InVelocity
+	FTexturePtr InVelocity,
+	FTexturePtr OutVelocity
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InVelocity, SRV_VELOCITY);
-	ResourceTable->PutRWTextureInTable(InVelocity, 0, UAV_VELOCITY);
+	ResourceTable->PutRWTextureInTable(OutVelocity, 0, UAV_VELOCITY);
 }
 
 void FAdvectionVelCS::Run(FRHI * RHI)

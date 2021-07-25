@@ -134,8 +134,8 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	DrawSceneTiles(RHI, Scene);
 
 	Solver->RenderParticles(RHI, Scene, MB_Fluid, PL_Fluid);
-	Solver->RenderGrid(RHI, Scene, &FSRender);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+	Solver->RenderGrid(RHI, Scene, &FSRender);
 }

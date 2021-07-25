@@ -25,14 +25,15 @@ void FVorticityCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
 	FTexturePtr InCurl,
-	FTexturePtr InVelocity
+	FTexturePtr InVelocity,
+	FTexturePtr OutVelocity
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InCurl, SRV_CURL);
 	ResourceTable->PutTextureInTable(InVelocity, SRV_VELOCITY);
-	ResourceTable->PutRWTextureInTable(InVelocity, 0, UAV_VELOCITY);
+	ResourceTable->PutRWTextureInTable(OutVelocity, 0, UAV_VELOCITY);
 }
 
 void FVorticityCS::Run(FRHI * RHI)

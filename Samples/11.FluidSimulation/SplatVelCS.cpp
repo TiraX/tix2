@@ -28,7 +28,8 @@ void FSplatVelCS::UpdateComputeParams(
 	const vector2df& MousePointUV,
 	const vector2df& MouseMoveDir,
 	const float RadiusScale,
-	FTexturePtr InVelocity
+	FTexturePtr InVelocity,
+	FTexturePtr OutVelocity
 )
 {
 	UBRef_Fluid2dParam = InParam;
@@ -39,7 +40,8 @@ void FSplatVelCS::UpdateComputeParams(
 		FFloat4(TMath::RandomUnit(), TMath::RandomUnit(), TMath::RandomUnit(), RadiusScale);
 	UB_SplatParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	ResourceTable->PutRWTextureInTable(InVelocity, 0, UAV_VELOCITY);
+	ResourceTable->PutTextureInTable(InVelocity, SRV_VELOCITY);
+	ResourceTable->PutRWTextureInTable(OutVelocity, 0, UAV_VELOCITY);
 }
 
 void FSplatVelCS::Run(FRHI * RHI)

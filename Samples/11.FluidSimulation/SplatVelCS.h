@@ -21,12 +21,14 @@ public:
 		const vector2df& MousePointUV,
 		const vector2df& MouseMoveDir,
 		const float RadiusScale,
-		FTexturePtr InVelocity
+		FTexturePtr InVelocity,
+		FTexturePtr OutVelocity
 		);
 
 private:
 	enum
 	{
+		SRV_VELOCITY,
 		UAV_VELOCITY,
 
 		PARAM_TOTAL_COUNT,

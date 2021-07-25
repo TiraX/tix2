@@ -18,7 +18,8 @@ public:
 		FRHI * RHI,
 		FUniformBufferPtr InParam,
 		FTexturePtr InDivergence,
-		FTexturePtr InPressure
+		FTexturePtr InPressure,
+		FTexturePtr OutPressure
 		);
 
 private:

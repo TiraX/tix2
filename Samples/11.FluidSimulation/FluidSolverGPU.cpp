@@ -224,7 +224,7 @@ void FFluidSolverGPU::Sim(FRHI * RHI, float Dt)
 	RHI->BeginComputeTask();
 	{
 		RHI->BeginEvent("CellInit");
-		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->SetResourceStateUB(UB_NumInCell, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
 		RHI->SetResourceStateUB(UB_CellParticleOffsets, RESOURCE_STATE_UNORDERED_ACCESS, false);
 		RHI->FlushResourceStateChange();
 		CellInitCS->Run(RHI);

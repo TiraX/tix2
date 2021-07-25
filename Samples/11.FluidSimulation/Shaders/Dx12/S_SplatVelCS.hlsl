@@ -7,7 +7,7 @@
 #define Splat_RootSig \
 	"CBV(b0) ," \
 	"CBV(b1) ," \
-    "DescriptorTable(UAV(u0, numDescriptors=1))" 
+    "DescriptorTable(SRV(t0, numDescriptors=1), UAV(u0, numDescriptors=1))" 
 
 cbuffer FSplatInfo : register(b1)
 {
@@ -15,7 +15,8 @@ cbuffer FSplatInfo : register(b1)
     float4 SplatInfo1;   // xyz = color; z = radius scale
 };
 
-RWTexture2D<float2> TexVelocity : register(u0);
+Texture2D<float2> InTexVelocity : register(t0);
+RWTexture2D<float2> OutTexVelocity : register(u0);
 
 [RootSignature(Splat_RootSig)]
 [numthreads(16, 16, 1)]
@@ -32,6 +33,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float2 UVVel = (float2(Index) + 0.5f) * InvSimRes;
     float2 PVel = UVVel - MousePos;
     float2 SplatVel = MouseDir * exp(-dot(PVel, PVel) * RadiusScale);
+    float2 Vel = InTexVelocity.Load(int3(Index.xy, 0));
 
-    TexVelocity[Index] += SplatVel;
+    OutTexVelocity[Index] = Vel + SplatVel;
 }

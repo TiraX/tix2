@@ -2240,6 +2240,14 @@ namespace tix
 		return true;
 	}
 
+	void FRHIDx12::SetResourceStateTexture(FTexturePtr InTexture, E_RESOURCE_STATE NewState, bool Immediate)
+	{
+		FTextureDx12* TextureDx12 = static_cast<FTextureDx12*>(InTexture.get());
+		Transition(&TextureDx12->TextureResource, TiX2DxResourceStateMap[NewState]);
+		if (Immediate)
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+	}
+
 	void FRHIDx12::SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate)
 	{
 		FUniformBufferDx12 * UniformBufferDx12 = static_cast<FUniformBufferDx12*>(InUniformBuffer.get());

@@ -21,12 +21,14 @@ public:
 		const vector2df& MousePointUV,
 		const vector2df& MouseMoveDir,
 		const float RadiusScale,
-		FTexturePtr InDye
+		FTexturePtr InDye,
+		FTexturePtr OutDye
 	);
 
 private:
 	enum
 	{
+		SRV_DYE,
 		UAV_DYE,
 
 		PARAM_TOTAL_COUNT,

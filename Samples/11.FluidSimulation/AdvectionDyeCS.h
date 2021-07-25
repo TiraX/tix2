@@ -18,7 +18,8 @@ public:
 		FRHI * RHI,
 		FUniformBufferPtr InParam,
 		FTexturePtr InVelocity,
-		FTexturePtr InDye
+		FTexturePtr InDye,
+		FTexturePtr OutDye
 		);
 
 private:

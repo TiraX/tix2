@@ -25,14 +25,15 @@ void FAdvectionDyeCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
 	FTexturePtr InVelocity,
-	FTexturePtr InDye
+	FTexturePtr InDye,
+	FTexturePtr OutDye
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InVelocity, SRV_VELOCITY);
 	ResourceTable->PutTextureInTable(InDye, SRV_DYE_SRC);
-	ResourceTable->PutRWTextureInTable(InDye, 0, UAV_DYE_DST);
+	ResourceTable->PutRWTextureInTable(OutDye, 0, UAV_DYE_DST);
 }
 
 void FAdvectionDyeCS::Run(FRHI * RHI)

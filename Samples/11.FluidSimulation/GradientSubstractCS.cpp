@@ -25,14 +25,15 @@ void FGradientSubstractCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
 	FTexturePtr InPressure,
-	FTexturePtr InVelocity
+	FTexturePtr InVelocity,
+	FTexturePtr OutVelocity
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InPressure, SRV_PRESSURE);
 	ResourceTable->PutTextureInTable(InVelocity, SRV_VELOCITY);
-	ResourceTable->PutRWTextureInTable(InVelocity, 0, UAV_VELOCITY);
+	ResourceTable->PutRWTextureInTable(OutVelocity, 0, UAV_VELOCITY);
 }
 
 void FGradientSubstractCS::Run(FRHI * RHI)

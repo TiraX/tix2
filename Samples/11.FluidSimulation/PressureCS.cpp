@@ -25,14 +25,15 @@ void FPressureCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
 	FTexturePtr InDivergence,
-	FTexturePtr InPressure
+	FTexturePtr InPressure,
+	FTexturePtr OutPressure
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InDivergence, SRV_DIVERGENCE);
 	ResourceTable->PutTextureInTable(InPressure, SRV_PRESSURE);
-	ResourceTable->PutRWTextureInTable(InPressure, 0, UAV_PRESSURE);
+	ResourceTable->PutRWTextureInTable(OutPressure, 0, UAV_PRESSURE);
 }
 
 void FPressureCS::Run(FRHI * RHI)

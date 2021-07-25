@@ -12,8 +12,8 @@
                       "addressW = TEXTURE_ADDRESS_CLAMP, " \
                         "filter = FILTER_MIN_MAG_MIP_LINEAR)"
 
-Texture2D<float2> TexVelocity : register(s0);
-Texture2D<float4> TexDyeSrc : register(s1);
+Texture2D<float2> TexVelocity : register(t0);
+Texture2D<float4> TexDyeSrc : register(t1);
 RWTexture2D<float4> TexDyeDst : register(u0);
 
 SamplerState LinearSampler : register(s0);
@@ -42,7 +42,7 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float Dt = Info0.x;
     float InvSimRes = Info1.z;
     float InvDyeRes = Info1.w;
-    float DyeDissipation = Info1.w;
+    float DyeDissipation = Info2.w;
 
     float2 UV = (Index + float2(0.5f, 0.5f)) * InvDyeRes;
     float2 Vel = TexVelocity.SampleLevel(LinearSampler, UV, 0).xy;

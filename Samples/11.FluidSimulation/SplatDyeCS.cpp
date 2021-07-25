@@ -28,7 +28,8 @@ void FSplatDyeCS::UpdateComputeParams(
 	const vector2df& MousePointUV,
 	const vector2df& MouseMoveDir,
 	const float RadiusScale,
-	FTexturePtr InDye
+	FTexturePtr InDye,
+	FTexturePtr OutDye
 )
 {
 	UBRef_Fluid2dParam = InParam;
@@ -39,7 +40,8 @@ void FSplatDyeCS::UpdateComputeParams(
 		FFloat4(TMath::RandomUnit(), TMath::RandomUnit(), TMath::RandomUnit(), RadiusScale);
 	UB_SplatParam->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
-	ResourceTable->PutRWTextureInTable(InDye, 0, UAV_DYE);
+	ResourceTable->PutTextureInTable(InDye, SRV_DYE);
+	ResourceTable->PutRWTextureInTable(OutDye, 0, UAV_DYE);
 }
 
 void FSplatDyeCS::Run(FRHI* RHI)

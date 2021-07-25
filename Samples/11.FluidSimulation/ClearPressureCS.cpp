@@ -24,13 +24,14 @@ void FClearPressureCS::PrepareResources(FRHI * RHI)
 void FClearPressureCS::UpdateComputeParams(
 	FRHI * RHI,
 	FUniformBufferPtr InParam,
-	FTexturePtr InPressure
+	FTexturePtr InPressure,
+	FTexturePtr OutPressure
 )
 {
 	UBRef_Fluid2dParam = InParam;
 
 	ResourceTable->PutTextureInTable(InPressure, SRV_PRESSURE);
-	ResourceTable->PutRWTextureInTable(InPressure, 0, UAV_PRESSURE);
+	ResourceTable->PutRWTextureInTable(OutPressure, 0, UAV_PRESSURE);
 }
 
 void FClearPressureCS::Run(FRHI * RHI)

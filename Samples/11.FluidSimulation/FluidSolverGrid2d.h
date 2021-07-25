@@ -33,6 +33,7 @@ public:
 	static const int32 PressureIterations;
 	static const int32 Curl;
 	static const float Radius;
+	static const float SplatForce;
 
 	FFluidSolverGrid2d();
 	virtual ~FFluidSolverGrid2d();
@@ -65,9 +66,9 @@ private:
 
 	// Resources
 	FArgumentBufferPtr AB_DyeToScreen;
-	FTexturePtr TexVelocity;
-	FTexturePtr TexDye;
+	FTexturePtr TexVelocity[2];
+	FTexturePtr TexDye[2];
 	FTexturePtr TexDivergence;
 	FTexturePtr TexCurl;
-	FTexturePtr TexPressure;
+	FTexturePtr TexPressure[2];
 };

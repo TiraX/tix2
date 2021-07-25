@@ -17,7 +17,8 @@ public:
 	void UpdateComputeParams(
 		FRHI * RHI,
 		FUniformBufferPtr InParam,
-		FTexturePtr InPressure
+		FTexturePtr InPressure,
+		FTexturePtr OutPressure
 		);
 
 private:
