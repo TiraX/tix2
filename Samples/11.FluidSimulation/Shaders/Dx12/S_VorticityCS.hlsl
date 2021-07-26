@@ -26,10 +26,10 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float B = TexCurl.Load(int3(Index.x, Index.y - 1, 0)).x;
     float C = TexCurl.Load(int3(Index.xy, 0)).x;
 
-    float2 Force = float2(abs(T) - abs(B), abs(R) - abs(L)) * 0.5f;
+    float2 Force = float2(abs(T) - abs(B), abs(L) - abs(R)) * 0.5f;
     Force /= length(Force) + 0.0001f;
     Force *= Curl * C;
-    Force.y *= -1.f;
+    //Force.y *= -1.f;
 
     float2 Velocity = TexVelocity.Load(int3(Index.xy, 0)).xy;
     Velocity += Force * Dt;

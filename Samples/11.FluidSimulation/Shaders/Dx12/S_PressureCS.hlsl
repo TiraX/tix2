@@ -22,7 +22,6 @@ void main(uint3 groupId : SV_GroupID, uint3 threadIDInGroup : SV_GroupThreadID, 
     float R = TexPressure.Load(int3(Index.x + 1, Index.y, 0)).x;
     float T = TexPressure.Load(int3(Index.x, Index.y + 1, 0)).x;
     float B = TexPressure.Load(int3(Index.x, Index.y - 1, 0)).x;
-    float C = TexPressure.Load(int3(Index, 0)).x;
 
     float Div = TexDivergence.Load(int3(Index, 0)).x;
     float P = (L + R + B + T - Div) * 0.25f;
