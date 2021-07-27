@@ -49,30 +49,43 @@ namespace tix
 		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
 	}
 
-	void FSceneTileResource::CreateBLASForPrimitive(FPrimitivePtr Primitive)
+	void FSceneTileResource::CreateBLASAndInstances(FMeshBufferPtr MB, TInstanceBufferPtr InstanceData, const int32 InstanceCount, const int32 InstanceOffset)
 	{
 		if (FRHI::RHIConfig.IsRaytracingEnabled())
 		{
-			FBottomLevelAccelerationStructurePtr BLAS = FRHI::Get()->CreateBottomLevelAccelerationStructure();
+			FBottomLevelAccelerationStructurePtr BLAS = nullptr;
 
-			FMeshBufferPtr MB = Primitive->GetMeshBuffer();
-			int8 Name[128];
-			sprintf_s(Name, 128, "BLAS_%d_%d-%s",
-				Position.X,
-				Position.Y,
-				MB->GetResourceName().c_str());
-			BLAS->SetResourceName(Name);
-			BLAS->AddMeshBuffer(MB);
+			// Find BLAS for this mesh, if not found, create ONE.
+			THMap<FMeshBufferPtr, FBottomLevelAccelerationStructurePtr>::iterator Found = SceneTileBLASes.find(MB);
+			if (Found == SceneTileBLASes.end())
+			{
+				BLAS = FRHI::Get()->CreateBottomLevelAccelerationStructure();
 
-			SceneTileBLASes.push_back(BLAS);
+				int8 Name[128];
+				sprintf_s(Name, 128, "BLAS_%d_%d-%s",
+					Position.X,
+					Position.Y,
+					MB->GetResourceName().c_str());
+				BLAS->SetResourceName(Name);
+				BLAS->AddMeshBuffer(MB);
+
+				SceneTileBLASes[MB] = BLAS;
+			}
+			else
+			{
+				BLAS = Found->second;
+			}
+
+			// Create BLAS instances
+			TI_ASSERT(0);
 		}
 	}
 
 	void FSceneTileResource::BuildBLAS()
 	{
-		for (auto& BLASPtr : SceneTileBLASes)
+		for (THMap<FMeshBufferPtr, FBottomLevelAccelerationStructurePtr>::iterator it = SceneTileBLASes.begin(); it != SceneTileBLASes.end(); it ++)
 		{
-			BLASPtr->Build();
+			it->second->Build();
 		}
 	}
 }

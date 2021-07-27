@@ -163,9 +163,24 @@ namespace tix
 								for (uint32 p = 0; p < TotalPrimitives; ++p)
 								{
 									RenderThreadSceneTileResource->AddPrimitive(Indices[p], Primitives[p]);
-									RenderThreadSceneTileResource->CreateBLASForPrimitive(Primitives[p]);
 								}
 							});
+
+						// Create BLAS and BLAS instances for this mesh
+						TInstanceBufferPtr InstanceBufferData = SceneTileResource->SMInstances.InstanceBuffer;
+						const int32 InstanceCount = SceneTileResource->SMInstances.InstanceCountAndOffset[MeshSectionOffset].X;
+						const int32 InstanceOffset = SceneTileResource->SMInstances.InstanceCountAndOffset[MeshSectionOffset].Y;
+						ENQUEUE_RENDER_COMMAND(CreateBLASAndInstances)(
+							[RenderThreadSceneTileResource, StaticMeshResource, InstanceBufferData, InstanceCount, InstanceOffset]()
+							{
+								RenderThreadSceneTileResource->CreateBLASAndInstances(
+									StaticMeshResource,
+									InstanceBufferData,
+									InstanceCount,
+									InstanceOffset
+								);
+							});
+
 
 						// Remove the reference holder
 						TI_ASSERT(LoadedStaticMeshAssets[m] == nullptr);

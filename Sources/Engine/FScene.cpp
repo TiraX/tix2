@@ -127,10 +127,25 @@ namespace tix
 		{
 			// Re-add all blas to tlas
 			TI_TODO("Find a optimized way to do this");
-
-			TI_ASSERT(0);
+			// Since FPrimitive only has FInstanceBuffer Data, maybe we can build BLAS instances buffer from GPU
+			
 			SceneTLAS->ClearAllInstances();
-			//SceneTLAS->AddBLASInstance();
+
+			// Go through all tiles, add all BLAS instances
+			for (THMap<vector2di, FSceneTileResourcePtr>::iterator it = SceneTiles.begin(); it != SceneTiles.end(); it++)
+			{
+				FSceneTileResourcePtr Tile = it->second;
+				const TVector<FPrimitivePtr>& Primitives = Tile->GetPrimitives();
+				auto& BLASes = Tile->GetBLASes();
+				for (const auto& Prim : Primitives)
+				{
+					FMeshBufferPtr MB = Prim->GetMeshBuffer();
+					FBottomLevelAccelerationStructurePtr BLAS = BLASes[MB];
+
+					TI_ASSERT(0);
+					//SceneTLAS->AddBLASInstance(BLAS, );
+				}
+			}
 
 			SceneTLAS->Build();
 		}
