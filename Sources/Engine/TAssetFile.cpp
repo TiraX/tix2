@@ -869,6 +869,7 @@ namespace tix
 						FFloat4 Transition(Instance.Position.X, Instance.Position.Y, Instance.Position.Z, 0.f);
 						FMatrix RotationScaleMat;
 						GetInstanceRotationScaleMatrix(RotationScaleMat, Instance.Rotation, Instance.Scale);
+						TI_TODO("Use FMatrix4x3 for instance transform, since RTX also need this 4x3 matrix");
 #if USE_HALF_FOR_INSTANCE_ROTATION
 						FHalf4 RotScaleMat[3];
 						MatrixRotationScaleToHalf3(RotationScaleMat, RotScaleMat[0], RotScaleMat[1], RotScaleMat[2]);

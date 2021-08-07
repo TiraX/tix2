@@ -49,7 +49,7 @@ namespace tix
 		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::ScenePrimitivesDirty);
 	}
 
-	void FSceneTileResource::CreateBLASAndInstances(FMeshBufferPtr MB, TInstanceBufferPtr InstanceData, const int32 InstanceCount, const int32 InstanceOffset)
+	void FSceneTileResource::CreateBLASAndInstances(FMeshBufferPtr MB, TInstanceBufferPtr InInstanceData, const int32 InstanceCount, const int32 InstanceOffset)
 	{
 		if (FRHI::RHIConfig.IsRaytracingEnabled())
 		{
@@ -77,7 +77,27 @@ namespace tix
 			}
 
 			// Create BLAS instances
-			TI_ASSERT(0);
+			const FFloat4* InstanceData = (const FFloat4*)InInstanceData->GetInstanceData();
+			for (int32 Ins = 0; Ins < InstanceCount; ++Ins)
+			{
+				const FFloat4* InsData = InstanceData + (InstanceOffset + Ins) * 4;
+				FMatrix3x4 Mat3x4;
+				Mat3x4.SetTranslation(vector3df(InsData[0].X, InsData[0].Y, InsData[0].Z));
+				Mat3x4[0] = InsData[1].X;
+				Mat3x4[1] = InsData[1].Y;
+				Mat3x4[2] = InsData[1].Z;
+
+				Mat3x4[4] = InsData[2].X;
+				Mat3x4[5] = InsData[2].Y;
+				Mat3x4[6] = InsData[2].Z;
+
+				Mat3x4[8] = InsData[3].X;
+				Mat3x4[9] = InsData[3].Y;
+				Mat3x4[10] = InsData[3].Z;
+
+				SceneTileBLASInstances[MB].push_back(Mat3x4);
+
+			}
 		}
 	}
 

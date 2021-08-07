@@ -55,13 +55,13 @@ namespace tix
 			return *this;
 		}
 
-		float operator [] (uint32 Index)
+		float& operator [] (uint32 Index)
 		{
 			TI_ASSERT(Index < NumElements);
 			return M[Index];
 		}
 
-		float operator [] (uint32 Index) const
+		const float& operator [] (uint32 Index) const
 		{
 			TI_ASSERT(Index < NumElements);
 			return M[Index];
@@ -123,13 +123,20 @@ namespace tix
 			return *this;
 		}
 
-		float operator [] (uint32 Index)
+		void SetTranslation(const vector3df& translation)
+		{
+			M[3] = translation.getX();
+			M[7] = translation.getY();
+			M[11] = translation.getZ();
+		}
+
+		float& operator [] (uint32 Index)
 		{
 			TI_ASSERT(Index < NumElements);
 			return M[Index];
 		}
 
-		float operator [] (uint32 Index) const
+		const float& operator [] (uint32 Index) const
 		{
 			TI_ASSERT(Index < NumElements);
 			return M[Index];

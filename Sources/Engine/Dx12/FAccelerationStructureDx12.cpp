@@ -8,6 +8,7 @@
 #include "FRHIDx12Conversion.h"
 #include "FAccelerationStructureDx12.h"
 #include "FMeshBufferDx12.h"
+#include "FUniformBufferDx12.h"
 
 #if COMPILE_WITH_RHI_DX12
 
@@ -121,16 +122,32 @@ namespace tix
 		InstanceDescs.clear();
 	}
 
+	void FTopLevelAccelerationStructureDx12::ReserveInstanceCount(uint32 Count)
+	{
+		InstanceDescs.reserve(Count);
+	}
+
 	void FTopLevelAccelerationStructureDx12::AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform)
 	{
-		//D3D12_RAYTRACING_INSTANCE_DESC
-		TI_ASSERT(0);
+		FBottomLevelAccelerationStructureDx12* BLASDx12 = static_cast<FBottomLevelAccelerationStructureDx12*>(BLAS.get());
+
+		if (BLASDx12->GetASResource() != nullptr)
+		{
+			D3D12_RAYTRACING_INSTANCE_DESC Desc;
+			memcpy(Desc.Transform, Transform.Data(), sizeof(float) * 3 * 4);
+			Desc.InstanceMask = 1;
+			Desc.InstanceContributionToHitGroupIndex = 0;
+			TI_TODO("Find correct InstanceContributionToHitGroupIndex");
+			Desc.AccelerationStructure = BLASDx12->GetASResource()->GetGPUVirtualAddress();
+
+			InstanceDescs.push_back(Desc);
+		}
 	}
 
 	void FTopLevelAccelerationStructureDx12::Build()
 	{
 		TI_ASSERT(IsRenderThread());
-		if (!Dirty)
+		if (!Dirty || InstanceDescs.size() == 0)
 			return;
 
 		FRHIDx12* RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
@@ -172,9 +189,14 @@ namespace tix
 			nullptr,
 			IID_PPV_ARGS(&ScratchResource)));
 
+		// Create Instance Resource
+		const uint32 InstanceBufferSize = (uint32)InstanceDescs.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
+		TLASInstanceBuffer = RHIDx12->CreateUniformBuffer(InstanceBufferSize, 1, UB_FLAG_INTERMEDIATE);
+		RHIDx12->UpdateHardwareResourceUB(TLASInstanceBuffer, InstanceDescs.data());
+
 		// Build top layer AS
-		TI_ASSERT(0);
-		//TopLevelInputs.InstanceDescs = bottomLevelASnstanceDescs;
+		FUniformBufferDx12* TLASInstanceBufferDx12 = static_cast<FUniformBufferDx12*>(TLASInstanceBuffer.get());
+		TopLevelInputs.InstanceDescs = TLASInstanceBufferDx12->GetResource()->GetGPUVirtualAddress();
 		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
 		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure->GetGPUVirtualAddress();
 

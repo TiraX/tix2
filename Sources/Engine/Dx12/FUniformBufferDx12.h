@@ -30,6 +30,13 @@ namespace tix
 			}
 			return 0;
 		}
+
+		ComPtr<ID3D12Resource> GetResource()
+		{
+			return BufferResource.GetResource();
+		}
+
+		
 	protected:
 
 	protected:

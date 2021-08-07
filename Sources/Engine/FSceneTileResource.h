@@ -65,6 +65,11 @@ namespace tix
 			return SceneTileBLASes;
 		}
 
+		THMap<FMeshBufferPtr, TVector<FMatrix3x4>>& GetBLASInstances()
+		{
+			return SceneTileBLASInstances;
+		}
+
 	private:
 		vector2di Position;
 		aabbox3df BBox;
@@ -79,5 +84,8 @@ namespace tix
 
 		// Scene BLAS, store by tiles. Each meshbuffer in this tile has a BLAS
 		THMap<FMeshBufferPtr, FBottomLevelAccelerationStructurePtr> SceneTileBLASes;
+
+		// Scene BLAS instances
+		THMap<FMeshBufferPtr, TVector<FMatrix3x4> > SceneTileBLASInstances;
 	};
 }
