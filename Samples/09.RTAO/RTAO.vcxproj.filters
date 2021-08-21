@@ -8,6 +8,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{863f17d7-af54-40f0-90f3-f94d128c6588}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shaders\RTX">
+      <UniqueIdentifier>{90af5925-e649-4bf9-94c2-cea49779f0fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -46,6 +49,9 @@
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_GTAOCS.hlsl">
       <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_Pathtracer.hlsl">
+      <Filter>Source Files\Shaders\RTX</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

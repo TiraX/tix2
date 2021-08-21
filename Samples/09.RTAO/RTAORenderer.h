@@ -21,8 +21,17 @@ private:
 	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 private:
+	enum
+	{
+		GBUFFER_COLOR,
+
+		GBUFFER_COUNT,
+	};
+
 	FArgumentBufferPtr AB_Result;
 
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
+
+	FTexturePtr T_GBuffer[GBUFFER_COUNT];
 };

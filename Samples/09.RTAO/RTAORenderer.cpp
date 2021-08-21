@@ -65,6 +65,31 @@ void FRTAORenderer::InitInRenderThread()
 		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
 		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
 	}
+
+	// Create GBuffer
+	TTextureDesc TextureDesc;
+	TextureDesc.Format = EPF_RGBA8;
+	TextureDesc.AddressMode = ETC_CLAMP_TO_EDGE;
+
+#define CreateTextureResource(T) T=RHI->CreateTexture(TextureDesc); \
+	T->SetTextureFlag(ETF_UAV, true); \
+	T->SetResourceName(#T); \
+	RHI->UpdateHardwareResourceTexture(T)
+
+	TextureDesc.Width = RTWidth;
+	TextureDesc.Height = RTWidth;
+	CreateTextureResource(T_GBuffer[GBUFFER_COLOR]);
+#undef CreateTextureResource
+
+	// For path tracer
+	// Create root signatures
+
+	// Create RTX pipeline state object
+	RHI->CreateRayTracingPSO();
+
+	// Create constant buffers
+
+	// Build shader tables
 }
 
 void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)

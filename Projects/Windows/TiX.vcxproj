@@ -47,6 +47,7 @@
     <ClCompile Include="..\..\Sources\Engine\FRenderResourceTable.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRenderTarget.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FRHI.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\FRtxPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FSceneLights.cpp" />
     <ClCompile Include="..\..\Sources\Engine\FSceneTileResource.cpp" />
@@ -97,6 +98,7 @@
     <ClCompile Include="..\..\Sources\Engine\TPlatformUtils.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TRegion.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TResource.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\TRtxPipeline.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TScene.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TSceneLoading.cpp" />
     <ClCompile Include="..\..\Sources\Engine\TSceneTileResource.cpp" />
@@ -163,6 +165,7 @@
     <ClInclude Include="..\..\Sources\Engine\FRenderTarget.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHI.h" />
     <ClInclude Include="..\..\Sources\Engine\FRHIConfig.h" />
+    <ClInclude Include="..\..\Sources\Engine\FRtxPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\FScene.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneLights.h" />
     <ClInclude Include="..\..\Sources\Engine\FSceneTileResource.h" />
@@ -234,6 +237,7 @@
     <ClInclude Include="..\..\Sources\Engine\TQueue.h" />
     <ClInclude Include="..\..\Sources\Engine\TRegion.h" />
     <ClInclude Include="..\..\Sources\Engine\TResource.h" />
+    <ClInclude Include="..\..\Sources\Engine\TRtxPipeline.h" />
     <ClInclude Include="..\..\Sources\Engine\TScene.h" />
     <ClInclude Include="..\..\Sources\Engine\TSceneTileResource.h" />
     <ClInclude Include="..\..\Sources\Engine\TShader.h" />

@@ -47,6 +47,7 @@ namespace tix
 	DECLARE_INSTRUSIVE_PTR(FShaderBinding);
 	DECLARE_INSTRUSIVE_PTR(FShader);
 	DECLARE_INSTRUSIVE_PTR(FComputeTask);
+	DECLARE_INSTRUSIVE_PTR(FRtxPipeline);
 	DECLARE_INSTRUSIVE_PTR(FBottomLevelAccelerationStructure);
 	DECLARE_INSTRUSIVE_PTR(FTopLevelAccelerationStructure);
 
