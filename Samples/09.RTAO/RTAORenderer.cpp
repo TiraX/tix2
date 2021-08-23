@@ -88,12 +88,16 @@ void FRTAORenderer::InitInRenderThread()
 	const TString ShaderPathTracer = "S_Pathtracer";
 	TShaderPtr Shader = ti_new TShader(ShaderPathTracer);
 	Shader->LoadShaderCode();
+	Shader->AddEntry("MyRayGenShader");
+	Shader->AddEntry("RayMiss");
+	Shader->AddEntry("RayClosestHit");
+	Shader->SetHitGroupShader(HITGROUP_CLOSEST_HIT, "RayClosestHit");
 	Shader->ShaderResource = RHI->CreateRtxShaderLib(ShaderPathTracer);
 	RHI->UpdateHardwareResourceShader(Shader->ShaderResource, Shader);
 
 	TRtxPipelinePtr RtxPSODesc = ti_new TRtxPipeline();
 	RtxPSODesc->SetShaderLib(Shader);
-	RtxPSO = RHI->CreateRtxPipeline(Shader);
+	RtxPSO = RHI->CreateRtxPipeline(Shader->ShaderResource);
 	RHI->UpdateHardwareResourceRtxPL(RtxPSO, RtxPSODesc);
 
 	// Create constant buffers

@@ -20,6 +20,15 @@ namespace tix
 		ESS_COUNT,
 	};
 
+	enum E_HITGROUP
+	{
+		HITGROUP_ANY_HIT,
+		HITGROUP_CLOSEST_HIT,
+		HITGROUP_INTERSECTION,
+
+		HITGROUP_NUM
+	};
+
 	struct TShaderNames
 	{
 		TString ShaderNames[ESS_COUNT];
@@ -51,7 +60,29 @@ namespace tix
 		}
 		const TStream& GetComputeShaderCode()
 		{
-			return ShaderCodes[0];
+			return ShaderCodes[ESS_COMPUTE_SHADER];
+		}
+		const TStream& GetRtxShaderLibCode()
+		{
+			return ShaderCodes[ESS_SHADER_LIB];
+		}
+
+		void AddEntry(const TString& EntryName)
+		{
+			EntryNames.push_back(EntryName);
+		}
+		const TVector<TString>& GetEntryNames() const
+		{
+			return EntryNames;
+		}
+
+		void SetHitGroupShader(E_HITGROUP HitGroup, const TString& InShaderName)
+		{
+			HitGroupShaders[HitGroup] = InShaderName;
+		}
+		const TString& GetHitGroupShader(E_HITGROUP HitGroup) const
+		{
+			return HitGroupShaders[HitGroup];
 		}
 
 		void ReleaseShaderCode();
@@ -64,5 +95,7 @@ namespace tix
 	protected:
 		TShaderNames Names;
 		TStream ShaderCodes[ESS_COUNT];
+		TVector<TString> EntryNames;
+		TString HitGroupShaders[HITGROUP_NUM];
 	};
 }

@@ -35,7 +35,25 @@ namespace tix
 
 		const TString& GetComputeShaderName() const
 		{
-			return ShaderNames.ShaderNames[0];
+			return ShaderNames.ShaderNames[ESS_COMPUTE_SHADER];
+		}
+
+		const TString& GetRtxShaderLibName() const
+		{
+			return ShaderNames.ShaderNames[ESS_SHADER_LIB];
+		}
+		const TVector<TString>& GetEntryNames() const
+		{
+			return EntryNames;
+		}
+
+		void SetHitGroupShader(E_HITGROUP HitGroup, const TString& InShaderName)
+		{
+			HitGroupShaders[HitGroup] = InShaderName;
+		}
+		const TString& GetHitGroupShader(E_HITGROUP HitGroup) const
+		{
+			return HitGroupShaders[HitGroup];
 		}
 
 		FShaderBindingPtr ShaderBinding;
@@ -44,6 +62,7 @@ namespace tix
 	protected:
 		TShaderNames ShaderNames;
 		E_SHADER_TYPE Type;
-
+		TVector<TString> EntryNames;
+		TString HitGroupShaders[HITGROUP_NUM];
 	};
 }

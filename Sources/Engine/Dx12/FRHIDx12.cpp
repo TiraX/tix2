@@ -1859,17 +1859,48 @@ namespace tix
 
 		FShaderDx12* ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
 
+		TVector<D3D12_STATE_SUBOBJECT> SubObjects;
+		SubObjects.reserve(10);
 		D3D12_STATE_SUBOBJECT SubObject;
 
 		// Dxil library
 		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+
 		D3D12_DXIL_LIBRARY_DESC DxilLibDesc;
 		SubObject.pDesc = &DxilLibDesc;
-
 		DxilLibDesc.DXILLibrary.pShaderBytecode = ShaderDx12->ShaderCodes[ESS_SHADER_LIB].GetBuffer();
 		DxilLibDesc.DXILLibrary.BytecodeLength = uint32(ShaderDx12->ShaderCodes[ESS_SHADER_LIB].GetLength());
 
+		const TVector<TString>& ShaderEntries = Shader->GetEntryNames();
+		TVector<D3D12_EXPORT_DESC> ExportDesc;
+		TVector<TWString> ExportNames;
+		ExportDesc.resize(ShaderEntries.size());
+		ExportNames.resize(ShaderEntries.size());
+		for (uint32 i = 0; i < ShaderEntries.size(); i++)
+		{
+			ExportNames[i] = FromString(ShaderEntries[i].c_str());
+			ExportDesc[i].Name = ExportNames[i].c_str();
+			ExportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
+			ExportDesc[i].ExportToRename = nullptr;
+		}
+		DxilLibDesc.NumExports = (uint32)ShaderEntries.size();
+		DxilLibDesc.pExports = ExportDesc.data();
+		SubObjects.push_back(SubObject);
 
+		// Hit Program
+		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+		D3D12_HIT_GROUP_DESC HitGroupDesc;
+		TWString HitGroupShaders[HITGROUP_NUM];
+		HitGroupShaders[HITGROUP_ANY_HIT] = FromString(Shader->GetHitGroupShader(HITGROUP_ANY_HIT));
+		HitGroupShaders[HITGROUP_CLOSEST_HIT] = FromString(Shader->GetHitGroupShader(HITGROUP_CLOSEST_HIT));
+		HitGroupShaders[HITGROUP_INTERSECTION] = FromString(Shader->GetHitGroupShader(HITGROUP_INTERSECTION));
+		HitGroupDesc.AnyHitShaderImport = HitGroupShaders[HITGROUP_ANY_HIT].c_str();
+		HitGroupDesc.ClosestHitShaderImport = HitGroupShaders[HITGROUP_CLOSEST_HIT].c_str();
+		HitGroupDesc.IntersectionShaderImport = HitGroupShaders[HITGROUP_INTERSECTION].c_str();
+		SubObject.pDesc = &HitGroupDesc;
+		SubObjects.push_back(SubObject);
+
+		TI_ASSERT(0);
 
 		return true;
 	}
@@ -2520,9 +2551,13 @@ namespace tix
 	{
 		// Dx12 shader only need load byte code.
 		FShaderDx12 * ShaderDx12 = static_cast<FShaderDx12*>(ShaderResource.get());
+		ShaderDx12->EntryNames = InShaderSource->GetEntryNames();
+		for (int32 i = 0; i < HITGROUP_NUM; i++)
+		{
+			ShaderDx12->HitGroupShaders[i] = InShaderSource->GetHitGroupShader((E_HITGROUP)i);
+		}
 
 		ID3D12RootSignatureDeserializer * RSDeserializer = nullptr;
-
 		if (ShaderResource->GetShaderType() == EST_COMPUTE ||
 			ShaderResource->GetShaderType() == EST_SHADERLIB)
 		{
