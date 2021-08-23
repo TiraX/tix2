@@ -11,6 +11,7 @@ namespace tix
 	{
 		EST_RENDER,
 		EST_COMPUTE,
+		EST_SHADERLIB,
 
 		EST_COUNT,
 	};
@@ -18,7 +19,7 @@ namespace tix
 	class FShader : public FRenderResource
 	{
 	public:
-		FShader(const TString& ComputeShaderName);
+		FShader(const TString& ShaderName, E_SHADER_TYPE InType);
 		FShader(const TShaderNames& RenderShaderNames);
 		virtual ~FShader();
 

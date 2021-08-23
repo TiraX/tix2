@@ -12,8 +12,14 @@ namespace tix
 	public:
 		FRtxPipeline(FShaderPtr InShader);
 		virtual ~FRtxPipeline();
+
+		FShaderPtr GetShaderLib()
+		{
+			return ShaderLib;
+		}
 	protected:
 
 	protected:
+		FShaderPtr ShaderLib;
 	};
 }

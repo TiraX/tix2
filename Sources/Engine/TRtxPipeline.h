@@ -7,11 +7,24 @@
 
 namespace tix
 {
+	struct TRtxPipelineDesc
+	{
+		uint32 Flags;
+		TShaderPtr ShaderLib;
+
+		TRtxPipelineDesc()
+			: Flags(0)
+		{
+		}
+	};
+
     class TRtxPipeline : public TResource
 	{
 	public:
 		TRtxPipeline();
 		virtual ~TRtxPipeline();
+
+		void SetShaderLib(TShaderPtr InShaderLib);
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
@@ -21,5 +34,6 @@ namespace tix
 	protected:
 
 	protected:
+		TRtxPipelineDesc Desc;
 	};
 }

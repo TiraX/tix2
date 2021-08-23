@@ -92,9 +92,13 @@ namespace tix
 		virtual int32 GetCurrentEncodingFrameIndex() = 0;
 		virtual void WaitingForGpu() = 0;
 
+		// Create RTX related resources
+		virtual FShaderPtr CreateRtxShaderLib(const TString& ShaderLibName) = 0;
+		virtual FRtxPipelinePtr CreateRtxPipeline(FShaderPtr InShader) = 0;
 		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() = 0;
 		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() = 0;
 
+		// Create Graphics and Compute related resources
 		virtual FTexturePtr CreateTexture() = 0;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) = 0;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) = 0;
@@ -118,6 +122,10 @@ namespace tix
 		virtual FGPUCommandSignaturePtr CreateGPUCommandSignature(FPipelinePtr Pipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure) = 0;
 		virtual FGPUCommandBufferPtr CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount, uint32 Flag = 0) = 0;
 
+		// RTX
+		virtual bool UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc) = 0;
+
+		// Graphics and Compute
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) = 0;
 		virtual bool UpdateHardwareResourceMesh(
 			FMeshBufferPtr MeshBuffer, 

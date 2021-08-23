@@ -8,10 +8,10 @@
 
 namespace tix
 {
-	TShader::TShader(const TString& InComputeName)
+	TShader::TShader(const TString& InShaderName)
 		: TResource(ERES_SHADER)
 	{
-		Names.ShaderNames[0] = InComputeName;
+		Names.ShaderNames[0] = InShaderName;
 	}
 
 	TShader::TShader(const TShaderNames& InNames)

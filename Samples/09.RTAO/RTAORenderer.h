@@ -33,5 +33,6 @@ private:
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 
+	FRtxPipelinePtr RtxPSO;
 	FTexturePtr T_GBuffer[GBUFFER_COUNT];
 };

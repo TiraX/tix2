@@ -42,9 +42,13 @@ namespace tix
 		virtual int32 GetCurrentEncodingFrameIndex() override;
 		virtual void WaitingForGpu() override;
 
+		// Create RTX related resources
+		virtual FShaderPtr CreateRtxShaderLib(const TString& ShaderLibName) override;
+		virtual FRtxPipelinePtr CreateRtxPipeline(FShaderPtr InShader) override;
 		virtual FTopLevelAccelerationStructurePtr CreateTopLevelAccelerationStructure() override;
 		virtual FBottomLevelAccelerationStructurePtr CreateBottomLevelAccelerationStructure() override;
 
+		// Create Graphics and Compute related resources
 		virtual FTexturePtr CreateTexture() override;
 		virtual FTexturePtr CreateTexture(const TTextureDesc& Desc) override;
 		virtual FUniformBufferPtr CreateUniformBuffer(uint32 InStructureSizeInBytes, uint32 Elements, uint32 Flag = 0) override;
@@ -67,6 +71,10 @@ namespace tix
 		virtual FGPUCommandSignaturePtr CreateGPUCommandSignature(FPipelinePtr Pipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure) override;
 		virtual FGPUCommandBufferPtr CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount, uint32 Flag = 0) override;
 
+		// RTX
+		virtual bool UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc) override;
+
+		// Graphics and Compute
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
 		virtual bool UpdateHardwareResourceMesh(
 			FMeshBufferPtr MeshBuffer, 

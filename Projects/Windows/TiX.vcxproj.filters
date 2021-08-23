@@ -346,6 +346,9 @@
     <ClCompile Include="..\..\Sources\Engine\FRtxPipeline.cpp">
       <Filter>Sources\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRtxPipelineDx12.cpp">
+      <Filter>Sources\Rendering\dx12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Engine\stdafx.h">
@@ -782,6 +785,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Engine\FRtxPipeline.h">
       <Filter>Sources\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRtxPipelineDx12.h">
+      <Filter>Sources\Rendering\dx12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

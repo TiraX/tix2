@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRHIDXR.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.cpp" />
+    <ClCompile Include="..\..\Sources\Engine\Dx12\FRtxPipelineDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FShaderDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FTextureDx12.cpp" />
     <ClCompile Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDx12Conversion.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRHIDXR.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FRootSignatureDx12.h" />
+    <ClInclude Include="..\..\Sources\Engine\Dx12\FRtxPipelineDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FShaderDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FTextureDx12.h" />
     <ClInclude Include="..\..\Sources\Engine\Dx12\FUniformBufferDx12.h" />

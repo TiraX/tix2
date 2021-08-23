@@ -7,6 +7,19 @@
 
 namespace tix
 {
+	enum E_SHADER_STAGE
+	{
+		ESS_COMPUTE_SHADER = 0,
+		ESS_SHADER_LIB = 0,
+		ESS_VERTEX_SHADER = 0,
+		ESS_PIXEL_SHADER,
+		ESS_DOMAIN_SHADER,
+		ESS_HULL_SHADER,
+		ESS_GEOMETRY_SHADER,
+
+		ESS_COUNT,
+	};
+
 	struct TShaderNames
 	{
 		TString ShaderNames[ESS_COUNT];
@@ -24,7 +37,10 @@ namespace tix
 	class TShader : public TResource
 	{
 	public:
-		TShader(const TString& InComputeName);
+		// Used for Single Compute Shader or RTX Shaderlib
+		TShader(const TString& InShaderName);
+
+		// Used for Graphics pipeline with vs, gs, ps etc
 		TShader(const TShaderNames& InNames);
 		virtual ~TShader();
 		

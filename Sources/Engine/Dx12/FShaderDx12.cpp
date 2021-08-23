@@ -11,8 +11,8 @@
 
 namespace tix
 {
-	FShaderDx12::FShaderDx12(const TString& ComputeShaderName)
-		: FShader(ComputeShaderName)
+	FShaderDx12::FShaderDx12(const TString& InShaderName, E_SHADER_TYPE InType)
+		: FShader(InShaderName, InType)
 	{
 	}
 

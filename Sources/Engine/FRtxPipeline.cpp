@@ -10,6 +10,7 @@ namespace tix
 {
 	FRtxPipeline::FRtxPipeline(FShaderPtr InShader)
 		: FRenderResource(RRT_RTX_PIPELINE)
+		, ShaderLib(InShader)
 	{
 	}
 

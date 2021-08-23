@@ -19,6 +19,7 @@
 #include "FArgumentBufferDx12.h"
 #include "FGPUCommandSignatureDx12.h"
 #include "FGPUCommandBufferDx12.h"
+#include "FRtxPipelineDx12.h"
 #include "FAccelerationStructureDx12.h"
 #include <DirectXColors.h>
 #include <d3d12shader.h>
@@ -724,7 +725,12 @@ namespace tix
 
 	FShaderPtr FRHIDx12::CreateComputeShader(const TString& ComputeShaderName)
 	{
-		return ti_new FShaderDx12(ComputeShaderName);
+		return ti_new FShaderDx12(ComputeShaderName, EST_COMPUTE);
+	}
+
+	FShaderPtr FRHIDx12::CreateRtxShaderLib(const TString& ShaderLibName)
+	{
+		return ti_new FShaderDx12(ShaderLibName, EST_SHADERLIB);
 	}
 
 	FArgumentBufferPtr FRHIDx12::CreateArgumentBuffer(int32 ReservedSlots)
@@ -740,6 +746,11 @@ namespace tix
 	FGPUCommandBufferPtr FRHIDx12::CreateGPUCommandBuffer(FGPUCommandSignaturePtr GPUCommandSignature, uint32 CommandsCount, uint32 Flag)
 	{
 		return ti_new FGPUCommandBufferDx12(GPUCommandSignature, CommandsCount, Flag);
+	}
+
+	FRtxPipelinePtr FRHIDx12::CreateRtxPipeline(FShaderPtr InShader)
+	{
+		return ti_new FRtxPipeline(InShader);
 	}
 
 	FTopLevelAccelerationStructurePtr FRHIDx12::CreateTopLevelAccelerationStructure()
@@ -1841,6 +1852,28 @@ namespace tix
 		return false;
 	}
 
+	bool FRHIDx12::UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc)
+	{
+		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(Pipeline.get());
+		FShaderPtr Shader = Pipeline->GetShaderLib();
+
+		FShaderDx12* ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
+
+		D3D12_STATE_SUBOBJECT SubObject;
+
+		// Dxil library
+		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+		D3D12_DXIL_LIBRARY_DESC DxilLibDesc;
+		SubObject.pDesc = &DxilLibDesc;
+
+		DxilLibDesc.DXILLibrary.pShaderBytecode = ShaderDx12->ShaderCodes[ESS_SHADER_LIB].GetBuffer();
+		DxilLibDesc.DXILLibrary.BytecodeLength = uint32(ShaderDx12->ShaderCodes[ESS_SHADER_LIB].GetLength());
+
+
+
+		return true;
+	}
+
 	static const int32 UniformBufferAlignSize = 256;
 	uint32 FRHIDx12::GetUBSizeWithCounter(uint32 InBufferSize)
 	{
@@ -2490,7 +2523,8 @@ namespace tix
 
 		ID3D12RootSignatureDeserializer * RSDeserializer = nullptr;
 
-		if (ShaderResource->GetShaderType() == EST_COMPUTE)
+		if (ShaderResource->GetShaderType() == EST_COMPUTE ||
+			ShaderResource->GetShaderType() == EST_SHADERLIB)
 		{
 			const TStream& ShaderCode = InShaderSource->GetComputeShaderCode();
 			TI_ASSERT(ShaderCode.GetLength() > 0);

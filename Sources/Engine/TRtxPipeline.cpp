@@ -16,12 +16,40 @@ namespace tix
 	TRtxPipeline::~TRtxPipeline()
 	{
 	}
+
+	void TRtxPipeline::SetShaderLib(TShaderPtr InShaderLib)
+	{
+		Desc.ShaderLib = InShaderLib;
+	}
 	
 	void TRtxPipeline::InitRenderThreadResource()
 	{
+		TI_ASSERT(PipelineResource == nullptr);
+		if (Desc.ShaderLib->ShaderResource == nullptr)
+		{
+			Desc.ShaderLib->InitRenderThreadResource();
+		}
+		PipelineResource = FRHI::Get()->CreateRtxPipeline(Desc.ShaderLib->ShaderResource);
+
+		FRtxPipelinePtr _PipelineResource = PipelineResource;
+		TRtxPipelinePtr PipelineDesc = this;
+		ENQUEUE_RENDER_COMMAND(TRtxPipelineUpdateResource)(
+			[_PipelineResource, PipelineDesc]()
+			{
+				FRHI::Get()->UpdateHardwareResourceRtxPL(_PipelineResource, PipelineDesc);
+			});
 	}
 
 	void TRtxPipeline::DestroyRenderThreadResource()
 	{
+		TI_ASSERT(PipelineResource != nullptr);
+
+		FRtxPipelinePtr _PipelineResource = PipelineResource;
+		ENQUEUE_RENDER_COMMAND(TRtxPipelineDestroyFPipeline)(
+			[_PipelineResource]()
+			{
+				//_PipelineResource = nullptr;
+			});
+		PipelineResource = nullptr;
 	}
 }

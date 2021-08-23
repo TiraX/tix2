@@ -85,7 +85,16 @@ void FRTAORenderer::InitInRenderThread()
 	// Create root signatures
 
 	// Create RTX pipeline state object
-	RHI->CreateRayTracingPSO();
+	const TString ShaderPathTracer = "S_Pathtracer";
+	TShaderPtr Shader = ti_new TShader(ShaderPathTracer);
+	Shader->LoadShaderCode();
+	Shader->ShaderResource = RHI->CreateRtxShaderLib(ShaderPathTracer);
+	RHI->UpdateHardwareResourceShader(Shader->ShaderResource, Shader);
+
+	TRtxPipelinePtr RtxPSODesc = ti_new TRtxPipeline();
+	RtxPSODesc->SetShaderLib(Shader);
+	RtxPSO = RHI->CreateRtxPipeline(Shader);
+	RHI->UpdateHardwareResourceRtxPL(RtxPSO, RtxPSODesc);
 
 	// Create constant buffers
 

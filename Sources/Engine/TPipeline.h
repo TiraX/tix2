@@ -172,17 +172,6 @@ namespace tix
 		{}
 	};
 
-	enum E_SHADER_STAGE
-	{
-        ESS_COMPUTE_SHADER = 0,
-		ESS_VERTEX_SHADER = 0,
-		ESS_PIXEL_SHADER,
-		ESS_DOMAIN_SHADER,
-		ESS_HULL_SHADER,
-		ESS_GEOMETRY_SHADER,
-
-		ESS_COUNT,
-	};
 	struct TPipelineDesc
 	{
 		uint32 Flags;

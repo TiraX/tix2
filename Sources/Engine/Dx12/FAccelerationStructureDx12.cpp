@@ -47,6 +47,7 @@ namespace tix
 
 	void FBottomLevelAccelerationStructureDx12::Build()
 	{
+		TI_TODO("Move Build() function to RHI::UpdateHardwareBLAS().");
 		TI_ASSERT(IsRenderThread());
 		if (!Dirty)
 			return;
@@ -146,6 +147,7 @@ namespace tix
 
 	void FTopLevelAccelerationStructureDx12::Build()
 	{
+		TI_TODO("Move Build() function to RHI::UpdateHardwareTLAS().");
 		TI_ASSERT(IsRenderThread());
 		if (!Dirty || InstanceDescs.size() == 0)
 			return;
