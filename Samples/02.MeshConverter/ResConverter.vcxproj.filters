@@ -94,6 +94,9 @@
     <ClInclude Include="ResAnimSequenceHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResRtxPipelineHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -185,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Engine\TCrc.cpp">
       <Filter>Source Files\TiX2</Filter>
+    </ClCompile>
+    <ClCompile Include="ResRtxPipelineHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

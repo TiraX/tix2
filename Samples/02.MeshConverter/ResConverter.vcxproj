@@ -112,6 +112,7 @@
     <ClInclude Include="ResMeshCluster.h" />
     <ClInclude Include="ResMeshHelper.h" />
     <ClInclude Include="ResMultiThreadTask.h" />
+    <ClInclude Include="ResRtxPipelineHelper.h" />
     <ClInclude Include="ResSceneHelper.h" />
     <ClInclude Include="ResSceneTileHelper.h" />
     <ClInclude Include="ResSettings.h" />
@@ -143,6 +144,7 @@
     <ClCompile Include="ResMeshCluster.cpp" />
     <ClCompile Include="ResMeshHelper.cpp" />
     <ClCompile Include="ResMultiThreadTask.cpp" />
+    <ClCompile Include="ResRtxPipelineHelper.cpp" />
     <ClCompile Include="ResSceneHelper.cpp" />
     <ClCompile Include="ResSceneTileHelper.cpp" />
     <ClCompile Include="ResShaderBindingHelper.cpp" />

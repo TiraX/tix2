@@ -21,6 +21,16 @@ namespace tix
 	{
 		Desc.ShaderLib = InShaderLib;
 	}
+
+	void TRtxPipeline::AddExportName(const TString& InName)
+	{
+		Desc.ExportNames.push_back(InName);
+	}
+
+	void TRtxPipeline::SetHitGroup(E_HITGROUP HitGroup, const TString& InName)
+	{
+		Desc.HitGroup[HitGroup] = InName;
+	}
 	
 	void TRtxPipeline::InitRenderThreadResource()
 	{

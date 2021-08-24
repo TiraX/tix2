@@ -147,6 +147,10 @@ namespace tix
 				ChunkHeader[ECL_ANIMATIONS] = chunkHeader;
 				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_ANIM);
 				break;
+			case TIRES_ID_CHUNK_RTX_PIPELINE:
+				ChunkHeader[ECL_RTX_PIPELINE] = chunkHeader;
+				TI_ASSERT(chunkHeader->Version == TIRES_VERSION_CHUNK_RTX_PIPELINE);
+				break;
 			default:
 				TI_ASSERT(0);
 				break;
@@ -181,6 +185,9 @@ namespace tix
 
 		if (ChunkHeader[ECL_SKELETON] != nullptr)
 			CreateSkeleton(OutResources);
+
+		if (ChunkHeader[ECL_RTX_PIPELINE] != nullptr)
+			CreateRtxPipeline(OutResources);
 
 		for (auto& Res : OutResources)
 		{
@@ -1013,5 +1020,51 @@ namespace tix
 		AnimSequence->SetFrameData(Header->NumData, FrameDataStart);
 
 		OutResources.push_back(AnimSequence);
+	}
+	void TAssetFile::CreateRtxPipeline(TVector<TResourcePtr>& OutResources)
+	{
+		if (ChunkHeader[ECL_RTX_PIPELINE] == nullptr)
+			return;
+
+		const int8* ChunkStart = (const int8*)ChunkHeader[ECL_RTX_PIPELINE];
+		const int32 PipelineCount = ChunkHeader[ECL_RTX_PIPELINE]->ElementCount;
+		if (PipelineCount == 0)
+		{
+			return;
+		}
+
+		TI_TODO("Maybe we dont need TVector<TResourcePtr> to hold multi res. ONLY return 1 resource");
+		TI_ASSERT(PipelineCount == 1);
+		OutResources.reserve(PipelineCount + 1);
+
+		// Load rtx pipeline
+		const int8* DataStart = (const int8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+		const THeaderRtxPipeline* HeaderRtxPipeline = (const THeaderRtxPipeline*)DataStart;
+		const int32* ExportNameIndex = (const int32*)(DataStart + sizeof(THeaderRtxPipeline));
+
+		HeaderRtxPipeline.HitGroupAnyHit != -1
+
+		// Create rtx pipeline resource
+		TRtxPipelinePtr RtxPipeline = ti_new TRtxPipeline();
+		RtxPipeline->SetResourceName(Filename + "-RTXPSO");
+
+		if (HeaderRtxPipeline->HitGroupAnyHit >= 0)
+			RtxPipeline->SetHitGroup(HITGROUP_ANY_HIT, GetString(HeaderRtxPipeline->HitGroupAnyHit));
+		if (HeaderRtxPipeline->HitGroupClosestHit >= 0)
+			RtxPipeline->SetHitGroup(HITGROUP_CLOSEST_HIT, GetString(HeaderRtxPipeline->HitGroupClosestHit));
+		if (HeaderRtxPipeline->HitGroupIntersection >= 0)
+			RtxPipeline->SetHitGroup(HITGROUP_INTERSECTION, GetString(HeaderRtxPipeline->HitGroupIntersection));
+		for (int i = 0; i < HeaderRtxPipeline->NumExportNames; i++)
+		{
+			RtxPipeline->AddExportName(GetString(ExportNameIndex[i]));
+		}
+
+		// Load Shader code
+		TString ShaderLibName = GetString(HeaderRtxPipeline->ShaderLibName);
+		TShaderPtr Shader = ti_new TShader(ShaderLibName);
+		Shader->LoadShaderCode();
+		RtxPipeline->SetShaderLib(Shader);
+
+		OutResources.push_back(RtxPipeline);
 	}
 }

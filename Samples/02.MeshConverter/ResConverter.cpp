@@ -14,6 +14,7 @@
 #include "ResSceneTileHelper.h"
 #include "ResSkeletonHelper.h"
 #include "ResAnimSequenceHelper.h"
+#include "ResRtxPipelineHelper.h"
 #include "ResMultiThreadTask.h"
 
 TString FilenameSrc;
@@ -309,6 +310,12 @@ int32 DoConvert(int32 argc, RES_CONVERTER_CONST int8* argv[])
 				// Animations
 				TStream& AnimStream = Resfile.GetChunk(ECL_ANIMATIONS);
 				TResAnimSequenceHelper::LoadAnimSequence(JsonDoc, AnimStream, Resfile.Strings);
+			}
+			else if (strcmp(type, "rtx_pipeline") == 0)
+			{
+				// Raytracing Pipeline description
+				TStream& RtxPipelineStream = Resfile.GetChunk(ECL_RTX_PIPELINE);
+				TResRtxPipelineHelper::LoadRtxPipeline(JsonDoc, RtxPipelineStream, Resfile.Strings);
 			}
 			else
 			{

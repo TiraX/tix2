@@ -1,0 +1,17 @@
+{
+	"name": "RTX_Pathtracer",
+	"type": "rtx_pipeline",
+	"version": 1,
+	"desc": "RTX pipeline define, created manually.",
+	"shader_lib": "S_Pathtracer",
+	"export_names" : [
+		"MyRayGenShader",
+		"RayMiss",
+		"RayClosestHit"
+	],
+	"hit_group" : [
+		"",
+		"RayClosestHit",
+		""
+	]
+}

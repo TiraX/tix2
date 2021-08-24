@@ -18,6 +18,7 @@ namespace tix
 		TIRES_VERSION_CHUNK_SCENETILE = 3,	// v2, Add reflection capture support; v3, Add skeletal mesh actor support
 		TIRES_VERSION_CHUNK_SKELETON = 1,
 		TIRES_VERSION_CHUNK_ANIM = 1,
+		TIRES_VERSION_CHUNK_RTX_PIPELINE = 1,
 		//TIRES_VERSION_CHUNK_CTRL	= 2,	// add morph controller support
 		//TIRES_VERSION_CHUNK_LIT		= 1,
 		//TIRES_VERSION_CHUNK_CAM		= 1,
@@ -57,6 +58,7 @@ namespace tix
 		TIRES_ID_CHUNK_SCENETILE	= TI_MAKE_IDENTIFIER('S', 'T', 'I', 'L'),
 		TIRES_ID_CHUNK_SKELETON		= TI_MAKE_IDENTIFIER('S', 'K', 'E', 'L'),
 		TIRES_ID_CHUNK_ANIMATION	= TI_MAKE_IDENTIFIER('A', 'N', 'I', 'M'),
+		TIRES_ID_CHUNK_RTX_PIPELINE	= TI_MAKE_IDENTIFIER('R', 'T', 'X', 'P'),
 		//TIRES_ID_CHUNK_IMAGES		= TI_MAKE_IDENTIFIER('I', 'M', 'A', 'G'),
 		//TIRES_ID_CHUNK_CONTROLLER	= TI_MAKE_IDENTIFIER('C', 'T', 'R', 'L'),
 		//TIRES_ID_CHUNK_LIGHT		= TI_MAKE_IDENTIFIER('L', 'I', 'T', '.'),
@@ -84,6 +86,7 @@ namespace tix
 
 		ECL_SKELETON,
 		ECL_ANIMATIONS,
+		ECL_RTX_PIPELINE,
 		//ECL_MATERIALS,
 		//ECL_CONTROLLERS,
 		//ECL_SHADERS,
@@ -375,5 +378,16 @@ namespace tix
 		float RateScale;
 		int32 NumTracks;
 		int32 NumData;	// Count by float (not byte)
+	};
+
+	struct THeaderRtxPipeline
+	{
+		int32 ShaderLibName;
+
+		int32 NumExportNames;
+
+		int32 HitGroupAnyHit;
+		int32 HitGroupClosestHit;
+		int32 HitGroupIntersection;
 	};
 }

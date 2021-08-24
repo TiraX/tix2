@@ -35,6 +35,7 @@ namespace tix
 		void CreateSceneTile(TVector<TResourcePtr>& OutResources);
 		void CreateSkeleton(TVector<TResourcePtr>& OutResources);
 		void CreateAnimSequence(TVector<TResourcePtr>& OutResources);
+		void CreateRtxPipeline(TVector<TResourcePtr>& OutResources);
 		
 		TI_API const int8* GetString(int32 StringIndex);
 
