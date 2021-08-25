@@ -1042,8 +1042,6 @@ namespace tix
 		const THeaderRtxPipeline* HeaderRtxPipeline = (const THeaderRtxPipeline*)DataStart;
 		const int32* ExportNameIndex = (const int32*)(DataStart + sizeof(THeaderRtxPipeline));
 
-		HeaderRtxPipeline.HitGroupAnyHit != -1
-
 		// Create rtx pipeline resource
 		TRtxPipelinePtr RtxPipeline = ti_new TRtxPipeline();
 		RtxPipeline->SetResourceName(Filename + "-RTXPSO");

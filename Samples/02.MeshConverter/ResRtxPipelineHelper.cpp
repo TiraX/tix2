@@ -60,9 +60,12 @@ namespace tix
 			THeaderRtxPipeline Define;
 			Define.ShaderLibName = AddStringToList(OutStrings, ShaderLibName);
 			Define.NumExportNames = (int32)ExportNames.size();
-			Define.HitGroupAnyHit = AddStringToList(OutStrings, HitGroupShader[HITGROUP_ANY_HIT]);
-			Define.HitGroupClosestHit = AddStringToList(OutStrings, HitGroupShader[HITGROUP_CLOSEST_HIT]);
-			Define.HitGroupIntersection = AddStringToList(OutStrings, HitGroupShader[HITGROUP_INTERSECTION]);
+			Define.HitGroupAnyHit = 
+				HitGroupShader[HITGROUP_ANY_HIT] == "" ? -1 : AddStringToList(OutStrings, HitGroupShader[HITGROUP_ANY_HIT]);
+			Define.HitGroupClosestHit = 
+				HitGroupShader[HITGROUP_CLOSEST_HIT] == "" ? -1 : AddStringToList(OutStrings, HitGroupShader[HITGROUP_CLOSEST_HIT]);
+			Define.HitGroupIntersection = 
+				HitGroupShader[HITGROUP_INTERSECTION] == "" ? -1 : AddStringToList(OutStrings, HitGroupShader[HITGROUP_INTERSECTION]);
 
 			// Save header
 			HeaderStream.Put(&Define, sizeof(THeaderRtxPipeline));
@@ -72,10 +75,7 @@ namespace tix
 			ExportNameIndices.resize(Define.NumExportNames);
 			for (int32 i = 0; i < Define.NumExportNames; i++)
 			{
-				if (ExportNames[i] != "")
-					ExportNameIndices[i] = AddStringToList(OutStrings, ExportNames[i]);
-				else
-					ExportNameIndices[i] = -1;
+				ExportNameIndices[i] = AddStringToList(OutStrings, ExportNames[i]);
 			}
 			DataStream.Put(ExportNameIndices.data(), (uint32)(ExportNameIndices.size() * sizeof(int32)));
 		}
