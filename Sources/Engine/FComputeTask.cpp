@@ -41,7 +41,7 @@ namespace tix
 	{
 		TI_ASSERT(IsRenderThread());
 
-		TShaderPtr ShaderCode = ti_new TShader(ShaderName);
+		TShaderPtr ShaderCode = ti_new TShader(ShaderName, EST_COMPUTE);
 		ShaderCode->LoadShaderCode();
 		FRHI::Get()->UpdateHardwareResourceShader(ComputeShader, ShaderCode);
 

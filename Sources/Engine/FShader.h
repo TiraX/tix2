@@ -7,20 +7,11 @@
 
 namespace tix
 {
-	enum E_SHADER_TYPE
-	{
-		EST_RENDER,
-		EST_COMPUTE,
-		EST_SHADERLIB,
-
-		EST_COUNT,
-	};
-
 	class FShader : public FRenderResource
 	{
 	public:
 		FShader(const TString& ShaderName, E_SHADER_TYPE InType);
-		FShader(const TShaderNames& RenderShaderNames);
+		FShader(const TShaderNames& RenderShaderNames, E_SHADER_TYPE InType);
 		virtual ~FShader();
 
 		E_SHADER_TYPE GetShaderType() const
@@ -42,19 +33,6 @@ namespace tix
 		{
 			return ShaderNames.ShaderNames[ESS_SHADER_LIB];
 		}
-		const TVector<TString>& GetEntryNames() const
-		{
-			return EntryNames;
-		}
-
-		void SetHitGroupShader(E_HITGROUP HitGroup, const TString& InShaderName)
-		{
-			HitGroupShaders[HitGroup] = InShaderName;
-		}
-		const TString& GetHitGroupShader(E_HITGROUP HitGroup) const
-		{
-			return HitGroupShaders[HitGroup];
-		}
 
 		FShaderBindingPtr ShaderBinding;
 	protected:
@@ -62,7 +40,5 @@ namespace tix
 	protected:
 		TShaderNames ShaderNames;
 		E_SHADER_TYPE Type;
-		TVector<TString> EntryNames;
-		TString HitGroupShaders[HITGROUP_NUM];
 	};
 }

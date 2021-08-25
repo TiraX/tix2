@@ -8,14 +8,16 @@
 
 namespace tix
 {
-	TShader::TShader(const TString& InShaderName)
+	TShader::TShader(const TString& InShaderName, E_SHADER_TYPE InType)
 		: TResource(ERES_SHADER)
+		, Type(InType)
 	{
 		Names.ShaderNames[0] = InShaderName;
 	}
 
-	TShader::TShader(const TShaderNames& InNames)
+	TShader::TShader(const TShaderNames& InNames, E_SHADER_TYPE InType)
 		: TResource(ERES_SHADER)
+		, Type(InType)
 	{
 		for (int32 s = 0; s < ESS_COUNT; ++s)
 		{
@@ -60,7 +62,7 @@ namespace tix
 	void TShader::InitRenderThreadResource()
 	{
 		TI_ASSERT(ShaderResource == nullptr);
-		ShaderResource = FRHI::Get()->CreateShader(Names);
+		ShaderResource = FRHI::Get()->CreateShader(Names, Type);
 
 		FShaderPtr Shader_RT = ShaderResource;
 		TShaderPtr ShaderSource = this;

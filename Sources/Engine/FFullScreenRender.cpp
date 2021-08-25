@@ -57,7 +57,7 @@ namespace tix
 		// Move this TShader load to Game Thread. Or Make a gloal shader system.
 		TShaderPtr Shader = ti_new TShader(ShaderNames);
 		Shader->LoadShaderCode();
-		Shader->ShaderResource = RHI->CreateShader(ShaderNames);
+		Shader->ShaderResource = RHI->CreateShader(ShaderNames, EST_RENDER);
 		RHI->UpdateHardwareResourceShader(Shader->ShaderResource, Shader);
 		FSMaterial->SetShader(Shader);
 		FullScreenShader = Shader->ShaderResource;

@@ -14,15 +14,22 @@ struct SimpleRayPayload
     float3 RayColor;
 };
 
-cbuffer RayGenData 
+GlobalRootSignature MyGlobalRootSignature =
+{
+    "DescriptorTable(UAV(u0)),"                     // Output texture
+    "SRV(t0),"                                      // Acceleration structure
+    "CBV(b0),"                                      // Scene constants
+};
+
+cbuffer RayGenData : register(b0)
 {
     float3 CamPos;
     float3 CamU, CamV, CamW;
 };
 typedef BuiltInTriangleIntersectionAttributes MyAttributes;
 
-RWTexture2D<float4> RTColor;
-RaytracingAccelerationStructure SceneAccelerationStruct;
+RaytracingAccelerationStructure SceneAccelerationStruct : register(t0);
+RWTexture2D<float4> RTColor : register(u0);
 
 [shader("raygeneration")]
 void MyRayGenShader()

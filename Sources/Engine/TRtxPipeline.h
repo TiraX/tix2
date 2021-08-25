@@ -7,6 +7,15 @@
 
 namespace tix
 {
+	enum E_HITGROUP
+	{
+		HITGROUP_ANY_HIT,
+		HITGROUP_CLOSEST_HIT,
+		HITGROUP_INTERSECTION,
+
+		HITGROUP_NUM
+	};
+
 	struct TRtxPipelineDesc
 	{
 		uint32 Flags;
@@ -33,6 +42,11 @@ namespace tix
 
 		virtual void InitRenderThreadResource() override;
 		virtual void DestroyRenderThreadResource() override;
+
+		const TRtxPipelineDesc& GetDesc() const
+		{
+			return Desc;
+		}
 
 		FRtxPipelinePtr PipelineResource;
 

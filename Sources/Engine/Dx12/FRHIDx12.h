@@ -65,7 +65,7 @@ namespace tix
 		virtual FInstanceBufferPtr CreateEmptyInstanceBuffer(uint32 InstanceCount, uint32 InstanceStride) override;
 		virtual FPipelinePtr CreatePipeline(FShaderPtr InShader) override;
 		virtual FRenderTargetPtr CreateRenderTarget(int32 W, int32 H) override;
-		virtual FShaderPtr CreateShader(const TShaderNames& InNames) override;
+		virtual FShaderPtr CreateShader(const TShaderNames& InNames, E_SHADER_TYPE Type) override;
 		virtual FShaderPtr CreateComputeShader(const TString& InComputeShaderName) override;
 		virtual FArgumentBufferPtr CreateArgumentBuffer(int32 ReservedSlots) override;
 		virtual FGPUCommandSignaturePtr CreateGPUCommandSignature(FPipelinePtr Pipeline, const TVector<E_GPU_COMMAND_TYPE>& CommandStructure) override;

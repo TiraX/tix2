@@ -7,6 +7,14 @@
 
 namespace tix
 {
+	enum E_SHADER_TYPE
+	{
+		EST_RENDER,
+		EST_COMPUTE,
+		EST_SHADERLIB,
+
+		EST_COUNT,
+	};
 	enum E_SHADER_STAGE
 	{
 		ESS_COMPUTE_SHADER = 0,
@@ -18,15 +26,6 @@ namespace tix
 		ESS_GEOMETRY_SHADER,
 
 		ESS_COUNT,
-	};
-
-	enum E_HITGROUP
-	{
-		HITGROUP_ANY_HIT,
-		HITGROUP_CLOSEST_HIT,
-		HITGROUP_INTERSECTION,
-
-		HITGROUP_NUM
 	};
 
 	struct TShaderNames
@@ -47,12 +46,17 @@ namespace tix
 	{
 	public:
 		// Used for Single Compute Shader or RTX Shaderlib
-		TShader(const TString& InShaderName);
+		TShader(const TString& InShaderName, E_SHADER_TYPE InType);
 
 		// Used for Graphics pipeline with vs, gs, ps etc
-		TShader(const TShaderNames& InNames);
+		TShader(const TShaderNames& InNames, E_SHADER_TYPE InType = EST_RENDER);
 		virtual ~TShader();
 		
+		E_SHADER_TYPE GetType() const
+		{
+			return Type;
+		}
+
 		void LoadShaderCode();
 		const TStream& GetShaderCode(E_SHADER_STAGE InStage)
 		{
@@ -67,24 +71,6 @@ namespace tix
 			return ShaderCodes[ESS_SHADER_LIB];
 		}
 
-		void AddEntry(const TString& EntryName)
-		{
-			EntryNames.push_back(EntryName);
-		}
-		const TVector<TString>& GetEntryNames() const
-		{
-			return EntryNames;
-		}
-
-		void SetHitGroupShader(E_HITGROUP HitGroup, const TString& InShaderName)
-		{
-			HitGroupShaders[HitGroup] = InShaderName;
-		}
-		const TString& GetHitGroupShader(E_HITGROUP HitGroup) const
-		{
-			return HitGroupShaders[HitGroup];
-		}
-
 		void ReleaseShaderCode();
 
 		virtual void InitRenderThreadResource() override;
@@ -93,9 +79,8 @@ namespace tix
 		FShaderPtr ShaderResource;
 
 	protected:
+		E_SHADER_TYPE Type;
 		TShaderNames Names;
 		TStream ShaderCodes[ESS_COUNT];
-		TVector<TString> EntryNames;
-		TString HitGroupShaders[HITGROUP_NUM];
 	};
 }
