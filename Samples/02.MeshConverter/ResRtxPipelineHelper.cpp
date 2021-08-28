@@ -38,6 +38,8 @@ namespace tix
 		}
 
 		// hit group
+		TJSONNode JHitGroupName = Doc["hit_group_name"];
+		Helper.HitGroupName = JHitGroupName.GetString();
 		TJSONNode JHitGroup = Doc["hit_group"];
 		TI_ASSERT(JHitGroup.IsArray() && JHitGroup.Size() == HITGROUP_NUM);
 		Helper.HitGroupShader[HITGROUP_ANY_HIT] = JHitGroup[HITGROUP_ANY_HIT].GetString();
@@ -60,6 +62,7 @@ namespace tix
 			THeaderRtxPipeline Define;
 			Define.ShaderLibName = AddStringToList(OutStrings, ShaderLibName);
 			Define.NumExportNames = (int32)ExportNames.size();
+			Define.HitGroupName = AddStringToList(OutStrings, HitGroupName);
 			Define.HitGroupAnyHit = 
 				HitGroupShader[HITGROUP_ANY_HIT] == "" ? -1 : AddStringToList(OutStrings, HitGroupShader[HITGROUP_ANY_HIT]);
 			Define.HitGroupClosestHit = 

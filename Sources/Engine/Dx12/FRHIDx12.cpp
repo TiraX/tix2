@@ -750,7 +750,7 @@ namespace tix
 
 	FRtxPipelinePtr FRHIDx12::CreateRtxPipeline(FShaderPtr InShader)
 	{
-		return ti_new FRtxPipeline(InShader);
+		return ti_new FRtxPipelineDx12(InShader);
 	}
 
 	FTopLevelAccelerationStructurePtr FRHIDx12::CreateTopLevelAccelerationStructure()
@@ -1856,10 +1856,9 @@ namespace tix
 	{
 		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(Pipeline.get());
 		FShaderPtr Shader = Pipeline->GetShaderLib();
+		FShaderDx12* ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
 
 		const TRtxPipelineDesc& RtxPipelineDesc = InPipelineDesc->GetDesc();
-
-		FShaderDx12* ShaderDx12 = static_cast<FShaderDx12*>(Shader.get());
 
 		TVector<D3D12_STATE_SUBOBJECT> SubObjects;
 		SubObjects.reserve(10);
@@ -1892,6 +1891,8 @@ namespace tix
 		// Hit Program
 		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
 		D3D12_HIT_GROUP_DESC HitGroupDesc;
+		HitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+		TWString HitGroupName = FromString(RtxPipelineDesc.HitGroupName);
 		TWString HitGroupShaders[HITGROUP_NUM];
 		HitGroupShaders[HITGROUP_ANY_HIT] = FromString(RtxPipelineDesc.HitGroup[HITGROUP_ANY_HIT]);
 		HitGroupShaders[HITGROUP_CLOSEST_HIT] = FromString(RtxPipelineDesc.HitGroup[HITGROUP_CLOSEST_HIT]);
@@ -1902,6 +1903,7 @@ namespace tix
 			RtxPipelineDesc.HitGroup[HITGROUP_CLOSEST_HIT] == "" ? nullptr : HitGroupShaders[HITGROUP_CLOSEST_HIT].c_str();
 		HitGroupDesc.IntersectionShaderImport =
 			RtxPipelineDesc.HitGroup[HITGROUP_INTERSECTION] == "" ? nullptr : HitGroupShaders[HITGROUP_INTERSECTION].c_str();
+		HitGroupDesc.HitGroupExport = HitGroupName.c_str();
 		SubObject.pDesc = &HitGroupDesc;
 		SubObjects.push_back(SubObject);
 

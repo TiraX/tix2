@@ -1046,6 +1046,7 @@ namespace tix
 		TRtxPipelinePtr RtxPipeline = ti_new TRtxPipeline();
 		RtxPipeline->SetResourceName(Filename + "-RTXPSO");
 
+		RtxPipeline->SetHitGroupName(GetString(HeaderRtxPipeline->HitGroupName));
 		if (HeaderRtxPipeline->HitGroupAnyHit >= 0)
 			RtxPipeline->SetHitGroup(HITGROUP_ANY_HIT, GetString(HeaderRtxPipeline->HitGroupAnyHit));
 		if (HeaderRtxPipeline->HitGroupClosestHit >= 0)

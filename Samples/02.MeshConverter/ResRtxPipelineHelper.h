@@ -24,6 +24,7 @@ namespace tix
 		TStream ShaderBlob;
 
 		TVector<TString> ExportNames;
+		TString HitGroupName;
 		TString HitGroupShader[HITGROUP_NUM];
 
 		//TPipelineDesc PipelineDesc;

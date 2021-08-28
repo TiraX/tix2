@@ -27,6 +27,11 @@ namespace tix
 		Desc.ExportNames.push_back(InName);
 	}
 
+	void TRtxPipeline::SetHitGroupName(const TString& InName)
+	{
+		Desc.HitGroupName = InName;
+	}
+
 	void TRtxPipeline::SetHitGroup(E_HITGROUP HitGroup, const TString& InName)
 	{
 		Desc.HitGroup[HitGroup] = InName;

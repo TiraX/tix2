@@ -9,6 +9,7 @@
 		"RayMiss",
 		"RayClosestHit"
 	],
+	"hit_group_name" : "MyHitGroup",
 	"hit_group" : [
 		"",
 		"RayClosestHit",

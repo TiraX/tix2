@@ -22,6 +22,7 @@ namespace tix
 		TShaderPtr ShaderLib;
 
 		TVector<TString> ExportNames;
+		TString HitGroupName;
 		TString HitGroup[HITGROUP_NUM];
 
 		TRtxPipelineDesc()
@@ -38,6 +39,7 @@ namespace tix
 
 		void SetShaderLib(TShaderPtr InShaderLib);
 		void AddExportName(const TString& InName);
+		void SetHitGroupName(const TString& InName);
 		void SetHitGroup(E_HITGROUP HitGroup, const TString& InName);
 
 		virtual void InitRenderThreadResource() override;

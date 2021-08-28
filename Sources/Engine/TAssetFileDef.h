@@ -386,6 +386,7 @@ namespace tix
 
 		int32 NumExportNames;
 
+		int32 HitGroupName;
 		int32 HitGroupAnyHit;
 		int32 HitGroupClosestHit;
 		int32 HitGroupIntersection;
