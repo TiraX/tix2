@@ -88,10 +88,6 @@ void FRTAORenderer::InitInRenderThread()
 	TResourcePtr RtxPipelineResource = RtxPipelineAsset->GetResourcePtr();
 	TRtxPipelinePtr RtxPipeline = static_cast<TRtxPipeline*>(RtxPipelineResource.get());
 	RtxPSO = RtxPipeline->PipelineResource;
-
-	// Create constant buffers
-
-	// Build shader tables
 }
 
 void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -125,9 +121,10 @@ void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	DrawSceneTiles(RHI, Scene);
+	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+	//DrawSceneTiles(RHI, Scene);
 
+	Dispath rays.
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
