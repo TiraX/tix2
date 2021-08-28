@@ -19,6 +19,10 @@ namespace tix
 	private:
 		ComPtr<ID3D12StateObject> StateObject;
 		FUniformBufferPtr ShaderTable;
+		vector2di RayGenShaderOffsetAndSize;
+		vector2di MissShaderOffsetAndSize;
+		vector2di HitGroupOffsetAndSize;
+
 		friend class FRHIDx12;
 	};
 }

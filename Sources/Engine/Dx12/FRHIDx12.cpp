@@ -1981,13 +1981,22 @@ namespace tix
 			void* MissShaderId = StateObjectProperties->GetShaderIdentifier(ExportNames[1].c_str());
 			void* HitgroupShaderId = StateObjectProperties->GetShaderIdentifier(HitGroupName.c_str());
 
+			vector2di RayGenShaderOffsetAndSize;
+			vector2di MissShaderOffsetAndSize;
+			vector2di HitGroupOffsetAndSize;
 			uint32 ShaderTableSize = 0;
 			// Ray gen
-			ShaderTableSize += TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			RtxPipelineDx12->RayGenShaderOffsetAndSize.X = ShaderTableSize;
+			RtxPipelineDx12->RayGenShaderOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			ShaderTableSize += RtxPipelineDx12->RayGenShaderOffsetAndSize.Y;
 			// Miss
-			ShaderTableSize += TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			RtxPipelineDx12->MissShaderOffsetAndSize.X = ShaderTableSize;
+			RtxPipelineDx12->MissShaderOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			ShaderTableSize += MissShaderOffsetAndSize.Y;
 			// Hit Group
-			ShaderTableSize += TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			RtxPipelineDx12->HitGroupOffsetAndSize.X = ShaderTableSize;
+			RtxPipelineDx12->HitGroupOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+			ShaderTableSize += HitGroupOffsetAndSize.Y;
 			TI_TODO("Calc shader table size with shader parameters");
 
 			TI_ASSERT(RtxPipelineDx12->ShaderTable == nullptr);
@@ -1996,11 +2005,11 @@ namespace tix
 			uint8* Data = ti_new uint8[ShaderTableSize];
 			uint8* pData = Data;
 			memcpy(pData, RayGenShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+			pData += RtxPipelineDx12->RayGenShaderOffsetAndSize.Y;
 			memcpy(pData, MissShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+			pData += RtxPipelineDx12->MissShaderOffsetAndSize.Y;
 			memcpy(pData, HitgroupShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+			pData += RtxPipelineDx12->HitGroupOffsetAndSize.Y;
 
 			UpdateHardwareResourceUB(RtxPipelineDx12->ShaderTable, Data);
 			ti_delete[] Data;
