@@ -34,11 +34,32 @@ namespace tix
 			return ShaderNames.ShaderNames[ESS_SHADER_LIB];
 		}
 
-		FShaderBindingPtr ShaderBinding;
+		void SetShaderBinding(FShaderBindingPtr InShaderBinding)
+		{
+			ShaderBinding = InShaderBinding;
+		}
+		FShaderBindingPtr GetShaderBinding()
+		{
+			return ShaderBinding;
+		}
+
+		// Add Local Shader Binding, return index
+		uint32 AddLocalShaderBinding(FShaderBindingPtr InShaderBinding)
+		{
+			LocalShaderBindings.push_back(InShaderBinding);
+			return (uint32)(LocalShaderBindings.size() - 1);
+		}
+		FShaderBindingPtr GetLocalShaderBinding(uint32 Index)
+		{
+			TI_ASSERT(Index < (uint32)LocalShaderBindings.size());
+			return LocalShaderBindings[Index];
+		}
 	protected:
 
 	protected:
 		TShaderNames ShaderNames;
 		E_SHADER_TYPE Type;
+		FShaderBindingPtr ShaderBinding;
+		TVector<FShaderBindingPtr> LocalShaderBindings;
 	};
 }

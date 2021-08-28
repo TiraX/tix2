@@ -35,7 +35,6 @@ namespace tix
 		// DirectX Raytracing (DXR) attributes
 		ComPtr<ID3D12Device5> DXRDevice;
 		ComPtr<ID3D12GraphicsCommandList4> DXRCommandList;
-
 	};
 }
 #endif	// COMPILE_WITH_RHI_DX12

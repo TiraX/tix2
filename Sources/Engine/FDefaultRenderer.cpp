@@ -143,7 +143,7 @@ namespace tix
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FScene * Scene, FPrimitivePtr Primitive)
 	{
-		FShaderBindingPtr ShaderBinding = Primitive->GetPipeline()->GetShader()->ShaderBinding;
+		FShaderBindingPtr ShaderBinding = Primitive->GetPipeline()->GetShader()->GetShaderBinding();
 
 		// bind vertex arguments
 		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexComputeShaderArguments();
@@ -162,7 +162,7 @@ namespace tix
 
 	void FDefaultRenderer::ApplyShaderParameter(FRHI * RHI, FShaderPtr Shader, FScene * Scene, FArgumentBufferPtr ArgumentBuffer)
 	{
-		FShaderBindingPtr ShaderBinding = Shader->ShaderBinding;
+		FShaderBindingPtr ShaderBinding = Shader->GetShaderBinding();
 
 		// bind vertex arguments
 		const TVector<FShaderBinding::FShaderArgument>& VSArguments = ShaderBinding->GetVertexComputeShaderArguments();

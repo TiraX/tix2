@@ -17,7 +17,7 @@ namespace tix
 	protected:
 
 	private:
-		ComPtr<ID3D12PipelineState> StateObject;
+		ComPtr<ID3D12StateObject> StateObject;
 		friend class FRHIDx12;
 	};
 }
