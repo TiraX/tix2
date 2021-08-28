@@ -36,6 +36,19 @@ namespace tix
 	{
 		Desc.HitGroup[HitGroup] = InName;
 	}
+
+	void TRtxPipeline::SetMaxAttributeSizeInBytes(int32 InSize)
+	{
+		Desc.MaxAttributeSizeInBytes = InSize;
+	}
+	void TRtxPipeline::SetMaxPayloadSizeInBytes(int32 InSize)
+	{
+		Desc.MaxPayloadSizeInBytes = InSize;
+	}
+	void TRtxPipeline::SetMaxTraceRecursionDepth(int32 InDepth)
+	{
+		Desc.MaxTraceRecursionDepth = InDepth;
+	}
 	
 	void TRtxPipeline::InitRenderThreadResource()
 	{

@@ -390,5 +390,9 @@ namespace tix
 		int32 HitGroupAnyHit;
 		int32 HitGroupClosestHit;
 		int32 HitGroupIntersection;
+
+		int32 MaxAttributeSizeInDepth;
+		int32 MaxPayloadSizeInBytes;
+		int32 MaxTraceRecursionDepth;
 	};
 }

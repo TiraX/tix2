@@ -23,10 +23,6 @@ namespace tix
 		TString ShaderLibName;
 		TStream ShaderBlob;
 
-		TVector<TString> ExportNames;
-		TString HitGroupName;
-		TString HitGroupShader[HITGROUP_NUM];
-
-		//TPipelineDesc PipelineDesc;
+		TRtxPipelineDesc RtxDesc;
 	};
 }

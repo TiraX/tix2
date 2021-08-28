@@ -82,8 +82,6 @@ void FRTAORenderer::InitInRenderThread()
 #undef CreateTextureResource
 
 	// For path tracer
-	// Create root signatures
-
 	// Create RTX pipeline state object
 	const TString PathtracerPipeline = "RTX_Pathtracer.tasset";
 	TAssetPtr RtxPipelineAsset = TAssetLibrary::Get()->LoadAsset(PathtracerPipeline);

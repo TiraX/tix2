@@ -1057,6 +1057,9 @@ namespace tix
 		{
 			RtxPipeline->AddExportName(GetString(ExportNameIndex[i]));
 		}
+		RtxPipeline->SetMaxAttributeSizeInBytes(HeaderRtxPipeline->MaxAttributeSizeInDepth);
+		RtxPipeline->SetMaxPayloadSizeInBytes(HeaderRtxPipeline->MaxPayloadSizeInBytes);
+		RtxPipeline->SetMaxTraceRecursionDepth(HeaderRtxPipeline->MaxTraceRecursionDepth);
 
 		// Load Shader code
 		TString ShaderLibName = GetString(HeaderRtxPipeline->ShaderLibName);

@@ -1935,15 +1935,15 @@ namespace tix
 		// Payload size, shader config
 		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
 		D3D12_RAYTRACING_SHADER_CONFIG ShaderConfig = {};
-		ShaderConfig.MaxAttributeSizeInBytes = sizeof(float) * 2;
-		ShaderConfig.MaxPayloadSizeInBytes = sizeof(float) * 4;
+		ShaderConfig.MaxAttributeSizeInBytes = RtxPipelineDesc.MaxAttributeSizeInBytes;
+		ShaderConfig.MaxPayloadSizeInBytes = RtxPipelineDesc.MaxPayloadSizeInBytes;
 		SubObject.pDesc = &ShaderConfig;
 		SubObjects.push_back(SubObject);
 
 		// Pipeline config
 		SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
 		D3D12_RAYTRACING_PIPELINE_CONFIG PipelineConfig = {};
-		PipelineConfig.MaxTraceRecursionDepth = 1;
+		PipelineConfig.MaxTraceRecursionDepth = RtxPipelineDesc.MaxTraceRecursionDepth;
 		SubObject.pDesc = &PipelineConfig;
 		SubObjects.push_back(SubObject);
 

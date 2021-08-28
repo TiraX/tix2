@@ -14,5 +14,8 @@
 		"",
 		"RayClosestHit",
 		""
-	]
+	],
+	"max_attribute_size_in_bytes" : 8,
+	"max_payload_size_in_bytes" : 16,
+	"max_trace_recursion_depth" : 1
 }
