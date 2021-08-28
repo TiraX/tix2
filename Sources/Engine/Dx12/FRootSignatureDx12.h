@@ -112,7 +112,6 @@ namespace tix
 			: FShaderBinding(NumRootParams)
 			, Finalized(false)
 		{
-			Reset(NumRootParams, NumStaticSamplers);
 		}
 
 		virtual ~FRootSignatureDx12()
@@ -121,49 +120,17 @@ namespace tix
 			Signature = nullptr;
 		}
 
-		void Finalize(FRHI * RHI);
-		
-		FRootParameterDx12& GetParameter(uint32 EntryIndex)
-		{
-			return ParamArray[EntryIndex];
-		}
+		void Finalize(ID3D12Device* D3dDevice, const D3D12_ROOT_SIGNATURE_DESC& RSDesc);
 
-		const FRootParameterDx12& GetParameter(uint32 EntryIndex) const
-		{
-			return ParamArray[EntryIndex];
-		}
-
-		void InitStaticSampler(uint32 Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc,
-			D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL);
-
-		void InitStaticSampler(uint32 Register, const D3D12_STATIC_SAMPLER_DESC& InStaticSamplerDesc);
-
-		void Finalize(ID3D12Device* D3dDevice, D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
 		ID3D12RootSignature* Get() const
 		{
 			return Signature.Get(); 
 		}
 	private:
-		void Reset(uint32 NumRootParams, uint32 NumStaticSamplers = 0)
-		{
-			if (NumRootParams > 0)
-			{
-				ParamArray.resize(NumRootParams);
-			}
-
-			if (NumStaticSamplers > 0)
-			{
-				SamplerArray.resize(NumStaticSamplers);
-			}
-			NumInitializedStaticSamplers = 0;
-		}
 
 	private:
 		bool Finalized;
-		uint32 NumInitializedStaticSamplers;
-		TVector<FRootParameterDx12> ParamArray;
-		TVector<D3D12_STATIC_SAMPLER_DESC> SamplerArray;
 
 		ComPtr<ID3D12RootSignature> Signature;
 

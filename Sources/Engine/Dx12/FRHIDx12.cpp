@@ -1854,6 +1854,7 @@ namespace tix
 
 	bool FRHIDx12::UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc)
 	{
+		return true;
 		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(Pipeline.get());
 		FShaderPtr Shader = Pipeline->GetShaderLib();
 
@@ -1901,6 +1902,20 @@ namespace tix
 		HitGroupDesc.IntersectionShaderImport = HitGroupShaders[HITGROUP_INTERSECTION].c_str();
 		SubObject.pDesc = &HitGroupDesc;
 		SubObjects.push_back(SubObject);
+
+		// Empty local root signature for raygen,miss and closest hit
+		D3D12_ROOT_SIGNATURE_DESC EmptyLocalRS = {};
+		EmptyLocalRS.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+
+		// And its associations
+
+		// Payload size, shader config
+
+		// Pipeline config
+
+		// Global root signature
+
+		// Create the state
 
 		TI_ASSERT(0);
 
@@ -2661,55 +2676,9 @@ namespace tix
 		FRootSignatureDx12 * RootSignatureDx12 = static_cast<FRootSignatureDx12*>(ShaderBinding.get());
 
 		const int32 NumBindings = RSDesc.NumParameters;
-		const int32 NumSamplers = RSDesc.NumStaticSamplers;
-
-		// Init static sampler
-		for (int32 i = 0 ; i < NumSamplers ; ++ i)
-		{
-			const D3D12_STATIC_SAMPLER_DESC& StaticSampler = RSDesc.pStaticSamplers[i];
-			RootSignatureDx12->InitStaticSampler(i, StaticSampler);
-		}
-
-		// Init shader params
-		for (int32 i = 0; i < NumBindings; ++i)
-		{
-			const D3D12_ROOT_PARAMETER& Parameter = RSDesc.pParameters[i];
-			switch (Parameter.ParameterType)
-			{
-			case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
-			{
-				const D3D12_ROOT_DESCRIPTOR_TABLE& Table = Parameter.DescriptorTable;
-				// Make a copy of Ranges
-				D3D12_DESCRIPTOR_RANGE* Ranges = ti_new D3D12_DESCRIPTOR_RANGE[Table.NumDescriptorRanges];
-				for (uint32 range = 0; range < Table.NumDescriptorRanges; ++range)
-				{
-					Ranges[range] = Table.pDescriptorRanges[range];
-				}
-				RootSignatureDx12->GetParameter(i).InitAsDescriptorTable(Ranges, Table.NumDescriptorRanges, Parameter.ShaderVisibility);
-			}
-				break;
-			case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
-			{
-				const D3D12_ROOT_CONSTANTS& Constant = Parameter.Constants;
-				RootSignatureDx12->GetParameter(i).InitAsConstants(Constant.ShaderRegister, Constant.Num32BitValues, Parameter.ShaderVisibility);
-			}
-				break;
-			case D3D12_ROOT_PARAMETER_TYPE_CBV:
-			case D3D12_ROOT_PARAMETER_TYPE_SRV:
-			case D3D12_ROOT_PARAMETER_TYPE_UAV:
-			{
-				const D3D12_ROOT_DESCRIPTOR& Descriptor = Parameter.Descriptor;
-				RootSignatureDx12->GetParameter(i).InitAsBuffer(Parameter.ParameterType, Descriptor.ShaderRegister, Parameter.ShaderVisibility);
-			}
-				break;
-			default:
-				TI_ASSERT(0);
-				break;
-			}
-		}
-		RootSignatureDx12->Finalize(D3dDevice.Get(), RSDesc.Flags);
+		RootSignatureDx12->Finalize(D3dDevice.Get(), RSDesc);
 		HoldResourceReference(ShaderBinding);
-
+		
 		return ShaderBinding;
 	}
 
