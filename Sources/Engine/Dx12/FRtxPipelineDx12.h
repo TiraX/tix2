@@ -18,6 +18,7 @@ namespace tix
 
 	private:
 		ComPtr<ID3D12StateObject> StateObject;
+		FUniformBufferPtr ShaderTable;
 		friend class FRHIDx12;
 	};
 }
