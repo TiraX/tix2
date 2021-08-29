@@ -155,7 +155,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	TraceSize.Y = RHI->GetViewport().Height;
 	TraceSize.Z = 1;
 
-	if (false && Scene->GetTLAS() != nullptr)
+	if (Scene->GetTLAS() != nullptr && Scene->GetTLAS()->AlreadyBuilt())
 	{
 		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
 

@@ -42,7 +42,11 @@ namespace tix
 
 		GeometryDescs.push_back(GeometryDesc); 
 		MarkDirty();
+	}
 
+	bool FBottomLevelAccelerationStructureDx12::AlreadyBuilt()
+	{
+		return AccelerationStructure != nullptr;
 	}
 
 	void FBottomLevelAccelerationStructureDx12::Build()
@@ -147,6 +151,11 @@ namespace tix
 			//MarkDirty();
 			TI_TODO("Make this dirty and re-create TLAS.");
 		}
+	}
+
+	bool FTopLevelAccelerationStructureDx12::AlreadyBuilt()
+	{
+		return AccelerationStructure != nullptr;
 	}
 
 	void FTopLevelAccelerationStructureDx12::Build()

@@ -16,6 +16,7 @@ namespace tix
 		virtual ~FAccelerationStructure();
 
 		virtual void Build() = 0;
+		virtual bool AlreadyBuilt() = 0;
 
 		void MarkDirty()
 		{

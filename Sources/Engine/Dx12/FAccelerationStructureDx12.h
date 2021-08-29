@@ -21,6 +21,7 @@ namespace tix
 
 		virtual void AddMeshBuffer(FMeshBufferPtr InMeshBuffer) override;
 		virtual void Build() override;
+		virtual bool AlreadyBuilt() override;
 
 		ID3D12Resource* GetASResource()
 		{
@@ -44,6 +45,7 @@ namespace tix
 		virtual void ReserveInstanceCount(uint32 Count) override;
 		virtual void AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform) override;
 		virtual void Build() override;
+		virtual bool AlreadyBuilt() override;
 	private:
 		ComPtr<ID3D12Resource> AccelerationStructure;
 		ComPtr<ID3D12Resource> ScratchResource;
