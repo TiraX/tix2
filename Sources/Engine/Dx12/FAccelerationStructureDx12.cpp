@@ -121,7 +121,8 @@ namespace tix
 	void FTopLevelAccelerationStructureDx12::ClearAllInstances()
 	{
 		InstanceDescs.clear();
-		MarkDirty();
+		//MarkDirty();
+		TI_TODO("Make this dirty and re-create TLAS.");
 	}
 
 	void FTopLevelAccelerationStructureDx12::ReserveInstanceCount(uint32 Count)
@@ -143,7 +144,8 @@ namespace tix
 			Desc.AccelerationStructure = BLASDx12->GetASResource()->GetGPUVirtualAddress();
 
 			InstanceDescs.push_back(Desc);
-			MarkDirty();
+			//MarkDirty();
+			TI_TODO("Make this dirty and re-create TLAS.");
 		}
 	}
 
@@ -171,8 +173,7 @@ namespace tix
 		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
 
 		// Allocate resource for TLAS
-		//TI_ASSERT(AccelerationStructure == nullptr);
-		AccelerationStructure = nullptr;
+		TI_ASSERT(AccelerationStructure == nullptr);
 		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
@@ -184,8 +185,7 @@ namespace tix
 			IID_PPV_ARGS(&AccelerationStructure)));
 		DX_SETNAME(AccelerationStructure.Get(), GetResourceName());
 
-		//TI_ASSERT(ScratchResource == nullptr);
-		ScratchResource = nullptr;
+		TI_ASSERT(ScratchResource == nullptr);
 		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
 			&UploadHeapProperties,
