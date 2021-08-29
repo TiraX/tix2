@@ -49,6 +49,8 @@ namespace tix
 		ComPtr<ID3D12Resource> ScratchResource;
 
 		TVector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDescs;
+
+		friend class FRHIDx12;
 	};
 }
 #endif	// COMPILE_WITH_RHI_DX12

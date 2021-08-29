@@ -97,6 +97,15 @@ namespace tix
 		FRHI::Get()->PutRTDepthInHeap(InTexture, Start + Index * InTexture->GetDesc().Mips);
 	}
 
+	void FRenderResourceTable::PutTopLevelAccelerationStructureInTable(
+		FTopLevelAccelerationStructurePtr InTLAS, 
+		uint32 Index)
+	{
+		TI_ASSERT(HeapType == EHT_SHADER_RESOURCE);
+		TI_ASSERT(Index < Size);
+		FRHI::Get()->PutTopAccelerationStructureInHeap(InTLAS, HeapType, Start + Index);
+	}
+
 	E_RENDER_RESOURCE_HEAP_TYPE FRenderResourceTable::GetHeapType() const
 	{
 		return HeapType;

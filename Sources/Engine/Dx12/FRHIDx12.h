@@ -73,6 +73,7 @@ namespace tix
 
 		// RTX
 		virtual bool UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc) override;
+		virtual void TraceRays(FRtxPipelinePtr RtxPipeline, const vector3di& Size) override;
 
 		// Graphics and Compute
 		virtual bool UpdateHardwareResourceMesh(FMeshBufferPtr MeshBuffer, TMeshBufferPtr InMeshData) override;
@@ -130,6 +131,7 @@ namespace tix
 		virtual void PutInstanceBufferInHeap(FInstanceBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 		virtual void PutRTColorInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
 		virtual void PutRTDepthInHeap(FTexturePtr InTexture, uint32 InHeapSlot) override;
+		virtual void PutTopAccelerationStructureInHeap(FTopLevelAccelerationStructurePtr InTLAS, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot) override;
 
 		// Graphics
 		virtual void SetGraphicsPipeline(FPipelinePtr InPipeline) override;

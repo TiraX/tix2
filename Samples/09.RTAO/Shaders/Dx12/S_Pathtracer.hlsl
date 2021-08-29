@@ -16,15 +16,14 @@ struct SimpleRayPayload
 
 GlobalRootSignature MyGlobalRootSignature =
 {
-    "DescriptorTable(UAV(u0)),"                     // Output texture
-    "SRV(t0),"                                      // Acceleration structure
-    "CBV(b0),"                                      // Scene constants
+    "DescriptorTable(UAV(u0), SRV(t0)),"    // Output texture, AS
+    "CBV(b0),"                              // Scene constants
 };
 
 cbuffer RayGenData : register(b0)
 {
-    float3 CamPos;
-    float3 CamU, CamV, CamW;
+    float4 CamPos;
+    float4 CamU, CamV, CamW;
 };
 typedef BuiltInTriangleIntersectionAttributes MyAttributes;
 
@@ -38,10 +37,10 @@ void MyRayGenShader()
     uint2 TotalPixels = DispatchRaysDimensions().xy;
     float2 PixelCenter = (CurPixel + float2(0.5f, 0.5f)) / TotalPixels;
     float2 Ndc = float2(2, -2) * PixelCenter + float2(-1, 1);
-    float3 RayDir = Ndc.x * CamU + Ndc.y * CamV + CamW;
+    float3 RayDir = Ndc.x * CamU.xyz + Ndc.y * CamV.xyz + CamW.xyz;
 
     RayDesc Ray;
-    Ray.Origin = CamPos;
+    Ray.Origin = CamPos.xyz;
     Ray.Direction = normalize(RayDir);
     Ray.TMin = 0.f;
     Ray.TMax = 1e+38f;

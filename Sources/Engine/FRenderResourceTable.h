@@ -24,6 +24,7 @@ namespace tix
 		TI_API void PutInstanceBufferInTable(FInstanceBufferPtr InBuffer, uint32 Index);
 		TI_API void PutRTColorInTable(FTexturePtr InTexture, uint32 Index);
 		TI_API void PutRTDepthInTable(FTexturePtr InTexture, uint32 Index);
+		TI_API void PutTopLevelAccelerationStructureInTable(FTopLevelAccelerationStructurePtr InTLAS, uint32 Index);
 
 		uint32 GetStartIndex() const
 		{

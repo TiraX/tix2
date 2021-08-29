@@ -115,6 +115,11 @@ namespace tix
 		{
 			return EnvLight;
 		}
+
+		FTopLevelAccelerationStructurePtr GetTLAS()
+		{
+			return SceneTLAS;
+		}
 	private:
 		void PrepareViewUniforms();
 		void UpdateAccelerationStructure();

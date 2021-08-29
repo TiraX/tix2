@@ -11,12 +11,21 @@ static const int32 USE_GTAO = 1;
 
 static const int32 AO_METHOD = USE_GTAO;
 
+FRTAORenderer* RTAORenderer = nullptr;
+FRTAORenderer* FRTAORenderer::Get()
+{
+	return RTAORenderer;
+}
+
+
 FRTAORenderer::FRTAORenderer()
 {
+	RTAORenderer = this;
 }
 
 FRTAORenderer::~FRTAORenderer()
 {
+	RTAORenderer = nullptr;
 }
 
 void FRTAORenderer::InitRenderFrame(FScene* Scene)
@@ -88,6 +97,14 @@ void FRTAORenderer::InitInRenderThread()
 	TResourcePtr RtxPipelineResource = RtxPipelineAsset->GetResourcePtr();
 	TRtxPipelinePtr RtxPipeline = static_cast<TRtxPipeline*>(RtxPipelineResource.get());
 	RtxPSO = RtxPipeline->PipelineResource;
+
+	// Create constant buffer
+	UB_Pathtracer = ti_new FPathtracerUniform();
+	UB_Pathtracer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+
+	// Create resource table
+	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
+	ResourceTable->PutRWTextureInTable(T_GBuffer[GBUFFER_COLOR], 0, 0);
 }
 
 void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -119,12 +136,33 @@ void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 	}
 }
 
+void FRTAORenderer::UpdateCamInfo(const vector3df& Pos, const vector3df& Dir, const vector3df& Hor, const vector3df& Ver)
+{
+	UB_Pathtracer->UniformBufferData[0].CamPos = FFloat4(Pos.X, Pos.Y, Pos.Z, 1.f);
+	UB_Pathtracer->UniformBufferData[0].CamU = FFloat4(Hor.X, Hor.Y, Hor.Z, 1.f);
+	UB_Pathtracer->UniformBufferData[0].CamV = FFloat4(Ver.X, Ver.Y, Ver.Z, 1.f);
+	UB_Pathtracer->UniformBufferData[0].CamW = FFloat4(Dir.X, Dir.Y, Dir.Z, 1.f);
+	UB_Pathtracer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
+}
+
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	//DrawSceneTiles(RHI, Scene);
 
-	Dispath rays.
+	vector3di TraceSize;
+	TraceSize.X = RHI->GetViewport().Width;
+	TraceSize.Y = RHI->GetViewport().Height;
+	TraceSize.Z = 1;
+
+	if (false && Scene->GetTLAS() != nullptr)
+	{
+		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
+
+		RHI->SetComputeResourceTable(0, ResourceTable);
+		RHI->SetComputeConstantBuffer(1, UB_Pathtracer->UniformBuffer);
+		RHI->TraceRays(RtxPSO, TraceSize);
+	}
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);

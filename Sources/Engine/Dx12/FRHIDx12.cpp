@@ -1981,22 +1981,22 @@ namespace tix
 			void* MissShaderId = StateObjectProperties->GetShaderIdentifier(ExportNames[1].c_str());
 			void* HitgroupShaderId = StateObjectProperties->GetShaderIdentifier(HitGroupName.c_str());
 
-			vector2di RayGenShaderOffsetAndSize;
-			vector2di MissShaderOffsetAndSize;
-			vector2di HitGroupOffsetAndSize;
+			// DispatchRays: 
+			// pDesc->MissShaderTable.StartAddress must be aligned to 64 bytes(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT) 
+			// and .StrideInBytes must be aligned to 32 bytes(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT)
 			uint32 ShaderTableSize = 0;
 			// Ray gen
 			RtxPipelineDx12->RayGenShaderOffsetAndSize.X = ShaderTableSize;
 			RtxPipelineDx12->RayGenShaderOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-			ShaderTableSize += RtxPipelineDx12->RayGenShaderOffsetAndSize.Y;
+			ShaderTableSize += TMath::Align(RtxPipelineDx12->RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 			// Miss
 			RtxPipelineDx12->MissShaderOffsetAndSize.X = ShaderTableSize;
 			RtxPipelineDx12->MissShaderOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-			ShaderTableSize += MissShaderOffsetAndSize.Y;
+			ShaderTableSize += TMath::Align(RtxPipelineDx12->MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 			// Hit Group
 			RtxPipelineDx12->HitGroupOffsetAndSize.X = ShaderTableSize;
 			RtxPipelineDx12->HitGroupOffsetAndSize.Y = TMath::Align(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-			ShaderTableSize += HitGroupOffsetAndSize.Y;
+			ShaderTableSize += TMath::Align(RtxPipelineDx12->HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 			TI_TODO("Calc shader table size with shader parameters");
 
 			TI_ASSERT(RtxPipelineDx12->ShaderTable == nullptr);
@@ -2016,6 +2016,43 @@ namespace tix
 		}
 
 		return true;
+	}
+
+	void FRHIDx12::TraceRays(FRtxPipelinePtr RtxPipeline, const vector3di& Size)
+	{
+		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(RtxPipeline.get());
+		FUniformBufferDx12* UB_ShaderTable = static_cast<FUniformBufferDx12*>(RtxPipelineDx12->ShaderTable.get());
+		FShaderPtr ShaderLib = RtxPipeline->GetShaderLib();
+
+		D3D12_DISPATCH_RAYS_DESC RaytraceDesc = {};
+		RaytraceDesc.Width = Size.X;
+		RaytraceDesc.Height = Size.Y;
+		RaytraceDesc.Depth = Size.Z;
+
+		// RayGen is the first entry in the shader-table
+		RaytraceDesc.RayGenerationShaderRecord.StartAddress = 
+			UB_ShaderTable->GetResource().Get()->GetGPUVirtualAddress() + RtxPipelineDx12->RayGenShaderOffsetAndSize.X;
+		RaytraceDesc.RayGenerationShaderRecord.SizeInBytes = RtxPipelineDx12->RayGenShaderOffsetAndSize.Y;
+
+		// Miss is the second entry in the shader-table
+		RaytraceDesc.MissShaderTable.StartAddress = 
+			UB_ShaderTable->GetResource().Get()->GetGPUVirtualAddress() + RtxPipelineDx12->MissShaderOffsetAndSize.X;
+		RaytraceDesc.MissShaderTable.StrideInBytes = RtxPipelineDx12->MissShaderOffsetAndSize.Y;
+		RaytraceDesc.MissShaderTable.SizeInBytes = RtxPipelineDx12->MissShaderOffsetAndSize.Y;   // Only a s single miss-entry
+
+		// Hit is the third entry in the shader-table
+		RaytraceDesc.HitGroupTable.StartAddress =
+			UB_ShaderTable->GetResource().Get()->GetGPUVirtualAddress() + RtxPipelineDx12->HitGroupOffsetAndSize.X;
+		RaytraceDesc.HitGroupTable.StrideInBytes = RtxPipelineDx12->HitGroupOffsetAndSize.Y;
+		RaytraceDesc.HitGroupTable.SizeInBytes = RtxPipelineDx12->HitGroupOffsetAndSize.Y;
+
+		// Bind Global root signature
+		FRootSignatureDx12* GlobalRSDx12 = static_cast<FRootSignatureDx12*>(ShaderLib->GetShaderBinding().get());
+		DXR->DXRCommandList->SetComputeRootSignature(GlobalRSDx12->Get());
+
+		// Dispatch
+		DXR->DXRCommandList->SetPipelineState1(RtxPipelineDx12->StateObject.Get());
+		DXR->DXRCommandList->DispatchRays(&RaytraceDesc);
 	}
 
 	static const int32 UniformBufferAlignSize = 256;
@@ -3036,7 +3073,11 @@ namespace tix
 		D3dDevice->CreateShaderResourceView(TexDx12->TextureResource.GetResource().Get(), &SRVDesc, Descriptor);
 	}
 
-	void FRHIDx12::PutRWTextureInHeap(FTexturePtr InTexture, uint32 InMipLevel, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	void FRHIDx12::PutRWTextureInHeap(
+		FTexturePtr InTexture, 
+		uint32 InMipLevel, 
+		E_RENDER_RESOURCE_HEAP_TYPE InHeapType, 
+		uint32 InHeapSlot)
 	{
 		FTextureDx12* TexDx12 = static_cast<FTextureDx12*>(InTexture.get());
 
@@ -3075,9 +3116,12 @@ namespace tix
 			Descriptor);
 	}
 
-	void FRHIDx12::PutUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
+	void FRHIDx12::PutUniformBufferInHeap(
+		FUniformBufferPtr InBuffer, 
+		E_RENDER_RESOURCE_HEAP_TYPE InHeapType, 
+		uint32 InHeapSlot)
 	{
-		FUniformBufferDx12 * UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
+		FUniformBufferDx12* UBDx12 = static_cast<FUniformBufferDx12*>(InBuffer.get());
 		// Create shader resource view
 		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -3089,6 +3133,28 @@ namespace tix
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
 		D3dDevice->CreateShaderResourceView(UBDx12->BufferResource.GetResource().Get(), &SRVDesc, Descriptor);
+	}
+
+	void FRHIDx12::PutTopAccelerationStructureInHeap(
+		FTopLevelAccelerationStructurePtr InTLAS, 
+		E_RENDER_RESOURCE_HEAP_TYPE InHeapType, 
+		uint32 InHeapSlot)
+	{
+		FTopLevelAccelerationStructureDx12* TLASDx12 = static_cast<FTopLevelAccelerationStructureDx12*>(InTLAS.get());
+		// Create shader resource view
+		D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+		SRVDesc.RaytracingAccelerationStructure.Location = TLASDx12->AccelerationStructure->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// When creating descriptor heap based acceleration structure SRVs, 
+		// the resource parameter must be NULL, as the memory location comes 
+		// as a GPUVA from the view description (D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV) 
+		// shown below. E.g. CreateShaderResourceView(NULL,pViewDesc).
+		D3D12_CPU_DESCRIPTOR_HANDLE Descriptor = GetCpuDescriptorHandle(InHeapType, InHeapSlot);
+		D3dDevice->CreateShaderResourceView(nullptr, &SRVDesc, Descriptor);
 	}
 
 	void FRHIDx12::PutRWUniformBufferInHeap(FUniformBufferPtr InBuffer, E_RENDER_RESOURCE_HEAP_TYPE InHeapType, uint32 InHeapSlot)
