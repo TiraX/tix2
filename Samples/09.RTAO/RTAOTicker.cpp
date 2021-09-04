@@ -17,22 +17,6 @@ TRTAOTicker::~TRTAOTicker()
 
 void TRTAOTicker::Tick(float Dt)
 {
-	TScene* Scene = TEngine::Get()->GetScene();
-
-	// Send camera info to render thread
-	TNodeCamera* Cam = Scene->GetActiveCamera();
-	if ((Cam->GetCameraFlags() & TNodeCamera::ECAMF_MAT_VIEW_UPDATED) != 0)
-	{
-		vector3df Pos = Cam->GetAbsolutePosition();
-		vector3df Dir = Cam->GetCamDir();
-		vector3df Hor = Cam->GetHorVector();
-		vector3df Ver = Cam->GetVerVector();
-		ENQUEUE_RENDER_COMMAND(UpdateCamInfoRenderThread)(
-			[Pos, Dir, Hor, Ver]()
-			{
-				FRTAORenderer::Get()->UpdateCamInfo(Pos, Dir, Hor, Ver);
-			});
-	}
 }
 
 void TRTAOTicker::SetupScene()

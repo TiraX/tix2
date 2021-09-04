@@ -72,7 +72,7 @@ void FRTAORenderer::InitInRenderThread()
 	RHI->UpdateHardwareResourceTexture(T)
 
 	TextureDesc.Width = RTWidth;
-	TextureDesc.Height = RTWidth;
+	TextureDesc.Height = RTHeight;
 	CreateTextureResource(T_GBuffer[GBUFFER_COLOR]);
 #undef CreateTextureResource
 
@@ -130,17 +130,24 @@ void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
 	}
 }
 
-void FRTAORenderer::UpdateCamInfo(const vector3df& Pos, const vector3df& Dir, const vector3df& Hor, const vector3df& Ver)
+void FRTAORenderer::UpdateCamInfo(FScene* Scene)
 {
-	UB_Pathtracer->UniformBufferData[0].CamPos = FFloat4(Pos.X, Pos.Y, Pos.Z, 1.f);
-	UB_Pathtracer->UniformBufferData[0].CamU = FFloat4(Hor.X, Hor.Y, Hor.Z, 1.f);
-	UB_Pathtracer->UniformBufferData[0].CamV = FFloat4(Ver.X, Ver.Y, Ver.Z, 1.f);
-	UB_Pathtracer->UniformBufferData[0].CamW = FFloat4(Dir.X, Dir.Y, Dir.Z, 1.f);
+	const FViewProjectionInfo& VPInfo = Scene->GetViewProjection();
+	matrix4 VP = VPInfo.MatProj* VPInfo.MatView;
+	matrix4 InvVP;
+	VP.getInverse(InvVP);
+
+	vector3df Pos = VPInfo.CamPos;
+	vector3df Tar = Pos + VPInfo.CamDir * 10.f;
+
+	UB_Pathtracer->UniformBufferData[0].CamPos = FFloat4(VPInfo.CamPos.X, VPInfo.CamPos.Y, VPInfo.CamPos.Z, 1.f);
+	UB_Pathtracer->UniformBufferData[0].ProjectionToWorld = InvVP;
 	UB_Pathtracer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 }
 
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
+	UpdateCamInfo(Scene);
 	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	//DrawSceneTiles(RHI, Scene);
 

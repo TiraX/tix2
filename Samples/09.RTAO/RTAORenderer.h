@@ -7,9 +7,7 @@
 
 BEGIN_UNIFORM_BUFFER_STRUCT(FPathtracerUniform)
 	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CamPos)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CamU)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CamV)
-	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FFloat4, CamW)
+	DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(FMatrix, ProjectionToWorld)
 END_UNIFORM_BUFFER_STRUCT(FPathtracerUniform)
 
 class FRTAORenderer : public FDefaultRenderer
@@ -20,13 +18,12 @@ public:
 
 	static FRTAORenderer* Get();
 
-	void UpdateCamInfo(const vector3df& Pos, const vector3df& Dir, const vector3df& Hor, const vector3df& Ver);
-
 	virtual void InitInRenderThread() override;
 	virtual void InitRenderFrame(FScene* Scene) override;
 	virtual void Render(FRHI* RHI, FScene* Scene) override;
 
 private:
+	void UpdateCamInfo(FScene* Scene);
 	void DrawSceneTiles(FRHI* RHI, FScene * Scene);
 
 private:
