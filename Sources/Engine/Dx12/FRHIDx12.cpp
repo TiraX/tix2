@@ -2005,11 +2005,11 @@ namespace tix
 			uint8* Data = ti_new uint8[ShaderTableSize];
 			uint8* pData = Data;
 			memcpy(pData, RayGenShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += RtxPipelineDx12->RayGenShaderOffsetAndSize.Y;
+			pData += TMath::Align(RtxPipelineDx12->RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 			memcpy(pData, MissShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += RtxPipelineDx12->MissShaderOffsetAndSize.Y;
+			pData += TMath::Align(RtxPipelineDx12->MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 			memcpy(pData, HitgroupShaderId, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-			pData += RtxPipelineDx12->HitGroupOffsetAndSize.Y;
+			pData += TMath::Align(RtxPipelineDx12->HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 
 			UpdateHardwareResourceUB(RtxPipelineDx12->ShaderTable, Data);
 			ti_delete[] Data;
