@@ -23,25 +23,40 @@ GlobalRootSignature MyGlobalRootSignature =
 cbuffer RayGenData : register(b0)
 {
     float4 CamPos;
-    float4 CamU, CamV, CamW;
+    float4x4 ProjectionToWorld;
 };
 typedef BuiltInTriangleIntersectionAttributes MyAttributes;
 
 RaytracingAccelerationStructure SceneAccelerationStruct : register(t0);
 RWTexture2D<float4> RTColor : register(u0);
 
+// Generate a ray in world space for a camera pixel corresponding to an index from the dispatched 2D grid.
+inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 direction)
+{
+    float2 xy = index + 0.5f; // center in the middle of the pixel.
+    float2 screenPos = xy / DispatchRaysDimensions().xy * 2.0 - 1.0;
+
+    // Invert Y for DirectX-style coordinates.
+    screenPos.y = -screenPos.y;
+
+    // Unproject the pixel coordinate into a ray.
+    float4 world = mul(float4(screenPos, 0, 1), ProjectionToWorld);
+
+    world.xyz /= world.w;
+    origin = CamPos;
+    direction = normalize(world.xyz - origin);
+}
+
 [shader("raygeneration")]
 void MyRayGenShader()
 {
     uint2 CurPixel = DispatchRaysIndex().xy;
-    uint2 TotalPixels = DispatchRaysDimensions().xy;
-    float2 PixelCenter = (CurPixel + float2(0.5f, 0.5f)) / TotalPixels;
-    float2 Ndc = float2(2, -2) * PixelCenter + float2(-1, 1);
-    float3 RayDir = Ndc.x * CamU.xyz + Ndc.y * CamV.xyz + CamW.xyz;
+    float3 Origin, Direction;
+    GenerateCameraRay(CurPixel, Origin, Direction);
 
     RayDesc Ray;
-    Ray.Origin = CamPos.xyz;
-    Ray.Direction = normalize(RayDir);
+    Ray.Origin = Origin;
+    Ray.Direction = Direction;
     Ray.TMin = 0.f;
     Ray.TMax = 1e+38f;
 
@@ -54,11 +69,11 @@ void MyRayGenShader()
 [shader("miss")]
 void RayMiss(inout SimpleRayPayload data)
 {
-    data.RayColor = float3(0, 0, 1);
+    data.RayColor = float3(1, 0, 0);
 }
 
 [shader("closesthit")]
 void RayClosestHit(inout SimpleRayPayload data, in MyAttributes attribs)
 {
-    data.RayColor = float3(1, 1, 0);
+    data.RayColor = float3(0, 1, 0);
 }
