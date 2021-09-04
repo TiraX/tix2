@@ -60,5 +60,5 @@ void RayMiss(inout SimpleRayPayload data)
 [shader("closesthit")]
 void RayClosestHit(inout SimpleRayPayload data, in MyAttributes attribs)
 {
-    data.RayColor = float3(1, 0, 0);
+    data.RayColor = float3(1, 1, 0);
 }

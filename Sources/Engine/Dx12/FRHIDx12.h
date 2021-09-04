@@ -73,6 +73,7 @@ namespace tix
 
 		// RTX
 		virtual bool UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc) override;
+		virtual void SetRtxPipeline(FRtxPipelinePtr RtxPipeline) override;
 		virtual void TraceRays(FRtxPipelinePtr RtxPipeline, const vector3di& Size) override;
 
 		// Graphics and Compute

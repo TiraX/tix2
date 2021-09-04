@@ -2018,6 +2018,19 @@ namespace tix
 		return true;
 	}
 
+	void FRHIDx12::SetRtxPipeline(FRtxPipelinePtr RtxPipeline)
+	{
+		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(RtxPipeline.get());
+		FShaderPtr ShaderLib = RtxPipeline->GetShaderLib();
+
+		// Set Rtx Pipeline
+		DXR->DXRCommandList->SetPipelineState1(RtxPipelineDx12->StateObject.Get());
+
+		// Bind Global root signature
+		FRootSignatureDx12* GlobalRSDx12 = static_cast<FRootSignatureDx12*>(ShaderLib->GetShaderBinding().get());
+		DXR->DXRCommandList->SetComputeRootSignature(GlobalRSDx12->Get());
+	}
+
 	void FRHIDx12::TraceRays(FRtxPipelinePtr RtxPipeline, const vector3di& Size)
 	{
 		FRtxPipelineDx12* RtxPipelineDx12 = static_cast<FRtxPipelineDx12*>(RtxPipeline.get());
@@ -2046,12 +2059,7 @@ namespace tix
 		RaytraceDesc.HitGroupTable.StrideInBytes = RtxPipelineDx12->HitGroupOffsetAndSize.Y;
 		RaytraceDesc.HitGroupTable.SizeInBytes = RtxPipelineDx12->HitGroupOffsetAndSize.Y;
 
-		// Bind Global root signature
-		FRootSignatureDx12* GlobalRSDx12 = static_cast<FRootSignatureDx12*>(ShaderLib->GetShaderBinding().get());
-		DXR->DXRCommandList->SetComputeRootSignature(GlobalRSDx12->Get());
-
 		// Dispatch
-		DXR->DXRCommandList->SetPipelineState1(RtxPipelineDx12->StateObject.Get());
 		DXR->DXRCommandList->DispatchRays(&RaytraceDesc);
 	}
 

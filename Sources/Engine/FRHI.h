@@ -124,6 +124,7 @@ namespace tix
 
 		// RTX
 		virtual bool UpdateHardwareResourceRtxPL(FRtxPipelinePtr Pipeline, TRtxPipelinePtr InPipelineDesc) = 0;
+		virtual void SetRtxPipeline(FRtxPipelinePtr RtxPipeline) = 0;
 		virtual void TraceRays(FRtxPipelinePtr RtxPipeline, const vector3di& Size) = 0;
 
 		// Graphics and Compute

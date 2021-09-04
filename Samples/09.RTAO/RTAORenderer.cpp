@@ -61,20 +61,6 @@ void FRTAORenderer::InitInRenderThread()
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
-	//HBAOCompute = ti_new FHBAOCS();
-	//HBAOCompute->Finalize();
-	//HBAOCompute->PrepareResources(RHI);
-
-	//GTAOCompute = ti_new FGTAOCS();
-	//GTAOCompute->Finalize();
-	//GTAOCompute->PrepareResources(RHI);
-
-	AB_Result = RHI->CreateArgumentBuffer(1);
-	{
-		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
-	}
-
 	// Create GBuffer
 	TTextureDesc TextureDesc;
 	TextureDesc.Format = EPF_RGBA8;
@@ -89,6 +75,14 @@ void FRTAORenderer::InitInRenderThread()
 	TextureDesc.Height = RTWidth;
 	CreateTextureResource(T_GBuffer[GBUFFER_COLOR]);
 #undef CreateTextureResource
+
+	AB_Result = RHI->CreateArgumentBuffer(1);
+	{
+		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
+		//AB_Result->SetTexture(0, T_GBuffer[GBUFFER_COLOR]);
+		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
+	}
+
 
 	// For path tracer
 	// Create RTX pipeline state object
@@ -159,6 +153,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	{
 		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
 
+		RHI->SetRtxPipeline(RtxPSO);
 		RHI->SetComputeResourceTable(0, ResourceTable);
 		RHI->SetComputeConstantBuffer(1, UB_Pathtracer->UniformBuffer);
 		RHI->TraceRays(RtxPSO, TraceSize);
