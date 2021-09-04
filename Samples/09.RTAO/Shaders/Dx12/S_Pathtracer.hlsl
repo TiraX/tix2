@@ -69,11 +69,11 @@ void MyRayGenShader()
 [shader("miss")]
 void RayMiss(inout SimpleRayPayload data)
 {
-    data.RayColor = float3(1, 0, 0);
+    data.RayColor = float3(0.1, 0, 0);
 }
 
 [shader("closesthit")]
 void RayClosestHit(inout SimpleRayPayload data, in MyAttributes attribs)
 {
-    data.RayColor = float3(0, 1, 0);
+    data.RayColor = float3(0, 0.5, 0);
 }

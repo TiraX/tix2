@@ -61,6 +61,13 @@ void FRTAORenderer::InitInRenderThread()
 	TMaterialPtr DebugMaterial = static_cast<TMaterial*>(DebugMaterialResource.get());
 	FPipelinePtr DebugPipeline = DebugMaterial->PipelineResource;
 
+	AB_RenderResult = RHI->CreateArgumentBuffer(1);
+	{
+		AB_RenderResult->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
+		//AB_Result->SetTexture(0, T_GBuffer[GBUFFER_COLOR]);
+		RHI->UpdateHardwareResourceAB(AB_RenderResult, FSRender.GetFullScreenShader(), 0);
+	}
+
 	// Create GBuffer
 	TTextureDesc TextureDesc;
 	TextureDesc.Format = EPF_RGBA8;
@@ -76,13 +83,11 @@ void FRTAORenderer::InitInRenderThread()
 	CreateTextureResource(T_GBuffer[GBUFFER_COLOR]);
 #undef CreateTextureResource
 
-	AB_Result = RHI->CreateArgumentBuffer(1);
+	AB_RtxResult = RHI->CreateArgumentBuffer(1);
 	{
-		AB_Result->SetTexture(0, RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture);
-		//AB_Result->SetTexture(0, T_GBuffer[GBUFFER_COLOR]);
-		RHI->UpdateHardwareResourceAB(AB_Result, FSRender.GetFullScreenShader(), 0);
+		AB_RtxResult->SetTexture(0, T_GBuffer[GBUFFER_COLOR]);
+		RHI->UpdateHardwareResourceAB(AB_RtxResult, FSRender.GetFullScreenShader(), 0);
 	}
-
 
 	// For path tracer
 	// Create RTX pipeline state object
@@ -137,9 +142,6 @@ void FRTAORenderer::UpdateCamInfo(FScene* Scene)
 	matrix4 InvVP;
 	VP.getInverse(InvVP);
 
-	vector3df Pos = VPInfo.CamPos;
-	vector3df Tar = Pos + VPInfo.CamDir * 10.f;
-
 	UB_Pathtracer->UniformBufferData[0].CamPos = FFloat4(VPInfo.CamPos.X, VPInfo.CamPos.Y, VPInfo.CamPos.Z, 1.f);
 	UB_Pathtracer->UniformBufferData[0].ProjectionToWorld = InvVP;
 	UB_Pathtracer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
@@ -148,8 +150,8 @@ void FRTAORenderer::UpdateCamInfo(FScene* Scene)
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	UpdateCamInfo(Scene);
-	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	//DrawSceneTiles(RHI, Scene);
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+	DrawSceneTiles(RHI, Scene);
 
 	vector3di TraceSize;
 	TraceSize.X = RHI->GetViewport().Width;
@@ -158,6 +160,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 
 	if (Scene->GetTLAS() != nullptr && Scene->GetTLAS()->AlreadyBuilt())
 	{
+		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_UNORDERED_ACCESS);
 		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
 
 		RHI->SetRtxPipeline(RtxPSO);
@@ -167,5 +170,10 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	}
 
 	RHI->BeginRenderToFrameBuffer();
-	FSRender.DrawFullScreenTexture(RHI, AB_Result);
+	FSRender.DrawFullScreenTexture(RHI, AB_RenderResult);
+	if (!true)
+	{
+		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		FSRender.DrawFullScreenTexture(RHI, AB_RtxResult);
+	}
 }

@@ -34,11 +34,11 @@ private:
 		GBUFFER_COUNT,
 	};
 
-	FArgumentBufferPtr AB_Result;
-
+	FArgumentBufferPtr AB_RenderResult;
 	FFullScreenRender FSRender;
 	FRenderTargetPtr RT_BasePass;
 
+	FArgumentBufferPtr AB_RtxResult;
 	FRtxPipelinePtr RtxPSO;
 	FTexturePtr T_GBuffer[GBUFFER_COUNT];
 
