@@ -134,6 +134,8 @@ namespace tix
 		InstanceDescs.reserve(Count);
 	}
 
+	int32 Gid = 0;
+	
 	void FTopLevelAccelerationStructureDx12::AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform)
 	{
 		FBottomLevelAccelerationStructureDx12* BLASDx12 = static_cast<FBottomLevelAccelerationStructureDx12*>(BLAS.get());
@@ -142,6 +144,8 @@ namespace tix
 		{
 			D3D12_RAYTRACING_INSTANCE_DESC Desc;
 			memcpy(Desc.Transform, Transform.Data(), sizeof(float) * 3 * 4);
+			Desc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+			Desc.InstanceID = 0;
 			Desc.InstanceMask = 1;
 			Desc.InstanceContributionToHitGroupIndex = 0;
 			TI_TODO("Find correct InstanceContributionToHitGroupIndex");
@@ -155,7 +159,7 @@ namespace tix
 
 	bool FTopLevelAccelerationStructureDx12::AlreadyBuilt()
 	{
-		return AccelerationStructure != nullptr;
+		return AccelerationStructure.GetResource() != nullptr;
 	}
 
 	void FTopLevelAccelerationStructureDx12::Build()
@@ -166,6 +170,7 @@ namespace tix
 			return;
 
 		FRHIDx12* RHIDx12 = static_cast<FRHIDx12*>(FRHI::Get());
+		ID3D12Device* D3D12Device = RHIDx12->GetD3dDevice().Get();
 		ID3D12Device5* DXRDevice = RHIDx12->GetDXRDevice().Get();
 		ID3D12GraphicsCommandList4* DXRCommandList = RHIDx12->GetDXRCommandList().Get();
 
@@ -182,17 +187,19 @@ namespace tix
 		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
 
 		// Allocate resource for TLAS
-		TI_ASSERT(AccelerationStructure == nullptr);
+		TI_ASSERT(AccelerationStructure.GetResource() == nullptr);
 		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+
+		AccelerationStructure.CreateResource(
+			D3D12Device,
 			&UploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&ASBufferDesc,
 			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-			nullptr,
-			IID_PPV_ARGS(&AccelerationStructure)));
-		DX_SETNAME(AccelerationStructure.Get(), GetResourceName());
+			nullptr
+		);
+		DX_SETNAME(AccelerationStructure.GetResource().Get(), GetResourceName());
 
 		TI_ASSERT(ScratchResource == nullptr);
 		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
@@ -213,7 +220,7 @@ namespace tix
 		FUniformBufferDx12* TLASInstanceBufferDx12 = static_cast<FUniformBufferDx12*>(TLASInstanceBuffer.get());
 		TopLevelInputs.InstanceDescs = TLASInstanceBufferDx12->GetResource()->GetGPUVirtualAddress();
 		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
-		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure->GetGPUVirtualAddress();
+		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure.GetResource()->GetGPUVirtualAddress();
 
 		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
 		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 

@@ -43,7 +43,7 @@ inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 directi
     float4 world = mul(float4(screenPos, 0, 1), ProjectionToWorld);
 
     world.xyz /= world.w;
-    origin = CamPos;
+    origin = CamPos.xyz;
     direction = normalize(world.xyz - origin);
 }
 
@@ -72,8 +72,14 @@ void RayMiss(inout SimpleRayPayload data)
     data.RayColor = float3(0.1, 0, 0);
 }
 
+[shader("anyhit")]
+void RayAnyHit(inout SimpleRayPayload data, in MyAttributes attribs)
+{
+    data.RayColor = float3(attribs.barycentrics, 0.6);
+}
+
 [shader("closesthit")]
 void RayClosestHit(inout SimpleRayPayload data, in MyAttributes attribs)
 {
-    data.RayColor = float3(0, 0.5, 0);
+    data.RayColor = float3(attribs.barycentrics, 0.2);
 }

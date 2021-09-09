@@ -1928,12 +1928,13 @@ namespace tix
 			// And its associations
 			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
 			D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION Association = {};
-			Association.NumExports = 3;
+			Association.NumExports = ExportNames.size();
 			TVector<const WCHAR*>ShaderExports;
-			ShaderExports.resize(3);
-			ShaderExports[0] = ExportNames[0].c_str();
-			ShaderExports[1] = ExportNames[1].c_str();
-			ShaderExports[2] = ExportNames[2].c_str();
+			ShaderExports.resize(ExportNames.size());
+			for (uint32 i = 0; i < (uint32)ExportNames.size(); i++)
+			{
+				ShaderExports[i] = ExportNames[i].c_str();
+			}
 			Association.pExports = ShaderExports.data();
 			Association.pSubobjectToAssociate = &(SubObjects[SubObjects.size() - 1]);
 			SubObject.pDesc = &Association;
@@ -2460,6 +2461,14 @@ namespace tix
 		HoldResourceReference(SrcBuffer);
 
 		return true;
+	}
+
+	void FRHIDx12::SetResourceStateAS(FTopLevelAccelerationStructurePtr InAS, E_RESOURCE_STATE NewState, bool Immediate)
+	{
+		FTopLevelAccelerationStructureDx12* ASDx12 = static_cast<FTopLevelAccelerationStructureDx12*>(InAS.get());
+		Transition(&ASDx12->AccelerationStructure, TiX2DxResourceStateMap[NewState]);
+		if (Immediate)
+			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
 	void FRHIDx12::SetResourceStateTexture(FTexturePtr InTexture, E_RESOURCE_STATE NewState, bool Immediate)
@@ -3154,7 +3163,7 @@ namespace tix
 		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
 		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
-		SRVDesc.RaytracingAccelerationStructure.Location = TLASDx12->AccelerationStructure->GetGPUVirtualAddress();
+		SRVDesc.RaytracingAccelerationStructure.Location = TLASDx12->AccelerationStructure.GetResource()->GetGPUVirtualAddress();
 
 		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
 		// When creating descriptor heap based acceleration structure SRVs, 

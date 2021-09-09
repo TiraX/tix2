@@ -7,11 +7,12 @@
 	"export_names" : [
 		"MyRayGenShader",
 		"RayMiss",
-		"RayClosestHit"
+		"RayClosestHit",
+		"RayAnyHit"
 	],
 	"hit_group_name" : "MyHitGroup",
 	"hit_group" : [
-		"",
+		"RayAnyHit",
 		"RayClosestHit",
 		""
 	],

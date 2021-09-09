@@ -45,6 +45,7 @@ namespace tix
 		RESOURCE_STATE_COPY_DEST,
 		RESOURCE_STATE_COPY_SOURCE,
 		RESOURCE_STATE_MESHBUFFER,	// For TiX to set VertexBuffer state and IndexBuffer state
+		RESOURCE_STATE_RAYTRACING_AS,
 
 		RESOURCE_STATE_NUM,
 	};
@@ -198,6 +199,7 @@ namespace tix
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) = 0;
 		virtual void SetArgumentBuffer(int32 BindIndex, FArgumentBufferPtr InArgumentBuffer) = 0;
 
+		virtual void SetResourceStateAS(FTopLevelAccelerationStructurePtr InAS, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
 		virtual void SetResourceStateTexture(FTexturePtr InTexture, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
 		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;
 		virtual void SetResourceStateCB(FGPUCommandBufferPtr InCommandBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) = 0;

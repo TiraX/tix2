@@ -10,6 +10,7 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 #include "FAccelerationStructure.h"
+#include "FGPUResourceDx12.h"
 
 namespace tix
 {
@@ -47,7 +48,7 @@ namespace tix
 		virtual void Build() override;
 		virtual bool AlreadyBuilt() override;
 	private:
-		ComPtr<ID3D12Resource> AccelerationStructure;
+		FGPUResourceDx12 AccelerationStructure;
 		ComPtr<ID3D12Resource> ScratchResource;
 
 		TVector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDescs;
