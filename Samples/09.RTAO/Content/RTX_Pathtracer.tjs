@@ -8,7 +8,14 @@
 		"MyRayGenShader",
 		"RayMiss",
 		"RayClosestHit",
-		"RayAnyHit"
+		"RayAnyHit",
+		"MyGlobalRootSignature",
+		"MyLocalRootSignature",
+		"MyHitGroup",
+		"MyLocalRootSignatureAssociation",
+		"MyShaderConfig",
+		"MyPipelineConfig"
+
 	],
 	"hit_group_name" : "MyHitGroup",
 	"hit_group" : [

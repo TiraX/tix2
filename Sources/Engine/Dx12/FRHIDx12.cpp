@@ -2017,67 +2017,67 @@ namespace tix
 			DxilLibDesc.pExports = ExportDesc.data();
 			SubObjects.push_back(SubObject);
 
-			// Hit Program
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
-			D3D12_HIT_GROUP_DESC HitGroupDesc;
-			HitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
-			HitGroupDesc.AnyHitShaderImport =
-				RtxPipelineDesc.HitGroup[HITGROUP_ANY_HIT] == "" ? nullptr : HitGroupShaders[HITGROUP_ANY_HIT].c_str();
-			HitGroupDesc.ClosestHitShaderImport =
-				RtxPipelineDesc.HitGroup[HITGROUP_CLOSEST_HIT] == "" ? nullptr : HitGroupShaders[HITGROUP_CLOSEST_HIT].c_str();
-			HitGroupDesc.IntersectionShaderImport =
-				RtxPipelineDesc.HitGroup[HITGROUP_INTERSECTION] == "" ? nullptr : HitGroupShaders[HITGROUP_INTERSECTION].c_str();
-			HitGroupDesc.HitGroupExport = HitGroupName.c_str();
-			SubObject.pDesc = &HitGroupDesc;
-			SubObjects.push_back(SubObject);
+			//// Hit Program
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+			//D3D12_HIT_GROUP_DESC HitGroupDesc;
+			//HitGroupDesc.Type = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+			//HitGroupDesc.AnyHitShaderImport =
+			//	RtxPipelineDesc.HitGroup[HITGROUP_ANY_HIT] == "" ? nullptr : HitGroupShaders[HITGROUP_ANY_HIT].c_str();
+			//HitGroupDesc.ClosestHitShaderImport =
+			//	RtxPipelineDesc.HitGroup[HITGROUP_CLOSEST_HIT] == "" ? nullptr : HitGroupShaders[HITGROUP_CLOSEST_HIT].c_str();
+			//HitGroupDesc.IntersectionShaderImport =
+			//	RtxPipelineDesc.HitGroup[HITGROUP_INTERSECTION] == "" ? nullptr : HitGroupShaders[HITGROUP_INTERSECTION].c_str();
+			//HitGroupDesc.HitGroupExport = HitGroupName.c_str();
+			//SubObject.pDesc = &HitGroupDesc;
+			//SubObjects.push_back(SubObject);
 
-			// Empty local root signature for raygen,miss and closest hit
-			TI_TODO("Create local root signature from shader defines. Create empty ones for temp debug");
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
-			D3D12_ROOT_SIGNATURE_DESC EmptyLocalRS = {};
-			EmptyLocalRS.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-			FShaderBindingPtr EmptyRS = CreateShaderBinding(EmptyLocalRS);
-			Shader->AddLocalShaderBinding(EmptyRS);
-			FRootSignatureDx12* LocalRSDx12 = static_cast<FRootSignatureDx12*>(EmptyRS.get());
-			SubObject.pDesc = LocalRSDx12->Signature.GetAddressOf();
-			SubObjects.push_back(SubObject);
+			//// Empty local root signature for raygen,miss and closest hit
+			//TI_TODO("Create local root signature from shader defines. Create empty ones for temp debug");
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
+			//D3D12_ROOT_SIGNATURE_DESC EmptyLocalRS = {};
+			//EmptyLocalRS.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+			//FShaderBindingPtr EmptyRS = CreateShaderBinding(EmptyLocalRS);
+			//Shader->AddLocalShaderBinding(EmptyRS);
+			//FRootSignatureDx12* LocalRSDx12 = static_cast<FRootSignatureDx12*>(EmptyRS.get());
+			//SubObject.pDesc = LocalRSDx12->Signature.GetAddressOf();
+			//SubObjects.push_back(SubObject);
 
-			// And its associations
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
-			D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION Association = {};
-			Association.NumExports = (uint32)ExportNames.size();
-			TVector<const WCHAR*>ShaderExports;
-			ShaderExports.resize(ExportNames.size());
-			for (uint32 i = 0; i < (uint32)ExportNames.size(); i++)
-			{
-				ShaderExports[i] = ExportNames[i].c_str();
-			}
-			Association.pExports = ShaderExports.data();
-			Association.pSubobjectToAssociate = &(SubObjects[SubObjects.size() - 1]);
-			SubObject.pDesc = &Association;
-			SubObjects.push_back(SubObject);
+			//// And its associations
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
+			//D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION Association = {};
+			//Association.NumExports = (uint32)ExportNames.size();
+			//TVector<const WCHAR*>ShaderExports;
+			//ShaderExports.resize(ExportNames.size());
+			//for (uint32 i = 0; i < (uint32)ExportNames.size(); i++)
+			//{
+			//	ShaderExports[i] = ExportNames[i].c_str();
+			//}
+			//Association.pExports = ShaderExports.data();
+			//Association.pSubobjectToAssociate = &(SubObjects[SubObjects.size() - 1]);
+			//SubObject.pDesc = &Association;
+			//SubObjects.push_back(SubObject);
 
-			// Payload size, shader config
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
-			D3D12_RAYTRACING_SHADER_CONFIG ShaderConfig = {};
-			ShaderConfig.MaxAttributeSizeInBytes = RtxPipelineDesc.MaxAttributeSizeInBytes;
-			ShaderConfig.MaxPayloadSizeInBytes = RtxPipelineDesc.MaxPayloadSizeInBytes;
-			SubObject.pDesc = &ShaderConfig;
-			SubObjects.push_back(SubObject);
+			//// Payload size, shader config
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
+			//D3D12_RAYTRACING_SHADER_CONFIG ShaderConfig = {};
+			//ShaderConfig.MaxAttributeSizeInBytes = RtxPipelineDesc.MaxAttributeSizeInBytes;
+			//ShaderConfig.MaxPayloadSizeInBytes = RtxPipelineDesc.MaxPayloadSizeInBytes;
+			//SubObject.pDesc = &ShaderConfig;
+			//SubObjects.push_back(SubObject);
 
-			// Pipeline config
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
-			D3D12_RAYTRACING_PIPELINE_CONFIG PipelineConfig = {};
-			PipelineConfig.MaxTraceRecursionDepth = RtxPipelineDesc.MaxTraceRecursionDepth;
-			SubObject.pDesc = &PipelineConfig;
-			SubObjects.push_back(SubObject);
+			//// Pipeline config
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;
+			//D3D12_RAYTRACING_PIPELINE_CONFIG PipelineConfig = {};
+			//PipelineConfig.MaxTraceRecursionDepth = RtxPipelineDesc.MaxTraceRecursionDepth;
+			//SubObject.pDesc = &PipelineConfig;
+			//SubObjects.push_back(SubObject);
 
-			// Global root signature
-			TI_TODO("Move Scene(t0) and SceneColor(u0) from Global RS to RayGen local RS");
-			SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
-			FRootSignatureDx12* GlobalRSDx12 = static_cast<FRootSignatureDx12*>(Shader->GetShaderBinding().get());
-			SubObject.pDesc = GlobalRSDx12->Signature.GetAddressOf();
-			SubObjects.push_back(SubObject);
+			//// Global root signature
+			//TI_TODO("Move Scene(t0) and SceneColor(u0) from Global RS to RayGen local RS");
+			//SubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
+			//FRootSignatureDx12* GlobalRSDx12 = static_cast<FRootSignatureDx12*>(Shader->GetShaderBinding().get());
+			//SubObject.pDesc = GlobalRSDx12->Signature.GetAddressOf();
+			//SubObjects.push_back(SubObject);
 
 			// Create the state
 			D3D12_STATE_OBJECT_DESC Desc;

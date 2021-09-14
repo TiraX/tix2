@@ -20,6 +20,34 @@ GlobalRootSignature MyGlobalRootSignature =
     "CBV(b0),"                              // Scene constants
 };
 
+LocalRootSignature MyLocalRootSignature =
+{
+    "RootConstants( num32BitConstants = 1, b1 )"           // Cube constants        
+};
+
+TriangleHitGroup MyHitGroup =
+{
+    "RayAnyHit",                     // AnyHit
+    "RayClosestHit",   // ClosestHit
+};
+
+SubobjectToExportsAssociation  MyLocalRootSignatureAssociation =
+{
+    "MyLocalRootSignature",  // subobject name
+    "MyHitGroup"             // export association 
+};
+
+RaytracingShaderConfig  MyShaderConfig =
+{
+    16, // max payload size
+    8   // max attribute size
+};
+
+RaytracingPipelineConfig MyPipelineConfig =
+{
+    1 // max trace recursion depth
+};
+
 cbuffer RayGenData : register(b0)
 {
     float4 CamPos;
