@@ -151,7 +151,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	UpdateCamInfo(Scene);
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	DrawSceneTiles(RHI, Scene);
+	//DrawSceneTiles(RHI, Scene);
 
 	vector3di TraceSize;
 	TraceSize.X = RHI->GetViewport().Width;
@@ -172,7 +172,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_RenderResult);
-	if (!true)
+	if (true)
 	{
 		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		FSRender.DrawFullScreenTexture(RHI, AB_RtxResult);
