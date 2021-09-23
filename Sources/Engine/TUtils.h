@@ -120,6 +120,7 @@ inline void FromUnicodeToUtf8(const int16* UnicodeBuffer, int32 UnicodeBufferSiz
 		OutUtf8Buffer = ti_new int8[outsize];
 		memcpy(OutUtf8Buffer, buffer, outsize);
 		ti_delete[] buffer;
+		return;
 	}
 
 	OutUtf8Buffer = (int8*)buffer;

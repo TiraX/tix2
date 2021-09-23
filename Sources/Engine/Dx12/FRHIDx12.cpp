@@ -1964,7 +1964,8 @@ namespace tix
 			wstr << L"|--------------------------------------------------------------------\n";
 		}
 		wstr << L"\n";
-		OutputDebugStringW(wstr.str().c_str());
+		TString s = FromWString(wstr.str());
+		_LOG(Log, "%s", s.c_str());
 	}
 #else
 	inline void PrintStateObjectDesc(const D3D12_STATE_OBJECT_DESC* desc) {}
