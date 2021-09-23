@@ -77,12 +77,14 @@ namespace tix
 	void FRHIDx12::InitRHI()
 	{
 		HRESULT Hr;
+
 #if defined(TIX_DEBUG)
 		// If the project is in a debug build, enable debugging via SDK Layers.
 		{
 			ComPtr<ID3D12Debug> DebugController;
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&DebugController))))
 			{
+				// Disable Debug layer for Nsights Graphics to profile shader and GPU trace.
 				DebugController->EnableDebugLayer();
 			}
 			else
@@ -109,7 +111,6 @@ namespace tix
 		// Create D3D12 Device
 		VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
 #endif
-
 		ComPtr<IDXGIAdapter1> Adapter;
 		GetHardwareAdapter(&Adapter);
 
