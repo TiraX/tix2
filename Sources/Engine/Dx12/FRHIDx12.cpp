@@ -104,12 +104,12 @@ namespace tix
 			else
 			{
 				// Failed to create debug factory, create a normal one
-				VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
+				VALIDATE_HRESULT(CreateDXGIFactory2(0, IID_PPV_ARGS(&DxgiFactory)));
 			}
 		}
 #else
 		// Create D3D12 Device
-		VALIDATE_HRESULT(CreateDXGIFactory1(IID_PPV_ARGS(&DxgiFactory)));
+		VALIDATE_HRESULT(CreateDXGIFactory2(0, IID_PPV_ARGS(&DxgiFactory)));
 #endif
 		ComPtr<IDXGIAdapter1> Adapter;
 		GetHardwareAdapter(&Adapter);
