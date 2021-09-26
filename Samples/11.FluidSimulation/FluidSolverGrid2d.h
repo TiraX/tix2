@@ -38,7 +38,8 @@ public:
 	FFluidSolverGrid2d();
 	virtual ~FFluidSolverGrid2d();
 
-	virtual void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender) override;
+	void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender);
+
 	virtual void Sim(FRHI* RHI, float Dt) override;
 	virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer) override;
 	virtual void UpdateMousePosition(const vector2di& InPosition) override;

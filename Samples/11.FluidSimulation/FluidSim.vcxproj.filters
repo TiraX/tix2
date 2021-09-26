@@ -159,6 +159,9 @@
     <ClCompile Include="SplatVelCS.cpp">
       <Filter>Source Files\Compute\Grid2d</Filter>
     </ClCompile>
+    <ClCompile Include="FluidSolverFlipCPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -244,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="SplatParam.h">
       <Filter>Source Files\Compute\Grid2d</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidSolverFlipCPU.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

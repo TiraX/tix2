@@ -177,16 +177,26 @@ namespace tix
 
 		static inline int32 Floor(float x)
 		{
-			if (x >= 0.f)
-				return (int32)x;
-			else
-			{
-				int32 r = (int32)x;
-				if (x == (float)r)
-					return r;
-				else
-					return r - 1;
-			}
+			return floor(x);
+			//if (x >= 0.f)
+			//	return (int32)x;
+			//else
+			//{
+			//	int32 r = (int32)x;
+			//	if (x == (float)r)
+			//		return r;
+			//	else
+			//		return r - 1;
+			//}
+		}
+
+		static inline vector3di Floor(const vector3df& x)
+		{
+			vector3di i;
+			i.X = Floor(x.X);
+			i.Y = Floor(x.Y);
+			i.Z = Floor(x.Z);
+			return i;
 		}
 
 		static inline int32 CountBitNum(uint32 value)

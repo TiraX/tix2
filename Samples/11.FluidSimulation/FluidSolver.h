@@ -21,8 +21,6 @@ public:
 		float InRestDenstiy);
 	void SetBoundaryBox(const aabbox3df& InCollisionBox);
 
-	virtual void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender) {};
-
 	void Update(FRHI* RHI, float Dt);
 	virtual void Sim(FRHI* RHI, float Dt) = 0;
 	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) {};

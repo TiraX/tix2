@@ -9,12 +9,14 @@
 #include "FluidSolverCPU.h"
 #include "FluidSolverGPU.h"
 #include "FluidSolverGrid2d.h"
+#include "FluidSolverFlipCPU.h"
 
 #define SOLVER_CPU (0)
 #define SOLVER_GPU (1)
 #define SOLVER_GRID2D (2)
+#define SOLVER_FLIPCPU (3)
 
-#define FLUID_SOLVER SOLVER_GRID2D
+#define FLUID_SOLVER SOLVER_FLIPCPU
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -79,12 +81,14 @@ void FFluidSimRenderer::InitInRenderThread()
 	Solver = ti_new FFluidSolverGPU;
 #elif FLUID_SOLVER == SOLVER_GRID2D
 	Solver = ti_new FFluidSolverGrid2d;
+#elif FLUID_SOLVER == SOLVER_FLIPCPU
+	Solver = ti_new FFluidSolverFlipCPU;
 #else
 	TI_ASSERT(0);
 #endif
 
 #if FLUID_SOLVER == SOLVER_GRID2D
-	Solver->CreateGrid(RHI, &FSRender);
+	((FFluidSolverGrid2d*)Solver)->CreateGrid(RHI, &FSRender);
 #else
 	Solver->CreateParticlesInBox(
 		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
@@ -103,6 +107,11 @@ void FFluidSimRenderer::InitInRenderThread()
 	TResourcePtr ParticleMaterialResource = ParticleMaterialAsset->GetResourcePtr();
 	TMaterialPtr ParticleMaterial = static_cast<TMaterial*>(ParticleMaterialResource.get());
 	PL_Fluid = ParticleMaterial->PipelineResource;
+#endif
+
+#if FLUID_SOLVER == SOLVER_FLIPCPU
+	vector3di Dimension = vector3di(8, 3, 6) * 5;
+	((FFluidSolverFlipCPU*)Solver)->CreateGrid(Dimension);
 #endif
 }
 
