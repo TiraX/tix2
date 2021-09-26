@@ -5,15 +5,15 @@
 
 #pragma once
 #include "FluidSolver.h"
+#include "FluidSolverPbf.h"
 
-class FFluidSolverCPU : public FFluidSolver
+class FFluidSolverPbfCPU : public FFluidSolverPbf
 {
 public:
-	FFluidSolverCPU();
-	virtual ~FFluidSolverCPU();
+	FFluidSolverPbfCPU();
+	virtual ~FFluidSolverPbfCPU();
 
 	virtual void Sim(FRHI* RHI, float Dt) override;
-	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) override;
 
 	const TVector<vector3df>& GetSimulatedPositions()
 	{

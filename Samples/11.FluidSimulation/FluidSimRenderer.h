@@ -6,6 +6,8 @@
 #pragma once
 
 class FFluidSolver;
+class FParticleRenderer;
+
 class FFluidSimRenderer : public FDefaultRenderer
 {
 public:
@@ -29,6 +31,7 @@ public:
 private:
 
 private:
+	FParticleRenderer* ParticleRenderer;
 	aabbox3df FluidBoundary;
 	FMeshBufferPtr MB_Fluid;
 	FPipelinePtr PL_Fluid;

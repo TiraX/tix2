@@ -4,36 +4,36 @@
 */
 
 #include "stdafx.h"
-#include "FluidSolverCPU.h"
+#include "FluidSolverPbfCPU.h"
 #include "FluidSimRenderer.h"
 
 #define RUN_PARALLEL (1)
 
-FFluidSolverCPU::FFluidSolverCPU()
+FFluidSolverPbfCPU::FFluidSolverPbfCPU()
 {
 }
 
-FFluidSolverCPU::~FFluidSolverCPU()
+FFluidSolverPbfCPU::~FFluidSolverPbfCPU()
 {
 }
 
-void FFluidSolverCPU::UpdateParamBuffers(FRHI* RHI)
+void FFluidSolverPbfCPU::UpdateParamBuffers(FRHI* RHI)
 {
 }
 
-void FFluidSolverCPU::UpdateResourceBuffers(FRHI * RHI)
+void FFluidSolverPbfCPU::UpdateResourceBuffers(FRHI * RHI)
 {
+	const uint32 TotalParticles = Particles.GetTotalParticles();
 	/** Particles with Position and Velocity */
 	if ((Flag & DirtyParticles) != 0)
 	{
-		TI_ASSERT(ParticlePositions.size() == TotalParticles);
-		UB_ParticlePositions = ParticlePositions;
+		UB_ParticlePositions = Particles.GetParticlePositions();
 	}
-	if (UB_ParticleVelocities.size() != TotalParticles)
+	if (UB_ParticleVelocities.size() != Particles.GetTotalParticles())
 	{
-		UB_ParticleVelocities.resize(TotalParticles);
-		UB_SortedPositions.resize(TotalParticles);
-		UB_SortedVelocities.resize(TotalParticles);
+		UB_ParticleVelocities.resize(Particles.GetTotalParticles());
+		UB_SortedPositions.resize(Particles.GetTotalParticles());
+		UB_SortedVelocities.resize(Particles.GetTotalParticles());
 	}
 
 	// Cells
@@ -45,19 +45,19 @@ void FFluidSolverCPU::UpdateResourceBuffers(FRHI * RHI)
 	}
 
 	// Particles
-	if (UB_PositionOld.size() != TotalParticles)
+	if (UB_PositionOld.size() != Particles.GetTotalParticles())
 	{
-		UB_PositionOld.resize(TotalParticles);
-		UB_NeighborNum.resize(TotalParticles);
-		UB_NeighborParticles.resize(TotalParticles * MaxNeighbors);
-		UB_Densities.resize(TotalParticles);
-		UB_Lambdas.resize(TotalParticles);
-		UB_DeltaPositions.resize(TotalParticles);
+		UB_PositionOld.resize(Particles.GetTotalParticles());
+		UB_NeighborNum.resize(Particles.GetTotalParticles());
+		UB_NeighborParticles.resize(Particles.GetTotalParticles() * MaxNeighbors);
+		UB_Densities.resize(Particles.GetTotalParticles());
+		UB_Lambdas.resize(Particles.GetTotalParticles());
+		UB_DeltaPositions.resize(Particles.GetTotalParticles());
 	}
 }
 
 #define BRUTE_FORCE_NB_SEARCH (0)
-void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
+void FFluidSolverPbfCPU::Sim(FRHI * RHI, float Dt)
 {
 	// Update uniform buffers
 	static int32 CPUFrame = 0;
@@ -114,25 +114,25 @@ void FFluidSolverCPU::Sim(FRHI * RHI, float Dt)
 	}
 }
 
-void FFluidSolverCPU::RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline)
-{
-	FUniformBufferPtr TempPositions = RHI->CreateUniformBuffer(sizeof(vector3df), GetTotalParticles(), UB_FLAG_INTERMEDIATE);
-	TempPositions->SetResourceName("TempPositions");
-	RHI->UpdateHardwareResourceUB(TempPositions, GetSimulatedPositions().data());
+//void FFluidSolverPbfCPU::RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline)
+//{
+//	FUniformBufferPtr TempPositions = RHI->CreateUniformBuffer(sizeof(vector3df), GetTotalParticles(), UB_FLAG_INTERMEDIATE);
+//	TempPositions->SetResourceName("TempPositions");
+//	RHI->UpdateHardwareResourceUB(TempPositions, GetSimulatedPositions().data());
+//
+//	// Copy simulation result to Mesh Buffer
+//	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_COPY_DEST, true);
+//	RHI->CopyBufferRegion(Mesh, 0, TempPositions, 0, GetTotalParticles() * sizeof(vector3df));
+//
+//	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_MESHBUFFER, true);
+//	RHI->SetGraphicsPipeline(Pipeline);
+//	RHI->SetMeshBuffer(Mesh, nullptr);
+//	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
+//
+//	RHI->DrawPrimitiveInstanced(Mesh, 1, 0);
+//}
 
-	// Copy simulation result to Mesh Buffer
-	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_COPY_DEST, true);
-	RHI->CopyBufferRegion(Mesh, 0, TempPositions, 0, GetTotalParticles() * sizeof(vector3df));
-
-	RHI->SetResourceStateMB(Mesh, RESOURCE_STATE_MESHBUFFER, true);
-	RHI->SetGraphicsPipeline(Pipeline);
-	RHI->SetMeshBuffer(Mesh, nullptr);
-	RHI->SetUniformBuffer(ESS_VERTEX_SHADER, 0, Scene->GetViewUniformBuffer()->UniformBuffer);
-
-	RHI->DrawPrimitiveInstanced(Mesh, 1, 0);
-}
-
-void FFluidSolverCPU::CellInit()
+void FFluidSolverPbfCPU::CellInit()
 {
 	memset(UB_NumInCell.data(), 0, UB_NumInCell.size() * sizeof(uint32));
 	memset(UB_CellParticleOffsets.data(), 0, UB_CellParticleOffsets.size() * sizeof(uint32));
@@ -151,10 +151,10 @@ inline vector3di GetCellIndex3(const vector3df& Pos, const vector3df& BMin, floa
 
 	return CellIndex3;
 }
-void FFluidSolverCPU::P2Cell()
+void FFluidSolverPbfCPU::P2Cell()
 {
 	const float CellSizeInv = 1.f / CellSize;
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vector3df Pos = UB_ParticlePositions[p];
 
@@ -170,7 +170,7 @@ void FFluidSolverCPU::P2Cell()
 		}
 	}
 }
-void FFluidSolverCPU::CalcOffset()
+void FFluidSolverPbfCPU::CalcOffset()
 {
 	int32 TotalCells = Dim.X * Dim.Y * Dim.Z;
 	UB_CellParticleOffsets[0] = 0;
@@ -179,7 +179,7 @@ void FFluidSolverCPU::CalcOffset()
 		UB_CellParticleOffsets[i] = UB_CellParticleOffsets[i - 1] + UB_NumInCell[i - 1];
 	}
 }
-void FFluidSolverCPU::Sort()
+void FFluidSolverPbfCPU::Sort()
 {
 	int32 TotalCells = Dim.X * Dim.Y * Dim.Z;
 #if RUN_PARALLEL
@@ -240,7 +240,7 @@ inline void BoundaryCheck(vector3df& Pos, vector3df& Vel, const vector3df& BMin,
 		Vel.Z = TMath::Min(Vel.Z, 0.f);
 	}
 }
-void FFluidSolverCPU::ApplyGravity()
+void FFluidSolverPbfCPU::ApplyGravity()
 {
 	const vector3df Gravity = vector3df(0.f, 0.f, -9.8f);
 	const float Dt = (TimeStep / SubStep);
@@ -249,7 +249,7 @@ void FFluidSolverCPU::ApplyGravity()
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vector3df Pos = UB_SortedPositions[p];
 		vector3df Vel = UB_SortedVelocities[p];
@@ -266,9 +266,9 @@ void FFluidSolverCPU::ApplyGravity()
 	}
 
 }
-void FFluidSolverCPU::NeighborSearch()
+void FFluidSolverPbfCPU::NeighborSearch()
 {
-	const float h = ParticleSeperation;
+	const float h = Particles.GetParticleSeperation();
 	const float h2 = h * h;
 	const float h3_inv = 1.f / (h * h * h);
 
@@ -309,7 +309,7 @@ void FFluidSolverCPU::NeighborSearch()
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vector3df Pos = UB_SortedPositions[p];
 
@@ -350,21 +350,21 @@ void FFluidSolverCPU::NeighborSearch()
 	}
 }
 
-void FFluidSolverCPU::NeighborSearchBF()
+void FFluidSolverPbfCPU::NeighborSearchBF()
 {
-	const float h = ParticleSeperation;
+	const float h = Particles.GetParticleSeperation();
 	const float h2 = h * h;
 	const float h3_inv = 1.f / (h * h * h);
 
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vector3df Pos = UB_SortedPositions[p];
 
 		int32 NumNb = 0;
-		for (int32 i = 0; i < TotalParticles; i++)
+		for (int32 i = 0; i < Particles.GetTotalParticles(); i++)
 		{
 			if (i == p)
 				continue;
@@ -405,16 +405,16 @@ inline vector3df spiky_gradient(const vector3df& Dir, float s, float h, float h3
 	}
 	return result;
 }
-void FFluidSolverCPU::Lambda()
+void FFluidSolverPbfCPU::Lambda()
 {
-	const float h = ParticleSeperation;
+	const float h = Particles.GetParticleSeperation();
 	const float h2 = h * h;
 	const float h3_inv = 1.f / (h * h * h);
-	const float m_by_rho = ParticleMass / RestDenstiy;
+	const float m_by_rho = Particles.GetParticleMass() / RestDenstiy;
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		const int32 Index = p;
 		const uint32 NumNb = UB_NeighborNum[Index];
@@ -444,16 +444,16 @@ void FFluidSolverCPU::Lambda()
 		UB_Lambdas[Index] = (-DensityContraint) / (SumGradSq + Epsilon);
 	}
 }
-void FFluidSolverCPU::DeltaPos()
+void FFluidSolverPbfCPU::DeltaPos()
 {
-	const float h = ParticleSeperation;
+	const float h = Particles.GetParticleSeperation();
 	const float h2 = h * h;
 	const float h3_inv = 1.f / (h * h * h);
-	const float m_by_rho = ParticleMass / RestDenstiy;
+	const float m_by_rho = Particles.GetParticleMass() / RestDenstiy;
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		const int32 Index = p;
 		const uint32 NumNb = UB_NeighborNum[Index];
@@ -482,23 +482,23 @@ void FFluidSolverCPU::DeltaPos()
 	}
 
 }
-void FFluidSolverCPU::ApplyDeltaPos()
+void FFluidSolverPbfCPU::ApplyDeltaPos()
 {
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		UB_SortedPositions[p] += UB_DeltaPositions[p];
 	}
 }
-void FFluidSolverCPU::UpdateVelocity()
+void FFluidSolverPbfCPU::UpdateVelocity()
 {
 	const float DtInv = 1.f / (TimeStep / SubStep);
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vector3df Pos = UB_SortedPositions[p];
 		vector3df Vel = UB_SortedVelocities[p];
@@ -514,16 +514,16 @@ void FFluidSolverCPU::UpdateVelocity()
 	}
 }
 
-void FFluidSolverCPU::XSPHViscosity()
+void FFluidSolverPbfCPU::XSPHViscosity()
 {
-	const float h = ParticleSeperation;
+	const float h = Particles.GetParticleSeperation();
 	const float h2 = h * h;
 	const float h3_inv = 1.f / (h * h * h);
 
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		const int32 Index = p;
 		const uint32 NumNb = UB_NeighborNum[Index];
@@ -549,7 +549,7 @@ void FFluidSolverCPU::XSPHViscosity()
 
 			vector3df v0 = Vel;
 
-			Vel -= (Vel - NbVel) * poly6_value(s, h, h2, h3_inv) * Viscosity * ParticleMass / NbDensity;
+			Vel -= (Vel - NbVel) * poly6_value(s, h, h2, h3_inv) * Viscosity * Particles.GetParticleMass() / NbDensity;
 			TI_ASSERT(!TMath::IsInF(Vel.X) && !TMath::IsInF(Vel.Y) && !TMath::IsInF(Vel.Z));
 			TI_ASSERT(!TMath::IsNaN(Vel.X) && !TMath::IsNaN(Vel.Y) && !TMath::IsNaN(Vel.Z));
 		}
@@ -558,15 +558,15 @@ void FFluidSolverCPU::XSPHViscosity()
 	}
 }
 
-void FFluidSolverCPU::OutputDebugInfo()
+void FFluidSolverPbfCPU::OutputDebugInfo()
 {
 	TVector<float> vl, dpl;
-	vl.resize(TotalParticles);
-	dpl.resize(TotalParticles);
+	vl.resize(Particles.GetTotalParticles());
+	dpl.resize(Particles.GetTotalParticles());
 #if RUN_PARALLEL
 #pragma omp parallel for
 #endif
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		vl[p] = UB_SortedVelocities[p].getLength();
 		dpl[p] = UB_DeltaPositions[p].getLength();
@@ -576,7 +576,7 @@ void FFluidSolverCPU::OutputDebugInfo()
 	float dplmax = 0.f;
 	int32 max_index = -1;
 	int32 max_index1 = -1;
-	for (int32 p = 0; p < TotalParticles; p++)
+	for (int32 p = 0; p < Particles.GetTotalParticles(); p++)
 	{
 		if (vl[p] > vlmax)
 		{

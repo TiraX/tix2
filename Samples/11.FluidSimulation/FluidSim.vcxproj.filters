@@ -90,9 +90,6 @@
     <ClCompile Include="FluidSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FluidSolverCPU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FluidSolverGPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -162,6 +159,21 @@
     <ClCompile Include="FluidSolverFlipCPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FluidSolverPbfCPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FluidParticle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FluidGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FluidSolverPbf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -174,9 +186,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="FluidSolver.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FluidSolverCPU.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="FluidSolverGPU.h">
@@ -249,6 +258,21 @@
       <Filter>Source Files\Compute\Grid2d</Filter>
     </ClInclude>
     <ClInclude Include="FluidSolverFlipCPU.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidSolverPbfCPU.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidParticle.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidGrid.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FluidSolverPbf.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

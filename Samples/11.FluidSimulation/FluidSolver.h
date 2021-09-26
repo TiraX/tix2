@@ -5,6 +5,9 @@
 
 #pragma once
 
+class FFluidParticle;
+class FFluidGrid;
+
 class FFluidSolver
 {
 public:
@@ -14,23 +17,25 @@ public:
 	FFluidSolver();
 	virtual ~FFluidSolver();
 
-	void CreateParticlesInBox(
-		const aabbox3df& InParticleBox,
-		float InParticleSeperation,
-		float InParticleMass,
-		float InRestDenstiy);
+	virtual int32 GetNumParticles() { return 0; }
+
+	//void CreateParticlesInBox(
+	//	const aabbox3df& InParticleBox,
+	//	float InParticleSeperation,
+	//	float InParticleMass,
+	//	float InRestDenstiy);
 	void SetBoundaryBox(const aabbox3df& InCollisionBox);
 
 	void Update(FRHI* RHI, float Dt);
 	virtual void Sim(FRHI* RHI, float Dt) = 0;
-	virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) {};
-	virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer) {};
-	virtual void UpdateMousePosition(const vector2di& InPosition) {};
+	//virtual void RenderParticles(FRHI* RHI, FScene* Scene, FMeshBufferPtr Mesh, FPipelinePtr Pipeline) {};
+	//virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer) {};
+	//virtual void UpdateMousePosition(const vector2di& InPosition) {};
 
-	int32 GetTotalParticles() const
-	{
-		return TotalParticles;
-	}
+	//int32 GetTotalParticles() const
+	//{
+	//	return TotalParticles;
+	//}
 
 protected:
 
@@ -42,22 +47,22 @@ protected:
 	};
 
 	uint32 Flag;
-	int32 TotalParticles;
-	float ParticleMass;
-	float ParticleSeperation;
-	float RestDenstiy;
-	float Viscosity;
+	//int32 TotalParticles;
+	//float ParticleMass;
+	//float ParticleSeperation;
+	//float RestDenstiy;
+	//float Viscosity;
+	//float Epsilon;
 	
 	float TimeStep;
 	int32 SubStep;
-	float Epsilon;
 
 	int32 Iterations;
 
-	TVector<vector3df> ParticlePositions;
+	//TVector<vector3df> ParticlePositions;
 
 	aabbox3df BoundaryBox;
-	int32 TotalCells;
-	float CellSize;
-	vector3di Dim;
+	//int32 TotalCells;
+	//float CellSize;
+	//vector3di Dim;
 };

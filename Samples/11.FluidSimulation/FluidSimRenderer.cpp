@@ -5,18 +5,21 @@
 
 #include "stdafx.h"
 #include "FluidSimRenderer.h"
+#include "FluidParticle.h"
+#include "FluidGrid.h"
 #include "FluidSolver.h"
-#include "FluidSolverCPU.h"
+#include "FluidSolverPbfCPU.h"
 #include "FluidSolverGPU.h"
 #include "FluidSolverGrid2d.h"
 #include "FluidSolverFlipCPU.h"
+#include "ParticleRenderer.h"
 
-#define SOLVER_CPU (0)
-#define SOLVER_GPU (1)
+#define SOLVER_PBF_CPU (0)
+#define SOLVER_PBF_GPU (1)
 #define SOLVER_GRID2D (2)
 #define SOLVER_FLIPCPU (3)
 
-#define FLUID_SOLVER SOLVER_FLIPCPU
+#define FLUID_SOLVER SOLVER_PBF_CPU
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -28,7 +31,8 @@ FFluidSimRenderer* FFluidSimRenderer::Get()
 }
 
 FFluidSimRenderer::FFluidSimRenderer()
-	: Solver(nullptr)
+	: ParticleRenderer(nullptr)
+	, Solver(nullptr)
 {
 	Instance = this;
 }
@@ -38,6 +42,8 @@ FFluidSimRenderer::~FFluidSimRenderer()
 	MB_Fluid = nullptr;
 	PL_Fluid = nullptr;
 	ti_delete Solver;
+
+	ti_delete ParticleRenderer;
 
 	Instance = nullptr;
 }
@@ -75,9 +81,9 @@ void FFluidSimRenderer::InitInRenderThread()
 	}
 
 	// Init Simulation
-#if FLUID_SOLVER == SOLVER_CPU
-	Solver = ti_new FFluidSolverCPU;
-#elif FLUID_SOLVER == SOLVER_GPU
+#if FLUID_SOLVER == SOLVER_PBF_CPU
+	FFluidSolverPbfCPU* SolverLocal = ti_new FFluidSolverPbfCPU;
+#elif FLUID_SOLVER == SOLVER_PBF_GPU
 	Solver = ti_new FFluidSolverGPU;
 #elif FLUID_SOLVER == SOLVER_GRID2D
 	Solver = ti_new FFluidSolverGrid2d;
@@ -86,27 +92,23 @@ void FFluidSimRenderer::InitInRenderThread()
 #else
 	TI_ASSERT(0);
 #endif
+	Solver = SolverLocal;
 
-#if FLUID_SOLVER == SOLVER_GRID2D
-	((FFluidSolverGrid2d*)Solver)->CreateGrid(RHI, &FSRender);
+#if FLUID_SOLVER == SOLVER_GRID2D	
+	SolverLocal->CreateGrid(RHI, &FSRender);
 #else
-	Solver->CreateParticlesInBox(
-		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
-		0.1f, 1.f, 1000.f
-	);
+	const float ParticleSeperation = 0.1f;
+	const float ParticleMass = 1.f;
 	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
 	Solver->SetBoundaryBox(FluidBoundary);
-	// Create render resources
-	MB_Fluid = RHI->CreateEmptyMeshBuffer(EPT_POINTLIST, EVSSEG_POSITION, Solver->GetTotalParticles(), EIT_16BIT, 0, FluidBoundary);
-	MB_Fluid->SetResourceName("MB_Fluid");
-	RHI->UpdateHardwareResourceMesh(MB_Fluid, Solver->GetTotalParticles() * sizeof(vector3df), sizeof(vector3df), 0, EIT_32BIT, "MB_Fluid");
+	SolverLocal->CreateParticles(
+		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
+		ParticleSeperation, ParticleMass
+	);
+	SolverLocal->CreateNeighborSearchGrid(FluidBoundary.getExtent(), ParticleSeperation);
 
-	// Load default pipeline
-	const TString ParticleMaterialName = "M_Particle.tasset";
-	TAssetPtr ParticleMaterialAsset = TAssetLibrary::Get()->LoadAsset(ParticleMaterialName);
-	TResourcePtr ParticleMaterialResource = ParticleMaterialAsset->GetResourcePtr();
-	TMaterialPtr ParticleMaterial = static_cast<TMaterial*>(ParticleMaterialResource.get());
-	PL_Fluid = ParticleMaterial->PipelineResource;
+	ParticleRenderer = ti_new FParticleRenderer();
+	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
 #endif
 
 #if FLUID_SOLVER == SOLVER_FLIPCPU
@@ -124,7 +126,7 @@ void FFluidSimRenderer::MoveBoundary(const vector3df& Offset)
 static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	Solver->UpdateMousePosition(MousePosition);
+	//Solver->UpdateMousePosition(MousePosition);
 #if USE_SOLVER_GPU
 	//if (!PauseUpdate)
 	//{
@@ -142,9 +144,13 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
 
-	Solver->RenderParticles(RHI, Scene, MB_Fluid, PL_Fluid);
+#if FLUID_SOLVER == SOLVER_PBF_CPU
+	FFluidSolverPbfCPU* SolverPbfCPU = (FFluidSolverPbfCPU*)Solver;
+	ParticleRenderer->UploadParticles(RHI, SolverPbfCPU->GetSimulatedPositions());
+#endif
+	ParticleRenderer->DrawParticles(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
-	Solver->RenderGrid(RHI, Scene, &FSRender);
+	//Solver->RenderGrid(RHI, Scene, &FSRender);
 }
