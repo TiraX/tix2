@@ -21,6 +21,15 @@ inline vector3d<T> ClampVector3d(const vector3d<T>& V, const vector3d<T>& Min, c
 	return Result;
 }
 
+inline vector3di Floor(const vector3df& x)
+{
+	vector3di i;
+	i.X = TMath::Floor(x.X);
+	i.Y = TMath::Floor(x.Y);
+	i.Z = TMath::Floor(x.Z);
+	return i;
+}
+
 FFluidSolverFlipCPU::FFluidSolverFlipCPU()
 {
 	SubStep = 1;
@@ -70,7 +79,7 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 
 		vector3df CellPos = (P - Origin) * InvCellSize;
 		vector3df CellPosMin = CellPos - vector3df(0.5f, 0.5f, 0.5f);
-		vector3di CellIndexMin = TMath::Floor(CellPosMin);
+		vector3di CellIndexMin = Floor(CellPosMin);
 		vector3df CellPosMinFrac = CellPosMin - vector3df(CellIndexMin.X, CellIndexMin.Y, CellIndexMin.Z);
 
 		Cells[0] = CellIndexMin + vector3di(0, 0, 0);
@@ -113,7 +122,8 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 			{
 				Vel.Cell(Cells[i]) += 0;
 			}
-			we need speed here.
+			//we need speed here.'
+			TI_ASSERT(0);
 		}
 
 	}
