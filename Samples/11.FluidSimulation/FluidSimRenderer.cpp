@@ -97,13 +97,15 @@ void FFluidSimRenderer::InitInRenderThread()
 	const float ParticleSeperation = 0.1f;
 	const float ParticleMass = 1.f;
 	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
-	aabbox3df ParticleBox(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f);
+	const aabbox3df ParticleBox(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f);
+	const vector3di GridDimension = vector3di(8, 3, 6) * 5;
 
 #if FLUID_SOLVER == SOLVER_GRID2D
 	SolverLocal->CreateGrid(RHI, &FSRender);
 #elif FLUID_SOLVER == SOLVER_FLIP_CPU
 	Solver->SetBoundaryBox(FluidBoundary);
-	//SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
+	SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
+	SolverLocal->CreateGrid(GridDimension);
 	ParticleRenderer = ti_new FParticleRenderer();
 	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
 #else
@@ -114,11 +116,6 @@ void FFluidSimRenderer::InitInRenderThread()
 
 	ParticleRenderer = ti_new FParticleRenderer();
 	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
-#endif
-
-#if FLUID_SOLVER == SOLVER_FLIP_CPU
-	vector3di Dimension = vector3di(8, 3, 6) * 5;
-	((FFluidSolverFlipCPU*)Solver)->CreateGrid(Dimension);
 #endif
 }
 
@@ -147,6 +144,9 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 #elif FLUID_SOLVER == SOLVER_PBF_GPU
 	FFluidSolverPbfGPU* SolverPbfGPU = (FFluidSolverPbfGPU*)Solver;
 	ParticleRenderer->UploadParticles(RHI, SolverPbfGPU->GetSimulatedPositions());
+#elif FLUID_SOLVER == SOLVER_FLIP_CPU
+	FFluidSolverFlipCPU* SolverFlipCPU = (FFluidSolverFlipCPU*)Solver;
+	ParticleRenderer->UploadParticles(RHI, SolverFlipCPU->GetSimulatedPositions());
 #endif
 	if (ParticleRenderer != nullptr)
 		ParticleRenderer->DrawParticles(RHI, Scene);

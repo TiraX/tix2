@@ -55,4 +55,7 @@ void FFluidParticle::CreateParticlesInBox(
 		}
 	}
 	TotalParticles = (int32)ParticlePositions.size();
+
+	// Create Velocity and init to Zero
+	ParticleVelocities.resize(TotalParticles);
 }

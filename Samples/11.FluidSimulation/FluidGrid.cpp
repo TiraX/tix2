@@ -5,12 +5,3 @@
 
 #include "stdafx.h"
 #include "FluidGrid.h"
-
-
-FFluidGrid2D::FFluidGrid2D()
-{
-}
-
-FFluidGrid2D::~FFluidGrid2D()
-{
-}

@@ -31,12 +31,23 @@ inline vector3di Floor(const vector3df& x)
 }
 
 FFluidSolverFlipCPU::FFluidSolverFlipCPU()
+	: PressureIteration(4)
 {
 	SubStep = 1;
 }
 
 FFluidSolverFlipCPU::~FFluidSolverFlipCPU()
 {
+}
+
+void FFluidSolverFlipCPU::CreateParticles(
+	const aabbox3df& InParticleBox,
+	float InParticleSeperation,
+	float InParticleMass)
+{
+	Particles.CreateParticlesInBox(InParticleBox, InParticleSeperation, InParticleMass);
+	Flag |= DirtyParticles;
+	Flag |= DirtyParams;
 }
 
 void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
@@ -50,6 +61,7 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	Dimension = Dim;
 	Vel.Create(Dim);
 	Weight.Create(Dim);
+	Divergence.Create(Dim);
 	Pressure.Create(Dim);
 }
 
@@ -113,7 +125,7 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 		Weights[6] = (1.f - CellPosMinFrac.X) * CellPosMinFrac.Y * CellPosMinFrac.Z;
 		Weights[7] = CellPosMinFrac.X * CellPosMinFrac.Y * CellPosMinFrac.Z;
 
-		// For debug
+		// For debug, all weights' sum should be 1
 		float W = Weights[0] + Weights[1] + Weights[2] + Weights[3] + Weights[4] + Weights[5] + Weights[6] + Weights[7];
 
 #if DO_PARALLEL
@@ -122,18 +134,39 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 		{
 			for (int32 i = 0; i < 8; i++)
 			{
-				Vel.Cell(Cells[i]) += 0;
+				Vel.Cell(Cells[i]) += V * Weights[i];
+				Weight.Cell(Cells[i]) += Weights[i];
 			}
-			//we need speed here.'
-			TI_ASSERT(0);
 		}
+	}
 
+
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		if (Weight.Cell(Index) > 0.f)
+			Vel.Cell(Index) = Vel.Cell(Index) / Weight.Cell(Index);
 	}
 }
 
 void FFluidSolverFlipCPU::CalcExternalForces(float Dt)
 {
+	const vector3df Gravity = vector3df(0.f, 0.f, -9.8f);
+	const vector3df DV = Gravity * Dt;
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		if (Weight.Cell(Index) > 0.f)
+		{
+			Vel.Cell(Index) = Vel.Cell(Index) + DV;
+		}
+	}
 
+	BoundaryCheck();
 }
 
 void FFluidSolverFlipCPU::CalcVisicosity(float Dt)
@@ -141,9 +174,99 @@ void FFluidSolverFlipCPU::CalcVisicosity(float Dt)
 
 }
 
+void FFluidSolverFlipCPU::CalcDivergence()
+{
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		vector3di GridIndex = Vel.ArrayIndexToGridIndex(Index);
+
+		const vector3df& V = Vel.Cell(Index);
+		const vector3df& VLeft = Vel.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+		const vector3df& VRight = Vel.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+		const vector3df& VFront = Vel.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+		const vector3df& VBack = Vel.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+		const vector3df& VUp = Vel.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+		const vector3df& VDown = Vel.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+
+		float L = (GridIndex.X == 0) ? -V.X : VLeft.X;
+		float R = (GridIndex.X == (Dimension.X - 1)) ? -V.X : VRight.X;
+		float F = (GridIndex.Y == 0) ? -V.Y : VFront.Y;
+		float B = (GridIndex.Y == (Dimension.Y - 1)) ? -V.Y : VBack.Y;
+		float U = (GridIndex.Z == 0) ? -V.Z : VUp.Z;
+		float D = (GridIndex.Z == (Dimension.Z - 1)) ? -V.Z : VDown.Z;
+
+		float Div = ((R - L) * InvCellSize.X + (B - F) * InvCellSize.Y + (D - U) * InvCellSize.Z) * 0.5f;
+		Divergence.Cell(Index) = Div;
+	}
+}
+
 void FFluidSolverFlipCPU::CalcPressure(float Dt)
 {
+	CalcDivergence();
 
+	Pressure.Clear();
+	vector3df InvCellSizeSQ = InvCellSize * InvCellSize;
+	for (int32 i = 0; i < PressureIteration; i++)
+	{
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+		for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+		{
+			vector3di GridIndex = Vel.ArrayIndexToGridIndex(Index);
+
+			float PL = Pressure.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+			float PR = Pressure.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+			float PF = Pressure.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+			float PB = Pressure.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+			float PU = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+			float PD = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+
+			float Div = Divergence.Cell(Index);
+
+			float P = 
+				(
+					(PL + PR) * InvCellSizeSQ.X + 
+					(PF + PB) * InvCellSizeSQ.Y + 
+					(PU + PD) * InvCellSizeSQ.Z - Div
+				) / (2.f * (InvCellSizeSQ.X + InvCellSizeSQ.Y + InvCellSizeSQ.Z) );
+
+			Pressure.Cell(Index) = P;
+		}
+	}
+	GradientSubstract();
+}
+
+void FFluidSolverFlipCPU::GradientSubstract()
+{
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Pressure.GetTotalCells(); Index++)
+	{
+		vector3di GridIndex = Pressure.ArrayIndexToGridIndex(Index);
+
+		float PL = Pressure.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+		float PR = Pressure.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+		float PF = Pressure.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+		float PB = Pressure.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+		float PU = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+		float PD = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+
+		const vector3df& V = Vel.Cell(Index);
+
+		vector3df Gradient;
+		Gradient.X = (PR - PL) * InvCellSize.X * 0.5f;
+		Gradient.Y = (PB - PF) * InvCellSize.Y * 0.5f;
+		Gradient.Z = (PD - PU) * InvCellSize.Z * 0.5f;
+		
+		vector3df NewV = V - Gradient;
+
+		Vel.Cell(Index) = NewV;
+	}
 }
 
 void FFluidSolverFlipCPU::GridsToParticle()
@@ -154,4 +277,36 @@ void FFluidSolverFlipCPU::GridsToParticle()
 void FFluidSolverFlipCPU::MoveParticles()
 {
 
+}
+
+void FFluidSolverFlipCPU::BoundaryCheck()
+{
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		if (Weight.Cell(Index) > 0.f)
+		{
+			uint32 BoundaryInfo = Vel.GetBoudaryTypeInfo(Index);
+			if (BoundaryInfo != Boundary_None)
+			{
+				vector3df& V = Vel.Cell(Index);
+				if ((BoundaryInfo & Boundary_Left) != 0 && V.X < 0.f)
+					V.X = 0.f;
+				else if ((BoundaryInfo & Boundary_Right) != 0 && V.X > 0.f)
+					V.X = 0.f;
+
+				if ((BoundaryInfo & Boundary_Front) != 0 && V.Y < 0.f)
+					V.Y = 0.f;
+				else if ((BoundaryInfo & Boundary_Back) != 0 && V.Y > 0.f)
+					V.Y = 0.f;
+					
+				if ((BoundaryInfo & Boundary_Up) != 0 && V.Z < 0.f)
+					V.Z = 0.f;
+				else if ((BoundaryInfo & Boundary_Bottom) != 0 && V.Z > 0.f)
+					V.Z = 0.f;
+			}
+		}
+	}
 }
