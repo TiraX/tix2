@@ -39,4 +39,5 @@ void FFluidSolverPbf::CreateParticles(
 {
 	Particles.CreateParticlesInBox(InParticleBox, InParticleSeperation, InParticleMass);
 	Flag |= DirtyParticles;
+	Flag |= DirtyParams;
 }

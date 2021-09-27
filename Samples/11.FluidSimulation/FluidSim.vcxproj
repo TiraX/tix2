@@ -118,10 +118,10 @@
     <ClCompile Include="FluidSimSample.cpp" />
     <ClCompile Include="FluidSimTicker.cpp" />
     <ClCompile Include="FluidSolverFlipCPU.cpp" />
-    <ClCompile Include="FluidSolverGPU.cpp" />
     <ClCompile Include="FluidSolverGrid2d.cpp" />
     <ClCompile Include="FluidSolverPbf.cpp" />
     <ClCompile Include="FluidSolverPbfCPU.cpp" />
+    <ClCompile Include="FluidSolverPbfGPU.cpp" />
     <ClCompile Include="GradientSubstractCS.cpp" />
     <ClCompile Include="LambdaCS.cpp" />
     <ClCompile Include="NeighborSearchCS.cpp" />
@@ -155,10 +155,10 @@
     <ClInclude Include="FluidSimRenderer.h" />
     <ClInclude Include="FluidSimTicker.h" />
     <ClInclude Include="FluidSolverFlipCPU.h" />
-    <ClInclude Include="FluidSolverGPU.h" />
     <ClInclude Include="FluidSolverGrid2d.h" />
     <ClInclude Include="FluidSolverPbf.h" />
     <ClInclude Include="FluidSolverPbfCPU.h" />
+    <ClInclude Include="FluidSolverPbfGPU.h" />
     <ClInclude Include="GradientSubstractCS.h" />
     <ClInclude Include="LambdaCS.h" />
     <ClInclude Include="NeighborSearchCS.h" />

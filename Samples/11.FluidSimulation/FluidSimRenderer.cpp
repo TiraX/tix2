@@ -9,7 +9,7 @@
 #include "FluidGrid.h"
 #include "FluidSolver.h"
 #include "FluidSolverPbfCPU.h"
-#include "FluidSolverGPU.h"
+#include "FluidSolverPbfGPU.h"
 #include "FluidSolverGrid2d.h"
 #include "FluidSolverFlipCPU.h"
 #include "ParticleRenderer.h"
@@ -19,7 +19,7 @@
 #define SOLVER_GRID2D (2)
 #define SOLVER_FLIPCPU (3)
 
-#define FLUID_SOLVER SOLVER_PBF_CPU
+#define FLUID_SOLVER SOLVER_PBF_GPU
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -84,7 +84,7 @@ void FFluidSimRenderer::InitInRenderThread()
 #if FLUID_SOLVER == SOLVER_PBF_CPU
 	FFluidSolverPbfCPU* SolverLocal = ti_new FFluidSolverPbfCPU;
 #elif FLUID_SOLVER == SOLVER_PBF_GPU
-	Solver = ti_new FFluidSolverGPU;
+	FFluidSolverPbfGPU* SolverLocal = ti_new FFluidSolverPbfGPU;
 #elif FLUID_SOLVER == SOLVER_GRID2D
 	Solver = ti_new FFluidSolverGrid2d;
 #elif FLUID_SOLVER == SOLVER_FLIPCPU
@@ -147,6 +147,9 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 #if FLUID_SOLVER == SOLVER_PBF_CPU
 	FFluidSolverPbfCPU* SolverPbfCPU = (FFluidSolverPbfCPU*)Solver;
 	ParticleRenderer->UploadParticles(RHI, SolverPbfCPU->GetSimulatedPositions());
+#elif FLUID_SOLVER == SOLVER_PBF_GPU
+	FFluidSolverPbfGPU* SolverPbfGPU = (FFluidSolverPbfGPU*)Solver;
+	ParticleRenderer->UploadParticles(RHI, SolverPbfGPU->GetSimulatedPositions());
 #endif
 	ParticleRenderer->DrawParticles(RHI, Scene);
 

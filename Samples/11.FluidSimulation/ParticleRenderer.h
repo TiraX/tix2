@@ -16,6 +16,7 @@ public:
 
 	void CreateResources(FRHI* RHI, int32 NumParticles, const aabbox3df& BBox);
 	void UploadParticles(FRHI* RHI, const TVector<vector3df>& ParticlePositions);
+	void UploadParticles(FRHI* RHI, FUniformBufferPtr ParticlePositionBuffer);
 
 	void DrawParticles(FRHI* RHI, FScene* Scene);
 private:

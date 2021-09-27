@@ -42,6 +42,15 @@ void FParticleRenderer::UploadParticles(FRHI* RHI, const TVector<vector3df>& Par
 	RHI->CopyBufferRegion(MB_Fluid, 0, TempPositions, 0, (uint32)ParticlePositions.size() * sizeof(vector3df));
 }
 
+void FParticleRenderer::UploadParticles(FRHI* RHI, FUniformBufferPtr ParticlePositionBuffer)
+{
+	// Copy simulation result to Mesh Buffer
+	RHI->SetResourceStateUB(ParticlePositionBuffer, RESOURCE_STATE_COPY_SOURCE, false);
+	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_COPY_DEST, false);
+	RHI->FlushResourceStateChange();
+	RHI->CopyBufferRegion(MB_Fluid, 0, ParticlePositionBuffer, 0, ParticlePositionBuffer->GetElements() * sizeof(vector3df));
+}
+
 void FParticleRenderer::DrawParticles(FRHI* RHI, FScene* Scene)
 {
 	RHI->SetResourceStateMB(MB_Fluid, RESOURCE_STATE_MESHBUFFER, true);
