@@ -27,6 +27,21 @@ public:
 		return ParticlePositions;
 	}
 
+	const vector3df& GetParticlePosition(uint32 Index) const
+	{
+		return ParticlePositions[Index];
+	}
+
+	const TVector<vector3df>& GetParticleVelocities() const
+	{
+		return ParticleVelocities;
+	}
+
+	const vector3df& GetParticleVelocity(uint32 Index) const
+	{
+		return ParticleVelocities[Index];
+	}
+
 	float GetParticleMass() const
 	{
 		return ParticleMass;
@@ -42,4 +57,5 @@ private:
 	float ParticleSeperation;
 
 	TVector<vector3df> ParticlePositions;
+	TVector<vector3df> ParticleVelocities;
 };

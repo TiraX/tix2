@@ -17,9 +17,9 @@
 #define SOLVER_PBF_CPU (0)
 #define SOLVER_PBF_GPU (1)
 #define SOLVER_GRID2D (2)
-#define SOLVER_FLIPCPU (3)
+#define SOLVER_FLIP_CPU (3)
 
-#define FLUID_SOLVER SOLVER_GRID2D
+#define FLUID_SOLVER SOLVER_FLIP_CPU
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -87,31 +87,36 @@ void FFluidSimRenderer::InitInRenderThread()
 	FFluidSolverPbfGPU* SolverLocal = ti_new FFluidSolverPbfGPU;
 #elif FLUID_SOLVER == SOLVER_GRID2D
 	FFluidSolverGrid2d* SolverLocal = ti_new FFluidSolverGrid2d;
-#elif FLUID_SOLVER == SOLVER_FLIPCPU
-	Solver = ti_new FFluidSolverFlipCPU;
+#elif FLUID_SOLVER == SOLVER_FLIP_CPU
+	FFluidSolverFlipCPU* SolverLocal = ti_new FFluidSolverFlipCPU;
 #else
 	TI_ASSERT(0);
 #endif
 	Solver = SolverLocal;
 
-#if FLUID_SOLVER == SOLVER_GRID2D	
-	SolverLocal->CreateGrid(RHI, &FSRender);
-#else
 	const float ParticleSeperation = 0.1f;
 	const float ParticleMass = 1.f;
 	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
+	aabbox3df ParticleBox(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f);
+
+#if FLUID_SOLVER == SOLVER_GRID2D
+	SolverLocal->CreateGrid(RHI, &FSRender);
+#elif FLUID_SOLVER == SOLVER_FLIP_CPU
 	Solver->SetBoundaryBox(FluidBoundary);
-	SolverLocal->CreateParticles(
-		aabbox3df(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f),
-		ParticleSeperation, ParticleMass
-	);
+	//SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
+	ParticleRenderer = ti_new FParticleRenderer();
+	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
+#else
+	// SOLVER_PBF_CPU & SOLVER_PBF_GPU
+	Solver->SetBoundaryBox(FluidBoundary);
+	SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
 	SolverLocal->CreateNeighborSearchGrid(FluidBoundary.getExtent(), ParticleSeperation);
 
 	ParticleRenderer = ti_new FParticleRenderer();
 	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
 #endif
 
-#if FLUID_SOLVER == SOLVER_FLIPCPU
+#if FLUID_SOLVER == SOLVER_FLIP_CPU
 	vector3di Dimension = vector3di(8, 3, 6) * 5;
 	((FFluidSolverFlipCPU*)Solver)->CreateGrid(Dimension);
 #endif
