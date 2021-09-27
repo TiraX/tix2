@@ -19,7 +19,7 @@
 #define SOLVER_GRID2D (2)
 #define SOLVER_FLIPCPU (3)
 
-#define FLUID_SOLVER SOLVER_PBF_GPU
+#define FLUID_SOLVER SOLVER_GRID2D
 
 bool FFluidSimRenderer::PauseUpdate = false;
 bool FFluidSimRenderer::StepNext = false;
@@ -86,7 +86,7 @@ void FFluidSimRenderer::InitInRenderThread()
 #elif FLUID_SOLVER == SOLVER_PBF_GPU
 	FFluidSolverPbfGPU* SolverLocal = ti_new FFluidSolverPbfGPU;
 #elif FLUID_SOLVER == SOLVER_GRID2D
-	Solver = ti_new FFluidSolverGrid2d;
+	FFluidSolverGrid2d* SolverLocal = ti_new FFluidSolverGrid2d;
 #elif FLUID_SOLVER == SOLVER_FLIPCPU
 	Solver = ti_new FFluidSolverFlipCPU;
 #else
@@ -126,17 +126,9 @@ void FFluidSimRenderer::MoveBoundary(const vector3df& Offset)
 static int32 Counter = 0;
 void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 {
-	//Solver->UpdateMousePosition(MousePosition);
-#if USE_SOLVER_GPU
-	//if (!PauseUpdate)
-	//{
-	//	if (Counter % 10 == 0)
-	//	{
-	//		PauseUpdate = true;
-	//		_LOG(Log, "Pause at %d\n", Counter);
-	//	}
-	//	++Counter;
-	//}
+#if FLUID_SOLVER == SOLVER_GRID2D
+	FFluidSolverGrid2d* SolverGrid2D = (FFluidSolverGrid2d*)Solver;
+	SolverGrid2D->UpdateMousePosition(MousePosition);
 #endif
 
 	Solver->Update(RHI, 1.f / 60);
@@ -151,9 +143,13 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	FFluidSolverPbfGPU* SolverPbfGPU = (FFluidSolverPbfGPU*)Solver;
 	ParticleRenderer->UploadParticles(RHI, SolverPbfGPU->GetSimulatedPositions());
 #endif
-	ParticleRenderer->DrawParticles(RHI, Scene);
+	if (ParticleRenderer != nullptr)
+		ParticleRenderer->DrawParticles(RHI, Scene);
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_Result);
-	//Solver->RenderGrid(RHI, Scene, &FSRender);
+#if FLUID_SOLVER == SOLVER_GRID2D
+	FFluidSolverGrid2d* SolverGrid2d = (FFluidSolverGrid2d*)Solver;
+	SolverGrid2d->RenderGrid(RHI, Scene, &FSRender);
+#endif
 }

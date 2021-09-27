@@ -35,41 +35,41 @@ public:
 	static const float Radius;
 	static const float SplatForce;
 
-//	FFluidSolverGrid2d();
-//	virtual ~FFluidSolverGrid2d();
-//
-//	void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender);
-//
-//	virtual void Sim(FRHI* RHI, float Dt) override;
-//	virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer) override;
-//	virtual void UpdateMousePosition(const vector2di& InPosition) override;
-//
-//private:
-//
-//private:
-//	// Compute Tasks
-//	FCurlCSPtr CurlCS;
-//	FVorticityCSPtr VorticityCS;
-//	FDivergenceCSPtr DivergenceCS;
-//	FClearPressureCSPtr ClearPressureCS;
-//	FPressureCSPtr PressureCS;
-//	FGradientSubstractCSPtr GradientSubstractCS;
-//	FAdvectionVelCSPtr AdvectionVelCS;
-//	FAdvectionDyeCSPtr AdvectionDyeCS;
-//	FSplatVelCSPtr SplatVelCS;
-//	FSplatDyeCSPtr SplatDyeCS;
-//
-//	// Param Uniforms
-//	FGrid2dParamPtr UB_Grid2dParam;
-//	vector2di LastMousePos;
-//	vector2di CurrMousePos;
-//	vector2di MouseMoveDelta;
-//
-//	// Resources
-//	FArgumentBufferPtr AB_DyeToScreen;
-//	FTexturePtr TexVelocity[2];
-//	FTexturePtr TexDye[2];
-//	FTexturePtr TexDivergence;
-//	FTexturePtr TexCurl;
-//	FTexturePtr TexPressure[2];
+	FFluidSolverGrid2d();
+	virtual ~FFluidSolverGrid2d();
+
+	void CreateGrid(FRHI* RHI, FFullScreenRender* FSRender);
+
+	virtual void Sim(FRHI* RHI, float Dt) override;
+	virtual void RenderGrid(FRHI* RHI, FScene* Scene, FFullScreenRender* FSRenderer);
+	virtual void UpdateMousePosition(const vector2di& InPosition);
+
+private:
+
+private:
+	// Compute Tasks
+	FCurlCSPtr CurlCS;
+	FVorticityCSPtr VorticityCS;
+	FDivergenceCSPtr DivergenceCS;
+	FClearPressureCSPtr ClearPressureCS;
+	FPressureCSPtr PressureCS;
+	FGradientSubstractCSPtr GradientSubstractCS;
+	FAdvectionVelCSPtr AdvectionVelCS;
+	FAdvectionDyeCSPtr AdvectionDyeCS;
+	FSplatVelCSPtr SplatVelCS;
+	FSplatDyeCSPtr SplatDyeCS;
+
+	// Param Uniforms
+	FGrid2dParamPtr UB_Grid2dParam;
+	vector2di LastMousePos;
+	vector2di CurrMousePos;
+	vector2di MouseMoveDelta;
+
+	// Resources
+	FArgumentBufferPtr AB_DyeToScreen;
+	FTexturePtr TexVelocity[2];
+	FTexturePtr TexDye[2];
+	FTexturePtr TexDivergence;
+	FTexturePtr TexCurl;
+	FTexturePtr TexPressure[2];
 };
