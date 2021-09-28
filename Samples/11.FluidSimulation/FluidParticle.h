@@ -32,6 +32,11 @@ public:
 		return ParticlePositions[Index];
 	}
 
+	void SetParticlePosition(uint32 Index, const vector3df& P)
+	{
+		ParticlePositions[Index] = P;
+	}
+
 	const TVector<vector3df>& GetParticleVelocities() const
 	{
 		return ParticleVelocities;
@@ -40,6 +45,11 @@ public:
 	const vector3df& GetParticleVelocity(uint32 Index) const
 	{
 		return ParticleVelocities[Index];
+	}
+
+	void SetParticleVelocity(uint32 Index, const vector3df& V)
+	{
+		ParticleVelocities[Index] = V;
 	}
 
 	float GetParticleMass() const

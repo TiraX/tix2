@@ -84,7 +84,6 @@ public:
 	{
 		return Cell(Index.X, Index.Y, Index.Z);
 	}
-
 	T& Cell(int32 i, int32 j, int32 k)
 	{
 		return Cells[GridIndexToArrayIndex(i, j, k)];
@@ -93,7 +92,6 @@ public:
 	{
 		return Cells[GridIndexToArrayIndex(i, j, k)];
 	}
-
 	T& Cell(int32 Index)
 	{
 		return Cells[Index];
@@ -102,9 +100,26 @@ public:
 	{
 		return Cells[Index];
 	}
-	int32 GridIndexToArrayIndex(int32 i, int32 j, int32 k)
+	int32 GridIndexToArrayIndex(int32 i, int32 j, int32 k) const
 	{
 		ValidateGridIndex(i, j, k);
+		int32 Index = k * Dimension.X * Dimension.Y + j * Dimension.X + i;
+		return Index;
+	}
+
+	const T& SafeCell(const vector3di& Index) const
+	{
+		return SafeCell(Index.X, Index.Y, Index.Z);
+	}
+	const T& SafeCell(int32 i, int32 j, int32 k) const
+	{
+		return Cells[GridIndexToArrayIndexSafe(i, j, k)];
+	}
+	int32 GridIndexToArrayIndexSafe(int32 i, int32 j, int32 k) const
+	{
+		i = TMath::Clamp(i, 0, Dimension.X - 1);
+		j = TMath::Clamp(j, 0, Dimension.Y - 1);
+		k = TMath::Clamp(k, 0, Dimension.Z - 1);
 		int32 Index = k * Dimension.X * Dimension.Y + j * Dimension.X + i;
 		return Index;
 	}
@@ -117,7 +132,7 @@ public:
 		return Result;
 	}
 private:
-	void ValidateGridIndex(int32 i, int32 j, int32 k)
+	void ValidateGridIndex(int32 i, int32 j, int32 k) const
 	{
 		TI_ASSERT(i >= 0 && i < Dimension.X);
 		TI_ASSERT(j >= 0 && j < Dimension.Y);

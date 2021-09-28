@@ -8,7 +8,7 @@
 #include "FluidSimRenderer.h"
 
 
-#define DO_PARALLEL (1)
+#define DO_PARALLEL (0)
 
 
 template < class T>
@@ -65,14 +65,51 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	Pressure.Create(Dim);
 }
 
+int32 Counter = 0;
 void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 {
+	TIMER_RECORDER("FlipSim");
 	ParticleToGrids();
 	CalcExternalForces(Dt);
+	BoundaryCheck();
 	CalcVisicosity(Dt);
+	CalcDivergence();
 	CalcPressure(Dt);
+	GradientSubstract();
+	BoundaryCheck();
 	GridsToParticle();
-	MoveParticles();
+	MoveParticles(Dt);
+}
+
+void FFluidSolverFlipCPU::GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights)
+{
+	Cells.resize(8);
+	Weights.resize(8);
+
+	vector3df CellPos = (Position - Origin) * InvCellSize;
+	vector3df CellPosMin = CellPos - vector3df(0.5f, 0.5f, 0.5f);
+	vector3di CellIndexMin = Floor(CellPosMin);
+	vector3df CellPosMinFrac = CellPosMin - vector3df((float)CellIndexMin.X, (float)CellIndexMin.Y, (float)CellIndexMin.Z);
+
+	Cells[0] = CellIndexMin + vector3di(0, 0, 0);
+	Cells[1] = CellIndexMin + vector3di(1, 0, 0);
+	Cells[2] = CellIndexMin + vector3di(0, 1, 0);
+	Cells[3] = CellIndexMin + vector3di(1, 1, 0);
+	Cells[4] = CellIndexMin + vector3di(0, 0, 1);
+	Cells[5] = CellIndexMin + vector3di(1, 0, 1);
+	Cells[6] = CellIndexMin + vector3di(0, 1, 1);
+	Cells[7] = CellIndexMin + vector3di(1, 1, 1);
+
+	const vector3di CellMin = vector3di();
+	const vector3di CellMax = vector3di(Dimension.X - 1, Dimension.Y - 1, Dimension.Z - 1);
+	Cells[0] = ClampVector3d(Cells[0], CellMin, CellMax);
+	Cells[1] = ClampVector3d(Cells[1], CellMin, CellMax);
+	Cells[2] = ClampVector3d(Cells[2], CellMin, CellMax);
+	Cells[3] = ClampVector3d(Cells[3], CellMin, CellMax);
+	Cells[4] = ClampVector3d(Cells[4], CellMin, CellMax);
+	Cells[5] = ClampVector3d(Cells[5], CellMin, CellMax);
+	Cells[6] = ClampVector3d(Cells[6], CellMin, CellMax);
+	Cells[7] = ClampVector3d(Cells[7], CellMin, CellMax);
 }
 
 void FFluidSolverFlipCPU::ParticleToGrids()
@@ -88,42 +125,10 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 	{
 		const vector3df& P = Particles.GetParticlePosition(Index);
 		const vector3df& V = Particles.GetParticleVelocity(Index);
-		vector3di Cells[8];
-		float Weights[8];
 
-		vector3df CellPos = (P - Origin) * InvCellSize;
-		vector3df CellPosMin = CellPos - vector3df(0.5f, 0.5f, 0.5f);
-		vector3di CellIndexMin = Floor(CellPosMin);
-		vector3df CellPosMinFrac = CellPosMin - vector3df((float)CellIndexMin.X, (float)CellIndexMin.Y, (float)CellIndexMin.Z);
-
-		Cells[0] = CellIndexMin + vector3di(0, 0, 0);
-		Cells[1] = CellIndexMin + vector3di(1, 0, 0);
-		Cells[2] = CellIndexMin + vector3di(0, 1, 0);
-		Cells[3] = CellIndexMin + vector3di(1, 1, 0);
-		Cells[4] = CellIndexMin + vector3di(0, 0, 1);
-		Cells[5] = CellIndexMin + vector3di(1, 0, 1);
-		Cells[6] = CellIndexMin + vector3di(0, 1, 1);
-		Cells[7] = CellIndexMin + vector3di(1, 1, 1);
-
-		const vector3di CellMin = vector3di();
-		const vector3di CellMax = vector3di(Dimension.X - 1, Dimension.Y - 1, Dimension.Z - 1);
-		Cells[0] = ClampVector3d(Cells[0], CellMin, CellMax);
-		Cells[1] = ClampVector3d(Cells[1], CellMin, CellMax);
-		Cells[2] = ClampVector3d(Cells[2], CellMin, CellMax);
-		Cells[3] = ClampVector3d(Cells[3], CellMin, CellMax);
-		Cells[4] = ClampVector3d(Cells[4], CellMin, CellMax);
-		Cells[5] = ClampVector3d(Cells[5], CellMin, CellMax);
-		Cells[6] = ClampVector3d(Cells[6], CellMin, CellMax);
-		Cells[7] = ClampVector3d(Cells[7], CellMin, CellMax);
-
-		Weights[0] = (1.f - CellPosMinFrac.X) * (1.f - CellPosMinFrac.Y) * (1.f - CellPosMinFrac.Z);
-		Weights[1] = CellPosMinFrac.X * (1.f - CellPosMinFrac.Y) * (1.f - CellPosMinFrac.Z);
-		Weights[2] = (1.f - CellPosMinFrac.X) * CellPosMinFrac.Y * (1.f - CellPosMinFrac.Z);
-		Weights[3] = CellPosMinFrac.X * CellPosMinFrac.Y * (1.f - CellPosMinFrac.Z);
-		Weights[4] = (1.f - CellPosMinFrac.X) * (1.f - CellPosMinFrac.Y) * CellPosMinFrac.Z;
-		Weights[5] = CellPosMinFrac.X * (1.f - CellPosMinFrac.Y) * CellPosMinFrac.Z;
-		Weights[6] = (1.f - CellPosMinFrac.X) * CellPosMinFrac.Y * CellPosMinFrac.Z;
-		Weights[7] = CellPosMinFrac.X * CellPosMinFrac.Y * CellPosMinFrac.Z;
+		TVector<vector3di> Cells;
+		TVector<float> Weights;
+		GetSampleCellAndWeightsByPosition(P, Cells, Weights);
 
 		// For debug, all weights' sum should be 1
 		float W = Weights[0] + Weights[1] + Weights[2] + Weights[3] + Weights[4] + Weights[5] + Weights[6] + Weights[7];
@@ -139,7 +144,6 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 			}
 		}
 	}
-
 
 #if DO_PARALLEL
 #pragma omp parallel for
@@ -165,8 +169,6 @@ void FFluidSolverFlipCPU::CalcExternalForces(float Dt)
 			Vel.Cell(Index) = Vel.Cell(Index) + DV;
 		}
 	}
-
-	BoundaryCheck();
 }
 
 void FFluidSolverFlipCPU::CalcVisicosity(float Dt)
@@ -184,12 +186,12 @@ void FFluidSolverFlipCPU::CalcDivergence()
 		vector3di GridIndex = Vel.ArrayIndexToGridIndex(Index);
 
 		const vector3df& V = Vel.Cell(Index);
-		const vector3df& VLeft = Vel.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
-		const vector3df& VRight = Vel.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-		const vector3df& VFront = Vel.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
-		const vector3df& VBack = Vel.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-		const vector3df& VUp = Vel.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
-		const vector3df& VDown = Vel.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+		const vector3df& VLeft = Vel.SafeCell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+		const vector3df& VRight = Vel.SafeCell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+		const vector3df& VFront = Vel.SafeCell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+		const vector3df& VBack = Vel.SafeCell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+		const vector3df& VUp = Vel.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+		const vector3df& VDown = Vel.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
 
 		float L = (GridIndex.X == 0) ? -V.X : VLeft.X;
 		float R = (GridIndex.X == (Dimension.X - 1)) ? -V.X : VRight.X;
@@ -205,8 +207,6 @@ void FFluidSolverFlipCPU::CalcDivergence()
 
 void FFluidSolverFlipCPU::CalcPressure(float Dt)
 {
-	CalcDivergence();
-
 	Pressure.Clear();
 	vector3df InvCellSizeSQ = InvCellSize * InvCellSize;
 	for (int32 i = 0; i < PressureIteration; i++)
@@ -218,12 +218,12 @@ void FFluidSolverFlipCPU::CalcPressure(float Dt)
 		{
 			vector3di GridIndex = Vel.ArrayIndexToGridIndex(Index);
 
-			float PL = Pressure.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
-			float PR = Pressure.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-			float PF = Pressure.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
-			float PB = Pressure.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-			float PU = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
-			float PD = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+			float PL = Pressure.SafeCell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+			float PR = Pressure.SafeCell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+			float PF = Pressure.SafeCell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+			float PB = Pressure.SafeCell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+			float PU = Pressure.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+			float PD = Pressure.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
 
 			float Div = Divergence.Cell(Index);
 
@@ -237,7 +237,6 @@ void FFluidSolverFlipCPU::CalcPressure(float Dt)
 			Pressure.Cell(Index) = P;
 		}
 	}
-	GradientSubstract();
 }
 
 void FFluidSolverFlipCPU::GradientSubstract()
@@ -249,12 +248,12 @@ void FFluidSolverFlipCPU::GradientSubstract()
 	{
 		vector3di GridIndex = Pressure.ArrayIndexToGridIndex(Index);
 
-		float PL = Pressure.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
-		float PR = Pressure.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-		float PF = Pressure.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
-		float PB = Pressure.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-		float PU = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
-		float PD = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+		float PL = Pressure.SafeCell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
+		float PR = Pressure.SafeCell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+		float PF = Pressure.SafeCell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
+		float PB = Pressure.SafeCell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+		float PU = Pressure.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
+		float PD = Pressure.SafeCell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
 
 		const vector3df& V = Vel.Cell(Index);
 
@@ -271,12 +270,42 @@ void FFluidSolverFlipCPU::GradientSubstract()
 
 void FFluidSolverFlipCPU::GridsToParticle()
 {
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+	{
+		const vector3df& P = Particles.GetParticlePosition(Index);
 
+		TVector<vector3di> Cells;
+		TVector<float> Weights;
+		GetSampleCellAndWeightsByPosition(P, Cells, Weights);
+
+		// For debug, all weights' sum should be 1
+		float W = Weights[0] + Weights[1] + Weights[2] + Weights[3] + Weights[4] + Weights[5] + Weights[6] + Weights[7];
+
+		vector3df NewV;
+		for (int32 i = 0; i < 8; i++)
+		{
+			NewV += Vel.Cell(Cells[i]) * Weights[i];
+		}
+		Particles.SetParticleVelocity(Index, NewV);
+	}
 }
 
-void FFluidSolverFlipCPU::MoveParticles()
+void FFluidSolverFlipCPU::MoveParticles(float Dt)
 {
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+	{
+		const vector3df& P = Particles.GetParticlePosition(Index);
+		const vector3df& V = Particles.GetParticleVelocity(Index);
 
+		vector3df NewP = P + V * Dt;
+		Particles.SetParticlePosition(Index, NewP);
+	}
 }
 
 void FFluidSolverFlipCPU::BoundaryCheck()

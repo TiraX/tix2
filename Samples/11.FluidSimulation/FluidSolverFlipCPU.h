@@ -38,8 +38,9 @@ private:
 	void CalcPressure(float Dt);
 	void GradientSubstract();
 	void GridsToParticle();
-	void MoveParticles();
+	void MoveParticles(float Dt);
 	void BoundaryCheck();
+	void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
 
 private:
 	FFluidParticle Particles;
