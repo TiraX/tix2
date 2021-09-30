@@ -63,6 +63,7 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	Weight.Create(Dim);
 	Divergence.Create(Dim);
 	Pressure.Create(Dim);
+	VelBackup.Create(Dim);
 }
 
 int32 Counter = 0;
@@ -70,6 +71,7 @@ void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 {
 	TIMER_RECORDER("FlipSim");
 	ParticleToGrids();
+	BackupVelocity();
 	CalcExternalForces(Dt);
 	BoundaryCheck();
 	CalcVisicosity(Dt);
@@ -77,7 +79,7 @@ void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 	CalcPressure(Dt);
 	GradientSubstract();
 	BoundaryCheck();
-	GridsToParticle();
+	GridsToParticleFLIP();
 	MoveParticles(Dt);
 }
 
@@ -161,6 +163,17 @@ void FFluidSolverFlipCPU::ParticleToGrids()
 	{
 		if (Weight.Cell(Index) > 0.f)
 			Vel.Cell(Index) = Vel.Cell(Index) / Weight.Cell(Index);
+	}
+}
+
+void FFluidSolverFlipCPU::BackupVelocity()
+{
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		VelBackup.Cell(Index) = Vel.Cell(Index);
 	}
 }
 
@@ -277,7 +290,7 @@ void FFluidSolverFlipCPU::GradientSubstract()
 	}
 }
 
-void FFluidSolverFlipCPU::GridsToParticle()
+void FFluidSolverFlipCPU::GridsToParticlePIC()
 {
 #if DO_PARALLEL
 #pragma omp parallel for
@@ -299,6 +312,42 @@ void FFluidSolverFlipCPU::GridsToParticle()
 			NewV += Vel.Cell(Cells[i]) * Weights[i];
 		}
 		Particles.SetParticleVelocity(Index, NewV);
+	}
+}
+
+void FFluidSolverFlipCPU::GridsToParticleFLIP()
+{
+	// Calc the difference with the backup result
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Vel.GetTotalCells(); Index++)
+	{
+		VelBackup.Cell(Index) = Vel.Cell(Index) - VelBackup.Cell(Index);
+	}
+
+	// Interpolate difference and add to particle velocity
+#if DO_PARALLEL
+#pragma omp parallel for
+#endif
+	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+	{
+		const vector3df& P = Particles.GetParticlePosition(Index);
+		const vector3df& V = Particles.GetParticleVelocity(Index);
+
+		TVector<vector3di> Cells;
+		TVector<float> Weights;
+		GetSampleCellAndWeightsByPosition(P, Cells, Weights);
+
+		// For debug, all weights' sum should be 1
+		float W = Weights[0] + Weights[1] + Weights[2] + Weights[3] + Weights[4] + Weights[5] + Weights[6] + Weights[7];
+
+		vector3df Diff;
+		for (int32 i = 0; i < 8; i++)
+		{
+			Diff += VelBackup.Cell(Cells[i]) * Weights[i];
+		}
+		Particles.SetParticleVelocity(Index, V + Diff);
 	}
 }
 

@@ -32,12 +32,14 @@ public:
 	}
 private:
 	void ParticleToGrids();
+	void BackupVelocity();
 	void CalcExternalForces(float Dt);
 	void CalcVisicosity(float Dt);
 	void CalcDivergence();
 	void CalcPressure(float Dt);
 	void GradientSubstract();
-	void GridsToParticle();
+	void GridsToParticlePIC();
+	void GridsToParticleFLIP();
 	void MoveParticles(float Dt);
 	void BoundaryCheck();
 	void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
@@ -53,6 +55,7 @@ private:
 	FFluidGrid3<float> Weight;
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;
+	FFluidGrid3<vector3df> VelBackup;
 
 	int32 PressureIteration;
 };
