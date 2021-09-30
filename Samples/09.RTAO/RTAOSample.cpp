@@ -4,11 +4,18 @@
 #include "stdafx.h"
 #include "RTAOTicker.h"
 #include "RTAORenderer.h"
+#include "RTXTest.h"
 
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//_CrtSetBreakAlloc(-1);
+	if (true)
+	{
+		TRTXTest RTXTest;
+		RTXTest.Run();
+	}
+	if (false)
 	{
 		TEngineDesc Desc;
 		Desc.Name = "RTAO App";

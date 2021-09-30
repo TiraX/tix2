@@ -150,7 +150,7 @@ void FRTAORenderer::UpdateCamInfo(FScene* Scene)
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	UpdateCamInfo(Scene);
-	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
+	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	//DrawSceneTiles(RHI, Scene);
 
 	vector3di TraceSize;

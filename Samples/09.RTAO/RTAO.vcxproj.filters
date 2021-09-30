@@ -25,6 +25,9 @@
     <ClCompile Include="RTAOTicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RTXTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -34,6 +37,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="RTAOTicker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RTXTest.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
