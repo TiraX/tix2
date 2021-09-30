@@ -38,7 +38,7 @@ void FFluidParticle::CreateParticlesInBox(
 
 	// Create particles and resources
 	ParticlePositions.reserve(TotalParticles);
-	const float jitter = 0.f;// ParticleSeperation * 0.1f;
+	const float jitter = ParticleSeperation * 0.4f;
 	TMath::RandSeed(12306);
 	for (float z = InParticleBox.MinEdge.Z; z < InParticleBox.MaxEdge.Z; z += dis)
 	{

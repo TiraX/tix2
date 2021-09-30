@@ -31,7 +31,7 @@ inline vector3di Floor(const vector3df& x)
 }
 
 FFluidSolverFlipCPU::FFluidSolverFlipCPU()
-	: PressureIteration(4)
+	: PressureIteration(40)
 {
 	SubStep = 1;
 }
@@ -110,6 +110,15 @@ void FFluidSolverFlipCPU::GetSampleCellAndWeightsByPosition(const vector3df& Pos
 	Cells[5] = ClampVector3d(Cells[5], CellMin, CellMax);
 	Cells[6] = ClampVector3d(Cells[6], CellMin, CellMax);
 	Cells[7] = ClampVector3d(Cells[7], CellMin, CellMax);
+
+	Weights[0] = (1.f - CellPosMinFrac.X) * (1.f - CellPosMinFrac.Y) * (1.f - CellPosMinFrac.Z);
+	Weights[1] = CellPosMinFrac.X * (1.f - CellPosMinFrac.Y) * (1.f - CellPosMinFrac.Z);
+	Weights[2] = (1.f - CellPosMinFrac.X) * CellPosMinFrac.Y * (1.f - CellPosMinFrac.Z);
+	Weights[3] = CellPosMinFrac.X * CellPosMinFrac.Y * (1.f - CellPosMinFrac.Z);
+	Weights[4] = (1.f - CellPosMinFrac.X) * (1.f - CellPosMinFrac.Y) * CellPosMinFrac.Z;
+	Weights[5] = CellPosMinFrac.X * (1.f - CellPosMinFrac.Y) * CellPosMinFrac.Z;
+	Weights[6] = (1.f - CellPosMinFrac.X) * CellPosMinFrac.Y * CellPosMinFrac.Z;
+	Weights[7] = CellPosMinFrac.X * CellPosMinFrac.Y * CellPosMinFrac.Z;
 }
 
 void FFluidSolverFlipCPU::ParticleToGrids()
