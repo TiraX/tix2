@@ -37,12 +37,13 @@ private:
 	void CalcVisicosity(float Dt);
 	void CalcDivergence();
 	void CalcPressure(float Dt);
-	void GradientSubstract();
+	void GradientSubstract(float Dt);
 	void GridsToParticlePIC();
 	void GridsToParticleFLIP();
 	void MoveParticles(float Dt);
 	void BoundaryCheck();
 	void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
+	float InterporlateVelocity(int32 Component, const FFluidGrid3<float>& VelGrid, const vector3df& Position);	// Component = 0,1,2 mapto U, V, W
 
 private:
 	FFluidParticle Particles;
@@ -51,11 +52,13 @@ private:
 	vector3df CellSize;
 	vector3df InvCellSize;
 	vector3di Dimension;
-	FFluidGrid3<vector3df> Vel;
-	FFluidGrid3<float> Weight;
+
+	// MAC Grid 
+	FFluidGrid3<float> VelField[3];
+	FFluidGrid3<float> Weights[3];
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;
-	FFluidGrid3<vector3df> VelBackup;
+	FFluidGrid3<float> VelFieldDelta[3];
 
 	int32 PressureIteration;
 };
