@@ -127,6 +127,7 @@
     <ClCompile Include="NeighborSearchCS.cpp" />
     <ClCompile Include="P2CellCS.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="PCGSolver.cpp" />
     <ClCompile Include="PressureCS.cpp" />
     <ClCompile Include="SortCS.cpp" />
     <ClCompile Include="SplatDyeCS.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="NeighborSearchCS.h" />
     <ClInclude Include="P2CellCS.h" />
     <ClInclude Include="ParticleRenderer.h" />
+    <ClInclude Include="PCGSolver.h" />
     <ClInclude Include="PressureCS.h" />
     <ClInclude Include="SortCS.h" />
     <ClInclude Include="SplatDyeCS.h" />

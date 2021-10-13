@@ -7,6 +7,7 @@
 #include "FluidSolver.h"
 #include "FluidParticle.h"
 #include "FluidGrid.h"
+#include "PCGSolver.h"
 
 // Make a new implementation with pcg
 class FFluidSolverFlipCPU : public FFluidSolver
@@ -32,19 +33,19 @@ public:
 		return Particles.GetParticlePositions();
 	}
 private:
-	void ParticleToGrids();
+	void AdvectVelocityField();
+	void MarkCells();
+	void ExtrapolateVelocityField();
 	void BackupVelocity();
 	void CalcExternalForces(float Dt);
 	void CalcVisicosity(float Dt);
-	void CalcDivergence();
-	void CalcPressure(float Dt);
-	void GradientSubstract(float Dt);
-	void GridsToParticlePIC();
-	void GridsToParticleFLIP();
-	void MoveParticles(float Dt);
-	void BoundaryCheck();
-	void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
-	float InterporlateVelocity(int32 Component, const FFluidGrid3<float>& VelGrid, const vector3df& Position);	// Component = 0,1,2 mapto U, V, W
+	void SolvePressure(float Dt);
+	void ApplyPressure(float Dt);
+	void ConstrainVelocities();
+	void AdvectParticles();
+	//void BoundaryCheck();
+	//void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
+	//float InterporlateVelocity(int32 Component, const FFluidGrid3<float>& VelGrid, const vector3df& Position);	// Component = 0,1,2 mapto U, V, W
 
 private:
 	FFluidParticle Particles;
@@ -57,9 +58,10 @@ private:
 	// MAC Grid 
 	FFluidGrid3<float> VelField[3];
 	FFluidGrid3<float> Weights[3];
+	FFluidGrid3<int32> Marker;
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;
 	FFluidGrid3<float> VelFieldDelta[3];
 
-	int32 PressureIteration;
+	FPCGSolver PCGSolver;
 };
