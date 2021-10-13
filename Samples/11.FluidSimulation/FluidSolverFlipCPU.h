@@ -8,6 +8,7 @@
 #include "FluidParticle.h"
 #include "FluidGrid.h"
 
+// Make a new implementation with pcg
 class FFluidSolverFlipCPU : public FFluidSolver
 {
 public:
