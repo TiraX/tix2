@@ -81,6 +81,17 @@ private:
 	ComPtr<ID3D12Resource> OutputTexture;
 	ComPtr<ID3D12StateObject> RTXStateObject;
 
+	// Mesh Buffer
+	int32 MBVertexCount;
+	int32 MBVertexStride;
+	int32 MBIndexCount;
 	ComPtr<ID3D12Resource> VertexBuffer;
 	ComPtr<ID3D12Resource> IndexBuffer;
+
+	// Acceleration Structure
+	ComPtr<ID3D12Resource> BLASRes;
+	ComPtr<ID3D12Resource> BLASScratch;
+	ComPtr<ID3D12Resource> TLASRes;
+	ComPtr<ID3D12Resource> TLASScratch;
+	ComPtr<ID3D12Resource> TLASInstance;
 };

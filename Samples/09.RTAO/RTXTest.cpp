@@ -116,6 +116,9 @@ TRTXTest::TRTXTest()
 	: Inited(false)
 	, HWnd(0)
 	, CurrentFrame(0)
+	, MBVertexCount(0)
+	, MBVertexStride(0)
+	, MBIndexCount(0)
 {
 	// Get app current work dir.
 	int8 szFilePath[MAX_PATH + 1] = { 0 };
@@ -858,6 +861,9 @@ void TRTXTest::LoadMeshBuffer()
 	const THeaderMeshSection* HeaderSections = (const THeaderMeshSection*)(SectionDataStart);
 
 	TI_ASSERT(MeshHeader->Sections > 0);
+	MBVertexCount = MeshHeader->VertexCount;
+	MBVertexStride = TMeshBuffer::GetStrideFromFormat(MeshHeader->VertexFormat);
+	MBIndexCount = MeshHeader->PrimitiveCount * 3;
 
 	const int8* VertexDataStart = MeshDataStart +
 		TMath::Align4((int32)sizeof(THeaderMesh)) * 1 +
@@ -909,7 +915,14 @@ void TRTXTest::LoadMeshBuffer()
 
 		UpdateSubresources(GraphicsCommandList.Get(), VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
 
-		//DestState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		D3D12_RESOURCE_BARRIER Barrier = {};
+		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		Barrier.Transition.pResource = VertexBuffer.Get();
+		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		GraphicsCommandList->ResourceBarrier(1, &Barrier);
 	}
 
 	const uint32 IndexBufferSize = (MeshHeader->PrimitiveCount * 3 * IndexStride);
@@ -945,22 +958,192 @@ void TRTXTest::LoadMeshBuffer()
 
 		UpdateSubresources(GraphicsCommandList.Get(), IndexBuffer.Get(), IndexBufferUpload.Get(), 0, 0, 1, &IndexData);
 
+		D3D12_RESOURCE_BARRIER Barrier = {};
+		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		Barrier.Transition.pResource = IndexBuffer.Get();
+		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		GraphicsCommandList->ResourceBarrier(1, &Barrier);
 
 		//DestState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 	}
 
 	//FlushGraphicsBarriers(GraphicsCommandList.Get());
-
-
-
 }
 void TRTXTest::BuildAccelerationStructures()
 {
+	// ================= BLAS =================
+	{
+		// Create Geometry Desc
+		D3D12_RAYTRACING_GEOMETRY_DESC GeometryDesc = {};
+		GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+		GeometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 
+		GeometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+		GeometryDesc.Triangles.IndexBuffer = IndexBuffer->GetGPUVirtualAddress();
+		GeometryDesc.Triangles.IndexCount = MBIndexCount;
+
+		GeometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;	// Position always be RGB32F
+		GeometryDesc.Triangles.VertexBuffer.StartAddress = VertexBuffer->GetGPUVirtualAddress();
+		GeometryDesc.Triangles.VertexBuffer.StrideInBytes = MBVertexStride;
+		GeometryDesc.Triangles.VertexCount = MBVertexCount;
+
+		GeometryDesc.Triangles.Transform3x4 = NULL;
+
+		// Get the size requirements for the scratch and AS buffers.
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC BottomLevelBuildDesc = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& BottomLevelInputs = BottomLevelBuildDesc.Inputs;
+		BottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+		BottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		BottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		BottomLevelInputs.NumDescs = 1;
+		BottomLevelInputs.pGeometryDescs = &GeometryDesc;
+
+		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&BottomLevelInputs, &PrebuildInfo);
+		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
+
+		// Allocate resource for BLAS
+		TI_ASSERT(BLASRes == nullptr);
+		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ASBufferDesc,
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&BLASRes)));
+		BLASRes->SetName(L"BLASRes");
+
+		TI_ASSERT(BLASScratch == nullptr);
+		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ScratchBufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&BLASScratch)));
+		BLASScratch->SetName(L"BLASScratch");
+
+		// Build bottom layer AS
+		BottomLevelBuildDesc.ScratchAccelerationStructureData = BLASScratch->GetGPUVirtualAddress();
+		BottomLevelBuildDesc.DestAccelerationStructureData = BLASRes->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
+		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
+		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
+		// to share index buffer inputs between graphics input assemblerand raytracing 
+		// acceleration structure build input, it can always put a resource into a combination 
+		// of read states simultaneously, 
+		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		ID3D12DescriptorHeap* Heap = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
+		DXRCommandList->SetDescriptorHeaps(1, &Heap);
+		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
+	}
+
+	// ================= TLAS =================
+	{
+		FMatrix3x4 Mat3x4;
+		Mat3x4.SetTranslation(vector3df(-2.78112245f, 1.78132439f, 0.970187485f));
+		Mat3x4[0] = 1.f;
+		Mat3x4[1] = 0.f;
+		Mat3x4[2] = 0.f;
+
+		Mat3x4[4] = 0.f;
+		Mat3x4[5] = 1.f;
+		Mat3x4[6] = 0.f;
+
+		Mat3x4[8] = 0.f;
+		Mat3x4[9] = 0.f;
+		Mat3x4[10] = 1.f;
+
+		D3D12_RAYTRACING_INSTANCE_DESC Desc;
+		memcpy(Desc.Transform, Mat3x4.Data(), sizeof(float) * 3 * 4);
+		Desc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+		Desc.InstanceID = 0;
+		Desc.InstanceMask = 1;
+		Desc.InstanceContributionToHitGroupIndex = 0;
+		Desc.AccelerationStructure = BLASRes->GetGPUVirtualAddress();
+
+		// Get the size requirements for the scratch and AS buffers.
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC TopLevelBuildDesc = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& TopLevelInputs = TopLevelBuildDesc.Inputs;
+		TopLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+		TopLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		TopLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		TopLevelInputs.NumDescs = 1;
+
+		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&TopLevelInputs, &PrebuildInfo);
+		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
+
+		// Allocate resource for TLAS
+		TI_ASSERT(TLASRes == nullptr);
+		auto DefaultHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		auto TLASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&DefaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&TLASBufferDesc,
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&TLASRes)));
+		TLASRes->SetName(L"TLASRes");
+
+		TI_ASSERT(TLASScratch == nullptr);
+		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&DefaultHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ScratchBufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&TLASScratch)));
+
+		// Create Instance Resource
+		const uint32 InstanceBufferSize = 1 * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
+		auto InstanceBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(InstanceBufferSize, D3D12_RESOURCE_FLAG_NONE);
+		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&InstanceBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&TLASInstance)));
+		TLASInstance->SetName(L"TLASInstance");
+		D3D12_RAYTRACING_INSTANCE_DESC* pInstanceDesc;
+		TLASInstance->Map(0, nullptr, (void**)&pInstanceDesc);
+		memcpy(pInstanceDesc, &Desc, sizeof(D3D12_RAYTRACING_INSTANCE_DESC));
+		TLASInstance->Unmap(0, nullptr);
+
+		// Build top layer AS
+		TopLevelInputs.InstanceDescs = TLASInstance->GetGPUVirtualAddress();
+		TopLevelBuildDesc.ScratchAccelerationStructureData = TLASScratch->GetGPUVirtualAddress();
+		TopLevelBuildDesc.DestAccelerationStructureData = TLASRes->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
+		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
+		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
+		// to share index buffer inputs between graphics input assemblerand raytracing 
+		// acceleration structure build input, it can always put a resource into a combination 
+		// of read states simultaneously, 
+		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		ID3D12DescriptorHeap* Heap = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
+		DXRCommandList->SetDescriptorHeaps(1, &Heap);
+		DXRCommandList->BuildRaytracingAccelerationStructure(&TopLevelBuildDesc, 0, nullptr);
+	}
 }
 void TRTXTest::BuildShaderTables()
 {
-
+	TI_ASSERT(0);
 }
 
 void TRTXTest::Tick()
