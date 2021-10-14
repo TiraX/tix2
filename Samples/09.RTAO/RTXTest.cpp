@@ -149,7 +149,6 @@ void TRTXTest::Init()
 {
 	CreateAWindow();
 	InitD3D12();
-	CreateResources();
 }
 
 
@@ -966,22 +965,22 @@ void TRTXTest::BuildShaderTables()
 
 void TRTXTest::Tick()
 {
-
 }
 
 void TRTXTest::Render()
 {
 	BeginFrame();
 
+	if (VertexBuffer == nullptr)
+	{
+		CreateResources();
+	}
 
 	EndFrame();
 }
 
 void TRTXTest::BeginFrame()
 {
-	// Close last command list
-	//VALIDATE_HRESULT(GraphicsCommandList->Close());
-
 	// Reset command list
 	VALIDATE_HRESULT(GraphicsAllocators[CurrentFrame]->Reset());
 	VALIDATE_HRESULT(GraphicsCommandList->Reset(GraphicsAllocators[CurrentFrame].Get(), nullptr));
