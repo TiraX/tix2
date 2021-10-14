@@ -131,6 +131,53 @@ public:
 		Result.X = Index % Dimension.X;
 		return Result;
 	}
+
+	// Relative Position means (Position - Origin) * InvCellSize
+	T SampleByRelativePositionLinear(const vector3df& P)
+	{
+		vector3di GridIndex;
+		GridIndex.X = TMath::Floor(P.X);
+		GridIndex.Y = TMath::Floor(P.Y);
+		GridIndex.Z = TMath::Floor(P.Z);
+		ValidateGridIndex(GridIndex.X, GridIndex.Y, GridIndex.Z);
+
+		float iX = TMath::Frac(P.X);
+		float iY = TMath::Frac(P.Y);
+		float iZ = TMath::Frac(P.Z);
+		float iX1 = 1.f - iX;
+		float iY1 = 1.f - iY;
+		float iZ1 = 1.f - iZ;
+
+		T Values[8] = { 0 };
+		bool ValidU1 = GridIndex.X + 1 < Dimension.X;
+		bool ValidV1 = GridIndex.Y + 1 < Dimension.Y;
+		bool ValidW1 = GridIndex.Z + 1 < Dimension.Z;
+
+		Values[0] = Cell(GridIndex);
+		if (ValidU1)
+			Values[1] = Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
+		if (ValidV1)
+			Values[2] = Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
+		if (ValidW1)
+			Values[3] = Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+		if (ValidU1 && ValidW1)
+			Values[4] = Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z + 1);
+		if (ValidV1 && ValidW1)
+			Values[5] = Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z + 1);
+		if (ValidU1 && ValidV1)
+			Values[6] = Cell(GridIndex.X + 1, GridIndex.Y + 1, GridIndex.Z);
+		if (ValidU1 && ValidV1 && ValidW1)
+			Values[7] = Cell(GridIndex.X + 1, GridIndex.Y + 1, GridIndex.Z + 1);
+
+		return Values[0] * iX1 * iY1 * iZ1 +
+			Values[1] * iX * iY1 * iZ1 +
+			Values[2] * iX1 * iY * iZ1 +
+			Values[3] * iX1 * iY1 * iZ +
+			Values[4] * iX * iY1 * iZ +
+			Values[5] * iX1 * iY * iZ +
+			Values[6] * iX * iY * iZ1 +
+			Values[7] * iX * iY * iZ;
+	}
 private:
 	void ValidateGridIndex(int32 i, int32 j, int32 k) const
 	{

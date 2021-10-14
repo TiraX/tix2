@@ -41,8 +41,8 @@ private:
 	void CalcVisicosity(float Dt);
 	void SolvePressure(float Dt);
 	void ApplyPressure(float Dt);
-	void ConstrainVelocities();
-	void AdvectParticles();
+	void ConstrainVelocityField();
+	void AdvectParticles(float Dt);
 	//void BoundaryCheck();
 	//void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
 	//float InterporlateVelocity(int32 Component, const FFluidGrid3<float>& VelGrid, const vector3df& Position);	// Component = 0,1,2 mapto U, V, W

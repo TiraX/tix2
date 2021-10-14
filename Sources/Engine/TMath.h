@@ -175,6 +175,18 @@ namespace tix
 			return -x;
 		}
 
+		template< class T >
+		static inline T Modf(const T x)
+		{
+			return modf(x, nullptr);
+		}
+
+		template< class T >
+		static inline T Frac(const T x)
+		{
+			return Modf(x);
+		}
+
 		static inline int32 Floor(float x)
 		{
 			return (int32)floor(x);
