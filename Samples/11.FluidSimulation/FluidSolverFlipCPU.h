@@ -57,7 +57,6 @@ private:
 
 	// MAC Grid 
 	FFluidGrid3<float> VelField[3];
-	FFluidGrid3<float> Weights[3];
 	FFluidGrid3<int32> Marker;
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;

@@ -23,7 +23,7 @@ void FFluidParticle::CreateParticlesInBox(
 	float InParticleMass)
 {
 	// Calc Total Particles
-	const float dis = ParticleSeperation * 0.9f;
+	const float dis = ParticleSeperation;
 	vector3df Ext = InParticleBox.getExtent();
 	vector3di ParticleDim;
 	ParticleDim.X = (int32)(Ext.X / dis);

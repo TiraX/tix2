@@ -178,7 +178,8 @@ namespace tix
 		template< class T >
 		static inline T Modf(const T x)
 		{
-			return modf(x, nullptr);
+			float Temp;
+			return modf(x, &Temp);
 		}
 
 		template< class T >

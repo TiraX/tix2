@@ -97,7 +97,7 @@ void FFluidSimRenderer::InitInRenderThread()
 	const float ParticleSeperation = 0.1f;
 	const float ParticleMass = 1.f;
 	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
-	const aabbox3df ParticleBox(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 5.0f);
+	const aabbox3df ParticleBox(0.2f, 0.2f, 0.2f, 2.6f, 2.6f, 4.6f);
 	const vector3di GridDimension = vector3di(8, 3, 6) * 5;
 
 #if FLUID_SOLVER == SOLVER_GRID2D
@@ -133,7 +133,7 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	SolverGrid2D->UpdateMousePosition(MousePosition);
 #endif
 
-	Solver->Update(RHI, 1.f / 60);
+	Solver->Update(RHI, 1.f / 100);
 
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);

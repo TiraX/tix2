@@ -17,6 +17,13 @@ enum GridBoundaryType
 	Boundary_Bottom = 1 << 5
 };
 
+enum MarkerType
+{
+	Marker_Air,
+	Marker_Fluid,
+	Marker_Solid
+};
+
 template<class T>
 class FFluidGrid3
 {
@@ -130,6 +137,36 @@ public:
 		Result.Y = (Index % (Dimension.X * Dimension.Y)) / Dimension.X;
 		Result.X = Index % Dimension.X;
 		return Result;
+	}
+
+	bool IsUMarkerValueEqual(int32 MarkerValue, int32 i, int32 j, int32 k) const
+	{
+		if (i == Dimension.X)
+			return Cell(i - 1, j, k) == MarkerValue;
+		else if (i > 0)
+			return Cell(i, j, k) == MarkerValue || Cell(i - 1, j, k) == MarkerValue;
+		else
+			return Cell(i, j, k) == MarkerValue;
+	}
+
+	bool IsVMarkerValueEqual(int32 MarkerValue, int32 i, int32 j, int32 k) const
+	{
+		if (j == Dimension.Y)
+			return Cell(i, j - 1, k) == MarkerValue;
+		else if (j > 0)
+			return Cell(i, j, k) == MarkerValue || Cell(i, j - 1, k) == MarkerValue;
+		else
+			return Cell(i, j, k) == MarkerValue;
+	}
+
+	bool IsWMarkerValueEqual(int32 MarkerValue, int32 i, int32 j, int32 k) const
+	{
+		if (k == Dimension.Z)
+			return Cell(i, j, k - 1) == MarkerValue;
+		else if (k > 0)
+			return Cell(i, j, k) == MarkerValue || Cell(i, j, k - 1) == MarkerValue;
+		else
+			return Cell(i, j, k) == MarkerValue;
 	}
 
 	// Relative Position means (Position - Origin) * InvCellSize
