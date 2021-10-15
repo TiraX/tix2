@@ -451,25 +451,41 @@ void FFluidSolverFlipCPU::ConstrainVelocityField()
 void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 {
 	vector3df CellSizeH = CellSize * 0.5f;
-	// Update Particle Velocity
+	vector3df VelocityOffset[3] =
+	{
+		vector3df(0.f, CellSizeH.Y, CellSizeH.Z),
+		vector3df(CellSizeH.X, 0.f, CellSizeH.Z),
+		vector3df(CellSizeH.X, CellSizeH.Y, 0.f)
+	};
 #if DO_PARALLEL
 #pragma omp parallel for
 #endif
 	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
 	{
+		// Update Particle Velocity
 		const vector3df& P = Particles.GetParticlePosition(Index);
-		vector3df RelativePU = (P - vector3df(0.f, CellSizeH.Y, CellSizeH.Z)) * InvCellSize;
-		vector3df RelativePV = (P - vector3df(CellSizeH.X, 0.f, CellSizeH.Z)) * InvCellSize;
-		vector3df RelativePW = (P - vector3df(CellSizeH.X, CellSizeH.Y, 0.f)) * InvCellSize;
+		vector3df RelativePU = (P - VelocityOffset[0]) * InvCellSize;
+		vector3df RelativePV = (P - VelocityOffset[1]) * InvCellSize;
+		vector3df RelativePW = (P - VelocityOffset[2]) * InvCellSize;
 
-		float U = VelField[0].SampleByRelativePositionLinear(RelativePU);
-		float V = VelField[1].SampleByRelativePositionLinear(RelativePV);
-		float W = VelField[2].SampleByRelativePositionLinear(RelativePW);
+		float U0 = VelField[0].SampleByRelativePositionLinear(RelativePU);
+		float V0 = VelField[1].SampleByRelativePositionLinear(RelativePV);
+		float W0 = VelField[2].SampleByRelativePositionLinear(RelativePW);
 
-		vector3df NewV = vector3df(U, V, W);
+		vector3df NewV = vector3df(U0, V0, W0);
 		Particles.SetParticleVelocity(Index, NewV);
 
-		vector3df NewP = P + NewV * Dt;
+		// Advect particles with RK2
+		vector3df SamplePosition = P + NewV * Dt * 0.5f;
+		vector3df SamplePU = (SamplePosition - VelocityOffset[0]) * InvCellSize;
+		vector3df SamplePV = (SamplePosition - VelocityOffset[1]) * InvCellSize;
+		vector3df SamplePW = (SamplePosition - VelocityOffset[2]) * InvCellSize;
+
+		float U1 = VelField[0].SampleByRelativePositionLinear(SamplePU);
+		float V1 = VelField[1].SampleByRelativePositionLinear(SamplePV);
+		float W1 = VelField[2].SampleByRelativePositionLinear(SamplePW);
+		vector3df SampledVel = vector3df(U1, V1, W1);
+		vector3df NewP = P + SampledVel * Dt;
 		Particles.SetParticlePosition(Index, NewP);
 	}
 }
