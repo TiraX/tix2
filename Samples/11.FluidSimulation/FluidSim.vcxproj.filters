@@ -177,6 +177,12 @@
     <ClCompile Include="PCGSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeometrySDF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelsetUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FluidSimRenderer.h">
@@ -279,6 +285,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="PCGSolver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometrySDF.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelsetUtils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

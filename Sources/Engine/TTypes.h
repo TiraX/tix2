@@ -34,6 +34,7 @@ typedef double float64;
 #define TMap std::map
 #define THMap std::unordered_map
 #define TSort std::sort
+#define TFill std::fill
 
 typedef std::string TString;
 typedef std::wstring TWString;

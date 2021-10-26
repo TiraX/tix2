@@ -6,7 +6,7 @@
 #include "stdafx.h"
 #include "FluidSolverFlipCPU.h"
 #include "FluidSimRenderer.h"
-
+#include "LevelsetUtils.h"
 
 #define DO_PARALLEL (0)
 
@@ -57,12 +57,18 @@ inline vector3di Floor(const vector3df& x)
 }
 
 FFluidSolverFlipCPU::FFluidSolverFlipCPU()
+	: ParticleRadius(0.f)
+	, SolidSDF(nullptr)
 {
 	SubStep = 1;
 }
 
 FFluidSolverFlipCPU::~FFluidSolverFlipCPU()
 {
+	if (SolidSDF != nullptr)
+	{
+		ti_delete SolidSDF;
+	}
 }
 
 void FFluidSolverFlipCPU::CreateParticles(
@@ -81,30 +87,47 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	CellSize.Y = BoundaryBox.getExtent().Y / Dim.Y;
 	CellSize.Z = BoundaryBox.getExtent().Z / Dim.Z;
 
+	const float MaxSize = TMath::Max3(CellSize.X, CellSize.Y, CellSize.Z);
+	ParticleRadius = MaxSize * 1.01f * sqrt(3.f) / 2.f;
+
 	InvCellSize = vector3df(1.f) / CellSize;
 	
 	Dimension = Dim;
 	VelField[0].Create(vector3di(Dim.X + 1, Dim.Y, Dim.Z));
 	VelField[1].Create(vector3di(Dim.X, Dim.Y + 1, Dim.Z));
 	VelField[2].Create(vector3di(Dim.X, Dim.Y, Dim.Z + 1));
-	Marker.Create(Dim);
+	//Marker.Create(Dim);
 	Divergence.Create(Dim);
 	Pressure.Create(Dim);
 	VelFieldDelta[0].Create(VelField[0].GetDimension());
 	VelFieldDelta[1].Create(VelField[1].GetDimension());
 	VelFieldDelta[2].Create(VelField[2].GetDimension());
+	IsValidVelocity[0].Create(VelField[0].GetDimension());
+	IsValidVelocity[1].Create(VelField[1].GetDimension());
+	IsValidVelocity[2].Create(VelField[2].GetDimension());
+	WeightGrid[0].Create(VelField[0].GetDimension());
+	WeightGrid[1].Create(VelField[1].GetDimension());
+	WeightGrid[2].Create(VelField[2].GetDimension());	
+	LiquidSDF.Create(Dim);
+}
+
+void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* InCollisionSDF)
+{
+	SolidSDF = InCollisionSDF;
 }
 
 int32 Counter = 0;
 void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 {
 	TIMER_RECORDER("FlipSim");
+	UpdateLiquidSDF();
 	AdvectVelocityField();
 	ExtrapolateVelocityField();
 	MarkCells();
 	BackupVelocity();
 	CalcExternalForces(Dt);
 	CalcVisicosity(Dt);
+	ComputeWeights();
 	SolvePressure(Dt);
 	ApplyPressure(Dt);
 	ExtrapolateVelocityField();
@@ -112,12 +135,71 @@ void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 	AdvectParticles(Dt);
 }
 
+void FFluidSolverFlipCPU::UpdateLiquidSDF()
+{
+	// Compute Signed Distance From Particles
+	const float MaxDistance = TMath::Max3(CellSize.X, CellSize.Y, CellSize.Z) * 3.f;
+	const float MaxDistanceH = MaxDistance * 0.5f;
+	LiquidSDF.Fill(MaxDistance);
+
+	const vector3df CellSizeH = CellSize * 0.5f;
+	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+	{
+		const vector3df& P = Particles.GetParticlePosition(Index);
+		vector3di IndexInGrid = Floor(P * InvCellSize);
+		vector3di GridMin = vector3di(IndexInGrid.X - 1, IndexInGrid.Y - 1, IndexInGrid.Z - 1);
+		vector3di GridMax = vector3di(IndexInGrid.X + 1, IndexInGrid.Y + 1, IndexInGrid.Z + 1);
+		const vector3di& GridDim = Pressure.GetDimension();
+		GridMin = MaxVector3d(GridMin, vector3di());
+		GridMax = MinVector3d(GridMax, vector3di(GridDim.X - 1, GridDim.Y - 1, GridDim.Z - 1));
+
+		for (int32 k = GridMin.Z; k <= GridMax.Z; k++)
+		{
+			for (int32 j = GridMin.Y; j <= GridMax.Y; j++)
+			{
+				for (int32 i = GridMin.X; i <= GridMax.X; i++)
+				{
+					vector3df CellCenter = vector3df(float(i), float(j), float(k)) * CellSize + CellSizeH;
+					float Distance = (P - CellCenter).getLength() - ParticleRadius;
+					if (Distance < LiquidSDF.Cell(i, j, k))
+					{
+						LiquidSDF.Cell(i, j, k) = Distance;
+					}
+				}
+			}
+		}
+	}
+	
+	// Extrapolate Signed Distance Into Solids
+	for (int32 Index = 0; Index < LiquidSDF.GetTotalCells(); Index++)
+	{
+		if (LiquidSDF.Cell(Index) < MaxDistanceH)
+		{
+			// Inside liquid
+			vector3di G = LiquidSDF.ArrayIndexToGridIndex(Index);
+			vector3df CellCenter = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + CellSizeH;
+			if (SolidSDF->SampleSDFByPosition(CellCenter) < 0.f)
+			{
+				// Inside solid
+				LiquidSDF.Cell(Index) = -MaxDistanceH;
+			}
+		}
+	}
+}
+
 void FFluidSolverFlipCPU::AdvectVelocityField()
 {
-	// Clear vel and weight to 0
-	VelField[0].Clear();
-	VelField[1].Clear();
-	VelField[2].Clear();
+	// Mark fluid cells
+	FFluidGrid3<int8> FluidCells;
+	FluidCells.Create(Dimension);
+	for (int32 Index = 0; Index < FluidCells.GetTotalCells(); Index++)
+	{
+		if (LiquidSDF.Cell(Index) < 0.f)
+		{
+			// Inside liquid
+			FluidCells.Cell(Index) = 1;
+		}
+	}
 
 	const vector3df HalfCellSize = CellSize * 0.5f;
 
@@ -125,6 +207,11 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 	VelStartPos[0] = vector3df(0.f, HalfCellSize.Y, HalfCellSize.Z);
 	VelStartPos[1] = vector3df(HalfCellSize.X, 0.f, HalfCellSize.Z);
 	VelStartPos[2] = vector3df(HalfCellSize.X, HalfCellSize.Y, 0.f);
+
+	FFluidGrid3<float> VelInterpolate[3];
+	VelInterpolate[0].Create(VelField[0].GetDimension());
+	VelInterpolate[1].Create(VelField[1].GetDimension());
+	VelInterpolate[2].Create(VelField[2].GetDimension());
 
 	FFluidGrid3<float> Weights[3];
 	Weights[0].Create(VelField[0].GetDimension());
@@ -154,7 +241,7 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 			vector3di IndexInGrid = Floor(PosInGrid * InvCellSize);
 			vector3di GridMin = vector3di(IndexInGrid.X - 1, IndexInGrid.Y - 1, IndexInGrid.Z - 1);
 			vector3di GridMax = vector3di(IndexInGrid.X + 1, IndexInGrid.Y + 1, IndexInGrid.Z + 1);
-			const vector3di& GridDim = VelField[VelIndex].GetDimension();
+			const vector3di& GridDim = VelInterpolate[VelIndex].GetDimension();
 			GridMin = MaxVector3d(GridMin, vector3di());
 			GridMax = MinVector3d(GridMax, vector3di(GridDim.X - 1, GridDim.Y - 1, GridDim.Z - 1));
 
@@ -177,7 +264,7 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 #pragma omp critical
 #endif
 							{
-								VelField[VelIndex].Cell(i, j, k) += Vel[VelIndex] * Weight;
+								VelInterpolate[VelIndex].Cell(i, j, k) += Vel[VelIndex] * Weight;
 								Weights[VelIndex].Cell(i, j, k) += Weight;
 							}
 						}
@@ -187,13 +274,26 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 		}
 	}
 
+	const int8 kValid = 1;
+	// Clear vel and weight to 0
+	VelField[0].Clear();
+	VelField[1].Clear();
+	VelField[2].Clear();
+	IsValidVelocity[0].Clear();
+	IsValidVelocity[1].Clear();
+	IsValidVelocity[2].Clear();
 #if DO_PARALLEL
 #pragma omp parallel for
 #endif
 	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
 		if (Weights[0].Cell(Index) > eps)
-			VelField[0].Cell(Index) = VelField[0].Cell(Index) / Weights[0].Cell(Index);
+		{
+			IsValidVelocity[0].Cell(Index) = 1;
+			vector3di G = IsValidVelocity[0].ArrayIndexToGridIndex(Index);
+			if (IsFaceBorderValueOfGridU(G.X, G.Y, G.Z, FluidCells, kValid))
+				VelField[0].Cell(Index) = VelInterpolate[0].Cell(Index) / Weights[0].Cell(Index);
+		}
 	}
 
 #if DO_PARALLEL
@@ -202,7 +302,12 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		if (Weights[1].Cell(Index) > eps)
-			VelField[1].Cell(Index) = VelField[1].Cell(Index) / Weights[1].Cell(Index);
+		{
+			IsValidVelocity[1].Cell(Index) = 1;
+			vector3di G = IsValidVelocity[1].ArrayIndexToGridIndex(Index);
+			if (IsFaceBorderValueOfGridV(G.X, G.Y, G.Z, FluidCells, kValid))
+				VelField[1].Cell(Index) = VelInterpolate[1].Cell(Index) / Weights[1].Cell(Index);
+		}
 	}
 
 #if DO_PARALLEL
@@ -211,11 +316,16 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		if (Weights[2].Cell(Index) > eps)
-			VelField[2].Cell(Index) = VelField[2].Cell(Index) / Weights[2].Cell(Index);
+		{
+			IsValidVelocity[2].Cell(Index) = 1;
+			vector3di G = IsValidVelocity[2].ArrayIndexToGridIndex(Index);
+			if (IsFaceBorderValueOfGridW(G.X, G.Y, G.Z, FluidCells, kValid))
+				VelField[2].Cell(Index) = VelInterpolate[2].Cell(Index) / Weights[2].Cell(Index);
+		}
 	}
 }
 
-void TryToMarkCell(FFluidGrid3<int32>& Status, TVector<vector3di>& ExtrapolateCells, int32& Count, const vector3di& GridIndex)
+void TryToMarkCell(FFluidGrid3<int8>& Status, TVector<vector3di>& ExtrapolateCells, int32& Count, const vector3di& GridIndex)
 {
 	if (Status.Cell(GridIndex) == UNKNOWN)
 	{
@@ -231,9 +341,9 @@ void TryToMarkCell(FFluidGrid3<int32>& Status, TVector<vector3di>& ExtrapolateCe
 
 void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 {
-	const int32 ExtraLayers = 5;
+	const int32 ExtraLayers = 7;
 
-	FFluidGrid3<int32> Status[3];
+	FFluidGrid3<int8> Status[3];
 	Status[0].Create(VelField[0].GetDimension());
 	Status[1].Create(VelField[1].GetDimension());
 	Status[2].Create(VelField[2].GetDimension());
@@ -244,8 +354,7 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
-		bool IsFluid = Marker.IsUMarkerValueEqual(Marker_Fluid, G.X, G.Y, G.Z);
-		Status[0].Cell(Index) = IsFluid ? KNOWN : UNKNOWN;
+		Status[0].Cell(Index) = IsValidVelocity[0].Cell(Index) == 1 ? KNOWN : UNKNOWN;
 		uint32 Info = VelField[0].GetBoudaryTypeInfo(Index);
 		if (Status[0].Cell(Index) == UNKNOWN && Info != Boundary_None)
 		{
@@ -258,8 +367,7 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
-		bool IsFluid = Marker.IsVMarkerValueEqual(Marker_Fluid, G.X, G.Y, G.Z);
-		Status[1].Cell(Index) = IsFluid ? KNOWN : UNKNOWN;
+		Status[1].Cell(Index) = IsValidVelocity[1].Cell(Index) == 1 ? KNOWN : UNKNOWN;
 		uint32 Info = VelField[1].GetBoudaryTypeInfo(Index);
 		if (Status[1].Cell(Index) == UNKNOWN && Info != Boundary_None)
 		{
@@ -272,8 +380,7 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
-		bool IsFluid = Marker.IsWMarkerValueEqual(Marker_Fluid, G.X, G.Y, G.Z);
-		Status[2].Cell(Index) = IsFluid ? KNOWN : UNKNOWN;
+		Status[2].Cell(Index) = IsValidVelocity[2].Cell(Index) == 1 ? KNOWN : UNKNOWN;
 		uint32 Info = VelField[2].GetBoudaryTypeInfo(Index);
 		if (Status[2].Cell(Index) == UNKNOWN && Info != Boundary_None)
 		{
@@ -282,9 +389,9 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 	}
 
 	TVector<vector3di> ExtrapolationCells;
-	for (int layers = 0; layers < ExtraLayers; layers++) 
+	for (int32 VelIndex = 0; VelIndex < 3; VelIndex++)
 	{
-		for (int32 VelIndex = 0; VelIndex < 3; VelIndex++)
+		for (int layers = 0; layers < ExtraLayers; layers++) 
 		{
 			ExtrapolationCells.clear();
 
@@ -313,7 +420,8 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 			}
 
 			vector3di G;
-			for (size_t i = 0; i < ExtrapolationCells.size(); i++) {
+			for (size_t i = 0; i < ExtrapolationCells.size(); i++) 
+			{
 				G = ExtrapolationCells[i];
 
 				float Sum = 0.f;
@@ -335,16 +443,16 @@ void FFluidSolverFlipCPU::ExtrapolateVelocityField()
 
 void FFluidSolverFlipCPU::MarkCells()
 {
-	Marker.Clear();
-#if DO_PARALLEL
-#pragma omp parallel for
-#endif
-	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
-	{
-		const vector3df& PosInGrid = Particles.GetParticlePosition(Index);
-		vector3di IndexInGrid = Floor(PosInGrid * InvCellSize);
-		Marker.Cell(IndexInGrid) = Marker_Fluid;
-	}
+//	Marker.Clear();
+//#if DO_PARALLEL
+//#pragma omp parallel for
+//#endif
+//	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+//	{
+//		const vector3df& PosInGrid = Particles.GetParticlePosition(Index);
+//		vector3di IndexInGrid = Floor(PosInGrid * InvCellSize);
+//		Marker.Cell(IndexInGrid) = Marker_Fluid;
+//	}
 }
 
 void FFluidSolverFlipCPU::BackupVelocity()
@@ -374,7 +482,19 @@ void FFluidSolverFlipCPU::BackupVelocity()
 
 void FFluidSolverFlipCPU::CalcExternalForces(float Dt)
 {
-	const vector3df Gravity = vector3df(0.f, 0.f, -9.8f);
+	// Mark fluid cells
+	FFluidGrid3<int8> FluidCells;
+	FluidCells.Create(Dimension);
+	for (int32 Index = 0; Index < FluidCells.GetTotalCells(); Index++)
+	{
+		if (LiquidSDF.Cell(Index) < 0.f)
+		{
+			// Inside liquid
+			FluidCells.Cell(Index) = 1;
+		}
+	}
+
+	const vector3df Gravity = vector3df(0.f, 0.f, -9.81f);
 	const vector3df DV = Gravity * Dt;
 #if DO_PARALLEL
 #pragma omp parallel for
@@ -382,7 +502,7 @@ void FFluidSolverFlipCPU::CalcExternalForces(float Dt)
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di GridIndex = VelField[2].ArrayIndexToGridIndex(Index);
-		if (Marker.IsWMarkerValueEqual(Marker_Fluid, GridIndex.X, GridIndex.Y, GridIndex.Z))
+		if (IsFaceBorderValueOfGridW(GridIndex.X, GridIndex.Y, GridIndex.Z, FluidCells, int8(1)))
 		{
 			VelField[2].Cell(Index) += DV.Z;
 		}
@@ -392,6 +512,43 @@ void FFluidSolverFlipCPU::CalcExternalForces(float Dt)
 void FFluidSolverFlipCPU::CalcVisicosity(float Dt)
 {
 
+}
+
+void FFluidSolverFlipCPU::ComputeWeights()
+{
+	const vector3df CellSizeH = CellSize * 0.5f;
+	vector3df VelocityStart[3] =
+	{
+		vector3df(0.f, CellSizeH.Y, CellSizeH.Z),
+		vector3df(CellSizeH.X, 0.f, CellSizeH.Z),
+		vector3df(CellSizeH.X, CellSizeH.Y, 0.f)
+	};
+	//Compute finite-volume type face area weight for each velocity sample.
+    //Compute face area fractions (using marching squares cases).
+	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[0];
+		float W = 1.f - GetFaceWeightU(SolidSDF, Pos, CellSize);
+		W = TMath::Clamp(W, 0.f, 1.f);
+		WeightGrid[0].Cell(Index) = W;
+	}
+	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[1];
+		float W = 1.f - GetFaceWeightV(SolidSDF, Pos, CellSize);
+		W = TMath::Clamp(W, 0.f, 1.f);
+		WeightGrid[1].Cell(Index) = W;
+	}
+	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[2];
+		float W = 1.f - GetFaceWeightW(SolidSDF, Pos, CellSize);
+		W = TMath::Clamp(W, 0.f, 1.f);
+		WeightGrid[2].Cell(Index) = W;
+	}
 }
 
 void FFluidSolverFlipCPU::SolvePressure(float Dt)
@@ -404,7 +561,11 @@ void FFluidSolverFlipCPU::SolvePressure(float Dt)
 	Parameter.U = &VelField[0];
 	Parameter.V = &VelField[1];
 	Parameter.W = &VelField[2];
-	Parameter.Marker = &Marker;
+	Parameter.UW = &WeightGrid[0];
+	Parameter.VW = &WeightGrid[1];
+	Parameter.WW = &WeightGrid[2];
+	//Parameter.Marker = &Marker;
+	Parameter.LiquidSDF = &LiquidSDF;
 	Parameter.Pressure = &Pressure;
 
 	PCGSolver.Solve(Parameter);
@@ -412,54 +573,110 @@ void FFluidSolverFlipCPU::SolvePressure(float Dt)
 
 void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 {
-	TI_ASSERT(Pressure.GetTotalCells() == Marker.GetTotalCells());
-#if DO_PARALLEL
-#pragma omp parallel for
-#endif
-	for (int32 Index = 0; Index < Pressure.GetTotalCells(); Index++)
+	// Mark fluid cells
+	FFluidGrid3<int8> FluidCells;
+	FluidCells.Create(Dimension);
+	for (int32 Index = 0; Index < FluidCells.GetTotalCells(); Index++)
 	{
-		vector3di GridIndex = Pressure.ArrayIndexToGridIndex(Index);
-
-		if (Marker.Cell(Index) == Marker_Fluid)
+		if (LiquidSDF.Cell(Index) < 0.f)
 		{
-			float P = Pressure.Cell(GridIndex);
-
-			if (GridIndex.X > 0)
-			{
-				float UP0 = Pressure.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
-				VelField[0].Cell(Index) -= (P - UP0) * Dt * InvCellSize.X;
-			}
-
-			if (GridIndex.Y > 0)
-			{
-				float VP0 = Pressure.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
-				VelField[1].Cell(Index) -= (P - VP0) * Dt * InvCellSize.Y;
-			}
-
-			if (GridIndex.Z > 0)
-			{
-				float WP0 = Pressure.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
-				VelField[2].Cell(Index) -= (P - WP0) * Dt * InvCellSize.Z;
-			}
+			// Inside liquid
+			FluidCells.Cell(Index) = 1;
 		}
 	}
+
+	IsValidVelocity[0].Clear();
+	IsValidVelocity[1].Clear();
+	IsValidVelocity[2].Clear();
+
+	const float MinFrac = 0.01f;
+	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
+		if (WeightGrid[0].Cell(G) > 0 && IsFaceBorderValueOfGridU(G.X, G.Y, G.Z, FluidCells, int8(1)))
+		{
+			float P0 = Pressure.Cell(G.X - 1, G.Y, G.Z);
+			float P1 = Pressure.Cell(Index);
+			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			VelField[0].Cell(Index) += -Dt * (P1 - P0) / (CellSize.X * Theta);
+			IsValidVelocity[0].Cell(Index) = 1;
+		}
+	}
+	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
+		if (WeightGrid[1].Cell(G) > 0 && IsFaceBorderValueOfGridV(G.X, G.Y, G.Z, FluidCells, int8(1)))
+		{
+			float P0 = Pressure.Cell(G.X, G.Y - 1, G.Z);
+			float P1 = Pressure.Cell(Index);
+			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			VelField[1].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Y * Theta);
+			IsValidVelocity[1].Cell(Index) = 1;
+		}
+	}
+	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
+	{
+		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
+		if (WeightGrid[2].Cell(G) > 0 && IsFaceBorderValueOfGridW(G.X, G.Y, G.Z, FluidCells, int8(1)))
+		{
+			float P0 = Pressure.Cell(G.X, G.Y, G.Z - 1);
+			float P1 = Pressure.Cell(Index);
+			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			VelField[2].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Z * Theta);
+			IsValidVelocity[2].Cell(Index) = 1;
+		}
+	}
+
+	// Constrain velocity
+	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
+	{
+		if (IsValidVelocity[0].Cell(Index) == 0)
+		{
+			VelField[0].Cell(Index) = 0.f;
+		}
+	}
+	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
+	{
+		if (IsValidVelocity[1].Cell(Index) == 0)
+		{
+			VelField[1].Cell(Index) = 0.f;
+		}
+	}
+	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
+	{
+		if (IsValidVelocity[2].Cell(Index) == 0)
+		{
+			VelField[2].Cell(Index) = 0.f;
+		}
+	}
+
 }
 
 void FFluidSolverFlipCPU::ConstrainVelocityField()
 {
-#if DO_PARALLEL
-#pragma omp parallel for
-#endif
-	for (int32 Index = 0; Index < Marker.GetTotalCells(); Index++)
+	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
-		vector3di GridIndex = Marker.ArrayIndexToGridIndex(Index);
-		if (Marker.Cell(Index) == Marker_Air)
+		if (WeightGrid[0].Cell(Index) == 0.f)
 		{
-			VelField[0].Cell(GridIndex) = 0.f;
-			VelField[1].Cell(GridIndex) = 0.f;
-			VelField[2].Cell(GridIndex) = 0.f;
+			VelField[0].Cell(Index) = 0.f;
+			VelFieldDelta[0].Cell(Index) = 0.f;
 		}
-
+}
+	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
+	{
+		if (WeightGrid[1].Cell(Index) == 0)
+		{
+			VelField[1].Cell(Index) = 0.f;
+			VelFieldDelta[1].Cell(Index) = 0.f;
+		}
+	}
+	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
+	{
+		if (WeightGrid[2].Cell(Index) == 0)
+		{
+			VelField[2].Cell(Index) = 0.f;
+			VelFieldDelta[2].Cell(Index) = 0.f;
+		}
 	}
 }
 

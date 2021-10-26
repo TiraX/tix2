@@ -7,12 +7,14 @@
 #include "FluidSimRenderer.h"
 #include "FluidParticle.h"
 #include "FluidGrid.h"
+#include "GeometrySDF.h"
 #include "FluidSolver.h"
 #include "FluidSolverPbfCPU.h"
 #include "FluidSolverPbfGPU.h"
 #include "FluidSolverGrid2d.h"
 #include "FluidSolverFlipCPU.h"
 #include "ParticleRenderer.h"
+
 
 #define SOLVER_PBF_CPU (0)
 #define SOLVER_PBF_GPU (1)
@@ -106,6 +108,11 @@ void FFluidSimRenderer::InitInRenderThread()
 	Solver->SetBoundaryBox(FluidBoundary);
 	SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
 	SolverLocal->CreateGrid(GridDimension);
+	const float tor = 0.01f;
+	SolverLocal->AddCollision(
+		FGeometrySDF::CreateBoxSDF(
+			FluidBoundary.MinEdge + vector3df(tor) , 
+			FluidBoundary.MaxEdge - vector3df(tor), true));
 	ParticleRenderer = ti_new FParticleRenderer();
 	ParticleRenderer->CreateResources(RHI, Solver->GetNumParticles(), FluidBoundary);
 #else

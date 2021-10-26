@@ -122,8 +122,10 @@
     <ClCompile Include="FluidSolverPbf.cpp" />
     <ClCompile Include="FluidSolverPbfCPU.cpp" />
     <ClCompile Include="FluidSolverPbfGPU.cpp" />
+    <ClCompile Include="GeometrySDF.cpp" />
     <ClCompile Include="GradientSubstractCS.cpp" />
     <ClCompile Include="LambdaCS.cpp" />
+    <ClCompile Include="LevelsetUtils.cpp" />
     <ClCompile Include="NeighborSearchCS.cpp" />
     <ClCompile Include="P2CellCS.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
@@ -160,8 +162,10 @@
     <ClInclude Include="FluidSolverPbf.h" />
     <ClInclude Include="FluidSolverPbfCPU.h" />
     <ClInclude Include="FluidSolverPbfGPU.h" />
+    <ClInclude Include="GeometrySDF.h" />
     <ClInclude Include="GradientSubstractCS.h" />
     <ClInclude Include="LambdaCS.h" />
+    <ClInclude Include="LevelsetUtils.h" />
     <ClInclude Include="NeighborSearchCS.h" />
     <ClInclude Include="P2CellCS.h" />
     <ClInclude Include="ParticleRenderer.h" />

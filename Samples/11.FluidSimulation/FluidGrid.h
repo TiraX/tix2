@@ -50,6 +50,11 @@ public:
 		memset(Cells.data(), 0, Cells.size() * sizeof(T));
 	}
 
+	void Fill(T Value)
+	{
+		TFill(Cells.begin(), Cells.end(), Value);
+	}
+
 	const vector3di& GetDimension() const
 	{
 		return Dimension;
@@ -226,3 +231,34 @@ private:
 	vector3di Dimension;
 	TVector<T> Cells;
 };
+
+template <class T>
+inline bool IsFaceBorderValueOfGridU(int32 i, int32 j, int32 k, const FFluidGrid3<T>& Grid, T Value)
+{
+	if (i == Grid.GetDimension().X)
+		return Grid.Cell(i - 1, j, k) == Value;
+	else if (i > 0)
+		return Grid.Cell(i, j, k) == Value || Grid.Cell(i - 1, j, k) == Value;
+	else
+		return Grid.Cell(i, j, k) == Value;
+}
+template <class T>
+inline bool IsFaceBorderValueOfGridV(int32 i, int32 j, int32 k, const FFluidGrid3<T>& Grid, T Value)
+{
+	if (j == Grid.GetDimension().Y)
+		return Grid.Cell(i, j - 1, k) == Value;
+	else if (j > 0)
+		return Grid.Cell(i, j, k) == Value || Grid.Cell(i, j - 1, k) == Value;
+	else
+		return Grid.Cell(i, j, k) == Value;
+}
+template <class T>
+inline bool IsFaceBorderValueOfGridW(int32 i, int32 j, int32 k, const FFluidGrid3<T>& Grid, T Value)
+{
+	if (k == Grid.GetDimension().Z)
+		return Grid.Cell(i, j, k - 1) == Value;
+	else if (k > 0)
+		return Grid.Cell(i, j, k) == Value || Grid.Cell(i, j, k - 1) == Value;
+	else
+		return Grid.Cell(i, j, k) == Value;
+}

@@ -15,7 +15,12 @@ struct PCGSolverParameters {
 	FFluidGrid3<float>* U;
 	FFluidGrid3<float>* V;
 	FFluidGrid3<float>* W;
-	FFluidGrid3<int32>* Marker;
+	FFluidGrid3<float>* UW;
+	FFluidGrid3<float>* VW;
+	FFluidGrid3<float>* WW;
+	//FFluidGrid3<int32>* Marker;
+	FFluidGrid3<float>* LiquidSDF;
+
 
 	FFluidGrid3<float>* Pressure;
 
@@ -24,7 +29,11 @@ struct PCGSolverParameters {
 		, U(nullptr)
 		, V(nullptr)
 		, W(nullptr)
-		, Marker(nullptr)
+		, UW(nullptr)
+		, VW(nullptr)
+		, WW(nullptr)
+		//, Marker(nullptr)
+		, LiquidSDF(nullptr)
 		, Pressure(nullptr)
 	{}
 };
@@ -76,7 +85,7 @@ private:
 	FGridsMap GridsMap;
 	TVector<float> NegativeDivergence;
 
-	TVector<FMatrixCell> MatrixCoeffients;
+	TVector<FMatrixCell> A;
 	TVector<double> Precon;
 	TVector<double> PressureResult;
 };

@@ -8,6 +8,7 @@
 #include "FluidParticle.h"
 #include "FluidGrid.h"
 #include "PCGSolver.h"
+#include "GeometrySDF.h"
 
 // Make a new implementation with pcg
 class FFluidSolverFlipCPU : public FFluidSolver
@@ -22,6 +23,7 @@ public:
 		float InParticleSeperation,
 		float InParticleMass);
 	void CreateGrid(const vector3di& Dim);
+	void AddCollision(FGeometrySDF* CollisionSDF);
 	virtual void Sim(FRHI* RHI, float Dt) override;
 
 	virtual int32 GetNumParticles() override
@@ -33,12 +35,14 @@ public:
 		return Particles.GetParticlePositions();
 	}
 private:
+	void UpdateLiquidSDF();
 	void AdvectVelocityField();
 	void MarkCells();
 	void ExtrapolateVelocityField();
 	void BackupVelocity();
 	void CalcExternalForces(float Dt);
 	void CalcVisicosity(float Dt);
+	void ComputeWeights();
 	void SolvePressure(float Dt);
 	void ApplyPressure(float Dt);
 	void ConstrainVelocityField();
@@ -54,13 +58,19 @@ private:
 	vector3df CellSize;
 	vector3df InvCellSize;
 	vector3di Dimension;
+	float ParticleRadius;
 
 	// MAC Grid 
 	FFluidGrid3<float> VelField[3];
-	FFluidGrid3<int32> Marker;
+	//FFluidGrid3<int32> Marker;
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;
 	FFluidGrid3<float> VelFieldDelta[3];
+	FFluidGrid3<int8> IsValidVelocity[3];
+	FFluidGrid3<float> WeightGrid[3];
+	FFluidGrid3<float> LiquidSDF;
+
+	FGeometrySDF* SolidSDF;
 
 	FPCGSolver PCGSolver;
 };

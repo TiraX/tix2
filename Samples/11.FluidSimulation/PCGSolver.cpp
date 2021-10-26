@@ -6,7 +6,8 @@
 #include "stdafx.h"
 #include "PCGSolver.h"
 #include "FluidSimRenderer.h"
-
+#include "GeometrySDF.h"
+#include "LevelsetUtils.h"
 
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
@@ -68,16 +69,15 @@ void FPCGSolver::CollectFluidCells(const PCGSolverParameters& Parameter)
 {
 	PressureGrids.clear();
 
-	TI_ASSERT(Parameter.Marker->GetDimension() == Parameter.Pressure->GetDimension());
-	const FFluidGrid3<int32>& Marker = *Parameter.Marker;
-
+	FFluidGrid3<float>* LiquidSdf = Parameter.LiquidSDF;
+	TI_ASSERT(LiquidSdf->GetDimension() == Parameter.Pressure->GetDimension());
 	// Collect 
-	for (int32 Index = 0; Index < Marker.GetTotalCells(); Index++)
+	for (int32 Index = 0; Index < LiquidSdf->GetTotalCells(); Index++)
 	{
-		int32 BoundaryInfo = Marker.GetBoudaryTypeInfo(Index);
-		if (BoundaryInfo == Boundary_None && Marker.Cell(Index) == Marker_Fluid)
+		int32 BoundaryInfo = LiquidSdf->GetBoudaryTypeInfo(Index);
+		if (BoundaryInfo == Boundary_None && LiquidSdf->Cell(Index) < 0.f)
 		{
-			vector3di GridIndex = Marker.ArrayIndexToGridIndex(Index);
+			vector3di GridIndex = LiquidSdf->ArrayIndexToGridIndex(Index);
 			PressureGrids.push_back(GridIndex);
 		}
 	}
@@ -96,31 +96,25 @@ void FPCGSolver::CalcNegativeDivergence(const PCGSolverParameters& Parameter)
 	const FFluidGrid3<float>& U = *Parameter.U;
 	const FFluidGrid3<float>& V = *Parameter.V;
 	const FFluidGrid3<float>& W = *Parameter.W;
+	const FFluidGrid3<float>& WeightU = *Parameter.UW;
+	const FFluidGrid3<float>& WeightV = *Parameter.VW;
+	const FFluidGrid3<float>& WeightW = *Parameter.WW;
 	vector3df InvCellSize = vector3df(1.f) / Parameter.CellSize;
-
-	const FFluidGrid3<int32>& Marker = *Parameter.Marker;
-	
+		
 	NegativeDivergence.clear();
 	NegativeDivergence.resize(PressureGrids.size());
 
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
-		const vector3di& GridIndex = PressureGrids[Index];
-		float ULeft = U.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		float URight = U.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-		float VBack = V.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		float VFront = V.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-		float WDown = W.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		float WUp = W.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
+		const vector3di& G = PressureGrids[Index];
+		float UL = WeightU.Cell(G.X, G.Y, G.Z)     * U.Cell(G.X, G.Y, G.Z);
+		float UR = WeightU.Cell(G.X + 1, G.Y, G.Z) * U.Cell(G.X + 1, G.Y, G.Z);
+		float VB = WeightV.Cell(G.X, G.Y, G.Z)     * V.Cell(G.X, G.Y, G.Z);
+		float VF = WeightV.Cell(G.X, G.Y + 1, G.Z) * V.Cell(G.X, G.Y + 1, G.Z);
+		float WD = WeightW.Cell(G.X, G.Y, G.Z)     * W.Cell(G.X, G.Y, G.Z);
+		float WU = WeightW.Cell(G.X, G.Y, G.Z + 1) * W.Cell(G.X, G.Y, G.Z + 1);
 
-		int32 ML = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		int32 MR = Marker.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-		int32 MB = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		int32 MF = Marker.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-		int32 MD = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z);
-		int32 MU = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
-
-		float Div = (URight - ULeft) * InvCellSize.X + (VFront - VBack) * InvCellSize.Y + (WUp - WDown) * InvCellSize.Z;
+		float Div = (UR - UL) * InvCellSize.X + (VF - VB) * InvCellSize.Y + (WU - WD) * InvCellSize.Z;
 		// FLIPDebug
 		if (TMath::Abs(Div)>0.0001f)
 		{
@@ -132,72 +126,100 @@ void FPCGSolver::CalcNegativeDivergence(const PCGSolverParameters& Parameter)
 
 void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 {
-	MatrixCoeffients.clear();
-	MatrixCoeffients.resize(PressureGrids.size());
-	const FFluidGrid3<int32>& Marker = *Parameter.Marker;
+	A.clear();
+	A.resize(PressureGrids.size());
 
+	const FFluidGrid3<float>& WeightU = *Parameter.UW;
+	const FFluidGrid3<float>& WeightV = *Parameter.VW;
+	const FFluidGrid3<float>& WeightW = *Parameter.WW;
+	const FFluidGrid3<float>& LiquidSDF = *Parameter.LiquidSDF;
+
+	const float MinFrac = 0.01f;
 	vector3df Scale = vector3df(Parameter.DeltaTime) / (Parameter.CellSize * Parameter.CellSize);
+	float Term;
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
-		const vector3di& GridIndex = PressureGrids[Index];
-		TI_ASSERT(Marker.Cell(GridIndex) == Marker_Fluid);
+		const vector3di& G = PressureGrids[Index];
 
-		const float FluidFractionCoe = 1.f;
 		// Right
-		const int32 MarkerRight = Marker.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
-		if (MarkerRight == Marker_Fluid)
+		Term = WeightU.Cell(G.X + 1, G.Y, G.Z) * Scale.X;
+		float SdfRight = LiquidSDF.Cell(G.X + 1, G.Y, G.Z);
+		if (SdfRight < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.X;
-			MatrixCoeffients[Index].PlusI -= Scale.X;
+			A[Index].Diag += Term;
+			A[Index].PlusI -= Term;
 		}
-		else if (MarkerRight == Marker_Air)
+		else
 		{
-			MatrixCoeffients[Index].Diag += Scale.X / FluidFractionCoe;
+			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X + 1, G.Y, G.Z), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 
 		// Left
-		const int32 MarkerLeft = Marker.Cell(GridIndex.X - 1, GridIndex.Y, GridIndex.Z);
-		if (MarkerLeft == Marker_Fluid)
+		Term = WeightU.Cell(G) * Scale.X;
+		float SdfLeft = LiquidSDF.Cell(G.X - 1, G.Y, G.Z);
+		if (SdfLeft < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.X;
+			A[Index].Diag += Term;
+		}
+		else
+		{
+			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 
 		// Front
-		const int32 MarkerFront = Marker.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
-		if (MarkerFront == Marker_Fluid)
+		Term = WeightV.Cell(G.X, G.Y + 1, G.Z) * Scale.Y;
+		float SdfFront = LiquidSDF.Cell(G.X, G.Y + 1, G.Z);
+		if (SdfFront < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.Y;
-			MatrixCoeffients[Index].PlusJ -= Scale.Y;
+			A[Index].Diag += Term;
+			A[Index].PlusJ -= Term;
 		}
-		else if (MarkerFront == Marker_Air)
+		else
 		{
-			MatrixCoeffients[Index].Diag += Scale.Y / FluidFractionCoe;
+			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y + 1, G.Z), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 
 		// Back
-		const int32 MarkerBack = Marker.Cell(GridIndex.X, GridIndex.Y - 1, GridIndex.Z);
-		if (MarkerBack == Marker_Fluid)
+		Term = WeightV.Cell(G) * Scale.Y;
+		float SdfBack = LiquidSDF.Cell(G.X, G.Y - 1, G.Z);
+		if (SdfBack < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.Y;
+			A[Index].Diag += Term;
+		}
+		else
+		{
+			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 
 		// Up
-		const int32 MarkerUp = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
-		if (MarkerUp == Marker_Fluid)
+		Term = WeightW.Cell(G.X, G.Y, G.Z + 1) * Scale.Z;
+		float SdfUp = LiquidSDF.Cell(G.X, G.Y, G.Z + 1);
+		if (SdfUp < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.Z;
-			MatrixCoeffients[Index].PlusK -= Scale.Z;
+			A[Index].Diag += Term;
+			A[Index].PlusK -= Term;
 		}
-		else if (MarkerUp == Marker_Air)
+		else
 		{
-			MatrixCoeffients[Index].Diag += Scale.Z / FluidFractionCoe;
+			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z + 1), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 
 		// Down
-		const int32 MarkerDown = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z - 1);
-		if (MarkerDown == Marker_Fluid)
+		Term = WeightW.Cell(G) * Scale.Z;
+		float SdfDown = LiquidSDF.Cell(G.X, G.Y, G.Z - 1);
+		if (SdfDown < 0)
 		{
-			MatrixCoeffients[Index].Diag += Scale.Z;
+			A[Index].Diag += Term;
+		}
+		else
+		{
+			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			A[Index].Diag += Term / Theta;
 		}
 	}
 }
@@ -206,7 +228,6 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 {
 	Precon.clear();
 	Precon.resize(PressureGrids.size());
-	const FFluidGrid3<int32>& Marker = *Parameter.Marker;
 
 	const double Tau = 0.97;	// Tuning constant
 	const double Sigma = 0.25;	// Safety constant
@@ -214,25 +235,24 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
 		const vector3di& GridIndex = PressureGrids[Index];
-		TI_ASSERT(Marker.Cell(GridIndex) == Marker_Fluid);
 
 		FGridsMap::iterator ItI = GridsMap.find(vector3di(GridIndex.X - 1, GridIndex.Y, GridIndex.Z));
 		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y - 1, GridIndex.Z));
 		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z - 1));
 
-		double Diag = MatrixCoeffients[Index].Diag;
+		double Diag = A[Index].Diag;
 
-		double PlusI_I = ItI != GridsMap.end() ? MatrixCoeffients[ItI->second].PlusI : 0.f;
-		double PlusI_J = ItJ != GridsMap.end() ? MatrixCoeffients[ItJ->second].PlusI : 0.f;
-		double PlusI_K = ItK != GridsMap.end() ? MatrixCoeffients[ItK->second].PlusI : 0.f;
+		double PlusI_I = ItI != GridsMap.end() ? A[ItI->second].PlusI : 0.f;
+		double PlusI_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusI : 0.f;
+		double PlusI_K = ItK != GridsMap.end() ? A[ItK->second].PlusI : 0.f;
 
-		double PlusJ_I = ItI != GridsMap.end() ? MatrixCoeffients[ItI->second].PlusJ : 0.f;
-		double PlusJ_J = ItJ != GridsMap.end() ? MatrixCoeffients[ItJ->second].PlusJ : 0.f;
-		double PlusJ_K = ItK != GridsMap.end() ? MatrixCoeffients[ItK->second].PlusJ : 0.f;
+		double PlusJ_I = ItI != GridsMap.end() ? A[ItI->second].PlusJ : 0.f;
+		double PlusJ_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusJ : 0.f;
+		double PlusJ_K = ItK != GridsMap.end() ? A[ItK->second].PlusJ : 0.f;
 
-		double PlusK_I = ItI != GridsMap.end() ? MatrixCoeffients[ItI->second].PlusK : 0.f;
-		double PlusK_J = ItJ != GridsMap.end() ? MatrixCoeffients[ItJ->second].PlusK : 0.f;
-		double PlusK_K = ItK != GridsMap.end() ? MatrixCoeffients[ItK->second].PlusK : 0.f;
+		double PlusK_I = ItI != GridsMap.end() ? A[ItI->second].PlusK : 0.f;
+		double PlusK_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusK : 0.f;
+		double PlusK_K = ItK != GridsMap.end() ? A[ItK->second].PlusK : 0.f;
 
 		double PreconI = ItI != GridsMap.end() ? Precon[ItI->second] : 0.f;
 		double PreconJ = ItJ != GridsMap.end() ? Precon[ItJ->second] : 0.f;
@@ -307,10 +327,10 @@ void FPCGSolver::SolvePressure()
 
 	TVector<double> Auxillary;
 	Auxillary.resize(PressureGrids.size());
-	ApplyPreconditioner(MatrixCoeffients, Precon, Residual, Auxillary);
+	ApplyPreconditioner(A, Precon, Residual, Auxillary);
 
 	float _min, _max, _avg;
-	GetDebugInfoMatrix(MatrixCoeffients, _min, _max, _avg);
+	GetDebugInfoMatrix(A, _min, _max, _avg);
 
 	double _dmin, _dmax, _davg;
 	GetDebugInfoVector(Residual, _dmin, _dmax, _davg);
@@ -331,7 +351,7 @@ void FPCGSolver::SolvePressure()
 
 	while (Iter < MaxPCGIterations)
 	{
-		ApplyMatrix(MatrixCoeffients, Search, Auxillary);
+		ApplyMatrix(A, Search, Auxillary);
 		Alpha = Sigma / DotVector(Auxillary, Search);
 		AddScaledVector(PressureResult, Search, Alpha);
 		AddScaledVector(Residual, Auxillary, -Alpha);
@@ -343,7 +363,7 @@ void FPCGSolver::SolvePressure()
 			return;
 		}
 
-		ApplyPreconditioner(MatrixCoeffients, Precon, Residual, Auxillary);
+		ApplyPreconditioner(A, Precon, Residual, Auxillary);
 		SigmaNew = DotVector(Auxillary, Residual);
 		Beta = SigmaNew / Sigma;
 		AddScaledVector(Search, Search, Beta);
