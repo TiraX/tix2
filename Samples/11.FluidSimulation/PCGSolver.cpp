@@ -142,7 +142,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		const vector3di& GridIndex = PressureGrids[Index];
 		TI_ASSERT(Marker.Cell(GridIndex) == Marker_Fluid);
 
-		const float FluidFractionCoe = 0.1f;
+		const float FluidFractionCoe = 1.f;
 		// Right
 		const int32 MarkerRight = Marker.Cell(GridIndex.X + 1, GridIndex.Y, GridIndex.Z);
 		if (MarkerRight == Marker_Fluid)
@@ -150,7 +150,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 			MatrixCoeffients[Index].Diag += Scale.X;
 			MatrixCoeffients[Index].PlusI -= Scale.X;
 		}
-		else
+		else if (MarkerRight == Marker_Air)
 		{
 			MatrixCoeffients[Index].Diag += Scale.X / FluidFractionCoe;
 		}
@@ -161,10 +161,6 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		{
 			MatrixCoeffients[Index].Diag += Scale.X;
 		}
-		else
-		{
-			MatrixCoeffients[Index].Diag += Scale.X / FluidFractionCoe;
-		}
 
 		// Front
 		const int32 MarkerFront = Marker.Cell(GridIndex.X, GridIndex.Y + 1, GridIndex.Z);
@@ -173,7 +169,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 			MatrixCoeffients[Index].Diag += Scale.Y;
 			MatrixCoeffients[Index].PlusJ -= Scale.Y;
 		}
-		else
+		else if (MarkerFront == Marker_Air)
 		{
 			MatrixCoeffients[Index].Diag += Scale.Y / FluidFractionCoe;
 		}
@@ -184,10 +180,6 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		{
 			MatrixCoeffients[Index].Diag += Scale.Y;
 		}
-		else
-		{
-			MatrixCoeffients[Index].Diag += Scale.Y / FluidFractionCoe;
-		}
 
 		// Up
 		const int32 MarkerUp = Marker.Cell(GridIndex.X, GridIndex.Y, GridIndex.Z + 1);
@@ -196,7 +188,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 			MatrixCoeffients[Index].Diag += Scale.Z;
 			MatrixCoeffients[Index].PlusK -= Scale.Z;
 		}
-		else
+		else if (MarkerUp == Marker_Air)
 		{
 			MatrixCoeffients[Index].Diag += Scale.Z / FluidFractionCoe;
 		}
@@ -207,10 +199,6 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		{
 			MatrixCoeffients[Index].Diag += Scale.Z;
 		}
-		else
-		{
-			MatrixCoeffients[Index].Diag += Scale.Z / FluidFractionCoe;
-		}
 	}
 }
 
@@ -218,6 +206,7 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 {
 	Precon.clear();
 	Precon.resize(PressureGrids.size());
+	const FFluidGrid3<int32>& Marker = *Parameter.Marker;
 
 	const double Tau = 0.97;	// Tuning constant
 	const double Sigma = 0.25;	// Safety constant
@@ -225,6 +214,7 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
 		const vector3di& GridIndex = PressureGrids[Index];
+		TI_ASSERT(Marker.Cell(GridIndex) == Marker_Fluid);
 
 		FGridsMap::iterator ItI = GridsMap.find(vector3di(GridIndex.X - 1, GridIndex.Y, GridIndex.Z));
 		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y - 1, GridIndex.Z));
@@ -272,6 +262,40 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 	}
 }
 
+void GetDebugInfoMatrix(const TVector<FMatrixCell>& A, float& Min, float& Max, float& Avg)
+{
+	Min = std::numeric_limits<float>::infinity();
+	Max = -std::numeric_limits<float>::infinity();
+
+	float Sum = 0.f;
+	for (const auto& a : A)
+	{
+		Sum += a.Diag;
+		if (a.Diag < Min)
+			Min = a.Diag;
+		if (a.Diag > Max)
+			Max = a.Diag;
+	}
+	Avg = Sum / float(A.size());
+}
+template <class T>
+inline void GetDebugInfoVector(const TVector<T>& A, T& Min, T& Max, T& Avg)
+{
+	Min = std::numeric_limits<T>::infinity();
+	Max = -std::numeric_limits<T>::infinity();
+
+	T Sum = 0;
+	for (const auto& a : A)
+	{
+		Sum += a;
+		if (a < Min)
+			Min = a;
+		if (a > Max)
+			Max = a;
+	}
+	Avg = Sum / (T)(A.size());
+}
+
 void FPCGSolver::SolvePressure()
 {
 	TVector<double> Residual;
@@ -284,6 +308,14 @@ void FPCGSolver::SolvePressure()
 	TVector<double> Auxillary;
 	Auxillary.resize(PressureGrids.size());
 	ApplyPreconditioner(MatrixCoeffients, Precon, Residual, Auxillary);
+
+	float _min, _max, _avg;
+	GetDebugInfoMatrix(MatrixCoeffients, _min, _max, _avg);
+
+	double _dmin, _dmax, _davg;
+	GetDebugInfoVector(Residual, _dmin, _dmax, _davg);
+	GetDebugInfoVector(Precon, _dmin, _dmax, _davg);
+	GetDebugInfoVector(Auxillary, _dmin, _dmax, _davg);
 
 	TVector<double> Search;
 	Search = Auxillary;
@@ -342,7 +374,7 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 		if (ItI != GridsMap.end())
 		{
 			PlusI_I = A[ItI->second].PlusI;
-			PreconI = Precon[ItI->second];
+			PreconI = PC[ItI->second];
 			Q_I = Q[ItI->second];
 		}
 
@@ -352,7 +384,7 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 		if (ItJ != GridsMap.end())
 		{
 			PlusJ_J = A[ItJ->second].PlusJ;
-			PreconJ = Precon[ItJ->second];
+			PreconJ = PC[ItJ->second];
 			Q_J = Q[ItJ->second];
 		}
 
@@ -362,7 +394,7 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 		if (ItK != GridsMap.end())
 		{
 			PlusK_K = A[ItK->second].PlusK;
-			PreconK = Precon[ItK->second];
+			PreconK = PC[ItK->second];
 			Q_K = Q[ItK->second];
 		}
 
@@ -372,7 +404,7 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 			PlusJ_J * PreconJ * Q_J -
 			PlusK_K * PreconK * Q_K;
 
-		T = T * Precon[Index];
+		T = T * PC[Index];
 		Q[Index] = T;
 	}
 
