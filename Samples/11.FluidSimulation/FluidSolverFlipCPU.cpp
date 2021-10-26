@@ -8,6 +8,28 @@
 #include "FluidSimRenderer.h"
 #include "LevelsetUtils.h"
 
+
+static float DebugFloat[3];
+inline void GetDebugInfo(const FFluidGrid3<float>& A)
+{
+	float Min = std::numeric_limits<float>::infinity();
+	float Max = -std::numeric_limits<float>::infinity();
+
+	float Sum = 0;
+	for (int32 i = 0; i < A.GetTotalCells(); i++)
+	{
+		float a = A.Cell(i);
+		Sum += a;
+		if (a < Min)
+			Min = a;
+		if (a > Max)
+			Max = a;
+	}
+	DebugFloat[0] = Min;
+	DebugFloat[1] = Max;
+	DebugFloat[2] = Sum / (float)(A.GetTotalCells());
+}
+
 #define DO_PARALLEL (0)
 
 const float eps = 1e-9f;
@@ -519,9 +541,12 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	const vector3df CellSizeH = CellSize * 0.5f;
 	vector3df VelocityStart[3] =
 	{
-		vector3df(0.f, CellSizeH.Y, CellSizeH.Z),
-		vector3df(CellSizeH.X, 0.f, CellSizeH.Z),
-		vector3df(CellSizeH.X, CellSizeH.Y, 0.f)
+		vector3df(),
+		vector3df(),
+		vector3df()
+		//vector3df(0.f, CellSizeH.Y, CellSizeH.Z),
+		//vector3df(CellSizeH.X, 0.f, CellSizeH.Z),
+		//vector3df(CellSizeH.X, CellSizeH.Y, 0.f)
 	};
 	//Compute finite-volume type face area weight for each velocity sample.
     //Compute face area fractions (using marching squares cases).
@@ -533,6 +558,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[0].Cell(Index) = W;
 	}
+	GetDebugInfo(WeightGrid[0]);
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
@@ -541,6 +567,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[1].Cell(Index) = W;
 	}
+	GetDebugInfo(WeightGrid[1]);
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
@@ -549,6 +576,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[2].Cell(Index) = W;
 	}
+	GetDebugInfo(WeightGrid[2]);
 }
 
 void FFluidSolverFlipCPU::SolvePressure(float Dt)

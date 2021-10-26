@@ -12,6 +12,65 @@
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
 
+static float DebugFloat[3];
+static double DebugDouble[3];
+
+void GetDebugInfo(const TVector<FMatrixCell>& A)
+{
+	float Min = std::numeric_limits<float>::infinity();
+	float Max = -std::numeric_limits<float>::infinity();
+
+	float Sum = 0.f;
+	for (const auto& a : A)
+	{
+		Sum += a.Diag;
+		if (a.Diag < Min)
+			Min = a.Diag;
+		if (a.Diag > Max)
+			Max = a.Diag;
+	}
+	DebugFloat[0] = Min;
+	DebugFloat[1] = Max;
+	DebugFloat[2] = Sum / (float)(A.size());
+}
+
+inline void GetDebugInfo(const TVector<float>& A)
+{
+	float Min = std::numeric_limits<float>::infinity();
+	float Max = -std::numeric_limits<float>::infinity();
+
+	float Sum = 0;
+	for (const auto& a : A)
+	{
+		Sum += a;
+		if (a < Min)
+			Min = a;
+		if (a > Max)
+			Max = a;
+	}
+	DebugFloat[0] = Min;
+	DebugFloat[1] = Max;
+	DebugFloat[2] = Sum / (float)(A.size());
+}
+inline void GetDebugInfo(const TVector<double>& A)
+{
+	double Min = std::numeric_limits<double>::infinity();
+	double Max = -std::numeric_limits<double>::infinity();
+
+	double Sum = 0;
+	for (const auto& a : A)
+	{
+		Sum += a;
+		if (a < Min)
+			Min = a;
+		if (a > Max)
+			Max = a;
+	}
+	DebugDouble[0] = Min;
+	DebugDouble[1] = Max;
+	DebugDouble[2] = Sum / (double)(A.size());
+}
+
 template<class T>
 inline T AbsMax(const TVector<T>& Array)
 {
@@ -44,6 +103,7 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 	CollectFluidCells(Parameter);
 
 	CalcNegativeDivergence(Parameter);
+	GetDebugInfo(NegativeDivergence);
 	float MaxDiv = AbsMax(NegativeDivergence);
 	if (MaxDiv < PressureTolerance)
 	{
@@ -52,8 +112,10 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 	}
 
 	BuildMatrixCoefficients(Parameter);
+	GetDebugInfo(A);
 
 	CalcPreconditioner(Parameter);
+	GetDebugInfo(Precon);
 
 	SolvePressure();
 
@@ -282,40 +344,6 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 	}
 }
 
-void GetDebugInfoMatrix(const TVector<FMatrixCell>& A, float& Min, float& Max, float& Avg)
-{
-	Min = std::numeric_limits<float>::infinity();
-	Max = -std::numeric_limits<float>::infinity();
-
-	float Sum = 0.f;
-	for (const auto& a : A)
-	{
-		Sum += a.Diag;
-		if (a.Diag < Min)
-			Min = a.Diag;
-		if (a.Diag > Max)
-			Max = a.Diag;
-	}
-	Avg = Sum / float(A.size());
-}
-template <class T>
-inline void GetDebugInfoVector(const TVector<T>& A, T& Min, T& Max, T& Avg)
-{
-	Min = std::numeric_limits<T>::infinity();
-	Max = -std::numeric_limits<T>::infinity();
-
-	T Sum = 0;
-	for (const auto& a : A)
-	{
-		Sum += a;
-		if (a < Min)
-			Min = a;
-		if (a > Max)
-			Max = a;
-	}
-	Avg = Sum / (T)(A.size());
-}
-
 void FPCGSolver::SolvePressure()
 {
 	TVector<double> Residual;
@@ -328,14 +356,7 @@ void FPCGSolver::SolvePressure()
 	TVector<double> Auxillary;
 	Auxillary.resize(PressureGrids.size());
 	ApplyPreconditioner(A, Precon, Residual, Auxillary);
-
-	float _min, _max, _avg;
-	GetDebugInfoMatrix(A, _min, _max, _avg);
-
-	double _dmin, _dmax, _davg;
-	GetDebugInfoVector(Residual, _dmin, _dmax, _davg);
-	GetDebugInfoVector(Precon, _dmin, _dmax, _davg);
-	GetDebugInfoVector(Auxillary, _dmin, _dmax, _davg);
+	GetDebugInfo(Auxillary);
 
 	TVector<double> Search;
 	Search = Auxillary;
