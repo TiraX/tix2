@@ -80,17 +80,16 @@ inline vector3di Floor(const vector3df& x)
 
 FFluidSolverFlipCPU::FFluidSolverFlipCPU()
 	: ParticleRadius(0.f)
-	, SolidSDF(nullptr)
 {
 	SubStep = 1;
 }
 
 FFluidSolverFlipCPU::~FFluidSolverFlipCPU()
 {
-	if (SolidSDF != nullptr)
-	{
-		ti_delete SolidSDF;
-	}
+	//if (SolidSDF != nullptr)
+	//{
+	//	ti_delete SolidSDF;
+	//}
 }
 
 void FFluidSolverFlipCPU::CreateParticles(
@@ -131,11 +130,18 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	WeightGrid[1].Create(VelField[1].GetDimension());
 	WeightGrid[2].Create(VelField[2].GetDimension());	
 	LiquidSDF.Create(Dim);
+	SolidSDF.Create(vector3di(Dim.X + 1, Dim.Y + 1, Dim.Z + 1));
 }
 
-void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* InCollisionSDF)
+void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* CollisionSDF)
 {
-	SolidSDF = InCollisionSDF;
+	// Init sdf grid here
+	for (int32 Index = 0; Index < SolidSDF.GetTotalCells(); Index++)
+	{
+		vector3di G = SolidSDF.ArrayIndexToGridIndex(Index);
+		vector3df CellPos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
+		SolidSDF.Cell(Index) = CollisionSDF->SampleSDFByPosition(CellPos);
+	}
 }
 
 int32 Counter = 0;
@@ -199,8 +205,7 @@ void FFluidSolverFlipCPU::UpdateLiquidSDF()
 		{
 			// Inside liquid
 			vector3di G = LiquidSDF.ArrayIndexToGridIndex(Index);
-			vector3df CellCenter = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + CellSizeH;
-			if (SolidSDF->SampleSDFByPosition(CellCenter) < 0.f)
+			if (DistanceAtCellCenter(SolidSDF, G.X, G.Y, G.Z) < 0)
 			{
 				// Inside solid
 				LiquidSDF.Cell(Index) = -MaxDistanceH;
@@ -553,8 +558,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
-		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[0];
-		float W = 1.f - GetFaceWeightU(SolidSDF, Pos, CellSize);
+		float W = 1.f - GetFaceWeight4U(SolidSDF, G.X, G.Y, G.Z);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[0].Cell(Index) = W;
 	}
@@ -562,8 +566,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
-		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[1];
-		float W = 1.f - GetFaceWeightV(SolidSDF, Pos, CellSize);
+		float W = 1.f - GetFaceWeight4V(SolidSDF, G.X, G.Y, G.Z);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[1].Cell(Index) = W;
 	}
@@ -571,8 +574,7 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
-		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + VelocityStart[2];
-		float W = 1.f - GetFaceWeightW(SolidSDF, Pos, CellSize);
+		float W = 1.f - GetFaceWeight4W(SolidSDF, G.X, G.Y, G.Z);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[2].Cell(Index) = W;
 	}
@@ -625,7 +627,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		{
 			float P0 = Pressure.Cell(G.X - 1, G.Y, G.Z);
 			float P1 = Pressure.Cell(Index);
-			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2U(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[0].Cell(Index) += -Dt * (P1 - P0) / (CellSize.X * Theta);
 			IsValidVelocity[0].Cell(Index) = 1;
 		}
@@ -637,7 +639,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		{
 			float P0 = Pressure.Cell(G.X, G.Y - 1, G.Z);
 			float P1 = Pressure.Cell(Index);
-			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2V(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[1].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Y * Theta);
 			IsValidVelocity[1].Cell(Index) = 1;
 		}
@@ -649,7 +651,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		{
 			float P0 = Pressure.Cell(G.X, G.Y, G.Z - 1);
 			float P1 = Pressure.Cell(Index);
-			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2W(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[2].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Z * Theta);
 			IsValidVelocity[2].Cell(Index) = 1;
 		}

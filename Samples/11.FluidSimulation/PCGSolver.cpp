@@ -169,12 +169,27 @@ void FPCGSolver::CalcNegativeDivergence(const PCGSolverParameters& Parameter)
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
 		const vector3di& G = PressureGrids[Index];
-		float UL = WeightU.Cell(G.X, G.Y, G.Z)     * U.Cell(G.X, G.Y, G.Z);
-		float UR = WeightU.Cell(G.X + 1, G.Y, G.Z) * U.Cell(G.X + 1, G.Y, G.Z);
-		float VB = WeightV.Cell(G.X, G.Y, G.Z)     * V.Cell(G.X, G.Y, G.Z);
-		float VF = WeightV.Cell(G.X, G.Y + 1, G.Z) * V.Cell(G.X, G.Y + 1, G.Z);
-		float WD = WeightW.Cell(G.X, G.Y, G.Z)     * W.Cell(G.X, G.Y, G.Z);
-		float WU = WeightW.Cell(G.X, G.Y, G.Z + 1) * W.Cell(G.X, G.Y, G.Z + 1);
+
+		float ULW = WeightU.Cell(G.X, G.Y, G.Z);
+		float URW = WeightU.Cell(G.X + 1, G.Y, G.Z);
+		float VBW = WeightV.Cell(G.X, G.Y, G.Z);
+		float VFW = WeightV.Cell(G.X, G.Y + 1, G.Z);
+		float WDW = WeightW.Cell(G.X, G.Y, G.Z);
+		float WUW = WeightW.Cell(G.X, G.Y, G.Z + 1);
+
+		float UL0 = U.Cell(G.X, G.Y, G.Z);
+		float UR0 = U.Cell(G.X + 1, G.Y, G.Z);
+		float VB0 = V.Cell(G.X, G.Y, G.Z);
+		float VF0 = V.Cell(G.X, G.Y + 1, G.Z);
+		float WD0 = W.Cell(G.X, G.Y, G.Z);
+		float WU0 = W.Cell(G.X, G.Y, G.Z + 1);
+
+		float UL = ULW * UL0;
+		float UR = URW * UR0;
+		float VB = VBW * VB0;
+		float VF = VFW * VF0;
+		float WD = WDW * WD0;
+		float WU = WUW * WU0;
 
 		float Div = (UR - UL) * InvCellSize.X + (VF - VB) * InvCellSize.Y + (WU - WD) * InvCellSize.Z;
 		// FLIPDebug
@@ -213,7 +228,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X + 1, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2U(LiquidSDF, G.X + 1, G.Y, G.Z), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 
@@ -226,7 +241,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightU(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2U(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 
@@ -240,7 +255,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y + 1, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2V(LiquidSDF, G.X, G.Y + 1, G.Z), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 
@@ -253,7 +268,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightV(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2V(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 
@@ -267,7 +282,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z + 1), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2W(LiquidSDF, G.X, G.Y, G.Z + 1), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 
@@ -280,7 +295,7 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 		}
 		else
 		{
-			float Theta = TMath::Max(GetFaceWeightW(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
+			float Theta = TMath::Max(GetFaceWeight2W(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			A[Index].Diag += Term / Theta;
 		}
 	}
@@ -373,9 +388,12 @@ void FPCGSolver::SolvePressure()
 	while (Iter < MaxPCGIterations)
 	{
 		ApplyMatrix(A, Search, Auxillary);
+		GetDebugInfo(Auxillary);
 		Alpha = Sigma / DotVector(Auxillary, Search);
 		AddScaledVector(PressureResult, Search, Alpha);
+		GetDebugInfo(PressureResult);
 		AddScaledVector(Residual, Auxillary, -Alpha);
+		GetDebugInfo(Residual);
 
 		double MaxCoeff = AbsMax(Residual);
 		if (MaxCoeff < PressureTolerance)
@@ -385,10 +403,12 @@ void FPCGSolver::SolvePressure()
 		}
 
 		ApplyPreconditioner(A, Precon, Residual, Auxillary);
+		GetDebugInfo(Auxillary);
 		SigmaNew = DotVector(Auxillary, Residual);
 		Beta = SigmaNew / Sigma;
-		AddScaledVector(Search, Search, Beta);
-		AddScaledVector(Search, Auxillary, 1.0);
+
+		AddScaledVectors(Auxillary, 1.0, Search, Beta, Search);
+		GetDebugInfo(Search);
 		Sigma = SigmaNew;
 
 		Iter++;
@@ -523,6 +543,16 @@ void FPCGSolver::AddScaledVector(TVector<double>& V1, const TVector<double>& V2,
 	for (uint32 i = 0; i < (uint32)V1.size(); i++)
 	{
 		V1[i] += V2[i] * Scale;
+	}
+}
+
+void FPCGSolver::AddScaledVectors(const TVector<double>& V1, double S1, const TVector<double>& V2, double S2, TVector<double>& Result)
+{
+	TI_ASSERT(V1.size() == V2.size() && V1.size() == Result.size());
+
+	for (uint32 i = 0; i < (uint32)V1.size(); i++)
+	{
+		Result[i] = V1[i] * S1 + V2[i] * S2;
 	}
 }
 

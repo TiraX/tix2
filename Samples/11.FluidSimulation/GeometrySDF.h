@@ -45,6 +45,6 @@ public:
 	virtual float SampleSDFByPosition(const vector3df& Position) override;
 
 private:
-	vector3df MinPoint;
-	vector3df MaxPoint;
+	vector3df Center;
+	vector3df EdgeLengthHalf;
 };

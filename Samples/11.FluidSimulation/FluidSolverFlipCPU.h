@@ -70,7 +70,8 @@ private:
 	FFluidGrid3<float> WeightGrid[3];
 	FFluidGrid3<float> LiquidSDF;
 
-	FGeometrySDF* SolidSDF;
+	//FGeometrySDF* SolidSDF;
+	FFluidGrid3<float> SolidSDF;
 
 	FPCGSolver PCGSolver;
 };

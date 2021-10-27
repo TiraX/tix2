@@ -133,3 +133,17 @@ float FractionInside(float SdfBL, float SdfBR, float SdfTL, float SdfTR)
 		return 0.f;
 	}
 }
+
+float DistanceAtCellCenter(const FFluidGrid3<float>& SDF, int32 i, int32 j, int32 k)
+{
+	return 0.125f * (
+		SDF.Cell(i, j, k) +
+		SDF.Cell(i + 1, j, k) +
+		SDF.Cell(i, j + 1, k) +
+		SDF.Cell(i + 1, j + 1, k) +
+		SDF.Cell(i, j, k + 1) +
+		SDF.Cell(i + 1, j, k + 1) +
+		SDF.Cell(i, j + 1, k + 1) +
+		SDF.Cell(i + 1, j + 1, k + 1)
+		);
+}

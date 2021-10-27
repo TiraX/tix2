@@ -75,6 +75,7 @@ private:
 	void ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<double>& PC, const TVector<double>& Residual, TVector<double>& Auxillary);
 	void ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<double>& X, TVector<double>& Result);
 	void AddScaledVector(TVector<double>& V1, const TVector<double>& V2, double Scale);
+	void AddScaledVectors(const TVector<double>& V1, double S1, const TVector<double>& V2, double S2, TVector<double>& Result);
 	double DotVector(const TVector<double>& V1, const TVector<double>& V2);
 
 private:
