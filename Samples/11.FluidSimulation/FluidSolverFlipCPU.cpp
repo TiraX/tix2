@@ -12,6 +12,7 @@
 static float DebugFloat[3];
 inline void GetDebugInfo(const FFluidGrid3<float>& A)
 {
+#ifdef TIX_DEBUG
 	float Min = std::numeric_limits<float>::infinity();
 	float Max = -std::numeric_limits<float>::infinity();
 
@@ -28,6 +29,7 @@ inline void GetDebugInfo(const FFluidGrid3<float>& A)
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
 	DebugFloat[2] = Sum / (float)(A.GetTotalCells());
+#endif
 }
 
 #define DO_PARALLEL (0)
@@ -623,6 +625,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
+		if (G.X == 0) continue;
 		if (WeightGrid[0].Cell(G) > 0 && IsFaceBorderValueOfGridU(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X - 1, G.Y, G.Z);
@@ -635,6 +638,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
+		if (G.Y == 0) continue;
 		if (WeightGrid[1].Cell(G) > 0 && IsFaceBorderValueOfGridV(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X, G.Y - 1, G.Z);
@@ -647,6 +651,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
+		if (G.Z == 0) continue;
 		if (WeightGrid[2].Cell(G) > 0 && IsFaceBorderValueOfGridW(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X, G.Y, G.Z - 1);

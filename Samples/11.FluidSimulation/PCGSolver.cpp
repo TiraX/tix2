@@ -17,6 +17,7 @@ static double DebugDouble[3];
 
 void GetDebugInfo(const TVector<FMatrixCell>& A)
 {
+#ifdef TIX_DEBUG
 	float Min = std::numeric_limits<float>::infinity();
 	float Max = -std::numeric_limits<float>::infinity();
 
@@ -32,10 +33,12 @@ void GetDebugInfo(const TVector<FMatrixCell>& A)
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
 	DebugFloat[2] = Sum / (float)(A.size());
+#endif
 }
 
 inline void GetDebugInfo(const TVector<float>& A)
 {
+#ifdef TIX_DEBUG
 	float Min = std::numeric_limits<float>::infinity();
 	float Max = -std::numeric_limits<float>::infinity();
 
@@ -51,9 +54,11 @@ inline void GetDebugInfo(const TVector<float>& A)
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
 	DebugFloat[2] = Sum / (float)(A.size());
+#endif
 }
 inline void GetDebugInfo(const TVector<double>& A)
 {
+#ifdef TIX_DEBUG
 	double Min = std::numeric_limits<double>::infinity();
 	double Max = -std::numeric_limits<double>::infinity();
 
@@ -69,6 +74,7 @@ inline void GetDebugInfo(const TVector<double>& A)
 	DebugDouble[0] = Min;
 	DebugDouble[1] = Max;
 	DebugDouble[2] = Sum / (double)(A.size());
+#endif
 }
 
 template<class T>
