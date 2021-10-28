@@ -65,7 +65,7 @@ private:
 	//FFluidGrid3<int32> Marker;
 	FFluidGrid3<float> Divergence;
 	FFluidGrid3<float> Pressure;
-	FFluidGrid3<float> VelFieldDelta[3];
+	FFluidGrid3<float> VelFieldOld[3];
 	FFluidGrid3<int8> IsValidVelocity[3];
 	FFluidGrid3<float> WeightGrid[3];
 	FFluidGrid3<float> LiquidSDF;

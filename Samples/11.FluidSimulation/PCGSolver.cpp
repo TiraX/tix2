@@ -77,6 +77,26 @@ inline void GetDebugInfo(const TVector<double>& A)
 #endif
 }
 
+
+double DebugNegative[3];
+inline void GetDebugNegative(const TVector<double>& A)
+{
+	int Count = 0;
+	double Sum = 0.f;
+	for (const auto& a : A)
+	{
+		if (a < 0)
+		{
+			Sum += a;
+			++Count;
+		}
+	}
+	double Avg = Sum / double(Count);
+	DebugNegative[0] = Sum;
+	DebugNegative[1] = double(Count);
+	DebugNegative[2] = Avg;
+}
+
 template<class T>
 inline T AbsMax(const TVector<T>& Array)
 {
@@ -374,11 +394,14 @@ void FPCGSolver::SolvePressure()
 	{
 		Residual[Index] = NegativeDivergence[Index];
 	}
+	GetDebugNegative(Residual);
 
 	TVector<double> Auxillary;
 	Auxillary.resize(PressureGrids.size());
 	ApplyPreconditioner(A, Precon, Residual, Auxillary);
 	GetDebugInfo(Auxillary);
+	GetDebugNegative(Precon);
+	GetDebugNegative(Auxillary);
 
 	TVector<double> Search;
 	Search = Auxillary;
@@ -399,6 +422,7 @@ void FPCGSolver::SolvePressure()
 		Alpha = Sigma / DotVector(Auxillary, Search);
 		AddScaledVector(PressureResult, Search, Alpha);
 		GetDebugInfo(PressureResult);
+		GetDebugNegative(PressureResult);
 		AddScaledVector(Residual, Auxillary, -Alpha);
 		GetDebugInfo(Residual);
 
