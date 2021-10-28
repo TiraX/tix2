@@ -124,6 +124,7 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 	GetDebugInfo(Precon);
 
 	SolvePressure();
+	GetDebugInfo(PressureResult);
 
 	// Copy values to pressure
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)

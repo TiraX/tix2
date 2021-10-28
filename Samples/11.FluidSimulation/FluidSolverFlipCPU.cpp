@@ -133,6 +133,7 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	WeightGrid[2].Create(VelField[2].GetDimension());	
 	LiquidSDF.Create(Dim);
 	SolidSDF.Create(vector3di(Dim.X + 1, Dim.Y + 1, Dim.Z + 1));
+	SolidSDFGrad.Create(SolidSDF.GetDimension());
 }
 
 void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* CollisionSDF)
@@ -142,7 +143,30 @@ void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* CollisionSDF)
 	{
 		vector3di G = SolidSDF.ArrayIndexToGridIndex(Index);
 		vector3df CellPos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
-		SolidSDF.Cell(Index) = CollisionSDF->SampleSDFByPosition(CellPos);
+		float Dis = CollisionSDF->SampleSDFByPosition(CellPos);
+		SolidSDF.Cell(Index) = Dis;
+
+		// Calc gradient
+		vector3df PL = CellPos - vector3df(CellSize.X, 0, 0);
+		vector3df PR = CellPos + vector3df(CellSize.X, 0, 0);
+		vector3df PB = CellPos - vector3df(0, CellSize.Y, 0);
+		vector3df PF = CellPos + vector3df(0, CellSize.Y, 0);
+		vector3df PD = CellPos - vector3df(0, 0, CellSize.Z);
+		vector3df PT = CellPos + vector3df(0, 0, CellSize.Z);
+
+		float DL = CollisionSDF->SampleSDFByPosition(PL);
+		float DR = CollisionSDF->SampleSDFByPosition(PR);
+		float DB = CollisionSDF->SampleSDFByPosition(PB);
+		float DF = CollisionSDF->SampleSDFByPosition(PF);
+		float DD = CollisionSDF->SampleSDFByPosition(PD);
+		float DT = CollisionSDF->SampleSDFByPosition(PT);
+
+		vector3df Grad;
+		Grad.X = (DL < DR) ? (Dis - DL) : (DR - Dis);
+		Grad.Y = (DB < DF) ? (Dis - DB) : (DF - Dis);
+		Grad.Z = (DD < DT) ? (Dis - DD) : (DT - Dis);
+		Grad.normalize();
+		SolidSDFGrad.Cell(Index) = Grad;
 	}
 }
 
@@ -629,7 +653,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		if (WeightGrid[0].Cell(G) > 0 && IsFaceBorderValueOfGridU(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X - 1, G.Y, G.Z);
-			float P1 = Pressure.Cell(Index);
+			float P1 = Pressure.Cell(G.X, G.Y, G.Z);
 			float Theta = TMath::Max(GetFaceWeight2U(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[0].Cell(Index) += -Dt * (P1 - P0) / (CellSize.X * Theta);
 			IsValidVelocity[0].Cell(Index) = 1;
@@ -642,7 +666,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		if (WeightGrid[1].Cell(G) > 0 && IsFaceBorderValueOfGridV(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X, G.Y - 1, G.Z);
-			float P1 = Pressure.Cell(Index);
+			float P1 = Pressure.Cell(G.X, G.Y, G.Z);
 			float Theta = TMath::Max(GetFaceWeight2V(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[1].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Y * Theta);
 			IsValidVelocity[1].Cell(Index) = 1;
@@ -655,7 +679,7 @@ void FFluidSolverFlipCPU::ApplyPressure(float Dt)
 		if (WeightGrid[2].Cell(G) > 0 && IsFaceBorderValueOfGridW(G.X, G.Y, G.Z, FluidCells, int8(1)))
 		{
 			float P0 = Pressure.Cell(G.X, G.Y, G.Z - 1);
-			float P1 = Pressure.Cell(Index);
+			float P1 = Pressure.Cell(G.X, G.Y, G.Z);
 			float Theta = TMath::Max(GetFaceWeight2W(LiquidSDF, G.X, G.Y, G.Z), MinFrac);
 			VelField[2].Cell(Index) += -Dt * (P1 - P0) / (CellSize.Z * Theta);
 			IsValidVelocity[2].Cell(Index) = 1;
@@ -724,6 +748,18 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 		vector3df(CellSizeH.X, 0.f, CellSizeH.Z),
 		vector3df(CellSizeH.X, CellSizeH.Y, 0.f)
 	};
+	vector3df Tolerance = vector3df(0.001f);
+	const vector3di& Dim0 = VelField[0].GetDimension();
+	const vector3di& Dim1 = VelField[1].GetDimension();
+	const vector3di& Dim2 = VelField[2].GetDimension();
+	vector3df VelocitySize[3] =
+	{
+		vector3df(float(Dim0.X), float(Dim0.Y), float(Dim0.Z)) * CellSize - Tolerance,
+		vector3df(float(Dim1.X), float(Dim1.Y), float(Dim1.Z))* CellSize - Tolerance,
+		vector3df(float(Dim2.X), float(Dim2.Y), float(Dim2.Z))* CellSize - Tolerance
+	};
+	const vector3di& SolidDim = SolidSDF.GetDimension();
+	vector3df SolidSDFSize = vector3df(float(SolidDim.X), float(SolidDim.Y), float(SolidDim.Z)) * CellSize - Tolerance;
 #if DO_PARALLEL
 #pragma omp parallel for
 #endif
@@ -734,6 +770,9 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 		vector3df RelativePU = MaxVector3d((P - VelocityOffset[0]) * InvCellSize, vector3df());
 		vector3df RelativePV = MaxVector3d((P - VelocityOffset[1]) * InvCellSize, vector3df());
 		vector3df RelativePW = MaxVector3d((P - VelocityOffset[2]) * InvCellSize, vector3df());
+		RelativePU = MinVector3d(RelativePU, VelocitySize[0]);
+		RelativePV = MinVector3d(RelativePV, VelocitySize[1]);
+		RelativePW = MinVector3d(RelativePW, VelocitySize[2]);
 
 		float U0 = VelField[0].SampleByRelativePositionLinear(RelativePU);
 		float V0 = VelField[1].SampleByRelativePositionLinear(RelativePV);
@@ -747,12 +786,26 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 		vector3df SamplePU = MaxVector3d((SamplePosition - VelocityOffset[0]) * InvCellSize, vector3df());
 		vector3df SamplePV = MaxVector3d((SamplePosition - VelocityOffset[1]) * InvCellSize, vector3df());
 		vector3df SamplePW = MaxVector3d((SamplePosition - VelocityOffset[2]) * InvCellSize, vector3df());
+		SamplePU = MinVector3d(SamplePU, VelocitySize[0]);
+		SamplePV = MinVector3d(SamplePV, VelocitySize[1]);
+		SamplePW = MinVector3d(SamplePW, VelocitySize[2]);
 
 		float U1 = VelField[0].SampleByRelativePositionLinear(SamplePU);
 		float V1 = VelField[1].SampleByRelativePositionLinear(SamplePV);
 		float W1 = VelField[2].SampleByRelativePositionLinear(SamplePW);
 		vector3df SampledVel = vector3df(U1, V1, W1);
 		vector3df NewP = P + SampledVel * Dt;
+
+		// Constraint position by collision
+		vector3df RelativePos = MaxVector3d(NewP * InvCellSize, vector3df());
+		RelativePos = MinVector3d(RelativePos, SolidSDFSize);
+		float SolidDis = SolidSDF.SampleByRelativePositionLinear(RelativePos);
+		if (SolidDis < 0)
+		{
+			// Inside solid, push it out
+			vector3df Grad = SolidSDFGrad.SampleByRelativePositionLinear(RelativePos);
+			NewP -= Grad * SolidDis;
+		}
 		Particles.SetParticlePosition(Index, NewP);
 	}
 }

@@ -190,7 +190,7 @@ public:
 		float iY1 = 1.f - iY;
 		float iZ1 = 1.f - iZ;
 
-		T Values[8] = { 0 };
+		T Values[8] = {};
 		bool ValidU1 = GridIndex.X + 1 < Dimension.X;
 		bool ValidV1 = GridIndex.Y + 1 < Dimension.Y;
 		bool ValidW1 = GridIndex.Z + 1 < Dimension.Z;

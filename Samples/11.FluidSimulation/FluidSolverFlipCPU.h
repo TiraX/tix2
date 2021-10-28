@@ -72,6 +72,7 @@ private:
 
 	//FGeometrySDF* SolidSDF;
 	FFluidGrid3<float> SolidSDF;
+	FFluidGrid3<vector3df> SolidSDFGrad;
 
 	FPCGSolver PCGSolver;
 };
