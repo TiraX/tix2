@@ -40,6 +40,18 @@ void FFluidParticle::CreateParticlesInBox(
 	ParticlePositions.reserve(TotalParticles);
 	const float jitter = ParticleSeperation * 0.4f;
 	TMath::RandSeed(12306);
+#define USE_DEBUG_POINTS (0)
+#if USE_DEBUG_POINTS
+	TFile F;
+	if (F.Open("debug_particles.dat", EFA_READ))
+	{
+		uint32 Num;
+		F.Read(&Num, sizeof(uint32), sizeof(uint32));
+		ParticlePositions.resize(Num);
+		F.Read(ParticlePositions.data(), Num * sizeof(vector3df), Num * sizeof(vector3df));
+		F.Close();
+	}
+#else
 	for (float z = InParticleBox.MinEdge.Z; z < InParticleBox.MaxEdge.Z; z += dis)
 	{
 		for (float y = InParticleBox.MinEdge.Y; y < InParticleBox.MaxEdge.Y; y += dis)
@@ -54,6 +66,7 @@ void FFluidParticle::CreateParticlesInBox(
 			}
 		}
 	}
+#endif
 	TotalParticles = (int32)ParticlePositions.size();
 
 	// Create Velocity and init to Zero

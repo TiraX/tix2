@@ -38,5 +38,6 @@ if not exist "Config" (
 )
 popd
 copy Config\*.ini Cooked\Windows\Config\
+copy *.dat Cooked\Windows\*.dat
 
 pause

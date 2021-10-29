@@ -827,9 +827,9 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 	const vector3di& Dim2 = VelField[2].GetDimension();
 	vector3df VelocitySize[3] =
 	{
-		vector3df(float(Dim0.X), float(Dim0.Y), float(Dim0.Z)) * CellSize - Tolerance,
-		vector3df(float(Dim1.X), float(Dim1.Y), float(Dim1.Z))* CellSize - Tolerance,
-		vector3df(float(Dim2.X), float(Dim2.Y), float(Dim2.Z))* CellSize - Tolerance
+		vector3df(float(Dim0.X), float(Dim0.Y), float(Dim0.Z)) - Tolerance,
+		vector3df(float(Dim1.X), float(Dim1.Y), float(Dim1.Z)) - Tolerance,
+		vector3df(float(Dim2.X), float(Dim2.Y), float(Dim2.Z)) - Tolerance
 	};
 	const vector3di& SolidDim = SolidSDF.GetDimension();
 	vector3df SolidSDFSize = vector3df(float(SolidDim.X), float(SolidDim.Y), float(SolidDim.Z)) * CellSize - Tolerance;

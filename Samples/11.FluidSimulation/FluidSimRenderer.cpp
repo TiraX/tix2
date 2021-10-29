@@ -140,7 +140,7 @@ void FFluidSimRenderer::Render(FRHI* RHI, FScene* Scene)
 	SolverGrid2D->UpdateMousePosition(MousePosition);
 #endif
 
-	Solver->Update(RHI, 1.f / 100);
+	Solver->Update(RHI, 1.f / 30);
 
 	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
 	DrawSceneTiles(RHI, Scene);
