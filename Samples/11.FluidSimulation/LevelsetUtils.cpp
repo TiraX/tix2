@@ -147,3 +147,7 @@ float DistanceAtCellCenter(const FFluidGrid3<float>& SDF, int32 i, int32 j, int3
 		SDF.Cell(i + 1, j + 1, k + 1)
 		);
 }
+float DistanceAtCellCenter(FGeometrySDF* SDF, const vector3df& Pos)
+{
+	return SDF->SampleSDFByPosition(Pos);
+}

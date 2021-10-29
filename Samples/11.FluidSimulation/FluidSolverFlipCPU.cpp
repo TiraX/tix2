@@ -163,19 +163,20 @@ void FFluidSolverFlipCPU::CreateGrid(const vector3di& Dim)
 	WeightGrid[1].Create(VelField[1].GetDimension());
 	WeightGrid[2].Create(VelField[2].GetDimension());	
 	LiquidSDF.Create(Dim);
-	SolidSDF.Create(vector3di(Dim.X + 1, Dim.Y + 1, Dim.Z + 1));
-	SolidSDFGrad.Create(SolidSDF.GetDimension());
+	//SolidSDF.Create(vector3di(Dim.X + 1, Dim.Y + 1, Dim.Z + 1));
+	SolidSDFGrad.Create(vector3di(Dim.X + 1, Dim.Y + 1, Dim.Z + 1));
 }
 
 void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* CollisionSDF)
 {
+	SolidSDF = CollisionSDF;
 	// Init sdf grid here
-	for (int32 Index = 0; Index < SolidSDF.GetTotalCells(); Index++)
+	for (int32 Index = 0; Index < SolidSDFGrad.GetTotalCells(); Index++)
 	{
-		vector3di G = SolidSDF.ArrayIndexToGridIndex(Index);
+		vector3di G = SolidSDFGrad.ArrayIndexToGridIndex(Index);
 		vector3df CellPos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
 		float Dis = CollisionSDF->SampleSDFByPosition(CellPos);
-		SolidSDF.Cell(Index) = Dis;
+		//SolidSDF.Cell(Index) = Dis;
 
 		// Calc gradient
 		vector3df PL = CellPos - vector3df(CellSize.X, 0, 0);
@@ -276,7 +277,8 @@ void FFluidSolverFlipCPU::UpdateLiquidSDF()
 		{
 			// Inside liquid
 			vector3di G = LiquidSDF.ArrayIndexToGridIndex(Index);
-			if (DistanceAtCellCenter(SolidSDF, G.X, G.Y, G.Z) < 0)
+			vector3df CellCenter = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize + CellSize * 0.5f;
+			if (DistanceAtCellCenter(SolidSDF, CellCenter) < 0)
 			{
 				// Inside solid
 				LiquidSDF.Cell(Index) = -MaxCellSizeH;
@@ -630,7 +632,8 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[0].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[0].ArrayIndexToGridIndex(Index);
-		float W = 1.f - GetFaceWeight4U(SolidSDF, G.X, G.Y, G.Z);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
+		float W = 1.f - GetFaceWeight4U(SolidSDF, Pos, CellSize);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[0].Cell(Index) = W;
 	}
@@ -638,7 +641,8 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[1].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[1].ArrayIndexToGridIndex(Index);
-		float W = 1.f - GetFaceWeight4V(SolidSDF, G.X, G.Y, G.Z);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
+		float W = 1.f - GetFaceWeight4V(SolidSDF, Pos, CellSize);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[1].Cell(Index) = W;
 	}
@@ -646,7 +650,8 @@ void FFluidSolverFlipCPU::ComputeWeights()
 	for (int32 Index = 0; Index < VelField[2].GetTotalCells(); Index++)
 	{
 		vector3di G = VelField[2].ArrayIndexToGridIndex(Index);
-		float W = 1.f - GetFaceWeight4W(SolidSDF, G.X, G.Y, G.Z);
+		vector3df Pos = vector3df(float(G.X), float(G.Y), float(G.Z)) * CellSize;
+		float W = 1.f - GetFaceWeight4W(SolidSDF, Pos, CellSize);
 		W = TMath::Clamp(W, 0.f, 1.f);
 		WeightGrid[2].Cell(Index) = W;
 	}
@@ -831,8 +836,8 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 		vector3df(float(Dim1.X), float(Dim1.Y), float(Dim1.Z)) - Tolerance,
 		vector3df(float(Dim2.X), float(Dim2.Y), float(Dim2.Z)) - Tolerance
 	};
-	const vector3di& SolidDim = SolidSDF.GetDimension();
-	vector3df SolidSDFSize = vector3df(float(SolidDim.X), float(SolidDim.Y), float(SolidDim.Z)) * CellSize - Tolerance;
+	const vector3di& SolidDim = SolidSDFGrad.GetDimension();
+	vector3df SolidSDFSize = vector3df(float(SolidDim.X), float(SolidDim.Y), float(SolidDim.Z)) - Tolerance;
 #if DO_PARALLEL
 #pragma omp parallel for
 #endif
@@ -880,7 +885,8 @@ void FFluidSolverFlipCPU::AdvectParticles(float Dt)
 		// Constraint position by collision
 		vector3df RelativePos = MaxVector3d(NewP * InvCellSize, vector3df());
 		RelativePos = MinVector3d(RelativePos, SolidSDFSize);
-		float SolidDis = SolidSDF.SampleByRelativePositionLinear(RelativePos);
+		//float SolidDis = SolidSDF.SampleByRelativePositionLinear(RelativePos);
+		float SolidDis = SolidSDF->SampleSDFByPosition(NewP);
 		if (SolidDis < 0)
 		{
 			// Inside solid, push it out
