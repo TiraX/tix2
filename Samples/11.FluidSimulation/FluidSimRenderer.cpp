@@ -96,10 +96,15 @@ void FFluidSimRenderer::InitInRenderThread()
 #endif
 	Solver = SolverLocal;
 
-	const float ParticleSeperation = 0.1f;
+	const float SimEnvScale = 1.f;
+	const float ParticleSeperation = 0.1f * SimEnvScale;
 	const float ParticleMass = 1.f;
 	FluidBoundary = aabbox3df(0.f, 0.f, 0.f, 8.f, 3.f, 6.f);
-	const aabbox3df ParticleBox(0.4f, 0.4f, 0.4f, 2.6f, 2.6f, 4.6f);
+	FluidBoundary.MinEdge *= SimEnvScale;
+	FluidBoundary.MaxEdge *= SimEnvScale;
+	aabbox3df ParticleBox(0.4f, 0.4f, 0.4f, 2.6f, 2.6f, 4.6f);
+	ParticleBox.MinEdge *= SimEnvScale;
+	ParticleBox.MaxEdge *= SimEnvScale;
 	const vector3di GridDimension = vector3di(8, 3, 6) * 5;
 
 #if FLUID_SOLVER == SOLVER_GRID2D
@@ -108,7 +113,7 @@ void FFluidSimRenderer::InitInRenderThread()
 	Solver->SetBoundaryBox(FluidBoundary);
 	SolverLocal->CreateParticles(ParticleBox, ParticleSeperation, ParticleMass);
 	SolverLocal->CreateGrid(GridDimension);
-	const float tor = 0.3f + 1e-6f;
+	const float tor = (0.3f + 1e-6f) * SimEnvScale;
 	SolverLocal->AddCollision(
 		FGeometrySDF::CreateBoxSDF(
 			FluidBoundary.MinEdge + vector3df(tor) , 
