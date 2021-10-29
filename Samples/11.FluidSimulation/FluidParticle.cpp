@@ -39,7 +39,7 @@ void FFluidParticle::CreateParticlesInBox(
 
 	// Create particles and resources
 	ParticlePositions.reserve(TotalParticles);
-	const float jitter = ParticleSeperation * 0.4f;
+	const float jitter = ParticleSeperation * 0.9f;
 	TMath::RandSeed(12306);
 #define USE_DEBUG_POINTS (0)
 #if USE_DEBUG_POINTS

@@ -12,8 +12,7 @@
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
 
-static float DebugFloat[3];
-static double DebugDouble[3];
+static pcg_float DebugFloat[3];
 
 void GetDebugInfo(const TVector<FMatrixCell>& A)
 {
@@ -36,13 +35,33 @@ void GetDebugInfo(const TVector<FMatrixCell>& A)
 #endif
 }
 
-inline void GetDebugInfo(const TVector<float>& A)
+//inline void GetDebugInfo(const TVector<float>& A)
+//{
+//#ifdef TIX_DEBUG
+//	float Min = std::numeric_limits<float>::infinity();
+//	float Max = -std::numeric_limits<float>::infinity();
+//
+//	float Sum = 0;
+//	for (const auto& a : A)
+//	{
+//		Sum += a;
+//		if (a < Min)
+//			Min = a;
+//		if (a > Max)
+//			Max = a;
+//	}
+//	DebugFloat[0] = Min;
+//	DebugFloat[1] = Max;
+//	DebugFloat[2] = Sum / (float)(A.size());
+//#endif
+//}
+inline void GetDebugInfo(const TVector<pcg_float>& A)
 {
 #ifdef TIX_DEBUG
-	float Min = std::numeric_limits<float>::infinity();
-	float Max = -std::numeric_limits<float>::infinity();
+	pcg_float Min = std::numeric_limits<pcg_float>::infinity();
+	pcg_float Max = -std::numeric_limits<pcg_float>::infinity();
 
-	float Sum = 0;
+	pcg_float Sum = 0;
 	for (const auto& a : A)
 	{
 		Sum += a;
@@ -53,36 +72,16 @@ inline void GetDebugInfo(const TVector<float>& A)
 	}
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
-	DebugFloat[2] = Sum / (float)(A.size());
-#endif
-}
-inline void GetDebugInfo(const TVector<double>& A)
-{
-#ifdef TIX_DEBUG
-	double Min = std::numeric_limits<double>::infinity();
-	double Max = -std::numeric_limits<double>::infinity();
-
-	double Sum = 0;
-	for (const auto& a : A)
-	{
-		Sum += a;
-		if (a < Min)
-			Min = a;
-		if (a > Max)
-			Max = a;
-	}
-	DebugDouble[0] = Min;
-	DebugDouble[1] = Max;
-	DebugDouble[2] = Sum / (double)(A.size());
+	DebugFloat[2] = Sum / (pcg_float)(A.size());
 #endif
 }
 
 
-double DebugNegative[3];
-inline void GetDebugNegative(const TVector<double>& A)
+pcg_float DebugNegative[3];
+inline void GetDebugNegative(const TVector<pcg_float>& A)
 {
 	int Count = 0;
-	double Sum = 0.f;
+	pcg_float Sum = 0.f;
 	for (const auto& a : A)
 	{
 		if (a < 0)
@@ -91,9 +90,9 @@ inline void GetDebugNegative(const TVector<double>& A)
 			++Count;
 		}
 	}
-	double Avg = Sum / double(Count);
+	pcg_float Avg = Sum / pcg_float(Count);
 	DebugNegative[0] = Sum;
-	DebugNegative[1] = double(Count);
+	DebugNegative[1] = pcg_float(Count);
 	DebugNegative[2] = Avg;
 }
 
@@ -130,7 +129,7 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 
 	CalcNegativeDivergence(Parameter);
 	GetDebugInfo(NegativeDivergence);
-	float MaxDiv = AbsMax(NegativeDivergence);
+	pcg_float MaxDiv = AbsMax(NegativeDivergence);
 	if (MaxDiv < PressureTolerance)
 	{
 		_LOG(Log, "Div (%f) is small enough, return 0 pressure.\n", MaxDiv);
@@ -333,8 +332,8 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 	Precon.clear();
 	Precon.resize(PressureGrids.size());
 
-	const double Tau = 0.97;	// Tuning constant
-	const double Sigma = 0.25;	// Safety constant
+	const pcg_float Tau = 0.97f;	// Tuning constant
+	const pcg_float Sigma = 0.25f;	// Safety constant
 
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
@@ -344,32 +343,32 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y - 1, GridIndex.Z));
 		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z - 1));
 
-		double Diag = A[Index].Diag;
+		pcg_float Diag = A[Index].Diag;
 
-		double PlusI_I = ItI != GridsMap.end() ? A[ItI->second].PlusI : 0.f;
-		double PlusI_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusI : 0.f;
-		double PlusI_K = ItK != GridsMap.end() ? A[ItK->second].PlusI : 0.f;
+		pcg_float PlusI_I = ItI != GridsMap.end() ? A[ItI->second].PlusI : 0.f;
+		pcg_float PlusI_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusI : 0.f;
+		pcg_float PlusI_K = ItK != GridsMap.end() ? A[ItK->second].PlusI : 0.f;
 
-		double PlusJ_I = ItI != GridsMap.end() ? A[ItI->second].PlusJ : 0.f;
-		double PlusJ_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusJ : 0.f;
-		double PlusJ_K = ItK != GridsMap.end() ? A[ItK->second].PlusJ : 0.f;
+		pcg_float PlusJ_I = ItI != GridsMap.end() ? A[ItI->second].PlusJ : 0.f;
+		pcg_float PlusJ_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusJ : 0.f;
+		pcg_float PlusJ_K = ItK != GridsMap.end() ? A[ItK->second].PlusJ : 0.f;
 
-		double PlusK_I = ItI != GridsMap.end() ? A[ItI->second].PlusK : 0.f;
-		double PlusK_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusK : 0.f;
-		double PlusK_K = ItK != GridsMap.end() ? A[ItK->second].PlusK : 0.f;
+		pcg_float PlusK_I = ItI != GridsMap.end() ? A[ItI->second].PlusK : 0.f;
+		pcg_float PlusK_J = ItJ != GridsMap.end() ? A[ItJ->second].PlusK : 0.f;
+		pcg_float PlusK_K = ItK != GridsMap.end() ? A[ItK->second].PlusK : 0.f;
 
-		double PreconI = ItI != GridsMap.end() ? Precon[ItI->second] : 0.f;
-		double PreconJ = ItJ != GridsMap.end() ? Precon[ItJ->second] : 0.f;
-		double PreconK = ItK != GridsMap.end() ? Precon[ItK->second] : 0.f;
+		pcg_float PreconI = ItI != GridsMap.end() ? Precon[ItI->second] : 0.f;
+		pcg_float PreconJ = ItJ != GridsMap.end() ? Precon[ItJ->second] : 0.f;
+		pcg_float PreconK = ItK != GridsMap.end() ? Precon[ItK->second] : 0.f;
 
-		double V1 = PlusI_I * PreconI;
-		double V2 = PlusJ_J * PreconJ;
-		double V3 = PlusK_K * PreconK;
-		double V4 = PreconI * PreconI;
-		double V5 = PreconJ * PreconJ;
-		double V6 = PreconK * PreconK;
+		pcg_float V1 = PlusI_I * PreconI;
+		pcg_float V2 = PlusJ_J * PreconJ;
+		pcg_float V3 = PlusK_K * PreconK;
+		pcg_float V4 = PreconI * PreconI;
+		pcg_float V5 = PreconJ * PreconJ;
+		pcg_float V6 = PreconK * PreconK;
 
-		double e = 
+		pcg_float e =
 			Diag - V1 * V1 - V2 * V2 - V3 * V3 - 
 			Tau * (PlusI_I * (PlusJ_I + PlusK_I) * V4 +
 				   PlusJ_J * (PlusI_J + PlusK_J) * V5 +
@@ -381,14 +380,14 @@ void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
 
 		if (fabs(e) > 10e-9)
 		{
-			Precon[Index] = 1.0 / sqrt(e);
+			Precon[Index] = 1.0f / sqrt(e);
 		}
 	}
 }
 
 void FPCGSolver::SolvePressure()
 {
-	TVector<double> Residual;
+	TVector<pcg_float> Residual;
 	Residual.resize(NegativeDivergence.size());
 	for (uint32 Index = 0; Index < (uint32)NegativeDivergence.size(); Index++)
 	{
@@ -396,20 +395,20 @@ void FPCGSolver::SolvePressure()
 	}
 	GetDebugNegative(Residual);
 
-	TVector<double> Auxillary;
+	TVector<pcg_float> Auxillary;
 	Auxillary.resize(PressureGrids.size());
 	ApplyPreconditioner(A, Precon, Residual, Auxillary);
 	GetDebugInfo(Auxillary);
 	GetDebugNegative(Precon);
 	GetDebugNegative(Auxillary);
 
-	TVector<double> Search;
+	TVector<pcg_float> Search;
 	Search = Auxillary;
 
-	double Alpha = 0.0;
-	double Beta = 0.0;
-	double Sigma = DotVector(Auxillary, Residual);
-	double SigmaNew = 0.0;
+	pcg_float Alpha = 0.0;
+	pcg_float Beta = 0.0;
+	pcg_float Sigma = DotVector(Auxillary, Residual);
+	pcg_float SigmaNew = 0.0;
 	int32 Iter = 0;
 
 	PressureResult.clear();
@@ -426,7 +425,7 @@ void FPCGSolver::SolvePressure()
 		AddScaledVector(Residual, Auxillary, -Alpha);
 		GetDebugInfo(Residual);
 
-		double MaxCoeff = AbsMax(Residual);
+		pcg_float MaxCoeff = AbsMax(Residual);
 		if (MaxCoeff < PressureTolerance)
 		{
 			_LOG(Log, "PCG Iter = %d, Error = %f.\n", Iter, MaxCoeff);
@@ -447,10 +446,10 @@ void FPCGSolver::SolvePressure()
 	_LOG(Log, "PCG MaxIteration(%d) Reached, Error = %f.\n", Iter, AbsMax(Residual));
 }
 
-void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<double>& PC, const TVector<double>& Residual, TVector<double>& Auxillary)
+void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary)
 {
 	// Solve A*q = residual
-	TVector<double> Q;
+	TVector<pcg_float> Q;
 	Q.resize(PressureGrids.size());
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
 	{
@@ -460,9 +459,9 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y - 1, GridIndex.Z));
 		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z - 1));
 
-		double PlusI_I = 0.0;
-		double PreconI = 0.0;
-		double Q_I = 0.0;
+		pcg_float PlusI_I = 0.0;
+		pcg_float PreconI = 0.0;
+		pcg_float Q_I = 0.0;
 		if (ItI != GridsMap.end())
 		{
 			PlusI_I = A[ItI->second].PlusI;
@@ -470,9 +469,9 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 			Q_I = Q[ItI->second];
 		}
 
-		double PlusJ_J = 0.0;
-		double PreconJ = 0.0;
-		double Q_J = 0.0;
+		pcg_float PlusJ_J = 0.0;
+		pcg_float PreconJ = 0.0;
+		pcg_float Q_J = 0.0;
 		if (ItJ != GridsMap.end())
 		{
 			PlusJ_J = A[ItJ->second].PlusJ;
@@ -480,9 +479,9 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 			Q_J = Q[ItJ->second];
 		}
 
-		double PlusK_K = 0.0;
-		double PreconK = 0.0;
-		double Q_K = 0.0;
+		pcg_float PlusK_K = 0.0;
+		pcg_float PreconK = 0.0;
+		pcg_float Q_K = 0.0;
 		if (ItK != GridsMap.end())
 		{
 			PlusK_K = A[ItK->second].PlusK;
@@ -490,8 +489,8 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 			Q_K = Q[ItK->second];
 		}
 
-		double T =
-			double(Residual[Index]) -
+		pcg_float T =
+			pcg_float(Residual[Index]) -
 			PlusI_I * PreconI * Q_I -
 			PlusJ_J * PreconJ * Q_J -
 			PlusK_K * PreconK * Q_K;
@@ -509,16 +508,16 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y + 1, GridIndex.Z));
 		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z + 1));
 
-		double VectI = ItI != GridsMap.end() ? Auxillary[ItI->second] : 0.0;
-		double VectJ = ItJ != GridsMap.end() ? Auxillary[ItJ->second] : 0.0;
-		double VectK = ItK != GridsMap.end() ? Auxillary[ItK->second] : 0.0;
+		pcg_float VectI = ItI != GridsMap.end() ? Auxillary[ItI->second] : 0.0f;
+		pcg_float VectJ = ItJ != GridsMap.end() ? Auxillary[ItJ->second] : 0.0f;
+		pcg_float VectK = ItK != GridsMap.end() ? Auxillary[ItK->second] : 0.0f;
 
-		double PlusI = A[Index].PlusI;
-		double PlusJ = A[Index].PlusJ;
-		double PlusK = A[Index].PlusK;
+		pcg_float PlusI = A[Index].PlusI;
+		pcg_float PlusJ = A[Index].PlusJ;
+		pcg_float PlusK = A[Index].PlusK;
 
-		double PreconValue = PC[Index];
-		double T = Q[Index] -
+		pcg_float PreconValue = PC[Index];
+		pcg_float T = Q[Index] -
 			PlusI * PreconValue * VectI -
 			PlusJ * PreconValue * VectJ -
 			PlusK * PreconValue * VectK;
@@ -528,7 +527,7 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 	}
 }
 
-void FPCGSolver::ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<double>& X, TVector<double>& Result)
+void FPCGSolver::ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<pcg_float>& X, TVector<pcg_float>& Result)
 {
 	TI_ASSERT(A.size() == X.size() && A.size() == Result.size());
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
@@ -536,7 +535,7 @@ void FPCGSolver::ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<double
 		const vector3di& GridIndex = PressureGrids[Index];
 
 		FGridsMap::iterator It;
-		double Val = 0.0;
+		pcg_float Val = 0.0;
 		It = GridsMap.find(vector3di(GridIndex.X - 1, GridIndex.Y, GridIndex.Z));
 		if (It != GridsMap.end())
 			Val += X[It->second] * A[It->second].PlusI;
@@ -567,7 +566,7 @@ void FPCGSolver::ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<double
 	}
 }
 
-void FPCGSolver::AddScaledVector(TVector<double>& V1, const TVector<double>& V2, double Scale)
+void FPCGSolver::AddScaledVector(TVector<pcg_float>& V1, const TVector<pcg_float>& V2, pcg_float Scale)
 {
 	TI_ASSERT(V1.size() == V2.size());
 
@@ -577,7 +576,7 @@ void FPCGSolver::AddScaledVector(TVector<double>& V1, const TVector<double>& V2,
 	}
 }
 
-void FPCGSolver::AddScaledVectors(const TVector<double>& V1, double S1, const TVector<double>& V2, double S2, TVector<double>& Result)
+void FPCGSolver::AddScaledVectors(const TVector<pcg_float>& V1, pcg_float S1, const TVector<pcg_float>& V2, pcg_float S2, TVector<pcg_float>& Result)
 {
 	TI_ASSERT(V1.size() == V2.size() && V1.size() == Result.size());
 
@@ -587,11 +586,11 @@ void FPCGSolver::AddScaledVectors(const TVector<double>& V1, double S1, const TV
 	}
 }
 
-double FPCGSolver::DotVector(const TVector<double>& V1, const TVector<double>& V2)
+pcg_float FPCGSolver::DotVector(const TVector<pcg_float>& V1, const TVector<pcg_float>& V2)
 {
 	TI_ASSERT(V1.size() == V2.size());
 
-	double Sum = 0.0;
+	pcg_float Sum = 0.0;
 	for (uint32 i = 0; i < (uint32)V1.size(); i++)
 	{
 		Sum += V1[i] * V2[i];

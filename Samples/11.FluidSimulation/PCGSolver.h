@@ -8,6 +8,9 @@
 #include "FluidParticle.h"
 #include "FluidGrid.h"
 
+//typedef double pcg_float;
+typedef float pcg_float;
+
 struct PCGSolverParameters {
     vector3df CellSize;
     float DeltaTime;
@@ -72,11 +75,11 @@ private:
 
 	void SolvePressure();
 
-	void ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<double>& PC, const TVector<double>& Residual, TVector<double>& Auxillary);
-	void ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<double>& X, TVector<double>& Result);
-	void AddScaledVector(TVector<double>& V1, const TVector<double>& V2, double Scale);
-	void AddScaledVectors(const TVector<double>& V1, double S1, const TVector<double>& V2, double S2, TVector<double>& Result);
-	double DotVector(const TVector<double>& V1, const TVector<double>& V2);
+	void ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary);
+	void ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<pcg_float>& X, TVector<pcg_float>& Result);
+	void AddScaledVector(TVector<pcg_float>& V1, const TVector<pcg_float>& V2, pcg_float Scale);
+	void AddScaledVectors(const TVector<pcg_float>& V1, pcg_float S1, const TVector<pcg_float>& V2, pcg_float S2, TVector<pcg_float>& Result);
+	pcg_float DotVector(const TVector<pcg_float>& V1, const TVector<pcg_float>& V2);
 
 private:
 	float PressureTolerance;
@@ -84,9 +87,9 @@ private:
 	TVector<vector3di> PressureGrids;
 	typedef THMap<vector3di, int32> FGridsMap;
 	FGridsMap GridsMap;
-	TVector<float> NegativeDivergence;
+	TVector<pcg_float> NegativeDivergence;
 
 	TVector<FMatrixCell> A;
-	TVector<double> Precon;
-	TVector<double> PressureResult;
+	TVector<pcg_float> Precon;
+	TVector<pcg_float> PressureResult;
 };
