@@ -70,13 +70,18 @@ public:
 private:
 	void CollectFluidCells(const PCGSolverParameters& Parameter);
 	void CalcNegativeDivergence(const PCGSolverParameters& Parameter);
-	void BuildMatrixCoefficients(const PCGSolverParameters& Parameter);
-	void CalcPreconditioner(const PCGSolverParameters& Parameter);
+	void BuildMatrix(const PCGSolverParameters& Parameter);
+	void ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<pcg_float>& X, TVector<pcg_float>& Result);
+
+	void CalcPreconditionerMIC(const PCGSolverParameters& Parameter);
+	void ApplyPreconditionerMIC(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary);
+
+	void ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary);
+
+	void OutputMatrix(const FFluidGrid3<float>& PressureGrid);
 
 	void SolvePressure();
 
-	void ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary);
-	void ApplyMatrix(const TVector<FMatrixCell>& A, const TVector<pcg_float>& X, TVector<pcg_float>& Result);
 	void AddScaledVector(TVector<pcg_float>& V1, const TVector<pcg_float>& V2, pcg_float Scale);
 	void AddScaledVectors(const TVector<pcg_float>& V1, pcg_float S1, const TVector<pcg_float>& V2, pcg_float S2, TVector<pcg_float>& Result);
 	pcg_float DotVector(const TVector<pcg_float>& V1, const TVector<pcg_float>& V2);

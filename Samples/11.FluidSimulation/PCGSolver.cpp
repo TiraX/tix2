@@ -11,6 +11,7 @@
 
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
+static const bool UseIPP = !false;
 
 static pcg_float DebugFloat[3];
 
@@ -136,11 +137,16 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 		return;
 	}
 
-	BuildMatrixCoefficients(Parameter);
+	BuildMatrix(Parameter);
 	GetDebugInfo(A);
+	if (0)
+		OutputMatrix(*Parameter.Pressure);
 
-	CalcPreconditioner(Parameter);
-	GetDebugInfo(Precon);
+	if (!UseIPP)
+	{
+		CalcPreconditionerMIC(Parameter);
+		GetDebugInfo(Precon);
+	}
 
 	SolvePressure();
 	GetDebugInfo(PressureResult);
@@ -227,7 +233,7 @@ void FPCGSolver::CalcNegativeDivergence(const PCGSolverParameters& Parameter)
 	}
 }
 
-void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
+void FPCGSolver::BuildMatrix(const PCGSolverParameters& Parameter)
 {
 	A.clear();
 	A.resize(PressureGrids.size());
@@ -327,7 +333,116 @@ void FPCGSolver::BuildMatrixCoefficients(const PCGSolverParameters& Parameter)
 	}
 }
 
-void FPCGSolver::CalcPreconditioner(const PCGSolverParameters& Parameter)
+struct RowElement
+{
+	float Value;
+	uint32 RowIndex;
+	vector3di GridIndex;
+};
+
+void OutputRow(TStringStream& SS, TStringStream& SSPos, const TVector<RowElement>& Row, uint32 RowLength)
+{
+	uint32 i = 0;
+	// write empty until diag
+	for ( ; i < Row[0].RowIndex; i++)
+	{
+		SS << ",";
+		SSPos << ",";
+	}
+	// write diag
+	SS << Row[0].Value << ",";
+	SSPos << "Diag(" << Row[0].GridIndex.X << "," << Row[0].GridIndex.Y << "," << Row[0].GridIndex.Z << "),";
+	i++;
+	// write Right;
+	SS << Row[1].Value << ",";
+	SSPos << "pI(" << Row[1].GridIndex.X << "," << Row[1].GridIndex.Y << "," << Row[1].GridIndex.Z << "),";
+	i++;
+	// write empty until front
+	for (; i < Row[2].RowIndex; i++)
+	{
+		SS << ",";
+		SSPos << ",";
+	}
+	// write front
+	SS << Row[2].Value << ", ";
+	SSPos << "pJ(" << Row[2].GridIndex.X << "," << Row[2].GridIndex.Y << "," << Row[2].GridIndex.Z << "),";
+	i++;
+	// write empty until top
+	for (; i < Row[3].RowIndex; i++)
+	{
+		SS << ",";
+		SSPos << ",";
+	}
+	// write top
+	SS << Row[3].Value << ", ";
+	SSPos << "pK(" << Row[3].GridIndex.X << "," << Row[3].GridIndex.Y << "," << Row[3].GridIndex.Z << "),";
+	i++;
+	// write empty until row end
+	for (; i < RowLength; i++)
+	{
+		if (i < RowLength - 1)
+		{
+			SS << ",";
+			SSPos << ",";
+		}
+		else
+		{
+			SS << "\n";
+			SSPos << "\n";
+		}
+	}
+}
+
+void FPCGSolver::OutputMatrix(const FFluidGrid3<float>& PressureGrid)
+{
+	TStringStream MatrixSS;
+	TStringStream MatrixPos;
+	TVector<RowElement> Row;
+	for (int32 i = 0; i < PressureGrid.GetTotalCells(); i++)
+	{
+		vector3di G = PressureGrid.ArrayIndexToGridIndex(i);
+
+		Row.clear();
+
+		FGridsMap::iterator It = GridsMap.find(G);
+		if (It != GridsMap.end())
+		{
+			// has pressure equation
+			vector3di GR = vector3di(G.X + 1, G.Y, G.Z);
+			vector3di GF = vector3di(G.X, G.Y + 1, G.Z);
+			vector3di GT = vector3di(G.X, G.Y, G.Z + 1);
+			uint32 IndexR = PressureGrid.GridIndexToArrayIndex(GR.X, GR.Y, GR.Z);
+			uint32 IndexF = PressureGrid.GridIndexToArrayIndex(GF.X, GF.Y, GF.Z);
+			uint32 IndexT = PressureGrid.GridIndexToArrayIndex(GT.X, GT.Y, GT.Z);
+
+			Row.push_back({ A[It->second].Diag, (uint32)i, G });
+			Row.push_back({ A[It->second].PlusI, IndexR, GR });
+			Row.push_back({ A[It->second].PlusJ, IndexF, GF });
+			Row.push_back({ A[It->second].PlusK, IndexT, GT });
+
+			OutputRow(MatrixSS, MatrixPos, Row, PressureGrid.GetTotalCells());
+		}
+		else
+		{
+			// do not have pressure equation
+		}
+	}
+
+	TString FN = "matrix.csv";
+	TFile F;
+	if (F.Open(FN, EFA_CREATEWRITE))
+	{
+		F.Write(MatrixSS.str().c_str(), (int32)MatrixSS.str().length());
+		F.Close();
+	}
+	if (F.Open("matrix1.csv", EFA_CREATEWRITE))
+	{
+		F.Write(MatrixPos.str().c_str(), (int32)MatrixPos.str().length());
+		F.Close();
+	}
+}
+
+void FPCGSolver::CalcPreconditionerMIC(const PCGSolverParameters& Parameter)
 {
 	Precon.clear();
 	Precon.resize(PressureGrids.size());
@@ -397,7 +512,10 @@ void FPCGSolver::SolvePressure()
 
 	TVector<pcg_float> Auxillary;
 	Auxillary.resize(PressureGrids.size());
-	ApplyPreconditioner(A, Precon, Residual, Auxillary);
+	if (UseIPP)
+		ApplyPreconditionerIPP(A, Residual, Auxillary);
+	else
+		ApplyPreconditionerMIC(A, Precon, Residual, Auxillary);
 	GetDebugInfo(Auxillary);
 	GetDebugNegative(Precon);
 	GetDebugNegative(Auxillary);
@@ -432,7 +550,10 @@ void FPCGSolver::SolvePressure()
 			return;
 		}
 
-		ApplyPreconditioner(A, Precon, Residual, Auxillary);
+		if (UseIPP)
+			ApplyPreconditionerIPP(A, Residual, Auxillary);
+		else
+			ApplyPreconditionerMIC(A, Precon, Residual, Auxillary);
 		GetDebugInfo(Auxillary);
 		SigmaNew = DotVector(Auxillary, Residual);
 		Beta = SigmaNew / Sigma;
@@ -446,7 +567,7 @@ void FPCGSolver::SolvePressure()
 	_LOG(Log, "PCG MaxIteration(%d) Reached, Error = %f.\n", Iter, AbsMax(Residual));
 }
 
-void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary)
+void FPCGSolver::ApplyPreconditionerMIC(const TVector<FMatrixCell>& A, const TVector<pcg_float>& PC, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary)
 {
 	// Solve A*q = residual
 	TVector<pcg_float> Q;
@@ -524,6 +645,72 @@ void FPCGSolver::ApplyPreconditioner(const TVector<FMatrixCell>& A, const TVecto
 
 		T = T * PreconValue;
 		Auxillary[Index] = T;
+	}
+}
+
+void FPCGSolver::ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVector<pcg_float>& Residual, TVector<pcg_float>& Auxillary)
+{
+	// calc z[i] = r[i] - r * L[i, :] * 1/d
+	TVector<pcg_float> Z;
+	Z.resize(PressureGrids.size());
+	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
+	{
+		const vector3di& GridIndex = PressureGrids[Index];
+
+		FGridsMap::iterator ItI = GridsMap.find(vector3di(GridIndex.X - 1, GridIndex.Y, GridIndex.Z));
+		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y - 1, GridIndex.Z));
+		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z - 1));
+
+		float InvDi = 1.f / A[Index].Diag;
+		float Ri = Residual[Index];
+		pcg_float PlusI = A[Index].PlusI;
+		pcg_float PlusJ = A[Index].PlusJ;
+		pcg_float PlusK = A[Index].PlusK;
+
+		pcg_float Sum = 0.f;
+		if (ItI != GridsMap.end())
+		{
+			Sum += PlusI * Residual[ItI->second];
+		}
+		if (ItJ != GridsMap.end())
+		{
+			Sum += PlusJ * Residual[ItJ->second];
+		}
+		if (ItK != GridsMap.end())
+		{
+			Sum += PlusK * Residual[ItK->second];
+		}
+		Z[Index] = Ri - InvDi * Sum;
+	}
+
+	// calc z[i] = z[i] - z * L[i, :] * 1/d
+	TFill(Auxillary.begin(), Auxillary.end(), pcg_float(0));
+	for (int32 Index = (int32)PressureGrids.size() - 1; Index >= 0; Index--)
+	{
+		const vector3di& GridIndex = PressureGrids[Index];
+
+		FGridsMap::iterator ItI = GridsMap.find(vector3di(GridIndex.X + 1, GridIndex.Y, GridIndex.Z));
+		FGridsMap::iterator ItJ = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y + 1, GridIndex.Z));
+		FGridsMap::iterator ItK = GridsMap.find(vector3di(GridIndex.X, GridIndex.Y, GridIndex.Z + 1));
+
+		pcg_float PlusI = A[Index].PlusI;
+		pcg_float PlusJ = A[Index].PlusJ;
+		pcg_float PlusK = A[Index].PlusK;
+
+		pcg_float Sum = 0.f;
+		if (ItI != GridsMap.end())
+		{
+			Sum += 1.f / A[ItI->second].Diag * PlusI * Z[ItI->second];
+		}
+		if (ItJ != GridsMap.end())
+		{
+			Sum += 1.f / A[ItJ->second].Diag * PlusJ * Z[ItJ->second];
+		}
+		if (ItK != GridsMap.end())
+		{
+			Sum += 1.f / A[ItK->second].Diag * PlusK * Z[ItK->second];
+		}
+		Auxillary[Index] = Z[Index] - Sum;
 	}
 }
 
