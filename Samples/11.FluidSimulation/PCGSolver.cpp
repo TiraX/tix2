@@ -667,20 +667,34 @@ void FPCGSolver::ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVe
 		pcg_float PlusJ = A[Index].PlusJ;
 		pcg_float PlusK = A[Index].PlusK;
 
+		//pcg_float Sum = 0.f;
+		//if (ItI != GridsMap.end())
+		//{
+		//	Sum += PlusI * Residual[ItI->second];
+		//}
+		//if (ItJ != GridsMap.end())
+		//{
+		//	Sum += PlusJ * Residual[ItJ->second];
+		//}
+		//if (ItK != GridsMap.end())
+		//{
+		//	Sum += PlusK * Residual[ItK->second];
+		//}
+		//Z[Index] = Ri - InvDi * Sum;
 		pcg_float Sum = 0.f;
 		if (ItI != GridsMap.end())
 		{
-			Sum += PlusI * Residual[ItI->second];
+			Sum += 1.f / A[ItI->second].Diag * PlusI * Residual[ItI->second];
 		}
 		if (ItJ != GridsMap.end())
 		{
-			Sum += PlusJ * Residual[ItJ->second];
+			Sum += 1.f / A[ItJ->second].Diag * PlusJ * Residual[ItJ->second];
 		}
 		if (ItK != GridsMap.end())
 		{
-			Sum += PlusK * Residual[ItK->second];
+			Sum += 1.f / A[ItK->second].Diag * PlusK * Residual[ItK->second];
 		}
-		Z[Index] = Ri - InvDi * Sum;
+		Z[Index] = Ri - Sum;
 	}
 
 	// calc z[i] = z[i] - z * L[i, :] * 1/d
@@ -697,20 +711,36 @@ void FPCGSolver::ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVe
 		pcg_float PlusJ = A[Index].PlusJ;
 		pcg_float PlusK = A[Index].PlusK;
 
+		//pcg_float Sum = 0.f;
+		//if (ItI != GridsMap.end())
+		//{
+		//	Sum += 1.f / A[ItI->second].Diag * PlusI * Z[ItI->second];
+		//}
+		//if (ItJ != GridsMap.end())
+		//{
+		//	Sum += 1.f / A[ItJ->second].Diag * PlusJ * Z[ItJ->second];
+		//}
+		//if (ItK != GridsMap.end())
+		//{
+		//	Sum += 1.f / A[ItK->second].Diag * PlusK * Z[ItK->second];
+		//}
+		//Auxillary[Index] = Z[Index] - Sum;
+
+		pcg_float InvDi = 1.f / A[Index].Diag;
 		pcg_float Sum = 0.f;
 		if (ItI != GridsMap.end())
 		{
-			Sum += 1.f / A[ItI->second].Diag * PlusI * Z[ItI->second];
+			Sum += PlusI * Z[ItI->second];
 		}
 		if (ItJ != GridsMap.end())
 		{
-			Sum += 1.f / A[ItJ->second].Diag * PlusJ * Z[ItJ->second];
+			Sum += PlusJ * Z[ItJ->second];
 		}
 		if (ItK != GridsMap.end())
 		{
-			Sum += 1.f / A[ItK->second].Diag * PlusK * Z[ItK->second];
+			Sum += PlusK * Z[ItK->second];
 		}
-		Auxillary[Index] = Z[Index] - Sum;
+		Auxillary[Index] = Z[Index] - InvDi * Sum;
 	}
 }
 
