@@ -11,7 +11,7 @@
 
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
-const bool FPCGSolver::UseIPP = !false;
+const bool FPCGSolver::UseIPP = false;
 const int32 FPCGSolver::MaxPCGIterations = 200;
 
 static pcg_float DebugFloat[3];
