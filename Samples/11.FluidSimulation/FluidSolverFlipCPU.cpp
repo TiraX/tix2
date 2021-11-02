@@ -202,7 +202,30 @@ void FFluidSolverFlipCPU::AddCollision(FGeometrySDF* CollisionSDF)
 	}
 }
 
-int32 Counter = 0;
+void ExportParticlesToObj(const FFluidParticle& Particles, const TString& Filename)
+{
+	TStringStream Str;
+
+	Str << "# OBJ file format with ext .obj" << std::endl;
+	Str << "# vertex count = " << Particles.GetTotalParticles() << std::endl;
+	Str << "# face count = " << 0 << std::endl;
+
+	for (int32 Index = 0; Index < Particles.GetTotalParticles(); Index++)
+	{
+		const vector3df& P = Particles.GetParticlePosition(Index);
+
+		Str << "v " << P.X << " " << P.Z << " " << P.Y << std::endl;
+	}
+
+	TFile F;
+	if (F.Open(Filename, EFA_CREATEWRITE))
+	{
+		F.Write(Str.str().c_str(), (int32)Str.str().length());
+		F.Close();
+	}
+}
+
+int32 Frame = 0;
 void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 {
 	TIMER_RECORDER("FlipSim");
@@ -219,6 +242,17 @@ void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 	ExtrapolateVelocityField();
 	ConstrainVelocityField();
 	AdvectParticles(Dt);
+
+	if (true)
+	{
+		Frame++;
+		int8 name[64];
+		if (FPCGSolver::UseIPP)
+			sprintf(name, "PcgIPP%d_%d.obj", FPCGSolver::MaxPCGIterations, Frame);
+		else
+			sprintf(name, "PcgMIC_%d.obj", Frame);
+		ExportParticlesToObj(Particles, name);
+	}
 }
 
 void FFluidSolverFlipCPU::UpdateLiquidSDF()

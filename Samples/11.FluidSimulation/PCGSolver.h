@@ -65,6 +65,9 @@ public:
 	FPCGSolver();
 	~FPCGSolver();
 
+	static const bool UseIPP;
+	static const int32 MaxPCGIterations;
+
 	void Solve(PCGSolverParameters& Parameter);
 
 private:
@@ -88,7 +91,6 @@ private:
 
 private:
 	float PressureTolerance;
-	int32 MaxPCGIterations;
 	TVector<vector3di> PressureGrids;
 	typedef THMap<vector3di, int32> FGridsMap;
 	FGridsMap GridsMap;

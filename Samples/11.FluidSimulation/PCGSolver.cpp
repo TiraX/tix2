@@ -11,13 +11,13 @@
 
 #define DO_PARALLEL (0)
 const float eps = 1e-9f;
-static const bool UseIPP = !false;
+const bool FPCGSolver::UseIPP = !false;
+const int32 FPCGSolver::MaxPCGIterations = 200;
 
 static pcg_float DebugFloat[3];
 
 void GetDebugInfo(const TVector<FMatrixCell>& A)
 {
-#ifdef TIX_DEBUG
 	float Min = std::numeric_limits<float>::infinity();
 	float Max = -std::numeric_limits<float>::infinity();
 
@@ -33,7 +33,6 @@ void GetDebugInfo(const TVector<FMatrixCell>& A)
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
 	DebugFloat[2] = Sum / (float)(A.size());
-#endif
 }
 
 //inline void GetDebugInfo(const TVector<float>& A)
@@ -58,7 +57,6 @@ void GetDebugInfo(const TVector<FMatrixCell>& A)
 //}
 inline void GetDebugInfo(const TVector<pcg_float>& A)
 {
-#ifdef TIX_DEBUG
 	pcg_float Min = std::numeric_limits<pcg_float>::infinity();
 	pcg_float Max = -std::numeric_limits<pcg_float>::infinity();
 
@@ -74,7 +72,6 @@ inline void GetDebugInfo(const TVector<pcg_float>& A)
 	DebugFloat[0] = Min;
 	DebugFloat[1] = Max;
 	DebugFloat[2] = Sum / (pcg_float)(A.size());
-#endif
 }
 
 
@@ -113,7 +110,6 @@ inline T AbsMax(const TVector<T>& Array)
 
 FPCGSolver::FPCGSolver()
 	: PressureTolerance(1e-8f)
-	, MaxPCGIterations(200)
 {
 }
 
@@ -150,6 +146,7 @@ void FPCGSolver::Solve(PCGSolverParameters& Parameter)
 
 	SolvePressure();
 	GetDebugInfo(PressureResult);
+	_LOG(Log, "Avg pressure %f.\n", DebugFloat[2]);
 
 	// Copy values to pressure
 	for (uint32 Index = 0; Index < (uint32)PressureGrids.size(); Index++)
@@ -682,15 +679,15 @@ void FPCGSolver::ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVe
 		//}
 		//Z[Index] = Ri - InvDi * Sum;
 		pcg_float Sum = 0.f;
-		if (ItI != GridsMap.end())
+		if (ItI != GridsMap.end() && A[ItI->second].Diag > 0.f)
 		{
 			Sum += 1.f / A[ItI->second].Diag * PlusI * Residual[ItI->second];
 		}
-		if (ItJ != GridsMap.end())
+		if (ItJ != GridsMap.end() && A[ItJ->second].Diag)
 		{
 			Sum += 1.f / A[ItJ->second].Diag * PlusJ * Residual[ItJ->second];
 		}
-		if (ItK != GridsMap.end())
+		if (ItK != GridsMap.end() && A[ItK->second].Diag)
 		{
 			Sum += 1.f / A[ItK->second].Diag * PlusK * Residual[ItK->second];
 		}
@@ -726,6 +723,7 @@ void FPCGSolver::ApplyPreconditionerIPP(const TVector<FMatrixCell>& A, const TVe
 		//}
 		//Auxillary[Index] = Z[Index] - Sum;
 
+		TI_ASSERT(A[Index].Diag > 0.f);
 		pcg_float InvDi = 1.f / A[Index].Diag;
 		pcg_float Sum = 0.f;
 		if (ItI != GridsMap.end())

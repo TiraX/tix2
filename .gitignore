@@ -36,3 +36,5 @@ Samples/09.RTAO/Content/WinPixEventRuntime.dll
 Sources/Externals/zlib-1.2.11/contrib/masmx86/
 Sources/Externals/zlib-1.2.11/contrib/vstudio/vc14/.vs/
 Sources/Externals/zlib-1.2.11/contrib/vstudio/vc14/x86/
+Samples/11.FluidSimulation/Content/backup/
+Samples/11.FluidSimulation/Content/geo/
