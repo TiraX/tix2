@@ -32,6 +32,7 @@ protected:
 
 	void Tick();
 	void Render();
+	void DispatchRays();
 
 	void BeginFrame();
 	void EndFrame();
@@ -68,16 +69,17 @@ private:
 	uint32 CurrentFrame;
 
 	// Barriers
-	static const uint32 MaxResourceBarrierBuffers = 16;
-	D3D12_RESOURCE_BARRIER GraphicsBarrierBuffers[MaxResourceBarrierBuffers];
-	uint32 GraphicsNumBarriersToFlush;
-	D3D12_RESOURCE_BARRIER ComputeBarrierBuffers[MaxResourceBarrierBuffers];
-	uint32 ComputeNumBarriersToFlush;
+	//static const uint32 MaxResourceBarrierBuffers = 16;
+	//D3D12_RESOURCE_BARRIER GraphicsBarrierBuffers[MaxResourceBarrierBuffers];
+	//uint32 GraphicsNumBarriersToFlush;
+	//D3D12_RESOURCE_BARRIER ComputeBarrierBuffers[MaxResourceBarrierBuffers];
+	//uint32 ComputeNumBarriersToFlush;
 
 	ComPtr<ID3D12Device5> DXRDevice;
 	ComPtr<ID3D12GraphicsCommandList4> DXRCommandList;
 
 	// Resources
+	D3D12_RESOURCE_STATES OutputTextureState;
 	ComPtr<ID3D12Resource> OutputTexture;
 	ComPtr<ID3D12StateObject> RTXStateObject;
 
@@ -94,4 +96,15 @@ private:
 	ComPtr<ID3D12Resource> TLASRes;
 	ComPtr<ID3D12Resource> TLASScratch;
 	ComPtr<ID3D12Resource> TLASInstance;
+
+	// Dispatch parameters
+	enum {
+		INDEX_OUTPUT_TEXTURE = 0,
+		INDEX_TLAS = 1,
+	};
+	ComPtr<ID3D12Resource> ShaderTable;
+	int32 DispatchResourceTableStart;
+	D3D12_CPU_DESCRIPTOR_HANDLE ResourceTable;
+
+
 };
