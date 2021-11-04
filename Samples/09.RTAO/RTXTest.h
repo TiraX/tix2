@@ -24,14 +24,17 @@ protected:
 	void InitD3D12();
 
 	void CreateResources();
+	void InitCamera();
 	void CreateOutputTexture();
 	void CreateRaytracingPipelineObject();
 	void LoadMeshBuffer();
+	void CreateShaderParameters();
 	void BuildAccelerationStructures();
 	void BuildShaderTables();
 
 	void Tick();
 	void Render();
+	void UpdateCamInfo();
 	void DispatchRays();
 
 	void BeginFrame();
@@ -82,6 +85,7 @@ private:
 	D3D12_RESOURCE_STATES OutputTextureState;
 	ComPtr<ID3D12Resource> OutputTexture;
 	ComPtr<ID3D12StateObject> RTXStateObject;
+	ComPtr<ID3D12RootSignature> GlobalRS;
 
 	// Mesh Buffer
 	int32 MBVertexCount;
@@ -102,9 +106,14 @@ private:
 		INDEX_OUTPUT_TEXTURE = 0,
 		INDEX_TLAS = 1,
 	};
+	vector2di RayGenShaderOffsetAndSize;
+	vector2di MissShaderOffsetAndSize;
+	vector2di HitGroupOffsetAndSize;
 	ComPtr<ID3D12Resource> ShaderTable;
 	int32 DispatchResourceTableStart;
-	D3D12_CPU_DESCRIPTOR_HANDLE ResourceTable;
+	ComPtr<ID3D12Resource> ConstantBuffer;
+	uint8* ConstantBufferMappedAddress;
 
-
+	matrix4 MatProj;
+	matrix4 MatView;
 };
