@@ -70,6 +70,19 @@ public:
 
 	void Solve(PCGSolverParameters& Parameter);
 
+	// For debug
+	const TVector<vector3di>& GetPressureGrids() const
+	{
+		return PressureGrids;
+	}
+	const TVector<pcg_float>& GetPressureResult() const
+	{
+		return PressureResult;
+	}
+	const TVector<pcg_float>& GetDivergence() const
+	{
+		return NegativeDivergence;
+	}
 private:
 	void CollectFluidCells(const PCGSolverParameters& Parameter);
 	void CalcNegativeDivergence(const PCGSolverParameters& Parameter);

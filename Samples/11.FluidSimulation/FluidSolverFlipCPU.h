@@ -50,6 +50,7 @@ private:
 	//void BoundaryCheck();
 	//void GetSampleCellAndWeightsByPosition(const vector3df& Position, TVector<vector3di>& Cells, TVector<float>& Weights);
 	//float InterporlateVelocity(int32 Component, const FFluidGrid3<float>& VelGrid, const vector3df& Position);	// Component = 0,1,2 mapto U, V, W
+	void ExportDataToCSV();
 
 private:
 	FFluidParticle Particles;
@@ -75,4 +76,6 @@ private:
 	FFluidGrid3<vector3df> SolidSDFGrad;
 
 	FPCGSolver PCGSolver;
+
+	FFluidGrid3<float> DebugWeights;
 };

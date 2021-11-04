@@ -8,6 +8,10 @@
 #include "FluidSimRenderer.h"
 #include "LevelsetUtils.h"
 
+static bool bCollectPressures = true;
+static float DivScale = 5.f;
+static bool bExportPressures = !false;
+static const int32 ExportFrames = 300;
 
 static float DebugFloat[3];
 inline void GetDebugInfo(const FFluidGrid3<float>& A)
@@ -243,15 +247,90 @@ void FFluidSolverFlipCPU::Sim(FRHI * RHI, float Dt)
 	ConstrainVelocityField();
 	AdvectParticles(Dt);
 
-	if (true)
+	Frame++;
+	if (!true)
 	{
-		Frame++;
 		int8 name[64];
 		if (FPCGSolver::UseIPP)
 			sprintf(name, "PcgIPP%d_%d.obj", FPCGSolver::MaxPCGIterations, Frame);
 		else
 			sprintf(name, "PcgMIC_%d.obj", Frame);
 		ExportParticlesToObj(Particles, name);
+	}
+	
+	ExportDataToCSV();
+}
+
+struct PressureInfo
+{
+	int32 Frame;
+	pcg_float Pressure;
+	pcg_float ParticleWeight;
+	pcg_float Div;
+};
+
+THMap<vector3di, TVector<PressureInfo>> PressuresPerFrames;
+void FFluidSolverFlipCPU::ExportDataToCSV()
+{
+	if (bCollectPressures)
+	{
+		const TVector<vector3di>& Grids = PCGSolver.GetPressureGrids();
+		const TVector<pcg_float>& Pressures = PCGSolver.GetPressureResult();
+		const TVector<pcg_float>& Divs = PCGSolver.GetDivergence();
+
+		TI_ASSERT(Grids.size() == Pressures.size());
+		for (int32 i = 0; i < (int32)Grids.size(); i++)
+		{
+			TVector<PressureInfo>& PressureInCell = PressuresPerFrames[Grids[i]];
+			PressureInfo Info;
+			Info.Frame = Frame;
+			Info.Pressure = Pressures[i];
+			Info.ParticleWeight = DebugWeights.Cell(Grids[i]);
+			Info.Div = Divs[i] * DivScale;
+			PressureInCell.push_back(Info);
+		}
+	}
+
+	if (bExportPressures && Frame == ExportFrames)
+	{
+		TStringStream SS;
+		TStringStream Header, PressureSS, WeightsSS, DivSS;
+		for (const auto& P : PressuresPerFrames)
+		{
+			Header.str(TString());
+			PressureSS.str(TString());
+			WeightsSS.str(TString());
+			DivSS.str(TString());
+			Header << "(" << P.first.X << " " << P.first.Y << " " << P.first.Z << ")";
+			const TVector<PressureInfo>& PressureInCell = P.second;
+			for (int32 f = 1, PressureIndex = 0; f <= ExportFrames; f++)
+			{
+				if (PressureIndex < (int32)PressureInCell.size() && PressureInCell[PressureIndex].Frame == f)
+				{
+					const PressureInfo& Info = PressureInCell[PressureIndex];
+					PressureSS << Info.Pressure << ",";
+					WeightsSS << Info.ParticleWeight << ",";
+					DivSS << Info.Div << ",";
+					PressureIndex++;
+				}
+				else
+				{
+					PressureSS << "0.0,";
+					WeightsSS << "0.0,";
+					DivSS << "0.0,";
+				}
+			}
+			SS << Header.str() << "P," << PressureSS.str() << endl;
+			SS << Header.str() << "W," << WeightsSS.str() << endl;
+			SS << Header.str() << "D," << DivSS.str() << endl;
+		}
+
+		TFile F;
+		if (F.Open("AllPressures.csv", EFA_CREATEWRITE))
+		{
+			F.Write(SS.str().c_str(), (int32)SS.str().length());
+			F.Close();
+		}
 	}
 }
 
@@ -457,6 +536,21 @@ void FFluidSolverFlipCPU::AdvectVelocityField()
 			if (IsFaceBorderValueOfGridW(G.X, G.Y, G.Z, FluidCells, kValid))
 				VelField[2].Cell(Index) = VelInterpolate[2].Cell(Index) / Weights[2].Cell(Index);
 		}
+	}
+
+	// Debug, collect weights
+	if (DebugWeights.GetDimension() != Pressure.GetDimension())
+		DebugWeights.Create(Pressure.GetDimension());
+	DebugWeights.Clear();
+
+	for (int32 Index = 0; Index < DebugWeights.GetTotalCells(); Index++)
+	{
+		vector3di G = DebugWeights.ArrayIndexToGridIndex(Index);
+		float WU = (Weights[0].Cell(G) + Weights[0].Cell(G.X + 1, G.Y, G.Z)) * 0.5f;
+		float WV = (Weights[1].Cell(G) + Weights[1].Cell(G.X, G.Y + 1, G.Z)) * 0.5f;
+		float WW = (Weights[2].Cell(G) + Weights[2].Cell(G.X, G.Y, G.Z + 1)) * 0.5f;
+
+		DebugWeights.Cell(Index) = WU + WV + WW;
 	}
 }
 
