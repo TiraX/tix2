@@ -709,6 +709,7 @@ void TRTXTest::InitD3D12()
 	GraphicsCommandList->SetName(L"GraphicsCommandList");
 	VALIDATE_HRESULT(GraphicsCommandList->Close());
 	VALIDATE_HRESULT(D3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&GraphicsFence)));
+	GraphicsFence->SetName(L"GraphicsFence");
 
 	// Init raytracing
 
@@ -796,6 +797,7 @@ void TRTXTest::CreateShaderParameters()
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&ConstantBuffer)));
+	ConstantBuffer->SetName(L"ConstantBuffer");
 
 	// Calc constant buffer data
 	matrix4 VP = MatProj * MatView;
@@ -922,6 +924,7 @@ void TRTXTest::CreateRaytracingPipelineObject()
 		Desc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
 
 		VALIDATE_HRESULT(DXRDevice->CreateStateObject(&Desc, IID_PPV_ARGS(&RTXStateObject)));
+		RTXStateObject->SetName(L"RTXStateObject");
 	}
 }
 void TRTXTest::LoadMeshBuffer()
@@ -986,7 +989,6 @@ void TRTXTest::LoadMeshBuffer()
 	// Create Vertex Buffer And Index Buffer
 	// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
 	// The upload resource must not be released until after the GPU has finished using it.
-	ComPtr<ID3D12Resource> VertexBufferUpload;
 
 	const int32 BufferSize = MeshHeader->VertexCount * VertexStride;
 	CD3DX12_HEAP_PROPERTIES DefaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
@@ -1010,6 +1012,7 @@ void TRTXTest::LoadMeshBuffer()
 		IID_PPV_ARGS(&VertexBufferUpload)));
 
 	VertexBuffer->SetName(L"SM_TV-VB");
+	VertexBufferUpload->SetName(L"SM_TV-VBUpload");
 
 	// Upload the vertex buffer to the GPU.
 	{
@@ -1034,7 +1037,6 @@ void TRTXTest::LoadMeshBuffer()
 
 	// Create the index buffer resource in the GPU's default heap and copy index data into it using the upload heap.
 	// The upload resource must not be released until after the GPU has finished using it.
-	ComPtr<ID3D12Resource> IndexBufferUpload;
 
 	CD3DX12_RESOURCE_DESC IndexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
 
@@ -1054,6 +1056,7 @@ void TRTXTest::LoadMeshBuffer()
 		IID_PPV_ARGS(&IndexBufferUpload)));
 
 	IndexBuffer->SetName(L"SM_TV-IB");
+	IndexBufferUpload->SetName(L"SM_TV-IBUpload");
 	// Upload the index buffer to the GPU.
 	{
 		D3D12_SUBRESOURCE_DATA IndexData = {};
@@ -1210,6 +1213,7 @@ void TRTXTest::BuildAccelerationStructures()
 			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 			nullptr,
 			IID_PPV_ARGS(&TLASScratch)));
+		TLASScratch->SetName(L"TLASScratch");
 
 		// Create Instance Resource
 		const uint32 InstanceBufferSize = 1 * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
@@ -1288,6 +1292,7 @@ void TRTXTest::BuildShaderTables()
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&ShaderTable)));
+		ShaderTable->SetName(L"ShaderTable");
 		// Build shader table data
 		uint8* Data = ti_new uint8[ShaderTableSize];
 		memset(Data, 0, ShaderTableSize);
@@ -1347,12 +1352,10 @@ void TRTXTest::BeginFrame()
 
 void TRTXTest::EndFrame()
 {
-	CurrentFrame = (CurrentFrame + 1) % FRHIConfig::FrameBufferNum;
-
 	// Indicate that the render target will now be used to present when the command list is done executing.
-	D3D12_RESOURCE_BARRIER barrier = 
-		CD3DX12_RESOURCE_BARRIER::Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	GraphicsCommandList->ResourceBarrier(1, &barrier);
+	// Already is STATE_PRESENT
+	//D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(BackBufferRTs[CurrentFrame].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	//GraphicsCommandList->ResourceBarrier(1, &barrier);
 	GraphicsCommandList->Close();
 	ID3D12CommandList* ppCommandLists[] = { GraphicsCommandList.Get() };
 	GraphicsCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
@@ -1371,7 +1374,23 @@ void TRTXTest::EndFrame()
 	{
 		VALIDATE_HRESULT(hr);
 
-		//MoveToNextFrame();
+		// MoveToNextFrame();
+		// Schedule a Signal command in the queue.
+		const uint64 currentFenceValue = FenceValues[CurrentFrame];
+		VALIDATE_HRESULT(GraphicsCommandQueue->Signal(GraphicsFence.Get(), currentFenceValue));
+
+		// Advance the frame index.
+		CurrentFrame = SwapChain->GetCurrentBackBufferIndex();
+
+		// Check to see if the next frame is ready to start.
+		if (GraphicsFence->GetCompletedValue() < FenceValues[CurrentFrame])
+		{
+			VALIDATE_HRESULT(GraphicsFence->SetEventOnCompletion(FenceValues[CurrentFrame], FenceEvent));
+			WaitForSingleObjectEx(FenceEvent, INFINITE, FALSE);
+		}
+
+		// Set the fence value for the next frame.
+		FenceValues[CurrentFrame] = currentFenceValue + 1;
 	}
 }
 
@@ -1436,7 +1455,7 @@ void TRTXTest::CopyRaytracingOutputToBackbuffer()
 	ID3D12Resource* RenderTarget = BackBufferRTs[CurrentFrame].Get();
 
 	D3D12_RESOURCE_BARRIER preCopyBarriers[2];
-	preCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(RenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
+	preCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(RenderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST);
 	preCopyBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(OutputTexture.Get(), OutputTextureState, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	DXRCommandList->ResourceBarrier(ARRAYSIZE(preCopyBarriers), preCopyBarriers);
 	OutputTextureState = D3D12_RESOURCE_STATE_COPY_SOURCE;

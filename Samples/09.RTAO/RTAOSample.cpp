@@ -6,16 +6,17 @@
 #include "RTAORenderer.h"
 #include "RTXTest.h"
 
+static const bool DoTest = true;
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//_CrtSetBreakAlloc(-1);
-	if (true)
+	if (DoTest)
 	{
 		TRTXTest RTXTest;
 		RTXTest.Run();
 	}
-	if (false)
+	if (!DoTest)
 	{
 		TEngineDesc Desc;
 		Desc.Name = "RTAO App";

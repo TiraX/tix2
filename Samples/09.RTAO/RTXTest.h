@@ -92,7 +92,9 @@ private:
 	int32 MBVertexStride;
 	int32 MBIndexCount;
 	ComPtr<ID3D12Resource> VertexBuffer;
+	ComPtr<ID3D12Resource> VertexBufferUpload;
 	ComPtr<ID3D12Resource> IndexBuffer;
+	ComPtr<ID3D12Resource> IndexBufferUpload;
 
 	// Acceleration Structure
 	ComPtr<ID3D12Resource> BLASRes;
