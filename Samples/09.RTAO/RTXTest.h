@@ -28,8 +28,11 @@ protected:
 	void CreateOutputTexture();
 	void CreateRaytracingPipelineObject();
 	void LoadMeshBuffer();
+	void LoadMeshBufferExpand();
 	void CreateShaderParameters();
-	void BuildAccelerationStructures();
+	void BuildBLAS();
+	void BuildBLASExpand();
+	void BuildTLAS();
 	void BuildShaderTables();
 
 	void Tick();

@@ -378,7 +378,7 @@ void TRTXTest::InitD3D12()
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&DebugController))))
 		{
 			// Disable Debug layer for Nsights Graphics to profile shader and GPU trace.
-			DebugController->EnableDebugLayer();
+			//DebugController->EnableDebugLayer();
 		}
 		else
 		{
@@ -391,8 +391,8 @@ void TRTXTest::InitD3D12()
 		{
 			VALIDATE_HRESULT(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&DxgiFactory)));
 
-			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
-			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
+			//dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
+			//dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 		}
 		else
 		{
@@ -722,8 +722,11 @@ void TRTXTest::CreateResources()
 	InitCamera();
 	CreateOutputTexture();
 	CreateRaytracingPipelineObject();
-	LoadMeshBuffer();
-	BuildAccelerationStructures();
+	//LoadMeshBuffer();
+	LoadMeshBufferExpand();
+	//BuildBLAS();
+	BuildBLASExpand();
+	BuildTLAS();
 	BuildShaderTables();
 	CreateShaderParameters();
 }
@@ -788,7 +791,7 @@ void TRTXTest::CreateShaderParameters()
 	// Create constant buffer
 	TI_ASSERT(ConstantBuffer == nullptr);
 	const int32 CBSize = sizeof(float) * 4 + sizeof(float) * 16;
-	CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(CBSize);
+	CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(CBSize, D3D12_RESOURCE_FLAG_NONE, 65536);
 	CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 	VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
 		&UploadHeapProperties,
@@ -876,19 +879,51 @@ void TRTXTest::CreateRaytracingPipelineObject()
 	}
 
 	// Create Global Root Signature
-	ID3D12RootSignatureDeserializer* RSDeserializer = nullptr;
-	VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderCode.GetBuffer(),
-		ShaderCode.GetLength(),
-		__uuidof(ID3D12RootSignatureDeserializer),
-		reinterpret_cast<void**>(&RSDeserializer)));
-	const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
+	if (0)
+	{
+		ID3D12RootSignatureDeserializer* RSDeserializer = nullptr;
+		VALIDATE_HRESULT(D3D12CreateRootSignatureDeserializer(ShaderCode.GetBuffer(),
+			ShaderCode.GetLength(),
+			__uuidof(ID3D12RootSignatureDeserializer),
+			reinterpret_cast<void**>(&RSDeserializer)));
+		const D3D12_ROOT_SIGNATURE_DESC* RSDesc = RSDeserializer->GetRootSignatureDesc();
 
-	ComPtr<ID3DBlob> pOutBlob, pErrorBlob;
-	VALIDATE_HRESULT(D3D12SerializeRootSignature(RSDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf()));
+		ComPtr<ID3DBlob> pOutBlob, pErrorBlob;
+		VALIDATE_HRESULT(D3D12SerializeRootSignature(RSDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf()));
 
-	VALIDATE_HRESULT(D3dDevice->CreateRootSignature(0, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_PPV_ARGS(&GlobalRS)));
-	GlobalRS->SetName(L"GlobalRS");
+		VALIDATE_HRESULT(D3dDevice->CreateRootSignature(0, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_PPV_ARGS(&GlobalRS)));
+		GlobalRS->SetName(L"GlobalRS");
+	}
+
+	// Creating ID3D12RootSignature, overriding original version D3D_ROOT_SIGNATURE_VERSION_1 to D3D_ROOT_SIGNATURE_VERSION_1_1:
+	//    Name: GlobalRS
+	if (1)
+	{
+		static D3D12_DESCRIPTOR_RANGE1 D3D12_DESCRIPTOR_RANGE1_temp_1[2] = { {D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1u, 0u, 0u, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE | D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE, 0u}, {D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1u, 0u, 0u, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE | D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE, 1u} };
+		static D3D12_ROOT_DESCRIPTOR_TABLE1 D3D12_ROOT_DESCRIPTOR_TABLE1_temp_1 = { 2u, D3D12_DESCRIPTOR_RANGE1_temp_1 };
+		static D3D12_ROOT_PARAMETER1 D3D12_ROOT_PARAMETER1_temp_1;
+		D3D12_ROOT_PARAMETER1_temp_1.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		D3D12_ROOT_PARAMETER1_temp_1.DescriptorTable = D3D12_ROOT_DESCRIPTOR_TABLE1_temp_1;
+		D3D12_ROOT_PARAMETER1_temp_1.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		static D3D12_ROOT_DESCRIPTOR1 D3D12_ROOT_DESCRIPTOR1_temp_1 = { 0u, 0u, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE };
+		static D3D12_ROOT_PARAMETER1 D3D12_ROOT_PARAMETER1_temp_2;
+		D3D12_ROOT_PARAMETER1_temp_2.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		D3D12_ROOT_PARAMETER1_temp_2.Descriptor = D3D12_ROOT_DESCRIPTOR1_temp_1;
+		D3D12_ROOT_PARAMETER1_temp_2.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		static D3D12_ROOT_PARAMETER1 D3D12_ROOT_PARAMETER1_temp_3[2] = { D3D12_ROOT_PARAMETER1_temp_1, D3D12_ROOT_PARAMETER1_temp_2 };
+		static D3D12_ROOT_SIGNATURE_DESC1 D3D12_ROOT_SIGNATURE_DESC1_temp_1 = { 2u, D3D12_ROOT_PARAMETER1_temp_3, 0u, nullptr, D3D12_ROOT_SIGNATURE_FLAG_NONE };
+
+		D3D12_VERSIONED_ROOT_SIGNATURE_DESC D3D12_VERSIONED_ROOT_SIGNATURE_DESC_temp_1 = { D3D_ROOT_SIGNATURE_VERSION_1_1 };
+		D3D12_VERSIONED_ROOT_SIGNATURE_DESC_temp_1.Desc_1_1 = D3D12_ROOT_SIGNATURE_DESC1_temp_1;
+		ComPtr<ID3DBlob> CComPtr_of_ID3DBlob_temp_1;
+		ComPtr<ID3DBlob> CComPtr_of_ID3DBlob_temp_2;
+
+		VALIDATE_HRESULT(D3D12SerializeVersionedRootSignature(&D3D12_VERSIONED_ROOT_SIGNATURE_DESC_temp_1, &CComPtr_of_ID3DBlob_temp_1, &CComPtr_of_ID3DBlob_temp_2));
+
+		VALIDATE_HRESULT(D3dDevice->CreateRootSignature(0u, CComPtr_of_ID3DBlob_temp_1->GetBufferPointer(), CComPtr_of_ID3DBlob_temp_1->GetBufferSize(), IID_PPV_ARGS(&GlobalRS)));
+		GlobalRS->SetName(L"GlobalRS");
+	}
 
 
 	// Create Rtx Pipeline state object
@@ -1080,7 +1115,127 @@ void TRTXTest::LoadMeshBuffer()
 
 	//FlushGraphicsBarriers(GraphicsCommandList.Get());
 }
-void TRTXTest::BuildAccelerationStructures()
+
+void TRTXTest::LoadMeshBufferExpand()
+{
+	// Load file
+	const TString& MeshName = "Meshes/SM_TV.tasset";
+	TStream FileBuffer;
+	TFile File;
+	if (File.Open(MeshName, EFA_READ))
+	{
+		FileBuffer.Put(File);
+		File.Close();
+	}
+	else
+	{
+		_LOG(Fatal, "Failed to load mesh [%s].\n", MeshName.c_str());
+	}
+
+	// Parsing file
+	const int8* Buffer = FileBuffer.GetBuffer();
+	int32 Pos = 0;
+	TResfileHeader* FileHeader = (TResfileHeader*)(Buffer + Pos);
+	if (FileHeader->Version != TIRES_VERSION_MAINFILE)
+	{
+		TI_ASSERT(0);
+	}
+	Pos += TMath::Align4((int32)sizeof(TResfileHeader));
+
+	const int32* StringOffsets = (int32*)(Buffer + FileHeader->StringOffset);
+	TI_ASSERT(FileHeader->ChunkCount == 1);
+	const TResfileChunkHeader* ChunkHeader = (const TResfileChunkHeader*)(Buffer + Pos);
+	TI_ASSERT(ChunkHeader->Version == TIRES_VERSION_CHUNK_MESH);
+	TI_ASSERT(ChunkHeader->ElementCount == 1);
+
+	const int8* ChunkStart = (const int8*)ChunkHeader;
+
+	// Load meshes
+	const int8* MeshDataStart = (const int8*)(ChunkStart + TMath::Align4((int32)sizeof(TResfileChunkHeader)));
+	const int8* SectionDataStart = (const int8*)(MeshDataStart + TMath::Align4((int32)sizeof(THeaderMesh)));
+
+	const THeaderMesh* MeshHeader = (const THeaderMesh*)(MeshDataStart);
+	const THeaderMeshSection* HeaderSections = (const THeaderMeshSection*)(SectionDataStart);
+
+	TI_ASSERT(MeshHeader->Sections > 0);
+	MBVertexCount = MeshHeader->VertexCount;
+	MBVertexStride = TMeshBuffer::GetStrideFromFormat(MeshHeader->VertexFormat);
+	MBIndexCount = MeshHeader->PrimitiveCount * 3;
+
+	const int8* VertexDataStart = MeshDataStart +
+		TMath::Align4((int32)sizeof(THeaderMesh)) * 1 +
+		sizeof(THeaderMeshSection) * MeshHeader->Sections +
+		0 * sizeof(uint32) +
+		sizeof(THeaderCollisionSet);
+
+	// Load vertex data and index data
+	const int32 IndexStride = (MeshHeader->IndexType == EIT_16BIT) ? sizeof(uint16) : sizeof(uint32);
+	const int32 VertexStride = TMeshBuffer::GetStrideFromFormat(MeshHeader->VertexFormat);
+	//const int8* VertexData = VertexDataStart;
+	const int8* IndexDataStart = VertexDataStart + TMath::Align4(MeshHeader->VertexCount * VertexStride);
+	const int8* ClusterData = IndexDataStart + TMath::Align4(MeshHeader->PrimitiveCount * 3 * IndexStride);
+
+	// Expand vertex buffer
+	TVector<vector3df> VBExpand;
+	VBExpand.resize(MBIndexCount);
+	TI_ASSERT(MeshHeader->IndexType == EIT_32BIT);
+	const uint32* IndexDataSrc = (const uint32*)IndexDataStart;
+	for (uint32 i = 0; i < MBIndexCount; i++)
+	{
+		uint32 Index = IndexDataSrc[i];
+		const int8* VertexData = VertexDataStart + Index * VertexStride;
+		VBExpand[i] = *(const vector3df*)VertexData;
+	}
+
+	// Create Vertex Buffer And Index Buffer
+	// Create the vertex buffer resource in the GPU's default heap and copy vertex data into it using the upload heap.
+	// The upload resource must not be released until after the GPU has finished using it.
+
+	const int32 BufferSize = MeshHeader->PrimitiveCount * 3 * sizeof(vector3df);
+	CD3DX12_HEAP_PROPERTIES DefaultHeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+	CD3DX12_RESOURCE_DESC VertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(BufferSize);
+
+	VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+		&DefaultHeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&VertexBufferDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&VertexBuffer)));
+
+	CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+	VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+		&UploadHeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&VertexBufferDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&VertexBufferUpload)));
+
+	VertexBuffer->SetName(L"SM_TV-VB");
+	VertexBufferUpload->SetName(L"SM_TV-VBUpload");
+
+	// Upload the vertex buffer to the GPU.
+	{
+		D3D12_SUBRESOURCE_DATA VertexData = {};
+		VertexData.pData = reinterpret_cast<const uint8*>(VBExpand.data());
+		VertexData.RowPitch = BufferSize;
+		VertexData.SlicePitch = VertexData.RowPitch;
+
+		UpdateSubresources(GraphicsCommandList.Get(), VertexBuffer.Get(), VertexBufferUpload.Get(), 0, 0, 1, &VertexData);
+
+		D3D12_RESOURCE_BARRIER Barrier = {};
+		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		Barrier.Transition.pResource = VertexBuffer.Get();
+		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		GraphicsCommandList->ResourceBarrier(1, &Barrier);
+	}
+}
+
+void TRTXTest::BuildBLAS()
 {
 	// ================= BLAS =================
 	{
@@ -1153,7 +1308,86 @@ void TRTXTest::BuildAccelerationStructures()
 		DXRCommandList->SetDescriptorHeaps(1, &Heap);
 		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
 	}
+}
 
+void TRTXTest::BuildBLASExpand()
+{
+	// no index buffer, only expanded vertex buffer
+	// ================= BLAS =================
+	{
+		// Create Geometry Desc
+		D3D12_RAYTRACING_GEOMETRY_DESC GeometryDesc = {};
+		GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+		GeometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+		GeometryDesc.Triangles.IndexFormat = DXGI_FORMAT_UNKNOWN;
+		GeometryDesc.Triangles.IndexBuffer = 0;
+		GeometryDesc.Triangles.IndexCount = 0;
+
+		GeometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;	// Position always be RGB32F
+		GeometryDesc.Triangles.VertexBuffer.StartAddress = VertexBuffer->GetGPUVirtualAddress();
+		GeometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(vector3df);
+		GeometryDesc.Triangles.VertexCount = MBIndexCount;
+
+		GeometryDesc.Triangles.Transform3x4 = NULL;
+
+		// Get the size requirements for the scratch and AS buffers.
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC BottomLevelBuildDesc = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& BottomLevelInputs = BottomLevelBuildDesc.Inputs;
+		BottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+		BottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		BottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		BottomLevelInputs.NumDescs = 1;
+		BottomLevelInputs.pGeometryDescs = &GeometryDesc;
+
+		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&BottomLevelInputs, &PrebuildInfo);
+		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
+
+		// Allocate resource for BLAS
+		TI_ASSERT(BLASRes == nullptr);
+		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ASBufferDesc,
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&BLASRes)));
+		BLASRes->SetName(L"BLASRes");
+
+		TI_ASSERT(BLASScratch == nullptr);
+		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ScratchBufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&BLASScratch)));
+		BLASScratch->SetName(L"BLASScratch");
+
+		// Build bottom layer AS
+		BottomLevelBuildDesc.ScratchAccelerationStructureData = BLASScratch->GetGPUVirtualAddress();
+		BottomLevelBuildDesc.DestAccelerationStructureData = BLASRes->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
+		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
+		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
+		// to share index buffer inputs between graphics input assemblerand raytracing 
+		// acceleration structure build input, it can always put a resource into a combination 
+		// of read states simultaneously, 
+		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		ID3D12DescriptorHeap* Heap = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
+		DXRCommandList->SetDescriptorHeaps(1, &Heap);
+		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
+	}
+}
+
+void TRTXTest::BuildTLAS()
+{
 	// ================= TLAS =================
 	{
 		FMatrix3x4 Mat3x4;
@@ -1255,7 +1489,8 @@ void TRTXTest::BuildShaderTables()
 	// Build Shader Table
 	{
 		ComPtr<ID3D12StateObjectProperties> StateObjectProperties;
-		VALIDATE_HRESULT(RTXStateObject.As(&StateObjectProperties));
+		//VALIDATE_HRESULT(RTXStateObject.As(&StateObjectProperties));
+		VALIDATE_HRESULT(RTXStateObject->QueryInterface(IID_PPV_ARGS(&StateObjectProperties)));
 
 		// Get shader identifiers
 		TI_TODO("Use correct raygen/miss/hitgroup name, for now, use ExportNames[0,1] for raygen and miss, HitGroupName for hitgroup");
