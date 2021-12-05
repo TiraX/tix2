@@ -16,69 +16,69 @@ const int32 WinWidth = 1600;
 const int32 WinHeight = 900;
 
 const DXGI_FORMAT OutputTextureFormat = DXGI_FORMAT_B8G8R8A8_UNORM;// DXGI_FORMAT_R8G8B8A8_UNORM;
-
-//------------------------------------------------------------------------------------------------
-// All arrays must be populated (e.g. by calling GetCopyableFootprints)
-uint64 UpdateSubresources(
-	_In_ ID3D12GraphicsCommandList* pCmdList,
-	_In_ ID3D12Resource* pDestinationResource,
-	_In_ ID3D12Resource* pIntermediate,
-	_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
-	_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
-	uint64 RequiredSize,
-	_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
-	_In_reads_(NumSubresources) const uint32* pNumRows,
-	_In_reads_(NumSubresources) const uint64* pRowSizesInBytes,
-	_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData)
-{
-	// Minor validation
-	D3D12_RESOURCE_DESC IntermediateDesc = pIntermediate->GetDesc();
-	D3D12_RESOURCE_DESC DestinationDesc = pDestinationResource->GetDesc();
-	if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
-		IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
-		RequiredSize >(SIZE_T) - 1 ||
-		(DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
-			(FirstSubresource != 0 || NumSubresources != 1)))
-	{
-		return 0;
-	}
-
-	uint8* pData;
-	HRESULT hr = pIntermediate->Map(0, nullptr, reinterpret_cast<void**>(&pData));
-	if (FAILED(hr))
-	{
-		return 0;
-	}
-
-	for (uint32 i = 0; i < NumSubresources; ++i)
-	{
-		if (pRowSizesInBytes[i] > (SIZE_T)-1) return 0;
-		D3D12_MEMCPY_DEST DestData = { pData + pLayouts[i].Offset, pLayouts[i].Footprint.RowPitch, pLayouts[i].Footprint.RowPitch * pNumRows[i] };
-		MemcpySubresource(&DestData, &pSrcData[i], (SIZE_T)pRowSizesInBytes[i], pNumRows[i], pLayouts[i].Footprint.Depth);
-	}
-	pIntermediate->Unmap(0, nullptr);
-
-	if (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
-	{
-		CD3DX12_BOX SrcBox(uint32(pLayouts[0].Offset), uint32(pLayouts[0].Offset + pLayouts[0].Footprint.Width));
-		pCmdList->CopyBufferRegion(
-			pDestinationResource, 0, pIntermediate, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
-	}
-	else
-	{
-		for (uint32 i = 0; i < NumSubresources; ++i)
-		{
-			CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
-			CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);
-			pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-		}
-	}
-	return RequiredSize;
-}
+//
+////------------------------------------------------------------------------------------------------
+//// All arrays must be populated (e.g. by calling GetCopyableFootprints)
+//static uint64 UpdateSubresources(
+//	_In_ ID3D12GraphicsCommandList* pCmdList,
+//	_In_ ID3D12Resource* pDestinationResource,
+//	_In_ ID3D12Resource* pIntermediate,
+//	_In_range_(0, D3D12_REQ_SUBRESOURCES) uint32 FirstSubresource,
+//	_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) uint32 NumSubresources,
+//	uint64 RequiredSize,
+//	_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
+//	_In_reads_(NumSubresources) const uint32* pNumRows,
+//	_In_reads_(NumSubresources) const uint64* pRowSizesInBytes,
+//	_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData)
+//{
+//	// Minor validation
+//	D3D12_RESOURCE_DESC IntermediateDesc = pIntermediate->GetDesc();
+//	D3D12_RESOURCE_DESC DestinationDesc = pDestinationResource->GetDesc();
+//	if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
+//		IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
+//		RequiredSize >(SIZE_T) - 1 ||
+//		(DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
+//			(FirstSubresource != 0 || NumSubresources != 1)))
+//	{
+//		return 0;
+//	}
+//
+//	uint8* pData;
+//	HRESULT hr = pIntermediate->Map(0, nullptr, reinterpret_cast<void**>(&pData));
+//	if (FAILED(hr))
+//	{
+//		return 0;
+//	}
+//
+//	for (uint32 i = 0; i < NumSubresources; ++i)
+//	{
+//		if (pRowSizesInBytes[i] > (SIZE_T)-1) return 0;
+//		D3D12_MEMCPY_DEST DestData = { pData + pLayouts[i].Offset, pLayouts[i].Footprint.RowPitch, pLayouts[i].Footprint.RowPitch * pNumRows[i] };
+//		MemcpySubresource(&DestData, &pSrcData[i], (SIZE_T)pRowSizesInBytes[i], pNumRows[i], pLayouts[i].Footprint.Depth);
+//	}
+//	pIntermediate->Unmap(0, nullptr);
+//
+//	if (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
+//	{
+//		CD3DX12_BOX SrcBox(uint32(pLayouts[0].Offset), uint32(pLayouts[0].Offset + pLayouts[0].Footprint.Width));
+//		pCmdList->CopyBufferRegion(
+//			pDestinationResource, 0, pIntermediate, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
+//	}
+//	else
+//	{
+//		for (uint32 i = 0; i < NumSubresources; ++i)
+//		{
+//			CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
+//			CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);
+//			pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+//		}
+//	}
+//	return RequiredSize;
+//}
 
 //------------------------------------------------------------------------------------------------
 // Heap-allocating UpdateSubresources implementation
-uint64 UpdateSubresources(
+static uint64 UpdateSubresources(
 	_In_ ID3D12GraphicsCommandList* pCmdList,
 	_In_ ID3D12Resource* pDestinationResource,
 	_In_ ID3D12Resource* pIntermediate,
@@ -158,7 +158,7 @@ void TRTXTest::Init()
 }
 
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
@@ -774,15 +774,16 @@ void TRTXTest::CreateOutputTexture()
 	ClearValue.Color[3] = 1.f;
 	ClearValue.Format = OutputTextureFormat;
 
+	auto uavDesc = CD3DX12_RESOURCE_DESC::Tex2D(OutputTextureFormat, WinWidth, WinHeight, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 	VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
 		&HeapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&TextureDx12Desc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&ClearValue,
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+		nullptr,
 		IID_PPV_ARGS(&OutputTexture)));
-	OutputTextureState = D3D12_RESOURCE_STATE_COMMON;
+	OutputTextureState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	OutputTexture->SetName(L"OutputTexture");
 }
 
@@ -829,7 +830,14 @@ void TRTXTest::CreateShaderParameters()
 	OutputTextureSRVDesc.Format = OutputTextureFormat;
 	OutputTextureSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	OutputTextureSRVDesc.Texture2D.MipLevels = 1;
-	D3dDevice->CreateShaderResourceView(OutputTexture.Get(), &OutputTextureSRVDesc, ResourceTable);
+	//D3dDevice->CreateShaderResourceView(OutputTexture.Get(), &OutputTextureSRVDesc, ResourceTable);
+
+
+	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+	UAVDesc.Format = OutputTextureFormat;
+	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	D3dDevice->CreateUnorderedAccessView(OutputTexture.Get(), nullptr, &UAVDesc, ResourceTable);
+	//m_raytracingOutputResourceUAVGpuDescriptor = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_descriptorHeap->GetGPUDescriptorHandleForHeapStart(), m_raytracingOutputResourceUAVDescriptorHeapIndex, m_descriptorSize);
 
 	// Put Acceleration structure in render table
 	ResourceTable.ptr = HeapStart.ptr + (DispatchResourceTableStart + INDEX_TLAS) * DescriptorIncSize[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
@@ -1635,6 +1643,8 @@ void TRTXTest::UpdateCamInfo()
 
 void TRTXTest::DispatchRays()
 {
+	D3D12_VIEWPORT ViewportDx = { float(0), float(0), float(WinWidth), float(WinHeight), 0.f, 1.f };
+	GraphicsCommandList->RSSetViewports(1, &ViewportDx);
 	TVector<D3D12_RESOURCE_BARRIER> Barriers;
 	Barriers.resize(1);
 

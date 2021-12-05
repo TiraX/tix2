@@ -5,6 +5,7 @@
 #include "RTAOTicker.h"
 #include "RTAORenderer.h"
 #include "RTXTest.h"
+#include "RTXTest2.h"
 
 static const bool DoTest = true;
 int main()
@@ -13,7 +14,7 @@ int main()
 	//_CrtSetBreakAlloc(-1);
 	if (DoTest)
 	{
-		TRTXTest RTXTest;
+		TRTXTest2 RTXTest;
 		RTXTest.Run();
 	}
 	if (!DoTest)
