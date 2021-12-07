@@ -14,6 +14,40 @@
 
 #include "RaytracingHlslCompat.h"
 
+GlobalRootSignature MyGlobalRS =
+{
+    "DescriptorTable(UAV(u0)),"    // Output texture
+    "SRV(t0),"                     // AS
+};
+
+LocalRootSignature MyLocalRS =
+{
+    "RootConstants( num32BitConstants = 8, b0 )"           // Cube constants        
+};
+
+TriangleHitGroup MyHitGroup =
+{
+    "",                     // AnyHit
+    "MyClosestHitShader",   // ClosestHit
+};
+
+SubobjectToExportsAssociation  MyLocalRootSignatureAssociation =
+{
+    "MyLocalRS",            // subobject name
+    "MyRaygenShader"        // export association 
+};
+
+RaytracingShaderConfig  MyShaderConfig =
+{
+    16, // max payload size
+    8   // max attribute size
+};
+
+RaytracingPipelineConfig MyPipelineConfig =
+{
+    1 // max trace recursion depth
+};
+
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0);
 ConstantBuffer<RayGenConstantBuffer> g_rayGenCB : register(b0);
