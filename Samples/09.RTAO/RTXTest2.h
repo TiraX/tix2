@@ -56,7 +56,7 @@ protected:
 	void InitCamera();
 	void CreateOutputTexture();
 	void CreateRaytracingPipelineObject();
-	void LoadMeshBuffer();
+	void BuildGeometryTV();
 	void LoadMeshBufferExpand();
 	void CreateShaderParameters();
 	void BuildBLAS();

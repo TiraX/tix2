@@ -1346,7 +1346,7 @@ void TRTXTest2::CreateRaytracingPipelineObject()
 	VALIDATE_HRESULT(DXRDevice->CreateStateObject(&Desc, IID_PPV_ARGS(&RTXStateObject)));
 	RTXStateObject->SetName(L"RTXStateObject");
 }
-void TRTXTest2::LoadMeshBuffer()
+void TRTXTest2::BuildGeometryTV()
 {
 	// Load file
 	const TString& MeshName = "Meshes/SM_TV.tasset";
@@ -1832,6 +1832,62 @@ void TRTXTest2::BuildShaderTablesSample()
 		hitGroupShaderTable.push_back(ShaderRecord(hitGroupShaderIdentifier, shaderIdentifierSize));
 		m_hitGroupShaderTable = hitGroupShaderTable.GetResource();
 	}
+
+	// Test put all content in one table
+	{
+		struct RootArguments {
+			RayGenConstantBuffer cb;
+		} rootArguments;
+		rootArguments.cb = m_rayGenCB;
+
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
+
+		int32 ShaderTableSize = 0;
+		RayGenShaderOffsetAndSize.X = ShaderTableSize;
+		RayGenShaderOffsetAndSize.Y = TMath::Align(shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		// Miss
+		MissShaderOffsetAndSize.X = ShaderTableSize;
+		MissShaderOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		// Hit Group
+		HitGroupOffsetAndSize.X = ShaderTableSize;
+		HitGroupOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		TI_ASSERT(ShaderTableRes == nullptr);
+		CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(ShaderTableSize);
+		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ConstantBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&ShaderTableRes)));
+		ShaderTableRes->SetName(L"ShaderTableRes");
+		// Build shader table data
+		uint8* Data = ti_new uint8[ShaderTableSize];
+		memset(Data, 0, ShaderTableSize);
+		int32 Offset = 0;
+		memcpy(Data + Offset, rayGenShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		memcpy(Data + Offset + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, &rootArguments, sizeof(RootArguments));
+		Offset += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		memcpy(Data + Offset, missShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		Offset += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		memcpy(Data + Offset, hitGroupShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		Offset += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		// Map the constant buffers.
+		uint8* MappedConstantBuffer = nullptr;
+		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+		VALIDATE_HRESULT(ShaderTableRes->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
+		memcpy(MappedConstantBuffer, Data, ShaderTableSize);
+		ShaderTableRes->Unmap(0, nullptr);
+		ti_delete[] Data;
+	}
 }
 
 // Create 2D output texture for raytracing.
@@ -2276,14 +2332,33 @@ void TRTXTest2::DispatchRays()
 	auto DispatchRays = [&](auto* commandList, auto* stateObject, auto* dispatchDesc)
 	{
 		// Since each shader table has only one shader record, the stride is same as the size.
-		dispatchDesc->HitGroupTable.StartAddress = m_hitGroupShaderTable->GetGPUVirtualAddress();
-		dispatchDesc->HitGroupTable.SizeInBytes = m_hitGroupShaderTable->GetDesc().Width;
-		dispatchDesc->HitGroupTable.StrideInBytes = dispatchDesc->HitGroupTable.SizeInBytes;
-		dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable->GetGPUVirtualAddress();
-		dispatchDesc->MissShaderTable.SizeInBytes = m_missShaderTable->GetDesc().Width;
-		dispatchDesc->MissShaderTable.StrideInBytes = dispatchDesc->MissShaderTable.SizeInBytes;
-		dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
-		dispatchDesc->RayGenerationShaderRecord.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;
+		//dispatchDesc->HitGroupTable.StartAddress = m_hitGroupShaderTable->GetGPUVirtualAddress();
+		//dispatchDesc->HitGroupTable.SizeInBytes = m_hitGroupShaderTable->GetDesc().Width;
+		//dispatchDesc->HitGroupTable.StrideInBytes = dispatchDesc->HitGroupTable.SizeInBytes;
+		//dispatchDesc->MissShaderTable.StartAddress = m_missShaderTable->GetGPUVirtualAddress();
+		//dispatchDesc->MissShaderTable.SizeInBytes = m_missShaderTable->GetDesc().Width;
+		//dispatchDesc->MissShaderTable.StrideInBytes = dispatchDesc->MissShaderTable.SizeInBytes;
+		//dispatchDesc->RayGenerationShaderRecord.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
+		//dispatchDesc->RayGenerationShaderRecord.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;
+
+
+		// RayGen is the first entry in the shader-table
+		dispatchDesc->RayGenerationShaderRecord.StartAddress =
+			ShaderTableRes.Get()->GetGPUVirtualAddress() + RayGenShaderOffsetAndSize.X;
+		dispatchDesc->RayGenerationShaderRecord.SizeInBytes = RayGenShaderOffsetAndSize.Y;
+
+		// Miss is the second entry in the shader-table
+		dispatchDesc->MissShaderTable.StartAddress =
+			ShaderTableRes.Get()->GetGPUVirtualAddress() + MissShaderOffsetAndSize.X;
+		dispatchDesc->MissShaderTable.StrideInBytes = MissShaderOffsetAndSize.Y;
+		dispatchDesc->MissShaderTable.SizeInBytes = MissShaderOffsetAndSize.Y;   // Only a s single miss-entry
+
+		// Hit is the third entry in the shader-table
+		dispatchDesc->HitGroupTable.StartAddress =
+			ShaderTableRes.Get()->GetGPUVirtualAddress() + HitGroupOffsetAndSize.X;
+		dispatchDesc->HitGroupTable.StrideInBytes = HitGroupOffsetAndSize.Y;
+		dispatchDesc->HitGroupTable.SizeInBytes = HitGroupOffsetAndSize.Y;
+
 		dispatchDesc->Width = WinWidth;
 		dispatchDesc->Height = WinHeight;
 		dispatchDesc->Depth = 1;

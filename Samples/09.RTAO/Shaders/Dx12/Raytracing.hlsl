@@ -110,7 +110,7 @@ void MyClosestHitShader(inout RayPayload payload, in MyAttributes attr)
 [shader("miss")]
 void MyMissShader(inout RayPayload payload)
 {
-    payload.color = float4(0, 0, 0, 1);
+    payload.color = float4(1, 0, 1, 1);
 }
 
 #endif // RAYTRACING_HLSL
