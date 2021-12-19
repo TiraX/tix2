@@ -1479,6 +1479,14 @@ void TRTXTest::BuildTLAS()
 		TopLevelBuildDesc.ScratchAccelerationStructureData = TLASScratch->GetGPUVirtualAddress();
 		TopLevelBuildDesc.DestAccelerationStructureData = TLASRes->GetGPUVirtualAddress();
 
+
+		D3D12_RESOURCE_BARRIER Barrier = {};
+		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		Barrier.UAV.pResource = BLASRes.Get();
+		GraphicsCommandList->ResourceBarrier(1, &Barrier);
+		//CD3DX12_RESOURCE_BARRIER UAV = CD3DX12_RESOURCE_BARRIER::UAV(BLASRes.Get());
+		//DXRCommandList->ResourceBarrier(1, &UAV);
+
 		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
 		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
 		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
@@ -1649,9 +1657,12 @@ void TRTXTest::DispatchRays()
 	Barriers.resize(1);
 
 	// Barrier for OutputTexture
-	Barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(OutputTexture.Get(), OutputTextureState, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	GraphicsCommandList->ResourceBarrier(1, Barriers.data());
-	OutputTextureState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	if (OutputTextureState != D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+	{
+		Barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(OutputTexture.Get(), OutputTextureState, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		GraphicsCommandList->ResourceBarrier(1, Barriers.data());
+		OutputTextureState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	}
 
 	// Set Rtx Pipeline
 	DXRCommandList->SetPipelineState1(RTXStateObject.Get());

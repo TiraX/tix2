@@ -997,7 +997,10 @@ void TRTXTest2::CreateResources()
 	CreateRootSignatures();
 	CreateRaytracingPipelineObject();
 	BuildGeometry();
+	//BuildGeometryTV();
 	BuildAccelerationStructures();
+	//BuildBLAS();
+	//BuildTLAS();
 	BuildShaderTablesSample();
 	CreateRaytracingOutputResource();
 	//InitCamera();
@@ -1779,136 +1782,6 @@ void TRTXTest2::BuildAccelerationStructures()
 	//m_deviceResources->WaitForGpu();
 }
 
-void TRTXTest2::BuildShaderTablesSample()
-{
-	void* rayGenShaderIdentifier;
-	void* missShaderIdentifier;
-	void* hitGroupShaderIdentifier;
-	auto GetShaderIdentifiers = [&](auto* stateObjectProperties)
-	{
-		rayGenShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_raygenShaderName);
-		missShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_missShaderName);
-		hitGroupShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_hitGroupName);
-	};
-
-	// Get shader identifiers.
-	UINT shaderIdentifierSize;
-	{
-		ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
-		VALIDATE_HRESULT(RTXStateObject.As(&stateObjectProperties));
-		GetShaderIdentifiers(stateObjectProperties.Get());
-		shaderIdentifierSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-	}
-
-	// Ray gen shader table
-	{
-		struct RootArguments {
-			RayGenConstantBuffer cb;
-		} rootArguments;
-		rootArguments.cb = m_rayGenCB;
-
-		UINT numShaderRecords = 1;
-		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
-
-		ShaderTable rayGenShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"RayGenShaderTable");
-		rayGenShaderTable.push_back(ShaderRecord(rayGenShaderIdentifier, shaderIdentifierSize, &rootArguments, sizeof(rootArguments)));
-		m_rayGenShaderTable = rayGenShaderTable.GetResource();
-	}
-
-	// Miss shader table
-	{
-		UINT numShaderRecords = 1;
-		UINT shaderRecordSize = shaderIdentifierSize;
-		ShaderTable missShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"MissShaderTable");
-		missShaderTable.push_back(ShaderRecord(missShaderIdentifier, shaderIdentifierSize));
-		m_missShaderTable = missShaderTable.GetResource();
-	}
-
-	// Hit group shader table
-	{
-		UINT numShaderRecords = 1;
-		UINT shaderRecordSize = shaderIdentifierSize;
-		ShaderTable hitGroupShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"HitGroupShaderTable");
-		hitGroupShaderTable.push_back(ShaderRecord(hitGroupShaderIdentifier, shaderIdentifierSize));
-		m_hitGroupShaderTable = hitGroupShaderTable.GetResource();
-	}
-
-	// Test put all content in one table
-	{
-		struct RootArguments {
-			RayGenConstantBuffer cb;
-		} rootArguments;
-		rootArguments.cb = m_rayGenCB;
-
-		UINT numShaderRecords = 1;
-		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
-
-		int32 ShaderTableSize = 0;
-		RayGenShaderOffsetAndSize.X = ShaderTableSize;
-		RayGenShaderOffsetAndSize.Y = TMath::Align(shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-		ShaderTableSize += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-
-		// Miss
-		MissShaderOffsetAndSize.X = ShaderTableSize;
-		MissShaderOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-		ShaderTableSize += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-		// Hit Group
-		HitGroupOffsetAndSize.X = ShaderTableSize;
-		HitGroupOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-		ShaderTableSize += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-
-		TI_ASSERT(ShaderTableRes == nullptr);
-		CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(ShaderTableSize);
-		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
-		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ConstantBufferDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&ShaderTableRes)));
-		ShaderTableRes->SetName(L"ShaderTableRes");
-		// Build shader table data
-		uint8* Data = ti_new uint8[ShaderTableSize];
-		memset(Data, 0, ShaderTableSize);
-		int32 Offset = 0;
-		memcpy(Data + Offset, rayGenShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-		memcpy(Data + Offset + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, &rootArguments, sizeof(RootArguments));
-		Offset += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-		memcpy(Data + Offset, missShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-		Offset += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-		memcpy(Data + Offset, hitGroupShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-		Offset += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
-
-		// Map the constant buffers.
-		uint8* MappedConstantBuffer = nullptr;
-		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
-		VALIDATE_HRESULT(ShaderTableRes->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
-		memcpy(MappedConstantBuffer, Data, ShaderTableSize);
-		ShaderTableRes->Unmap(0, nullptr);
-		ti_delete[] Data;
-	}
-}
-
-// Create 2D output texture for raytracing.
-void TRTXTest2::CreateRaytracingOutputResource()
-{
-	// Create the output resource. The dimensions and format should match the swap-chain.
-	auto uavDesc = CD3DX12_RESOURCE_DESC::Tex2D(OutputTextureFormat, WinWidth, WinHeight, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
-	auto defaultHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-	VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
-		&defaultHeapProperties, D3D12_HEAP_FLAG_NONE, &uavDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&m_raytracingOutput)));
-	m_raytracingOutput->SetName(L"m_raytracingOutput");
-
-	D3D12_CPU_DESCRIPTOR_HANDLE uavDescriptorHandle = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->GetCPUDescriptorHandleForHeapStart();
-	m_raytracingOutputResourceUAVDescriptorHeapIndex = 0;
-	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
-	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	D3dDevice->CreateUnorderedAccessView(m_raytracingOutput.Get(), nullptr, &UAVDesc, uavDescriptorHandle);
-	m_raytracingOutputResourceUAVGpuDescriptor = CD3DX12_GPU_DESCRIPTOR_HANDLE(DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->GetGPUDescriptorHandleForHeapStart(), m_raytracingOutputResourceUAVDescriptorHeapIndex, DescriptorIncSize[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]);
-}
-
 void TRTXTest2::BuildBLAS()
 {
 	// ================= BLAS =================
@@ -1926,82 +1799,6 @@ void TRTXTest2::BuildBLAS()
 		GeometryDesc.Triangles.VertexBuffer.StartAddress = VertexBuffer->GetGPUVirtualAddress();
 		GeometryDesc.Triangles.VertexBuffer.StrideInBytes = MBVertexStride;
 		GeometryDesc.Triangles.VertexCount = MBVertexCount;
-
-		GeometryDesc.Triangles.Transform3x4 = NULL;
-
-		// Get the size requirements for the scratch and AS buffers.
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
-		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC BottomLevelBuildDesc = {};
-		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& BottomLevelInputs = BottomLevelBuildDesc.Inputs;
-		BottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-		BottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-		BottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
-		BottomLevelInputs.NumDescs = 1;
-		BottomLevelInputs.pGeometryDescs = &GeometryDesc;
-
-		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&BottomLevelInputs, &PrebuildInfo);
-		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
-
-		// Allocate resource for BLAS
-		TI_ASSERT(BLASRes == nullptr);
-		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ASBufferDesc,
-			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-			nullptr,
-			IID_PPV_ARGS(&BLASRes)));
-		BLASRes->SetName(L"BLASRes");
-
-		TI_ASSERT(BLASScratch == nullptr);
-		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ScratchBufferDesc,
-			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-			nullptr,
-			IID_PPV_ARGS(&BLASScratch)));
-		BLASScratch->SetName(L"BLASScratch");
-
-		// Build bottom layer AS
-		BottomLevelBuildDesc.ScratchAccelerationStructureData = BLASScratch->GetGPUVirtualAddress();
-		BottomLevelBuildDesc.DestAccelerationStructureData = BLASRes->GetGPUVirtualAddress();
-
-		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
-		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
-		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
-		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
-		// to share index buffer inputs between graphics input assemblerand raytracing 
-		// acceleration structure build input, it can always put a resource into a combination 
-		// of read states simultaneously, 
-		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
-		ID3D12DescriptorHeap* Heap = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
-		DXRCommandList->SetDescriptorHeaps(1, &Heap);
-		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
-	}
-}
-
-void TRTXTest2::BuildBLASExpand()
-{
-	// no index buffer, only expanded vertex buffer
-	// ================= BLAS =================
-	{
-		// Create Geometry Desc
-		D3D12_RAYTRACING_GEOMETRY_DESC GeometryDesc = {};
-		GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-		GeometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
-
-		GeometryDesc.Triangles.IndexFormat = DXGI_FORMAT_UNKNOWN;
-		GeometryDesc.Triangles.IndexBuffer = 0;
-		GeometryDesc.Triangles.IndexCount = 0;
-
-		GeometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;	// Position always be RGB32F
-		GeometryDesc.Triangles.VertexBuffer.StartAddress = VertexBuffer->GetGPUVirtualAddress();
-		GeometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(vector3df);
-		GeometryDesc.Triangles.VertexCount = MBIndexCount;
 
 		GeometryDesc.Triangles.Transform3x4 = NULL;
 
@@ -2158,6 +1955,213 @@ void TRTXTest2::BuildTLAS()
 		DXRCommandList->BuildRaytracingAccelerationStructure(&TopLevelBuildDesc, 0, nullptr);
 	}
 }
+
+void TRTXTest2::BuildShaderTablesSample()
+{
+	void* rayGenShaderIdentifier;
+	void* missShaderIdentifier;
+	void* hitGroupShaderIdentifier;
+	auto GetShaderIdentifiers = [&](auto* stateObjectProperties)
+	{
+		rayGenShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_raygenShaderName);
+		missShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_missShaderName);
+		hitGroupShaderIdentifier = stateObjectProperties->GetShaderIdentifier(c_hitGroupName);
+	};
+
+	// Get shader identifiers.
+	UINT shaderIdentifierSize;
+	{
+		ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
+		VALIDATE_HRESULT(RTXStateObject.As(&stateObjectProperties));
+		GetShaderIdentifiers(stateObjectProperties.Get());
+		shaderIdentifierSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+	}
+
+	// Ray gen shader table
+	{
+		struct RootArguments {
+			RayGenConstantBuffer cb;
+		} rootArguments;
+		rootArguments.cb = m_rayGenCB;
+
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
+
+		ShaderTable rayGenShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"RayGenShaderTable");
+		rayGenShaderTable.push_back(ShaderRecord(rayGenShaderIdentifier, shaderIdentifierSize, &rootArguments, sizeof(rootArguments)));
+		m_rayGenShaderTable = rayGenShaderTable.GetResource();
+	}
+
+	// Miss shader table
+	{
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIdentifierSize;
+		ShaderTable missShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"MissShaderTable");
+		missShaderTable.push_back(ShaderRecord(missShaderIdentifier, shaderIdentifierSize));
+		m_missShaderTable = missShaderTable.GetResource();
+	}
+
+	// Hit group shader table
+	{
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIdentifierSize;
+		ShaderTable hitGroupShaderTable(D3dDevice.Get(), numShaderRecords, shaderRecordSize, L"HitGroupShaderTable");
+		hitGroupShaderTable.push_back(ShaderRecord(hitGroupShaderIdentifier, shaderIdentifierSize));
+		m_hitGroupShaderTable = hitGroupShaderTable.GetResource();
+	}
+
+	// Test put all content in one table
+	{
+		struct RootArguments {
+			RayGenConstantBuffer cb;
+		} rootArguments;
+		rootArguments.cb = m_rayGenCB;
+
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIdentifierSize + sizeof(rootArguments);
+
+		int32 ShaderTableSize = 0;
+		RayGenShaderOffsetAndSize.X = ShaderTableSize;
+		RayGenShaderOffsetAndSize.Y = TMath::Align(shaderRecordSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		// Miss
+		MissShaderOffsetAndSize.X = ShaderTableSize;
+		MissShaderOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		// Hit Group
+		HitGroupOffsetAndSize.X = ShaderTableSize;
+		HitGroupOffsetAndSize.Y = TMath::Align(shaderIdentifierSize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		ShaderTableSize += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		TI_ASSERT(ShaderTableRes == nullptr);
+		CD3DX12_RESOURCE_DESC ConstantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(ShaderTableSize);
+		CD3DX12_HEAP_PROPERTIES UploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ConstantBufferDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&ShaderTableRes)));
+		ShaderTableRes->SetName(L"ShaderTableRes");
+		// Build shader table data
+		uint8* Data = ti_new uint8[ShaderTableSize];
+		memset(Data, 0, ShaderTableSize);
+		int32 Offset = 0;
+		memcpy(Data + Offset, rayGenShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		memcpy(Data + Offset + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, &rootArguments, sizeof(RootArguments));
+		Offset += TMath::Align(RayGenShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		memcpy(Data + Offset, missShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		Offset += TMath::Align(MissShaderOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		memcpy(Data + Offset, hitGroupShaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		Offset += TMath::Align(HitGroupOffsetAndSize.Y, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		// Map the constant buffers.
+		uint8* MappedConstantBuffer = nullptr;
+		CD3DX12_RANGE readRange(0, 0);		// We do not intend to read from this resource on the CPU.
+		VALIDATE_HRESULT(ShaderTableRes->Map(0, &readRange, reinterpret_cast<void**>(&MappedConstantBuffer)));
+		memcpy(MappedConstantBuffer, Data, ShaderTableSize);
+		ShaderTableRes->Unmap(0, nullptr);
+		ti_delete[] Data;
+	}
+}
+
+// Create 2D output texture for raytracing.
+void TRTXTest2::CreateRaytracingOutputResource()
+{
+	// Create the output resource. The dimensions and format should match the swap-chain.
+	auto uavDesc = CD3DX12_RESOURCE_DESC::Tex2D(OutputTextureFormat, WinWidth, WinHeight, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+	auto defaultHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	VALIDATE_HRESULT(D3dDevice->CreateCommittedResource(
+		&defaultHeapProperties, D3D12_HEAP_FLAG_NONE, &uavDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&m_raytracingOutput)));
+	m_raytracingOutput->SetName(L"m_raytracingOutput");
+
+	D3D12_CPU_DESCRIPTOR_HANDLE uavDescriptorHandle = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->GetCPUDescriptorHandleForHeapStart();
+	m_raytracingOutputResourceUAVDescriptorHeapIndex = 0;
+	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	D3dDevice->CreateUnorderedAccessView(m_raytracingOutput.Get(), nullptr, &UAVDesc, uavDescriptorHandle);
+	m_raytracingOutputResourceUAVGpuDescriptor = CD3DX12_GPU_DESCRIPTOR_HANDLE(DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->GetGPUDescriptorHandleForHeapStart(), m_raytracingOutputResourceUAVDescriptorHeapIndex, DescriptorIncSize[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]);
+}
+
+void TRTXTest2::BuildBLASExpand()
+{
+	// no index buffer, only expanded vertex buffer
+	// ================= BLAS =================
+	{
+		// Create Geometry Desc
+		D3D12_RAYTRACING_GEOMETRY_DESC GeometryDesc = {};
+		GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+		GeometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+		GeometryDesc.Triangles.IndexFormat = DXGI_FORMAT_UNKNOWN;
+		GeometryDesc.Triangles.IndexBuffer = 0;
+		GeometryDesc.Triangles.IndexCount = 0;
+
+		GeometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;	// Position always be RGB32F
+		GeometryDesc.Triangles.VertexBuffer.StartAddress = VertexBuffer->GetGPUVirtualAddress();
+		GeometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(vector3df);
+		GeometryDesc.Triangles.VertexCount = MBIndexCount;
+
+		GeometryDesc.Triangles.Transform3x4 = NULL;
+
+		// Get the size requirements for the scratch and AS buffers.
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO PrebuildInfo = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC BottomLevelBuildDesc = {};
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& BottomLevelInputs = BottomLevelBuildDesc.Inputs;
+		BottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+		BottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		BottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+		BottomLevelInputs.NumDescs = 1;
+		BottomLevelInputs.pGeometryDescs = &GeometryDesc;
+
+		DXRDevice->GetRaytracingAccelerationStructurePrebuildInfo(&BottomLevelInputs, &PrebuildInfo);
+		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
+
+		// Allocate resource for BLAS
+		TI_ASSERT(BLASRes == nullptr);
+		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ASBufferDesc,
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&BLASRes)));
+		BLASRes->SetName(L"BLASRes");
+
+		TI_ASSERT(BLASScratch == nullptr);
+		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+			&UploadHeapProperties,
+			D3D12_HEAP_FLAG_NONE,
+			&ScratchBufferDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&BLASScratch)));
+		BLASScratch->SetName(L"BLASScratch");
+
+		// Build bottom layer AS
+		BottomLevelBuildDesc.ScratchAccelerationStructureData = BLASScratch->GetGPUVirtualAddress();
+		BottomLevelBuildDesc.DestAccelerationStructureData = BLASRes->GetGPUVirtualAddress();
+
+		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
+		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 
+		// the address must be aligned to the size of IndexFormat. The memory pointed to must 
+		// be in state D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE.Note that if an app wants 
+		// to share index buffer inputs between graphics input assemblerand raytracing 
+		// acceleration structure build input, it can always put a resource into a combination 
+		// of read states simultaneously, 
+		// e.g.D3D12_RESOURCE_STATE_INDEX_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		ID3D12DescriptorHeap* Heap = DescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
+		DXRCommandList->SetDescriptorHeaps(1, &Heap);
+		DXRCommandList->BuildRaytracingAccelerationStructure(&BottomLevelBuildDesc, 0, nullptr);
+	}
+}
+
 void TRTXTest2::BuildShaderTables()
 {
 	// Build Shader Table

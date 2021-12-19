@@ -14,7 +14,7 @@ int main()
 	//_CrtSetBreakAlloc(-1);
 	if (DoTest)
 	{
-		TRTXTest2 RTXTest;
+		TRTXTest RTXTest;
 		RTXTest.Run();
 	}
 	if (!DoTest)
