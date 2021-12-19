@@ -1188,7 +1188,7 @@ void TRTXTest::LoadMeshBufferExpand()
 	VBExpand.resize(MBIndexCount);
 	TI_ASSERT(MeshHeader->IndexType == EIT_32BIT);
 	const uint32* IndexDataSrc = (const uint32*)IndexDataStart;
-	for (uint32 i = 0; i < MBIndexCount; i++)
+	for (int32 i = 0; i < MBIndexCount; i++)
 	{
 		uint32 Index = IndexDataSrc[i];
 		const int8* VertexData = VertexDataStart + Index * VertexStride;

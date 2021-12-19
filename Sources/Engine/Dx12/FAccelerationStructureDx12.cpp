@@ -152,6 +152,15 @@ namespace tix
 			Desc.AccelerationStructure = BLASDx12->GetASResource()->GetGPUVirtualAddress();
 
 			InstanceDescs.push_back(Desc);
+
+			if (BLASes.find(BLAS) == BLASes.end())
+			{
+				BLASes[BLAS] = 1;
+			}
+			else
+			{
+				BLASes[BLAS] ++;
+			}
 			//MarkDirty();
 			TI_TODO("Make this dirty and re-create TLAS.");
 		}
@@ -221,6 +230,21 @@ namespace tix
 		TopLevelInputs.InstanceDescs = TLASInstanceBufferDx12->GetResource()->GetGPUVirtualAddress();
 		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
 		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure.GetResource()->GetGPUVirtualAddress();
+
+		// Be sure we are ready for and read access which may follow.  We only call this function in init so this
+		// should not affect runtime performance.
+		RHIDx12->FlushResourceStateChange();
+		int32 BarrierCount = 0;
+		for (const auto& BLAS : BLASes)
+		{
+			RHIDx12->UAVBarrier(BLAS.first);
+			++BarrierCount;
+			if (BarrierCount >= FRHIConfig::MaxResourceBarrierBuffers)
+			{
+				RHIDx12->FlushResourceStateChange();
+			}
+		}
+		RHIDx12->FlushResourceStateChange();
 
 		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
 		// Array of vertex indices.If NULL, triangles are non - indexed.Just as with graphics, 

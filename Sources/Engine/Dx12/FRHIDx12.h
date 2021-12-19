@@ -147,6 +147,7 @@ namespace tix
 		virtual void SetShaderTexture(int32 BindIndex, FTexturePtr InTexture) override;
 		virtual void SetArgumentBuffer(int32 InBindIndex, FArgumentBufferPtr InArgumentBuffer) override;
 
+				void UAVBarrier(FBottomLevelAccelerationStructurePtr BLAS);
 		virtual void SetResourceStateAS(FTopLevelAccelerationStructurePtr InAS, E_RESOURCE_STATE NewState, bool Immediate = true) override;
 		virtual void SetResourceStateTexture(FTexturePtr InTexture, E_RESOURCE_STATE NewState, bool Immediate = true) override;
 		virtual void SetResourceStateUB(FUniformBufferPtr InUniformBuffer, E_RESOURCE_STATE NewState, bool Immediate = true) override;
@@ -257,6 +258,8 @@ namespace tix
 			uint32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
 			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
+		void UAVBarrier(_In_ ID3D12Resource* pResource);
+
 		void FlushGraphicsBarriers(
 			_In_ ID3D12GraphicsCommandList* pCmdList);
 
@@ -364,10 +367,9 @@ namespace tix
 		uint32 CurrentFrame;
 
 		// Barriers
-		static const uint32 MaxResourceBarrierBuffers = 16;
-		D3D12_RESOURCE_BARRIER GraphicsBarrierBuffers[MaxResourceBarrierBuffers];
+		D3D12_RESOURCE_BARRIER GraphicsBarrierBuffers[FRHIConfig::MaxResourceBarrierBuffers];
 		uint32 GraphicsNumBarriersToFlush;
-		D3D12_RESOURCE_BARRIER ComputeBarrierBuffers[MaxResourceBarrierBuffers];
+		D3D12_RESOURCE_BARRIER ComputeBarrierBuffers[FRHIConfig::MaxResourceBarrierBuffers];
 		uint32 ComputeNumBarriersToFlush;
 
 		// Frame on the fly Resource holders

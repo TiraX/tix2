@@ -35,6 +35,7 @@ namespace tix
 #endif
 
 		static const int32 StaticSamplerNum = 1;
+		static const int32 MaxResourceBarrierBuffers = 16;
 
 		void EnableFeature(E_RHI_FEATURE InFeature, bool enable)
 		{

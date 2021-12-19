@@ -7,7 +7,7 @@
 #include "RTXTest.h"
 #include "RTXTest2.h"
 
-static const bool DoTest = true;
+static const bool DoTest = !true;
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);

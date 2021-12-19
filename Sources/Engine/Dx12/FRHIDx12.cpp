@@ -941,13 +941,22 @@ namespace tix
 	{
 		TI_ASSERT(pResource != nullptr);
 		D3D12_RESOURCE_BARRIER& barrier = GraphicsBarrierBuffers[GraphicsNumBarriersToFlush++];
-		TI_ASSERT(GraphicsNumBarriersToFlush <= MaxResourceBarrierBuffers);
+		TI_ASSERT(GraphicsNumBarriersToFlush <= FRHIConfig::MaxResourceBarrierBuffers);
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = flags;
 		barrier.Transition.pResource = pResource;
 		barrier.Transition.StateBefore = stateBefore;
 		barrier.Transition.StateAfter = stateAfter;
 		barrier.Transition.Subresource = subresource;
+	}
+
+	void FRHIDx12::UAVBarrier(_In_ ID3D12Resource* pResource)
+	{
+		D3D12_RESOURCE_BARRIER& barrier = GraphicsBarrierBuffers[GraphicsNumBarriersToFlush++];
+		TI_ASSERT(GraphicsNumBarriersToFlush <= FRHIConfig::MaxResourceBarrierBuffers);
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.UAV.pResource = pResource;
 	}
 
 	void FRHIDx12::FlushGraphicsBarriers(
@@ -2582,6 +2591,12 @@ namespace tix
 		HoldResourceReference(SrcBuffer);
 
 		return true;
+	}
+
+	void FRHIDx12::UAVBarrier(FBottomLevelAccelerationStructurePtr BLAS)
+	{
+		FBottomLevelAccelerationStructureDx12* ASDx12 = static_cast<FBottomLevelAccelerationStructureDx12*>(BLAS.get());
+		UAVBarrier(ASDx12->GetASResource());
 	}
 
 	void FRHIDx12::SetResourceStateAS(FTopLevelAccelerationStructurePtr InAS, E_RESOURCE_STATE NewState, bool Immediate)

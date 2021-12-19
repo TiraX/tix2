@@ -52,6 +52,7 @@ namespace tix
 		ComPtr<ID3D12Resource> ScratchResource;
 
 		TVector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDescs;
+		THMap<FBottomLevelAccelerationStructurePtr, int32> BLASes;
 
 		friend class FRHIDx12;
 	};
