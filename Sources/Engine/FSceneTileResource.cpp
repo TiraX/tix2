@@ -107,5 +107,6 @@ namespace tix
 		{
 			it->second->Build();
 		}
+		FRenderThread::Get()->GetRenderScene()->SetSceneFlag(FScene::SceneBLASDirty);
 	}
 }

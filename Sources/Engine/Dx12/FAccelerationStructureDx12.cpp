@@ -125,8 +125,7 @@ namespace tix
 	void FTopLevelAccelerationStructureDx12::ClearAllInstances()
 	{
 		InstanceDescs.clear();
-		//MarkDirty();
-		TI_TODO("Make this dirty and re-create TLAS.");
+		MarkDirty();
 	}
 
 	void FTopLevelAccelerationStructureDx12::ReserveInstanceCount(uint32 Count)
@@ -134,8 +133,6 @@ namespace tix
 		InstanceDescs.reserve(Count);
 	}
 
-	int32 Gid = 0;
-	
 	void FTopLevelAccelerationStructureDx12::AddBLASInstance(FBottomLevelAccelerationStructurePtr BLAS, const FMatrix3x4& Transform)
 	{
 		FBottomLevelAccelerationStructureDx12* BLASDx12 = static_cast<FBottomLevelAccelerationStructureDx12*>(BLAS.get());
@@ -161,14 +158,13 @@ namespace tix
 			{
 				BLASes[BLAS] ++;
 			}
-			//MarkDirty();
-			TI_TODO("Make this dirty and re-create TLAS.");
+			MarkDirty();
 		}
 	}
 
 	bool FTopLevelAccelerationStructureDx12::AlreadyBuilt()
 	{
-		return AccelerationStructure.GetResource() != nullptr;
+		return AccelerationStructure.Get() != nullptr;
 	}
 
 	void FTopLevelAccelerationStructureDx12::Build()
@@ -196,29 +192,43 @@ namespace tix
 		TI_ASSERT(PrebuildInfo.ResultDataMaxSizeInBytes > 0);
 
 		// Allocate resource for TLAS
-		TI_ASSERT(AccelerationStructure.GetResource() == nullptr);
-		auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-		auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		bool NeedRecreateASBuffer = AccelerationStructure.Get() == nullptr ? true : false;
+		if (!NeedRecreateASBuffer && AccelerationStructure->GetDesc().Width < PrebuildInfo.ResultDataMaxSizeInBytes)
+		{
+			NeedRecreateASBuffer = true;
+		}
+		if (NeedRecreateASBuffer)
+		{
+			auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+			auto ASBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-		AccelerationStructure.CreateResource(
-			D3D12Device,
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ASBufferDesc,
-			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-			nullptr
-		);
-		DX_SETNAME(AccelerationStructure.GetResource().Get(), GetResourceName());
+			VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+				&UploadHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&ASBufferDesc,
+				D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+				nullptr,
+				IID_PPV_ARGS(&AccelerationStructure)));
+			DX_SETNAME(AccelerationStructure.Get(), GetResourceName());
+		}
 
-		TI_ASSERT(ScratchResource == nullptr);
-		auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-		VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
-			&UploadHeapProperties,
-			D3D12_HEAP_FLAG_NONE,
-			&ScratchBufferDesc,
-			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-			nullptr,
-			IID_PPV_ARGS(&ScratchResource)));
+		bool NeedRecreateScratch = ScratchResource.Get() == nullptr ? true : false;
+		if (!NeedRecreateScratch && ScratchResource->GetDesc().Width < PrebuildInfo.ScratchDataSizeInBytes)
+		{
+			NeedRecreateScratch = true;
+		}
+		if (NeedRecreateScratch)
+		{
+			auto UploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+			auto ScratchBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(PrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+			VALIDATE_HRESULT(DXRDevice->CreateCommittedResource(
+				&UploadHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&ScratchBufferDesc,
+				D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+				nullptr,
+				IID_PPV_ARGS(&ScratchResource)));
+		}
 
 		// Create Instance Resource
 		const uint32 InstanceBufferSize = (uint32)InstanceDescs.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
@@ -229,7 +239,7 @@ namespace tix
 		FUniformBufferDx12* TLASInstanceBufferDx12 = static_cast<FUniformBufferDx12*>(TLASInstanceBuffer.get());
 		TopLevelInputs.InstanceDescs = TLASInstanceBufferDx12->GetResource()->GetGPUVirtualAddress();
 		TopLevelBuildDesc.ScratchAccelerationStructureData = ScratchResource->GetGPUVirtualAddress();
-		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure.GetResource()->GetGPUVirtualAddress();
+		TopLevelBuildDesc.DestAccelerationStructureData = AccelerationStructure.Get()->GetGPUVirtualAddress();
 
 		// Be sure we are ready for and read access which may follow.  We only call this function in init so this
 		// should not affect runtime performance.
@@ -242,6 +252,7 @@ namespace tix
 			if (BarrierCount >= FRHIConfig::MaxResourceBarrierBuffers)
 			{
 				RHIDx12->FlushResourceStateChange();
+				BarrierCount = 0;
 			}
 		}
 		RHIDx12->FlushResourceStateChange();

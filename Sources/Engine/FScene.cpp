@@ -125,48 +125,51 @@ namespace tix
 	{
 		if (FRHI::RHIConfig.IsRaytracingEnabled())
 		{
-			// Re-add all blas to tlas
-			TI_TODO("Find a optimized way to do this");
-			// Since FPrimitive only has FInstanceBuffer Data, maybe we can build BLAS instances buffer from GPU
-			
-			SceneTLAS->ClearAllInstances();
-
-			// Calc all instances count
-			uint32 TotalInstances = 0;
-			for (THMap<vector2di, FSceneTileResourcePtr>::iterator it = SceneTiles.begin(); it != SceneTiles.end(); it++)
+			if (HasSceneFlag(SceneBLASDirty))
 			{
-				FSceneTileResourcePtr Tile = it->second;
-				THMap<FMeshBufferPtr, TVector<FMatrix3x4>>& TileBLASInstances = Tile->GetBLASInstances();
-				for (auto M : TileBLASInstances)
+				// Re-add all blas to tlas
+				TI_TODO("Find a optimized way to do this");
+				// Since FPrimitive only has FInstanceBuffer Data, maybe we can build BLAS instances buffer from GPU
+
+				SceneTLAS->ClearAllInstances();
+
+				// Calc all instances count
+				uint32 TotalInstances = 0;
+				for (THMap<vector2di, FSceneTileResourcePtr>::iterator it = SceneTiles.begin(); it != SceneTiles.end(); it++)
 				{
-					TotalInstances += (uint32)M.second.size();
-				}
-			}
-			SceneTLAS->ReserveInstanceCount(TotalInstances);
-
-			// Go through all tiles, add all BLAS instances
-			for (THMap<vector2di, FSceneTileResourcePtr>::iterator it = SceneTiles.begin(); it != SceneTiles.end(); it++)
-			{
-				FSceneTileResourcePtr Tile = it->second;
-
-				THMap<FMeshBufferPtr, FBottomLevelAccelerationStructurePtr>& TileBLASes = Tile->GetBLASes();
-				THMap<FMeshBufferPtr, TVector<FMatrix3x4>>& TileBLASInstances = Tile->GetBLASInstances();
-
-				for (auto M : TileBLASes)
-				{
-					FMeshBufferPtr MB = M.first;
-					FBottomLevelAccelerationStructurePtr BLAS = M.second;
-					TI_ASSERT(TileBLASInstances.find(MB) != TileBLASInstances.end());
-
-					TVector<FMatrix3x4>& Instances = TileBLASInstances[MB];
-					for (const auto& Ins : Instances)
+					FSceneTileResourcePtr Tile = it->second;
+					THMap<FMeshBufferPtr, TVector<FMatrix3x4>>& TileBLASInstances = Tile->GetBLASInstances();
+					for (auto M : TileBLASInstances)
 					{
-						SceneTLAS->AddBLASInstance(BLAS, Ins);
+						TotalInstances += (uint32)M.second.size();
 					}
 				}
-			}
+				SceneTLAS->ReserveInstanceCount(TotalInstances);
 
-			SceneTLAS->Build();
+				// Go through all tiles, add all BLAS instances
+				for (THMap<vector2di, FSceneTileResourcePtr>::iterator it = SceneTiles.begin(); it != SceneTiles.end(); it++)
+				{
+					FSceneTileResourcePtr Tile = it->second;
+
+					THMap<FMeshBufferPtr, FBottomLevelAccelerationStructurePtr>& TileBLASes = Tile->GetBLASes();
+					THMap<FMeshBufferPtr, TVector<FMatrix3x4>>& TileBLASInstances = Tile->GetBLASInstances();
+
+					for (auto M : TileBLASes)
+					{
+						FMeshBufferPtr MB = M.first;
+						FBottomLevelAccelerationStructurePtr BLAS = M.second;
+						TI_ASSERT(TileBLASInstances.find(MB) != TileBLASInstances.end());
+
+						TVector<FMatrix3x4>& Instances = TileBLASInstances[MB];
+						for (const auto& Ins : Instances)
+						{
+							SceneTLAS->AddBLASInstance(BLAS, Ins);
+						}
+					}
+				}
+
+				SceneTLAS->Build();
+			}
 		}
 	}
 

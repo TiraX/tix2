@@ -48,6 +48,7 @@ namespace tix
 			ScenePrimitivesDirty = 1 << 1,
 			EnvironmentDirty = 1 << 2,
 			SceneTileDirty = 1 << 3,
+			SceneBLASDirty = 1 << 4,
 
 			ViewUniformDirty = (ViewProjectionDirty | EnvironmentDirty),
 		};

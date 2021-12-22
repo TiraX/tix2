@@ -48,7 +48,7 @@ namespace tix
 		virtual void Build() override;
 		virtual bool AlreadyBuilt() override;
 	private:
-		FGPUResourceDx12 AccelerationStructure;
+		ComPtr<ID3D12Resource> AccelerationStructure;
 		ComPtr<ID3D12Resource> ScratchResource;
 
 		TVector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDescs;

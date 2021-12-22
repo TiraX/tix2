@@ -161,7 +161,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 	if (Scene->GetTLAS() != nullptr && Scene->GetTLAS()->AlreadyBuilt())
 	{
 		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_UNORDERED_ACCESS);
-		RHI->SetResourceStateAS(Scene->GetTLAS(), RESOURCE_STATE_RAYTRACING_AS);
+		//RHI->SetResourceStateAS(Scene->GetTLAS(), RESOURCE_STATE_RAYTRACING_AS);
 		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
 
 		RHI->SetRtxPipeline(RtxPSO);

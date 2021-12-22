@@ -2601,10 +2601,11 @@ namespace tix
 
 	void FRHIDx12::SetResourceStateAS(FTopLevelAccelerationStructurePtr InAS, E_RESOURCE_STATE NewState, bool Immediate)
 	{
-		FTopLevelAccelerationStructureDx12* ASDx12 = static_cast<FTopLevelAccelerationStructureDx12*>(InAS.get());
-		Transition(&ASDx12->AccelerationStructure, TiX2DxResourceStateMap[NewState]);
-		if (Immediate)
-			FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
+		TI_ASSERT(0);
+		//FTopLevelAccelerationStructureDx12* ASDx12 = static_cast<FTopLevelAccelerationStructureDx12*>(InAS.get());
+		//Transition(&ASDx12->AccelerationStructure, TiX2DxResourceStateMap[NewState]);
+		//if (Immediate)
+		//	FlushGraphicsBarriers(CurrentWorkingCommandList.Get());
 	}
 
 	void FRHIDx12::SetResourceStateTexture(FTexturePtr InTexture, E_RESOURCE_STATE NewState, bool Immediate)
@@ -3299,7 +3300,7 @@ namespace tix
 		SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
 		SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
-		SRVDesc.RaytracingAccelerationStructure.Location = TLASDx12->AccelerationStructure.GetResource()->GetGPUVirtualAddress();
+		SRVDesc.RaytracingAccelerationStructure.Location = TLASDx12->AccelerationStructure.Get()->GetGPUVirtualAddress();
 
 		// https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html
 		// When creating descriptor heap based acceleration structure SRVs, 
