@@ -1,0 +1,26 @@
+{
+	"name": "RTX_AO",
+	"type": "rtx_pipeline",
+	"version": 1,
+	"desc": "RTX pipeline define, created manually.",
+	"shader_lib": "S_RTXAO",
+	"export_names" : [
+		"MyRayGenShader",
+		"RayMiss",
+		"RayAnyHit",
+		"MyGlobalRootSignature",
+		"MyHitGroup",
+		"MyShaderConfig",
+		"MyPipelineConfig"
+
+	],
+	"hit_group_name" : "MyHitGroup",
+	"hit_group" : [
+		"RayAnyHit",
+		"",
+		""
+	],
+	"max_attribute_size_in_bytes" : 8,
+	"max_payload_size_in_bytes" : 16,
+	"max_trace_recursion_depth" : 1
+}

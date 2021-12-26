@@ -15,6 +15,7 @@ VSOutput main(VSInput vsInput)
     vsOutput.normal = TransformNormal(vsInput.normal * 2.0 - 1.0, RotMat);
     vsOutput.tangent = TransformNormal(vsInput.tangent * 2.0 - 1.0, RotMat);
 	vsOutput.view = ViewPos - vsInput.position;
+	vsOutput.worldPosition = WorldPosition;
 
     return vsOutput;
 }

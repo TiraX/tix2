@@ -3,9 +3,8 @@
 #include "PS_Common.hlsli"
 
 [RootSignature(BasePass_RootSig)]
-float4 main(VSOutput input) : SV_Target0
+float4 main(VSOutput input, out float4 OutNormal : SV_Target1) : SV_Target0
 {
-	float Light = saturate(dot(MainLightDirection, input.normal));
-	//return float4(Light, Light, Light,1);
-	return float4(normalize(input.normal) * 0.5 + 0.5, 1.0);
+	OutNormal = (normalize(input.normal) * 0.5 + 0.5, 1.0);
+	return float4(input.worldPosition, 1.0);
 }

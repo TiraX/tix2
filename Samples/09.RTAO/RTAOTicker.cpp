@@ -30,8 +30,8 @@ void TRTAOTicker::SetupScene()
 	TAssetLibrary::Get()->LoadAsset(DefaultMaterialInstance);
 
 	// Preload rtx pipeline
-	const TString PathtracerPipeline = "RTX_Pathtracer.tasset";
-	TAssetLibrary::Get()->LoadAsset(PathtracerPipeline);
+	const TString RTAOPipeline = "RTX_AO.tasset";
+	TAssetLibrary::Get()->LoadAsset(RTAOPipeline);
 
 	// Load scene
 	const TString TargetSceneAsset = "ArchVis_RT.tasset";

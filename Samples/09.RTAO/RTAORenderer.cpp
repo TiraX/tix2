@@ -50,7 +50,8 @@ void FRTAORenderer::InitInRenderThread()
 	// Setup base pass render target
 	RT_BasePass = FRenderTarget::Create(RTWidth, RTHeight);
 	RT_BasePass->SetResourceName("RT_BasePass");
-	RT_BasePass->AddColorBuffer(EPF_RGBA16F, 1, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddColorBuffer(EPF_RGBA32F, 1, ERTC_COLOR0, ERT_LOAD_CLEAR, ERT_STORE_STORE);
+	RT_BasePass->AddColorBuffer(EPF_RGBA16F, 1, ERTC_COLOR1, ERT_LOAD_CLEAR, ERT_STORE_STORE);
 	RT_BasePass->AddDepthStencilBuffer(EPF_DEPTH24_STENCIL8, 1, ERT_LOAD_CLEAR, ERT_STORE_DONTCARE);
 	RT_BasePass->Compile();
 
@@ -91,11 +92,11 @@ void FRTAORenderer::InitInRenderThread()
 
 	// For path tracer
 	// Create RTX pipeline state object
-	const TString PathtracerPipeline = "RTX_Pathtracer.tasset";
-	TAssetPtr RtxPipelineAsset = TAssetLibrary::Get()->LoadAsset(PathtracerPipeline);
-	TResourcePtr RtxPipelineResource = RtxPipelineAsset->GetResourcePtr();
-	TRtxPipelinePtr RtxPipeline = static_cast<TRtxPipeline*>(RtxPipelineResource.get());
-	RtxPSO = RtxPipeline->PipelineResource;
+	const TString RTAOPipeline = "RTX_AO.tasset";
+	TAssetPtr RtxAOPipelineAsset = TAssetLibrary::Get()->LoadAsset(RTAOPipeline);
+	TResourcePtr RtxAOPipelineResource = RtxAOPipelineAsset->GetResourcePtr();
+	TRtxPipelinePtr RtxAOPipeline = static_cast<TRtxPipeline*>(RtxAOPipelineResource.get());
+	RtxAOPSO = RtxAOPipeline->PipelineResource;
 
 	// Create constant buffer
 	UB_Pathtracer = ti_new FPathtracerUniform();
@@ -103,7 +104,9 @@ void FRTAORenderer::InitInRenderThread()
 
 	// Create resource table
 	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
-	ResourceTable->PutRWTextureInTable(T_GBuffer[GBUFFER_COLOR], 0, 0);
+	ResourceTable->PutRWTextureInTable(T_GBuffer[GBUFFER_COLOR], 0, UAV_RTAO);
+	ResourceTable->PutTextureInTable(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture, SRV_SCENE_POSITION);
+	ResourceTable->PutTextureInTable(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture, SRV_SCENE_NORMAL);
 }
 
 void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -150,8 +153,11 @@ void FRTAORenderer::UpdateCamInfo(FScene* Scene)
 void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 {
 	UpdateCamInfo(Scene);
-	//RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass");
-	//DrawSceneTiles(RHI, Scene);
+	RHI->SetResourceStateTexture(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture, RESOURCE_STATE_RENDER_TARGET, false);
+	RHI->SetResourceStateTexture(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture, RESOURCE_STATE_RENDER_TARGET, false);
+	RHI->FlushResourceStateChange();
+	RHI->BeginRenderToRenderTarget(RT_BasePass, "BasePass-Normal");
+	DrawSceneTiles(RHI, Scene);
 
 	vector3di TraceSize;
 	TraceSize.X = RHI->GetViewport().Width;
@@ -160,19 +166,22 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 
 	if (Scene->GetTLAS() != nullptr && Scene->GetTLAS()->AlreadyBuilt())
 	{
-		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_UNORDERED_ACCESS);
+		RHI->SetResourceStateTexture(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateTexture(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture, RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false);
+		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_UNORDERED_ACCESS, false);
+		RHI->FlushResourceStateChange();
 		//RHI->SetResourceStateAS(Scene->GetTLAS(), RESOURCE_STATE_RAYTRACING_AS);
-		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), 1);
+		ResourceTable->PutTopLevelAccelerationStructureInTable(Scene->GetTLAS(), SRV_AS);
 
-		RHI->SetRtxPipeline(RtxPSO);
+		RHI->SetRtxPipeline(RtxAOPSO);
 		RHI->SetComputeResourceTable(0, ResourceTable);
-		RHI->SetComputeConstantBuffer(1, UB_Pathtracer->UniformBuffer);
-		RHI->TraceRays(RtxPSO, TraceSize);
+		//RHI->SetComputeConstantBuffer(1, UB_Pathtracer->UniformBuffer);
+		RHI->TraceRays(RtxAOPSO, TraceSize);
 	}
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_RenderResult);
-	if (true)
+	if (!true)
 	{
 		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		FSRender.DrawFullScreenTexture(RHI, AB_RtxResult);

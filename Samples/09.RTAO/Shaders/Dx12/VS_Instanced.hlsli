@@ -34,6 +34,7 @@ struct VSOutput
     float3 normal : Normal;
     float3 tangent : Tangent;
 	float3 view : TexCoord1;
+	float3 worldPosition : TexCoord2;
 };
 
 float3x3 GetWorldRotationMat(in VSInput vsInput)

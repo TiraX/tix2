@@ -29,6 +29,14 @@ private:
 private:
 	enum
 	{
+		UAV_RTAO,
+
+		SRV_AS,
+		SRV_SCENE_POSITION,
+		SRV_SCENE_NORMAL
+	};
+	enum
+	{
 		GBUFFER_COLOR,
 
 		GBUFFER_COUNT,
@@ -39,7 +47,7 @@ private:
 	FRenderTargetPtr RT_BasePass;
 
 	FArgumentBufferPtr AB_RtxResult;
-	FRtxPipelinePtr RtxPSO;
+	FRtxPipelinePtr RtxAOPSO;
 	FTexturePtr T_GBuffer[GBUFFER_COUNT];
 
 	FPathtracerUniformPtr UB_Pathtracer;

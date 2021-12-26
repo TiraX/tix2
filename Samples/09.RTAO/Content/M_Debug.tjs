@@ -23,6 +23,7 @@
 		"EINSSEG_ROT_SCALE_MAT2"
 	],
 	"rt_colors": [
+		"EPF_RGBA32F",
 		"EPF_RGBA16F"
 	],
 	"rt_depth": "EPF_DEPTH24_STENCIL8",

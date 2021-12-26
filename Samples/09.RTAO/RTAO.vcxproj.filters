@@ -50,22 +50,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Dx12\S_HBAOCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaquePS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_DebugOpaqueVS.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Dx12\S_GTAOCS.hlsl">
-      <Filter>Source Files\Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Dx12\S_Pathtracer.hlsl">
       <Filter>Source Files\Shaders\RTX</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Dx12\Raytracing.hlsl">
+      <Filter>Source Files\Shaders\RTX</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Dx12\S_RTXAO.hlsl">
       <Filter>Source Files\Shaders\RTX</Filter>
     </FxCompile>
   </ItemGroup>
