@@ -74,11 +74,12 @@ namespace tix
 		ti_delete DXR;
 	}
 
+#define ENABLE_DX_DEBUG_LAYER	(0)
 	void FRHIDx12::InitRHI()
 	{
 		HRESULT Hr;
 
-#if defined(TIX_DEBUG)
+#if defined(TIX_DEBUG) && (ENABLE_DX_DEBUG_LAYER)
 		// If the project is in a debug build, enable debugging via SDK Layers.
 		{
 			ComPtr<ID3D12Debug> DebugController;
