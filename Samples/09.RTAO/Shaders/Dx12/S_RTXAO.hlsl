@@ -9,6 +9,8 @@
 //
 //*********************************************************
 
+#include "RandomNumberGenerator.hlsli"
+
 struct SimpleRayPayload
 {
     float AO;
@@ -16,7 +18,7 @@ struct SimpleRayPayload
 
 GlobalRootSignature MyGlobalRootSignature =
 {
-    "DescriptorTable(UAV(u0), SRV(t0, numDescriptors=3)),"    // Output texture, AS, ScenePosition, SceneNormal
+    "DescriptorTable(UAV(u0), SRV(t0, numDescriptors=4)),"    // Output texture, AS, ScenePosition, SceneNormal, RandDirTex
 };
 
 //LocalRootSignature MyLocalRootSignature =
@@ -57,10 +59,35 @@ typedef BuiltInTriangleIntersectionAttributes MyAttributes;
 RaytracingAccelerationStructure SceneAccelerationStruct : register(t0);
 Texture2D<float4> ScenePosition : register(t1);
 Texture2D<float4> SceneNormal : register(t2);
+Texture2D<float4> RandDirTex : register(t3);
 RWTexture2D<float4> RTAO : register(u0);
 
-#define RAY_LEN 2.0
-#define NUM_RAYS 1
+#define RAY_LEN 0.2
+#define NUM_RAYS 32
+
+float3 GetRandomDir(in float3 WorldPos, in float3 WorldNormal, int Iteration)
+{
+    // Calculate coordinate system for the hemisphere.
+    float3 u, v, w;
+    w = WorldNormal;
+
+    // Get a vector that's not parallel to w.
+    float3 right = 0.3f * w + float3(-0.72f, 0.56f, -0.34f);
+    v = normalize(cross(w, right));
+    u = cross(v, w);
+
+    uint Seed = Iteration * RNG::hash(WorldPos);
+    uint RNGState = RNG::SeedThread(Seed);
+
+    // Find a random sample
+    uint SampleLocation = RNG::Random(RNGState, 0, 4095);
+    int3 SampleLocation3;
+    SampleLocation3.x = SampleLocation % 64;
+    SampleLocation3.y = SampleLocation / 64;
+    SampleLocation3.z = 0;
+    float3 RandDir = normalize(RandDirTex.Load(SampleLocation3).xyz * 2.0 - 1.0);
+    return normalize(u * RandDir.x + v * RandDir.y + w * RandDir.z);
+}
 
 [shader("raygeneration")]
 void MyRayGenShader()
@@ -70,20 +97,20 @@ void MyRayGenShader()
     //GenerateCameraRay(CurPixel, Origin, Direction);
 
     float3 WorldPosition = ScenePosition[CurPixel].xyz;
-    float3 WorldNormal = SceneNormal[CurPixel].xyz;
+    float3 WorldNormal = SceneNormal[CurPixel].xyz * 2.0 - float3(1.0, 1.0, 1.0);
 
     RayDesc Ray;
-    Ray.Origin = WorldPosition;
-    Ray.TMin = 0.001f;
+    Ray.Origin = WorldPosition + WorldNormal * 0.002f;
+    Ray.TMin = 0;
     Ray.TMax = RAY_LEN;
 
-    float ao = NUM_RAYS;
+    float ao = 0;
     for (int i = 0; i < NUM_RAYS; i++)
     {
         SimpleRayPayload Payload;
         Payload.AO = 0;
 
-        Ray.Direction = GetRandomDir(WorldNormal);
+        Ray.Direction = GetRandomDir(WorldPosition, WorldNormal, i);
 
         uint Flag = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH |
             RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;

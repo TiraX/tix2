@@ -59,7 +59,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,7 +80,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -162,6 +162,7 @@
   <ItemGroup>
     <None Include="Shaders\Dx12\Common.hlsli" />
     <None Include="Shaders\Dx12\PS_Common.hlsli" />
+    <None Include="Shaders\Dx12\RandomNumberGenerator.hlsli" />
     <None Include="Shaders\Dx12\S_BasePassRS.hlsli" />
     <None Include="Shaders\Dx12\VS_Instanced.hlsli" />
   </ItemGroup>

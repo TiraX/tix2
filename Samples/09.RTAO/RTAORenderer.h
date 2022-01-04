@@ -33,7 +33,10 @@ private:
 
 		SRV_AS,
 		SRV_SCENE_POSITION,
-		SRV_SCENE_NORMAL
+		SRV_SCENE_NORMAL,
+		SRV_RAND_DIR,
+		
+		NUM_PARAMS_IN_TABLE
 	};
 	enum
 	{
@@ -49,6 +52,7 @@ private:
 	FArgumentBufferPtr AB_RtxResult;
 	FRtxPipelinePtr RtxAOPSO;
 	FTexturePtr T_GBuffer[GBUFFER_COUNT];
+	FTexturePtr T_RandDirTexture;
 
 	FPathtracerUniformPtr UB_Pathtracer;
 

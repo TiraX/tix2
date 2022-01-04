@@ -338,7 +338,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;..\..\Sources\Externals\rapidjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -358,7 +358,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;TIX_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Sources\Engine;..\..\Sources\Externals\winpixeventruntime.1.0.190604001\Include;..\..\Sources\Externals\libpng1.6.37;..\..\Sources\Externals\zlib-1.2.11;..\..\Sources\Externals\inih;..\..\Sources\Externals\rapidjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

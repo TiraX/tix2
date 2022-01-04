@@ -79,5 +79,8 @@
     <None Include="Shaders\Dx12\VS_Instanced.hlsli">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="Shaders\Dx12\RandomNumberGenerator.hlsli">
+      <Filter>Source Files\Shaders\RTX</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -37,6 +37,7 @@ if not exist "Config" (
 	mkdir "Config"
 )
 popd
-copy Config\*.ini Cooked\Windows\Config\
+copy RandTex.tga Cooked\Windows\
+rem copy Config\*.ini Cooked\Windows\Config\
 
 pause

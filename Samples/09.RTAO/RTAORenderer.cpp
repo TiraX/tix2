@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "RTAORenderer.h"
+#include "TJSON.h"
 
 static const int32 USE_HBAO = 0;
 static const int32 USE_GTAO = 1;
@@ -18,9 +19,56 @@ FRTAORenderer* FRTAORenderer::Get()
 }
 
 
+
 FRTAORenderer::FRTAORenderer()
 {
 	RTAORenderer = this;
+
+	// Create random normal texture
+	static const int8* Name = "rand_scatter_on_sphere.json";
+	//TFile f;
+	//if (f.Open(Name, EFA_READ))
+	//{
+	//	int8* content = ti_new int8[f.GetSize() + 1];
+	//	f.Read(content, f.GetSize(), f.GetSize());
+	//	content[f.GetSize()] = 0;
+	//	f.Close();
+
+	//	TJSON JsonDoc;
+	//	JsonDoc.Parse(content);
+
+	//	TJSONNode JPosArray = JsonDoc["pos"];
+	//	int32 Num = JPosArray.Size();
+	//	TVector<vector3df> Poses;
+	//	Poses.reserve(Num);
+	//	for (int32 i = 0; i < Num; i++)
+	//	{
+	//		TJSONNode JPos = JPosArray[i];
+	//		vector3df Pos;
+	//		Pos.X = JPos[0].GetFloat();
+	//		Pos.Y = JPos[1].GetFloat();
+	//		Pos.Z = JPos[2].GetFloat();
+	//		Pos = Pos * 0.5 + vector3df(0.5, 0.5, 0.5);
+	//		Poses.push_back(Pos);
+	//	}
+	//	TI_ASSERT(Poses.size() == 64 * 64);
+	//	TImagePtr RandTex = ti_new TImage(EPF_RGBA8, 64, 64);
+	//	int32 Index = 0;
+	//	for (int32 y = 0; y < 64; y++)
+	//	{
+	//		for (int32 x = 0; x < 64; x++)
+	//		{
+	//			SColor C;
+	//			C.R = TMath::Round(Poses[Index].X * 255);
+	//			C.G = TMath::Round(Poses[Index].Y * 255);
+	//			C.B = TMath::Round(Poses[Index].Z * 255);
+	//			C.A = 255;
+	//			RandTex->SetPixel(x, y, C);
+	//			++Index;
+	//		}
+	//	}
+	//	RandTex->SaveToTGA("RandTex.tga");
+	//}
 }
 
 FRTAORenderer::~FRTAORenderer()
@@ -90,6 +138,19 @@ void FRTAORenderer::InitInRenderThread()
 		RHI->UpdateHardwareResourceAB(AB_RtxResult, FSRender.GetFullScreenShader(), 0);
 	}
 
+	// Load RandDir Tex
+	const TString RandImageName = "RandTex.tga";
+	TFile RandImageFile;
+	RandImageFile.Open(RandImageName, EFA_READ);
+	TImagePtr RandImage = TImage::LoadImageTGA(RandImageFile);
+	TextureDesc.Format = EPF_RGBA8;
+	TextureDesc.Width = RandImage->GetWidth();
+	TextureDesc.Height = RandImage->GetHeight();
+	TextureDesc.AddressMode = ETC_REPEAT;
+	T_RandDirTexture = RHI->CreateTexture(TextureDesc);
+	T_RandDirTexture->SetResourceName("RandDirTex");
+	RHI->UpdateHardwareResourceTexture(T_RandDirTexture, RandImage);
+
 	// For path tracer
 	// Create RTX pipeline state object
 	const TString RTAOPipeline = "RTX_AO.tasset";
@@ -103,10 +164,11 @@ void FRTAORenderer::InitInRenderThread()
 	UB_Pathtracer->InitUniformBuffer(UB_FLAG_INTERMEDIATE);
 
 	// Create resource table
-	ResourceTable = RHI->CreateRenderResourceTable(2, EHT_SHADER_RESOURCE);
+	ResourceTable = RHI->CreateRenderResourceTable(NUM_PARAMS_IN_TABLE, EHT_SHADER_RESOURCE);
 	ResourceTable->PutRWTextureInTable(T_GBuffer[GBUFFER_COLOR], 0, UAV_RTAO);
 	ResourceTable->PutTextureInTable(RT_BasePass->GetColorBuffer(ERTC_COLOR0).Texture, SRV_SCENE_POSITION);
 	ResourceTable->PutTextureInTable(RT_BasePass->GetColorBuffer(ERTC_COLOR1).Texture, SRV_SCENE_NORMAL);
+	ResourceTable->PutTextureInTable(T_RandDirTexture, SRV_RAND_DIR);
 }
 
 void FRTAORenderer::DrawSceneTiles(FRHI* RHI, FScene * Scene)
@@ -181,7 +243,7 @@ void FRTAORenderer::Render(FRHI* RHI, FScene* Scene)
 
 	RHI->BeginRenderToFrameBuffer();
 	FSRender.DrawFullScreenTexture(RHI, AB_RenderResult);
-	if (!true)
+	if (true)
 	{
 		RHI->SetResourceStateTexture(T_GBuffer[GBUFFER_COLOR], RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		FSRender.DrawFullScreenTexture(RHI, AB_RtxResult);
