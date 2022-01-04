@@ -14,7 +14,6 @@
 struct SimpleRayPayload
 {
     float AO;
-    float3 DebugColor;
 };
 
 GlobalRootSignature MyGlobalRootSignature =
@@ -63,7 +62,7 @@ Texture2D<float4> SceneNormal : register(t2);
 Texture2D<float4> RandDirTex : register(t3);
 RWTexture2D<float4> RTAO : register(u0);
 
-#define RAY_LEN 0.2
+#define RAY_LEN 0.15
 #define NUM_RAYS 64
 
 float3 GetRandomDir(in float3 WorldPos, in float3 WorldNormal, int Iteration)
@@ -82,11 +81,10 @@ float3 GetRandomDir(in float3 WorldPos, in float3 WorldNormal, int Iteration)
 
     // Find a random sample
     uint SampleLocation = RNG::Random(RNGState, 0, 4095);
-    int3 SampleLocation3;
-    SampleLocation3.x = SampleLocation % 64;
-    SampleLocation3.y = SampleLocation / 64;
-    SampleLocation3.z = 0;
-    float3 RandDir = normalize(RandDirTex.Load(SampleLocation3).xyz * 2.0 - float3(1.0, 1.0, 1.0));
+    int2 SampleLocation2;
+    SampleLocation2.x = SampleLocation % 64;
+    SampleLocation2.y = SampleLocation / 64;
+    float3 RandDir = normalize(RandDirTex[SampleLocation2].xyz * 2.0 - 1.0);
     return normalize(u * RandDir.x + v * RandDir.y + w * RandDir.z);
 }
 
@@ -98,47 +96,40 @@ void MyRayGenShader()
     //GenerateCameraRay(CurPixel, Origin, Direction);
 
     float3 WorldPosition = ScenePosition[CurPixel].xyz;
-    float3 WorldNormal = SceneNormal[CurPixel].xyz * 2.0 - float3(1.0, 1.0, 1.0);
-    //float3 WorldNormal = SceneNormal[CurPixel].xyz;
+    float3 WorldNormal = normalize(SceneNormal[CurPixel].xyz * 2.0 - float3(1.0, 1.0, 1.0));
 
     RayDesc Ray;
-    Ray.Origin = WorldPosition + WorldNormal * 0.01f;
+    Ray.Origin = WorldPosition + WorldNormal * 0.1f;
     Ray.TMin = 0;
     Ray.TMax = RAY_LEN;
 
-    uint Flag = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH |
-        RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
+    uint Flag = RAY_FLAG_CULL_FRONT_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
 
     SimpleRayPayload Payload;
-    Payload.DebugColor = float3(1, 0, 0);
     float ao = 0;
     for (int i = 0; i < NUM_RAYS; i++)
     {
         Payload.AO = 0;
 
-        Ray.Direction = GetRandomDir(WorldPosition+float3(CurPixel.xy, 0), WorldNormal, i);
+        Ray.Direction = GetRandomDir(WorldPosition + float3(CurPixel.xy, 0), WorldNormal, i);
 
         TraceRay(SceneAccelerationStruct, Flag, 0xFF, 0, 1, 0, Ray, Payload);
         ao += Payload.AO;
     }
     ao /= float(NUM_RAYS);
     RTAO[CurPixel] = float4(ao, ao, ao, 1.f);
-    //RTAO[CurPixel] = float4(Payload.DebugColor, 1.f);
 }
 
 [shader("miss")]
 void RayMiss(inout SimpleRayPayload data)
 {
     data.AO = 1;
-    data.DebugColor = float3(1, 0, 1);
 }
 
 [shader("anyhit")]
 void RayAnyHit(inout SimpleRayPayload data, in MyAttributes attribs)
 {
     data.AO = 0;
-    data.DebugColor = float3(attribs.barycentrics, 0.2);
-    data.DebugColor = float3(0, 1, 0);
 }
 
 //[shader("closesthit")]
